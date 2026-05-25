@@ -1,0 +1,1 @@
+ALTER TABLE public.app_settings ADD COLUMN IF NOT EXISTS app_version TEXT NOT NULL DEFAULT 'v1.0.0';

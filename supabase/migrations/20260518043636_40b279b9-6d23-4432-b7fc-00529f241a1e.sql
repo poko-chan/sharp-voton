@@ -1,0 +1,1 @@
+ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS tag text NOT NULL DEFAULT 'other';

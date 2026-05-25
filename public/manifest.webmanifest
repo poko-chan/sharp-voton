@@ -1,0 +1,16 @@
+{
+  "name": "Study+ — 学習をもっと賢く、楽しく",
+  "short_name": "Study+",
+  "description": "勉強記録・タイマー・AI問題生成・AI家庭教師まで揃った学習プラットフォーム。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#10b981",
+  "lang": "ja",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

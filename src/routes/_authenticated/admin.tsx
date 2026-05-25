@@ -1,0 +1,642 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  adminListUsers, adminCreateUser, adminUpdateUser, adminDeleteUser,
+  adminSetRole, adminImpersonate, adminUpdateMaintenance, adminEnsurePokochan,
+} from "@/lib/admin.functions";
+import { adminListFeedback, adminUpdateFeedback, adminDeleteFeedback, getThreadMessages, postThreadMessage } from "@/lib/feedback.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const TAGS = [
+  { value: "update", label: "アップデート", className: "bg-blue-500/15 text-blue-600 border-blue-500/30" },
+  { value: "bug", label: "バグ", className: "bg-red-500/15 text-red-600 border-red-500/30" },
+  { value: "maintenance", label: "メンテナンス", className: "bg-amber-500/15 text-amber-600 border-amber-500/30" },
+  { value: "other", label: "その他", className: "bg-muted text-muted-foreground border-border" },
+];
+const tagMeta = (v: string) => TAGS.find((t) => t.value === v) ?? TAGS[3];
+import { Shield, Trash2, Pencil, LogIn, Plus, Wrench, Megaphone, Send } from "lucide-react";
+import { toast } from "sonner";
+
+export const Route = createFileRoute("/_authenticated/admin")({
+  component: AdminPage,
+});
+
+function AdminPage() {
+  const { isAdmin, loading } = useAuth();
+  const navigate = useNavigate();
+  useEffect(() => { if (!loading && !isAdmin) navigate({ to: "/dashboard" }); }, [isAdmin, loading]);
+  if (!isAdmin) return null;
+
+  return (
+    <div className="p-8 max-w-7xl mx-auto space-y-6">
+      <div className="flex items-center gap-2">
+        <Shield className="h-7 w-7" />
+        <h1 className="text-3xl font-bold">管理者ダッシュボード</h1>
+      </div>
+      <Tabs defaultValue="users">
+        <TabsList>
+          <TabsTrigger value="users">ユーザー管理</TabsTrigger>
+          <TabsTrigger value="maintenance">メンテナンス</TabsTrigger>
+          <TabsTrigger value="version">バージョン</TabsTrigger>
+          <TabsTrigger value="announcements">お知らせ</TabsTrigger>
+          <TabsTrigger value="feedback">フィードバック</TabsTrigger>
+        </TabsList>
+        <TabsContent value="users"><UsersTab /></TabsContent>
+        <TabsContent value="maintenance"><MaintenanceTab /></TabsContent>
+        <TabsContent value="version"><VersionTab /></TabsContent>
+        <TabsContent value="announcements"><AnnouncementsTab /></TabsContent>
+        <TabsContent value="feedback"><FeedbackTab /></TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+function UsersTab() {
+  const list = useServerFn(adminListUsers);
+  const create = useServerFn(adminCreateUser);
+  const update = useServerFn(adminUpdateUser);
+  const del = useServerFn(adminDeleteUser);
+  const setRole = useServerFn(adminSetRole);
+  const impersonate = useServerFn(adminImpersonate);
+  const ensure = useServerFn(adminEnsurePokochan);
+
+  const [users, setUsers] = useState<any[]>([]);
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ email: "", password: "", username: "", displayName: "", isAdmin: false });
+
+  const reload = async () => { try { setUsers(await list()); } catch (e: any) { toast.error(e.message); } };
+  useEffect(() => { reload(); }, []);
+
+  const seed = async () => {
+    try { await ensure(); toast.success("ぽこちゃん管理者を作成/確認しました"); reload(); }
+    catch (e: any) { toast.error(e.message); }
+  };
+
+  const submitNew = async () => {
+    try { await create({ data: form }); toast.success("作成しました"); setOpen(false); reload(); }
+    catch (e: any) { toast.error(e.message); }
+  };
+
+  const [imp, setImp] = useState<{ open: boolean; userId: string; loading: boolean; status: string }>({ open: false, userId: "", loading: false, status: "" });
+
+  const startImpersonate = (userId: string) => {
+    setImp({ open: true, userId, loading: false, status: "" });
+  };
+
+  const confirmImpersonate = async () => {
+    setImp((s) => ({ ...s, loading: true, status: "セッションを準備中..." }));
+    try {
+      const r = await impersonate({ data: { userId: imp.userId } });
+      if (r.actionLink) {
+        setImp((s) => ({ ...s, status: "ログアウト中..." }));
+        await supabase.auth.signOut();
+        setImp((s) => ({ ...s, status: "切り替えています..." }));
+        await new Promise((res) => setTimeout(res, 600));
+        window.location.href = r.actionLink;
+      }
+    } catch (e: any) {
+      toast.error(e.message);
+      setImp((s) => ({ ...s, loading: false, status: "" }));
+    }
+  };
+
+  return (
+    <div className="space-y-4 mt-4">
+      <div className="flex gap-2">
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild><Button><Plus className="mr-2 h-4 w-4" /> 新規ユーザー</Button></DialogTrigger>
+          <DialogContent>
+            <DialogHeader><DialogTitle>新規ユーザー</DialogTitle></DialogHeader>
+            <div className="space-y-2">
+              <div><Label>メール</Label><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
+              <div><Label>パスワード</Label><Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} /></div>
+              <div><Label>ユーザー名</Label><Input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} /></div>
+              <div><Label>表示名</Label><Input value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} /></div>
+              <label className="flex items-center gap-2"><Switch checked={form.isAdmin} onCheckedChange={(v) => setForm({ ...form, isAdmin: v })} />管理者にする</label>
+              <Button onClick={submitNew} className="w-full">作成</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        <Button variant="outline" onClick={seed}>初期管理者(pokochan)を作成</Button>
+      </div>
+
+      <Card className="p-0 overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-muted">
+            <tr className="text-left">
+              <th className="p-3">ユーザー</th><th className="p-3">メール</th><th className="p-3">権限</th><th className="p-3">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((u) => (
+              <UserRow key={u.id} user={u} onChange={reload}
+                update={update} del={del} setRole={setRole} doImpersonate={startImpersonate} />
+            ))}
+          </tbody>
+        </table>
+      </Card>
+
+      <Dialog open={imp.open} onOpenChange={(o) => !imp.loading && setImp({ ...imp, open: o })}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>ユーザーとしてログイン</DialogTitle></DialogHeader>
+          {imp.loading ? (
+            <div className="py-6 text-center space-y-2">
+              <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto" />
+              <p className="text-sm text-muted-foreground">{imp.status}</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm">選択したユーザーとしてログインします。パスワード不要で切り替えます。</p>
+              <Button onClick={confirmImpersonate} className="w-full"><LogIn className="h-4 w-4 mr-2" />ログイン実行</Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function UserRow({ user, onChange, update, del, setRole, doImpersonate }: any) {
+  const [edit, setEdit] = useState(false);
+  const [form, setForm] = useState({ username: user.username ?? "", displayName: user.display_name ?? "", email: user.email ?? "", password: "" });
+  const save = async () => {
+    try {
+      const payload: any = { userId: user.id, username: form.username, displayName: form.displayName, email: form.email };
+      if (form.password) payload.password = form.password;
+      await update({ data: payload }); toast.success("更新しました"); setEdit(false); onChange();
+    } catch (e: any) { toast.error(e.message); }
+  };
+  const remove = async () => {
+    if (!confirm(`${user.username} を削除しますか？`)) return;
+    try { await del({ data: { userId: user.id } }); toast.success("削除しました"); onChange(); }
+    catch (e: any) { toast.error(e.message); }
+  };
+  const changeRole = async (makeAdmin: boolean) => {
+    if (makeAdmin === !!user.isAdmin) return;
+    const label = makeAdmin ? "管理者" : "一般";
+    if (!confirm(`${user.username} を「${label}」に変更しますか？`)) return;
+    try { await setRole({ data: { userId: user.id, makeAdmin } }); toast.success(`${label}に変更しました`); onChange(); }
+    catch (e: any) { toast.error(e.message); }
+  };
+
+  const isPoko = user.username === "pokochan";
+  const isMcjp = typeof user.username === "string" && user.username.toLowerCase().startsWith("mcjp_");
+  const locked = isPoko || isMcjp;
+
+  return (
+    <tr className="border-t">
+      <td className="p-3">
+        {edit ? (
+          <div className="space-y-1">
+            <Input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} placeholder="username" />
+            <Input value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} placeholder="display name" />
+          </div>
+        ) : (
+          <div>
+            <div className="font-medium">{user.display_name ?? user.username}{isPoko && <span className="ml-2 text-xs text-muted-foreground">(保護)</span>}</div>
+            <div className="text-xs text-muted-foreground">@{user.username}</div>
+          </div>
+        )}
+      </td>
+      <td className="p-3">
+        {edit ? (
+          <div className="space-y-1">
+            <Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            <Input type="password" placeholder="新パスワード(任意)" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+          </div>
+        ) : user.email}
+      </td>
+      <td className="p-3">
+        {locked ? (
+          <span className="px-2 py-1 rounded text-xs bg-warning/20 text-warning-foreground inline-flex items-center gap-1"><Shield className="h-3 w-3" />{isMcjp ? "MCJP固定" : "管理者(固定)"}</span>
+        ) : (
+          <Select value={user.isAdmin ? "admin" : "user"} onValueChange={(v) => changeRole(v === "admin")}>
+            <SelectTrigger className={`h-8 w-32 ${user.isAdmin ? "border-amber-500/40 bg-amber-500/10" : ""}`}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="user">一般ユーザー</SelectItem>
+              <SelectItem value="admin">管理者</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+      </td>
+      <td className="p-3 space-x-1 whitespace-nowrap">
+        {locked ? (
+          <span className="text-xs text-muted-foreground">操作不可</span>
+        ) : edit ? (
+          <>
+            <Button size="sm" onClick={save}>保存</Button>
+            <Button size="sm" variant="ghost" onClick={() => setEdit(false)}>キャンセル</Button>
+          </>
+        ) : (
+          <>
+            <Button size="sm" variant="outline" onClick={() => setEdit(true)}><Pencil className="h-3.5 w-3.5" /></Button>
+            <Button size="sm" variant="outline" onClick={() => doImpersonate(user.id)}><LogIn className="h-3.5 w-3.5" /></Button>
+            <Button size="sm" variant="destructive" onClick={remove}><Trash2 className="h-3.5 w-3.5" /></Button>
+          </>
+        )}
+      </td>
+    </tr>
+  );
+}
+
+function MaintenanceTab() {
+  const update = useServerFn(adminUpdateMaintenance);
+  const [enabled, setEnabled] = useState(false);
+  const [message, setMessage] = useState("");
+  const [until, setUntil] = useState("");
+
+  useEffect(() => {
+    supabase.from("app_settings").select("*").eq("id", 1).maybeSingle().then(({ data }) => {
+      if (data) {
+        setEnabled(!!data.maintenance_mode);
+        setMessage(data.maintenance_message ?? "");
+        setUntil(data.maintenance_until ? new Date(data.maintenance_until).toISOString().slice(0, 16) : "");
+      }
+    });
+  }, []);
+
+  const save = async () => {
+    try {
+      await update({ data: {
+        enabled, message,
+        until: until ? new Date(until).toISOString() : null,
+      }});
+      toast.success("保存しました");
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  return (
+    <Card className="p-6 mt-4 space-y-4 max-w-2xl">
+      <div className="flex items-center gap-2"><Wrench className="h-5 w-5" /><h3 className="font-semibold">メンテナンスモード</h3></div>
+      <p className="text-sm text-muted-foreground">
+        メンテナンスを有効にすると、一般ユーザーはページ遷移・リロード時に自動ログアウトされ、ログイン画面も封鎖されます。
+        管理者のみ右下「管理」ボタンからログイン可能です。
+      </p>
+      <label className="flex items-center gap-2"><Switch checked={enabled} onCheckedChange={setEnabled} />メンテナンス中にする</label>
+      <div><Label>内容</Label><Textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="システム改善のため..." /></div>
+      <div><Label>終了予定時刻</Label><Input type="datetime-local" value={until} onChange={(e) => setUntil(e.target.value)} /></div>
+      <Button onClick={save}>保存</Button>
+    </Card>
+  );
+}
+
+function VersionTab() {
+  const update = useServerFn(adminUpdateMaintenance);
+  const [enabled, setEnabled] = useState(false);
+  const [message, setMessage] = useState("");
+  const [until, setUntil] = useState<string | null>(null);
+  const [appVersion, setAppVersion] = useState("");
+
+  useEffect(() => {
+    supabase.from("app_settings").select("*").eq("id", 1).maybeSingle().then(({ data }) => {
+      if (data) {
+        setEnabled(!!data.maintenance_mode);
+        setMessage(data.maintenance_message ?? "");
+        setUntil(data.maintenance_until ?? null);
+        setAppVersion((data as any).app_version ?? "v1.0.0");
+      }
+    });
+  }, []);
+
+  const save = async () => {
+    try {
+      await update({ data: { enabled, message, until, appVersion } });
+      toast.success("保存しました");
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  return (
+    <Card className="p-6 mt-4 space-y-4 max-w-2xl">
+      <div className="flex items-center gap-2"><Wrench className="h-5 w-5" /><h3 className="font-semibold">アプリバージョン</h3></div>
+      <div>
+        <Label>バージョン</Label>
+        <Input value={appVersion} onChange={(e) => setAppVersion(e.target.value)} placeholder="v1.0.0" />
+        <p className="text-xs text-muted-foreground mt-1">サイドバーに表示されます。</p>
+      </div>
+      <Button onClick={save}>保存</Button>
+    </Card>
+  );
+}
+
+function AnnouncementsTab() {
+  const [items, setItems] = useState<any[]>([]);
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [tag, setTag] = useState("update");
+  const [publishAt, setPublishAt] = useState(() => {
+    const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 16);
+  });
+  const [busy, setBusy] = useState(false);
+
+  const reload = async () => {
+    const { data, error } = await supabase
+      .from("announcements")
+      .select("id, title, body, publish_at, created_at, tag")
+      .order("publish_at", { ascending: false });
+    if (error) toast.error(error.message);
+    else setItems(data ?? []);
+  };
+  useEffect(() => { reload(); }, []);
+
+  const send = async () => {
+    if (!title.trim() || !body.trim()) return toast.error("タイトルと本文を入力してください");
+    setBusy(true);
+    try {
+      const iso = new Date(publishAt).toISOString();
+      const { error } = await supabase.from("announcements").insert({
+        title: title.trim(), body: body.trim(), publish_at: iso, tag,
+      } as any);
+      if (error) throw error;
+      toast.success("お知らせを送信しました");
+      setTitle(""); setBody("");
+      reload();
+    } catch (e: any) { toast.error(e.message); }
+    finally { setBusy(false); }
+  };
+
+  const remove = async (id: string) => {
+    if (!confirm("削除しますか？")) return;
+    const { error } = await supabase.from("announcements").delete().eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("削除しました"); reload(); }
+  };
+
+  const [editing, setEditing] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState({ title: "", body: "", tag: "update", publishAt: "" });
+  const openEdit = (a: any) => {
+    const d = new Date(a.publish_at); d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    setEditForm({ title: a.title, body: a.body, tag: a.tag ?? "other", publishAt: d.toISOString().slice(0, 16) });
+    setEditing(a);
+  };
+  const saveEdit = async () => {
+    if (!editing) return;
+    if (!editForm.title.trim() || !editForm.body.trim()) return toast.error("タイトルと本文を入力してください");
+    try {
+      const { error } = await supabase.from("announcements").update({
+        title: editForm.title.trim(),
+        body: editForm.body.trim(),
+        tag: editForm.tag,
+        publish_at: new Date(editForm.publishAt).toISOString(),
+      } as any).eq("id", editing.id);
+      if (error) throw error;
+      toast.success("更新しました");
+      setEditing(null);
+      reload();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  return (
+    <div className="space-y-4 mt-4">
+      <Card className="p-6 space-y-3 max-w-2xl">
+        <div className="flex items-center gap-2"><Megaphone className="h-5 w-5" /><h3 className="font-semibold">お知らせを送信</h3></div>
+        <div><Label>タイトル</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} /></div>
+        <div>
+          <Label>タグ</Label>
+          <Select value={tag} onValueChange={setTag}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {TAGS.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div><Label>本文</Label><Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={5} maxLength={5000} /></div>
+        <div><Label>送信日時</Label><Input type="datetime-local" value={publishAt} onChange={(e) => setPublishAt(e.target.value)} /></div>
+        <p className="text-xs text-muted-foreground">未来の日時を指定すると、その時刻以降にユーザーから見えるようになります。</p>
+        <Button onClick={send} disabled={busy}><Send className="h-4 w-4 mr-2" />送信</Button>
+      </Card>
+
+      <Card className="p-0 overflow-hidden max-w-3xl">
+        <table className="w-full text-sm">
+          <thead className="bg-muted"><tr className="text-left">
+            <th className="p-3">タイトル</th><th className="p-3">公開日時</th><th className="p-3"></th>
+          </tr></thead>
+          <tbody>
+            {items.map((a) => (
+              <tr key={a.id} className="border-t align-top">
+                <td className="p-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded border ${tagMeta(a.tag).className}`}>{tagMeta(a.tag).label}</span>
+                    <span className="font-medium">{a.title}</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground line-clamp-2 max-w-md">{a.body}</div>
+                </td>
+                <td className="p-3 whitespace-nowrap text-xs">{new Date(a.publish_at).toLocaleString("ja-JP")}</td>
+                <td className="p-3 space-x-1 whitespace-nowrap">
+                  <Button size="sm" variant="outline" onClick={() => openEdit(a)}><Pencil className="h-3.5 w-3.5" /></Button>
+                  <Button size="sm" variant="destructive" onClick={() => remove(a.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                </td>
+              </tr>
+            ))}
+            {items.length === 0 && <tr><td colSpan={3} className="p-6 text-center text-muted-foreground text-sm">お知らせはまだありません</td></tr>}
+          </tbody>
+        </table>
+      </Card>
+
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>お知らせを編集</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div><Label>タイトル</Label><Input value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} maxLength={200} /></div>
+            <div>
+              <Label>タグ</Label>
+              <Select value={editForm.tag} onValueChange={(v) => setEditForm({ ...editForm, tag: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {TAGS.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>本文</Label><Textarea value={editForm.body} onChange={(e) => setEditForm({ ...editForm, body: e.target.value })} rows={5} maxLength={5000} /></div>
+            <div><Label>公開日時</Label><Input type="datetime-local" value={editForm.publishAt} onChange={(e) => setEditForm({ ...editForm, publishAt: e.target.value })} /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEditing(null)}>キャンセル</Button>
+            <Button onClick={saveEdit}>保存</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function FeedbackTab() {
+  const list = useServerFn(adminListFeedback);
+  const upd = useServerFn(adminUpdateFeedback);
+  const del = useServerFn(adminDeleteFeedback);
+  const [items, setItems] = useState<any[]>([]);
+  const [reply, setReply] = useState<Record<string, string>>({});
+  const [catFilter, setCatFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("active");
+  const reload = async () => { try { setItems(await list()); } catch (e: any) { toast.error(e.message); } };
+  useEffect(() => { reload(); }, []);
+  const save = async (id: string, status?: string) => {
+    try {
+      await upd({ data: { id, status: status as any, adminReply: reply[id] ?? undefined } });
+      toast.success("保存しました。送信者に通知が届きます。"); reload();
+    } catch (e: any) { toast.error(e.message); }
+  };
+  const remove = async (id: string) => {
+    if (!confirm("削除しますか？")) return;
+    try { await del({ data: { id } }); toast.success("削除しました"); reload(); }
+    catch (e: any) { toast.error(e.message); }
+  };
+
+  const CAT_META: Record<string, { label: string; type: "action" | "review" }> = {
+    bug: { label: "🐛 バグ", type: "action" },
+    feature: { label: "💡 要望", type: "action" },
+    question: { label: "❓ 質問", type: "action" },
+    praise: { label: "🎉 感想", type: "review" },
+    other: { label: "📝 その他", type: "action" },
+  };
+  const STATUS_META: Record<string, { label: string; cls: string }> = {
+    open: { label: "未対応", cls: "bg-amber-500/15 text-amber-700" },
+    in_progress: { label: "対応中", cls: "bg-blue-500/15 text-blue-700" },
+    resolved: { label: "解決済み", cls: "bg-green-500/15 text-green-700" },
+    wontfix: { label: "対応しない", cls: "bg-muted text-muted-foreground" },
+  };
+
+  const filtered = items.filter((f) => {
+    if (catFilter !== "all" && f.category !== catFilter) return false;
+    if (statusFilter === "active" && (f.status === "resolved" || f.status === "wontfix")) return false;
+    if (statusFilter === "resolved" && f.status !== "resolved") return false;
+    if (statusFilter === "review" && CAT_META[f.category]?.type !== "review") return false;
+    return true;
+  });
+
+  return (
+    <div className="space-y-3 mt-4 max-w-3xl">
+      <div className="flex items-center gap-3 flex-wrap text-xs">
+        <div className="flex items-center gap-1">
+          <span className="text-muted-foreground">カテゴリ:</span>
+          <Select value={catFilter} onValueChange={setCatFilter}>
+            <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">すべて</SelectItem>
+              {Object.entries(CAT_META).map(([v, m]) => <SelectItem key={v} value={v}>{m.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="text-muted-foreground">フォルダ:</span>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-8 w-36"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="active">📥 受信箱 (未解決)</SelectItem>
+              <SelectItem value="resolved">✅ 解決済み</SelectItem>
+              <SelectItem value="review">👀 閲覧用 (感想等)</SelectItem>
+              <SelectItem value="all">📚 すべて</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <span className="text-muted-foreground ml-auto">{filtered.length}/{items.length} 件</span>
+      </div>
+
+      {filtered.map((f) => {
+        const cat = CAT_META[f.category] ?? CAT_META.other;
+        const st = STATUS_META[f.status] ?? STATUS_META.open;
+        const isReview = cat.type === "review";
+        return (
+          <Card key={f.id} className="p-4 space-y-2">
+            <div className="flex items-center gap-2 flex-wrap text-xs">
+              <span className="px-2 py-0.5 rounded bg-muted">{cat.label}</span>
+              <span className={`px-2 py-0.5 rounded ${st.cls}`}>{st.label}</span>
+              <span className="text-muted-foreground">{new Date(f.created_at).toLocaleString("ja-JP")}</span>
+              {f.email && <span className="text-muted-foreground">📧 {f.email}</span>}
+              {f.route && <span className="text-muted-foreground truncate max-w-[200px]">📍 {f.route}</span>}
+              {f.user_notified_at && <span className="text-[10px] text-emerald-600">🔔 通知済</span>}
+            </div>
+            <div className="text-sm whitespace-pre-wrap">{f.body}</div>
+            {!isReview && (
+              <>
+                <Textarea placeholder="管理者返信メモ（保存すると送信者に通知）" rows={2}
+                  defaultValue={f.admin_reply ?? ""}
+                  onChange={(e) => setReply((r) => ({ ...r, [f.id]: e.target.value }))} />
+                <div className="flex gap-2 flex-wrap">
+                  <Button size="sm" onClick={() => save(f.id, "in_progress")}>対応中にして通知</Button>
+                  <Button size="sm" variant="outline" onClick={() => save(f.id, "resolved")}>解決にして通知</Button>
+                  <Button size="sm" variant="ghost" onClick={() => save(f.id)}>返信のみ保存</Button>
+                  <Button size="sm" variant="destructive" onClick={() => remove(f.id)} className="ml-auto"><Trash2 className="h-3 w-3" /></Button>
+                </div>
+              </>
+            )}
+            {isReview && (
+              <div className="flex gap-2 justify-end">
+                <AdminThreadDialog feedbackId={f.id} />
+                <Button size="sm" variant="destructive" onClick={() => remove(f.id)}><Trash2 className="h-3 w-3" /></Button>
+              </div>
+            )}
+            {!isReview && (
+              <div className="flex justify-end -mt-1">
+                <AdminThreadDialog feedbackId={f.id} />
+              </div>
+            )}
+          </Card>
+        );
+      })}
+      {filtered.length === 0 && <p className="text-center text-muted-foreground text-sm py-6">該当するフィードバックはありません</p>}
+    </div>
+  );
+}
+
+function AdminThreadDialog({ feedbackId }: { feedbackId: string }) {
+  const [open, setOpen] = useState(false);
+  const get = useServerFn(getThreadMessages);
+  const post = useServerFn(postThreadMessage);
+  const [data, setData] = useState<any>(null);
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const load = async () => {
+    try { setData(await get({ data: { feedbackId } })); } catch (e: any) { toast.error(e.message); }
+  };
+  useEffect(() => { if (open) load(); }, [open]);
+  const send = async () => {
+    if (text.trim().length < 1) return;
+    setBusy(true);
+    try {
+      await post({ data: { feedbackId, body: text.trim() } });
+      setText(""); await load();
+    } catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
+  };
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="secondary"><Send className="h-3 w-3 mr-1" />チャット</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg p-0 overflow-hidden gap-0">
+        <DialogHeader className="px-5 pt-5 pb-3 border-b">
+          <DialogTitle className="text-sm">ユーザーとのチャット</DialogTitle>
+        </DialogHeader>
+        <div className="max-h-[60vh] overflow-auto p-4 space-y-2 bg-muted/20">
+          {(data?.messages ?? []).map((m: any) => (
+            <div key={m.id} className={`flex ${m.sender_role === "admin" ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap break-words ${m.sender_role === "admin" ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-card border rounded-bl-sm"}`}>
+                <div className="text-[10px] font-semibold opacity-70 mb-1">{m.sender_role === "admin" ? "🛡 管理者(あなた)" : "👤 ユーザー"}</div>
+                {m.body}
+                <div className="text-[9px] opacity-60 mt-1">{new Date(m.created_at).toLocaleString("ja-JP", { hour: "2-digit", minute: "2-digit" })}</div>
+              </div>
+            </div>
+          ))}
+          {data && data.messages.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">まだメッセージはありません</p>}
+        </div>
+        <div className="p-2 border-t bg-background flex gap-2">
+          <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={1} placeholder="管理者として返信…" className="resize-none min-h-[40px] max-h-32" />
+          <Button onClick={send} disabled={busy || text.trim().length < 1} size="icon"><Send className="h-4 w-4" /></Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+

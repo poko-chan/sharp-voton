@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin-login
+Disallow: /dashboard
+Disallow: /study
+Disallow: /timer
+Disallow: /calendar
+Disallow: /goals
+Disallow: /questions
+Disallow: /practice
+Disallow: /tutor
+Disallow: /chat
+Disallow: /notifications
+Disallow: /api/
+
+Sitemap: https://studyplus-voton.lovable.app/sitemap.xml
