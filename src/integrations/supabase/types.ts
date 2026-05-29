@@ -14,16 +14,1141 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ai_chats: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      announcements: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          publish_at: string
+          show_on_login: boolean
+          tag: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          publish_at?: string
+          show_on_login?: boolean
+          tag?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          publish_at?: string
+          show_on_login?: boolean
+          tag?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      app_settings: {
+        Row: {
+          app_version: string
+          id: number
+          maintenance_message: string | null
+          maintenance_mode: boolean
+          maintenance_until: string | null
+          updated_at: string
+        }
+        Insert: {
+          app_version?: string
+          id?: number
+          maintenance_message?: string | null
+          maintenance_mode?: boolean
+          maintenance_until?: string | null
+          updated_at?: string
+        }
+        Update: {
+          app_version?: string
+          id?: number
+          maintenance_message?: string | null
+          maintenance_mode?: boolean
+          maintenance_until?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      assignments: {
+        Row: {
+          allowed_file_types: string[] | null
+          attachments: Json
+          class_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          due_at: string | null
+          fixed_xp: number
+          id: string
+          kind: string
+          max_points: number
+          quiz_questions: Json | null
+          title: string
+          updated_at: string
+          xp_mode: string
+        }
+        Insert: {
+          allowed_file_types?: string[] | null
+          attachments?: Json
+          class_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          due_at?: string | null
+          fixed_xp?: number
+          id?: string
+          kind?: string
+          max_points?: number
+          quiz_questions?: Json | null
+          title: string
+          updated_at?: string
+          xp_mode?: string
+        }
+        Update: {
+          allowed_file_types?: string[] | null
+          attachments?: Json
+          class_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          due_at?: string | null
+          fixed_xp?: number
+          id?: string
+          kind?: string
+          max_points?: number
+          quiz_questions?: Json | null
+          title?: string
+          updated_at?: string
+          xp_mode?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          id: string
+          read_at: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          read_at?: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          read_at?: string | null
+          recipient_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
+      class_files: {
+        Row: {
+          class_id: string
+          created_at: string
+          folder: string
+          id: string
+          mime: string | null
+          name: string
+          size: number | null
+          uploader_id: string
+          url: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          folder?: string
+          id?: string
+          mime?: string | null
+          name: string
+          size?: number | null
+          uploader_id: string
+          url: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          folder?: string
+          id?: string
+          mime?: string | null
+          name?: string
+          size?: number | null
+          uploader_id?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      class_members: {
+        Row: {
+          class_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          class_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          class_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_members_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_post_comments: {
+        Row: {
+          author_id: string
+          body: string
+          class_id: string
+          created_at: string
+          id: string
+          post_id: string
+          private_to: string | null
+        }
+        Insert: {
+          author_id: string
+          body: string
+          class_id: string
+          created_at?: string
+          id?: string
+          post_id: string
+          private_to?: string | null
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          class_id?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          private_to?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "class_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_posts: {
+        Row: {
+          attachments: Json
+          author_id: string
+          body: string
+          class_id: string
+          created_at: string
+          id: string
+          pinned: boolean
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          attachments?: Json
+          author_id: string
+          body: string
+          class_id: string
+          created_at?: string
+          id?: string
+          pinned?: boolean
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attachments?: Json
+          author_id?: string
+          body?: string
+          class_id?: string
+          created_at?: string
+          id?: string
+          pinned?: boolean
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      class_student_permissions: {
+        Row: {
+          can_comment: boolean
+          can_upload_files: boolean
+          can_view_grades: boolean
+          class_id: string
+          id: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          can_comment?: boolean
+          can_upload_files?: boolean
+          can_view_grades?: boolean
+          class_id: string
+          id?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          can_comment?: boolean
+          can_upload_files?: boolean
+          can_view_grades?: boolean
+          class_id?: string
+          id?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      classes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          invite_code: string
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          invite_code: string
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          invite_code?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          start_time: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          description?: string | null
+          id?: string
+          start_time?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          start_time?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      feedback: {
+        Row: {
+          admin_reply: string | null
+          body: string
+          category: string
+          created_at: string
+          email: string | null
+          id: string
+          replied_at: string | null
+          route: string | null
+          status: string
+          user_agent: string | null
+          user_id: string | null
+          user_notified_at: string | null
+        }
+        Insert: {
+          admin_reply?: string | null
+          body: string
+          category?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          replied_at?: string | null
+          route?: string | null
+          status?: string
+          user_agent?: string | null
+          user_id?: string | null
+          user_notified_at?: string | null
+        }
+        Update: {
+          admin_reply?: string | null
+          body?: string
+          category?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          replied_at?: string | null
+          route?: string | null
+          status?: string
+          user_agent?: string | null
+          user_id?: string | null
+          user_notified_at?: string | null
+        }
+        Relationships: []
+      }
+      feedback_messages: {
+        Row: {
+          body: string
+          created_at: string
+          feedback_id: string
+          id: string
+          read_at: string | null
+          sender_id: string | null
+          sender_role: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          feedback_id: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string | null
+          sender_role: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          feedback_id?: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string | null
+          sender_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_messages_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "feedback"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goals: {
+        Row: {
+          count_from: string | null
+          created_at: string
+          deadline: string | null
+          description: string | null
+          done: boolean
+          id: string
+          progress_minutes: number
+          scope: string
+          target_minutes: number
+          title: string
+          user_id: string
+        }
+        Insert: {
+          count_from?: string | null
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          done?: boolean
+          id?: string
+          progress_minutes?: number
+          scope?: string
+          target_minutes?: number
+          title: string
+          user_id: string
+        }
+        Update: {
+          count_from?: string | null
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          done?: boolean
+          id?: string
+          progress_minutes?: number
+          scope?: string
+          target_minutes?: number
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      grading_history: {
+        Row: {
+          correct: boolean
+          created_at: string
+          feedback: string
+          id: string
+          question_id: string
+          score: number
+          user_answer: string
+          user_id: string
+        }
+        Insert: {
+          correct: boolean
+          created_at?: string
+          feedback: string
+          id?: string
+          question_id: string
+          score: number
+          user_answer: string
+          user_id: string
+        }
+        Update: {
+          correct?: boolean
+          created_at?: string
+          feedback?: string
+          id?: string
+          question_id?: string
+          score?: number
+          user_answer?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          deletion_code: string | null
+          deletion_code_expires_at: string | null
+          deletion_scheduled_at: string | null
+          display_name: string | null
+          email: string | null
+          id: string
+          notify_announcements: boolean
+          notify_chat: boolean
+          notify_daily_reminder: boolean
+          notify_email: boolean
+          notify_streak_break: boolean
+          reminder_time: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          deletion_code?: string | null
+          deletion_code_expires_at?: string | null
+          deletion_scheduled_at?: string | null
+          display_name?: string | null
+          email?: string | null
+          id: string
+          notify_announcements?: boolean
+          notify_chat?: boolean
+          notify_daily_reminder?: boolean
+          notify_email?: boolean
+          notify_streak_break?: boolean
+          reminder_time?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          deletion_code?: string | null
+          deletion_code_expires_at?: string | null
+          deletion_scheduled_at?: string | null
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          notify_announcements?: boolean
+          notify_chat?: boolean
+          notify_daily_reminder?: boolean
+          notify_email?: boolean
+          notify_streak_break?: boolean
+          reminder_time?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      questions: {
+        Row: {
+          answer: string
+          attempts: number | null
+          created_at: string
+          explanation: string | null
+          format: string
+          id: string
+          options: Json | null
+          question: string
+          topic: string
+          user_id: string
+          was_wrong: boolean | null
+        }
+        Insert: {
+          answer: string
+          attempts?: number | null
+          created_at?: string
+          explanation?: string | null
+          format: string
+          id?: string
+          options?: Json | null
+          question: string
+          topic: string
+          user_id: string
+          was_wrong?: boolean | null
+        }
+        Update: {
+          answer?: string
+          attempts?: number | null
+          created_at?: string
+          explanation?: string | null
+          format?: string
+          id?: string
+          options?: Json | null
+          question?: string
+          topic?: string
+          user_id?: string
+          was_wrong?: boolean | null
+        }
+        Relationships: []
+      }
+      study_logs: {
+        Row: {
+          content: string | null
+          created_at: string
+          date: string
+          duration_minutes: number
+          id: string
+          start_time: string | null
+          subject_id: string | null
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          date?: string
+          duration_minutes?: number
+          id?: string
+          start_time?: string | null
+          subject_id?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          date?: string
+          duration_minutes?: number
+          id?: string
+          start_time?: string | null
+          subject_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_logs_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_plans: {
+        Row: {
+          content: string | null
+          created_at: string
+          date: string
+          done: boolean
+          id: string
+          planned_minutes: number
+          start_time: string | null
+          subject_id: string | null
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          date: string
+          done?: boolean
+          id?: string
+          planned_minutes?: number
+          start_time?: string | null
+          subject_id?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          date?: string
+          done?: boolean
+          id?: string
+          planned_minutes?: number
+          start_time?: string | null
+          subject_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_plans_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subjects: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      submissions: {
+        Row: {
+          assignment_id: string
+          attachments: Json
+          content: string | null
+          feedback: string | null
+          graded_at: string | null
+          graded_by: string | null
+          id: string
+          quiz_answers: Json | null
+          score: number | null
+          submitted_at: string
+          user_id: string
+          xp_awarded: number
+        }
+        Insert: {
+          assignment_id: string
+          attachments?: Json
+          content?: string | null
+          feedback?: string | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          quiz_answers?: Json | null
+          score?: number | null
+          submitted_at?: string
+          user_id: string
+          xp_awarded?: number
+        }
+        Update: {
+          assignment_id?: string
+          attachments?: Json
+          content?: string | null
+          feedback?: string | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          quiz_answers?: Json | null
+          score?: number | null
+          submitted_at?: string
+          user_id?: string
+          xp_awarded?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submissions_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      town_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          message: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          message: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          message?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      town_history: {
+        Row: {
+          ai_response: Json | null
+          created_at: string
+          delta: number
+          id: string
+          narrative: string | null
+          reason: string | null
+          stage_after: number
+          stage_before: number
+          town_id: string
+          user_id: string
+        }
+        Insert: {
+          ai_response?: Json | null
+          created_at?: string
+          delta: number
+          id?: string
+          narrative?: string | null
+          reason?: string | null
+          stage_after: number
+          stage_before: number
+          town_id: string
+          user_id: string
+        }
+        Update: {
+          ai_response?: Json | null
+          created_at?: string
+          delta?: number
+          id?: string
+          narrative?: string | null
+          reason?: string | null
+          stage_after?: number
+          stage_before?: number
+          town_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "town_history_town_id_fkey"
+            columns: ["town_id"]
+            isOneToOne: false
+            referencedRelation: "towns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      town_items: {
+        Row: {
+          created_at: string
+          id: string
+          item_key: string
+          user_id: string
+          x: number
+          y: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_key: string
+          user_id: string
+          x?: number
+          y?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_key?: string
+          user_id?: string
+          x?: number
+          y?: number
+        }
+        Relationships: []
+      }
+      towns: {
+        Row: {
+          archived: boolean
+          created_at: string
+          id: string
+          last_judged_at: string | null
+          max_stage_reached: number
+          name: string
+          stage: number
+          town_goal: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          archived?: boolean
+          created_at?: string
+          id?: string
+          last_judged_at?: string | null
+          max_stage_reached?: number
+          name?: string
+          stage?: number
+          town_goal?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          archived?: boolean
+          created_at?: string
+          id?: string
+          last_judged_at?: string | null
+          max_stage_reached?: number
+          name?: string
+          stage?: number
+          town_goal?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tutor_messages: {
+        Row: {
+          attachments: Json
+          content: string
+          created_at: string
+          id: string
+          role: string
+          thread_id: string | null
+          user_id: string
+        }
+        Insert: {
+          attachments?: Json
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          thread_id?: string | null
+          user_id: string
+        }
+        Update: {
+          attachments?: Json
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          thread_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tutor_threads: {
+        Row: {
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_coins: {
+        Row: {
+          balance: number
+          total_earned: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          total_earned?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          total_earned?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_view_submission: {
+        Args: { _assignment_id: string; _user_id: string }
+        Returns: boolean
+      }
+      get_user_study_stats: {
+        Args: { _user_ids: string[] }
+        Returns: {
+          last_date: string
+          total_minutes: number
+          user_id: string
+        }[]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_class_member: {
+        Args: { _class_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_class_teacher: {
+        Args: { _class_id: string; _user_id: string }
+        Returns: boolean
+      }
+      join_class_by_code: { Args: { _code: string }; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +1275,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
