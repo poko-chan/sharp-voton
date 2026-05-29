@@ -79,7 +79,7 @@ function AdminLoginPage() {
         <form onSubmit={submit} className="space-y-3">
           <div className="space-y-1">
             <Label>ユーザー名 または メール</Label>
-            <Input value={identifier} onChange={(e) => setIdentifier(e.target.value)} required placeholder="pokochan" />
+            <Input value={identifier} onChange={(e) => setIdentifier(e.target.value)} required placeholder="ユーザー名" />
           </div>
           <div className="space-y-1">
             <Label>パスワード</Label>
