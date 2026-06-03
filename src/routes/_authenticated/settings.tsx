@@ -19,6 +19,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { emitProfileChange } from "@/lib/profile-events";
 import { useI18n } from "@/lib/i18n";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { THEMES, saveUserTheme, type ThemeName } from "@/lib/theme";
 
 function UserSettingsPage() {
   const { user } = useAuth();
@@ -154,6 +155,8 @@ function UserSettingsPage() {
       </Card>
 
       <LanguageSettings />
+
+      <ThemeSettings />
 
       <TownSettings />
 
