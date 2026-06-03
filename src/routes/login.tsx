@@ -215,7 +215,7 @@ function LoginPage() {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="ユーザー名"
+              placeholder="pokochan"
               autoComplete="username"
             />
           </div>
@@ -223,7 +223,7 @@ function LoginPage() {
             <>
               <div className="space-y-1">
                 <Label>表示名 <span className="text-xs text-muted-foreground">(任意・空欄ならユーザー名と同じ)</span></Label>
-                <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={40} placeholder="表示名" />
+                <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={40} placeholder="ぽこちゃん" />
               </div>
               <div className="space-y-1">
                 <Label>メールアドレス</Label>
