@@ -24,6 +24,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedQuestionsRouteImport } from './routes/_authenticated/questions'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedMicroRouteImport } from './routes/_authenticated/micro'
 import { Route as AuthenticatedListenRouteImport } from './routes/_authenticated/listen'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
@@ -111,6 +112,11 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
+  id: '/notes',
+  path: '/notes',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedMicroRoute = AuthenticatedMicroRouteImport.update({
   id: '/micro',
   path: '/micro',
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/goals': typeof AuthenticatedGoalsRoute
   '/listen': typeof AuthenticatedListenRoute
   '/micro': typeof AuthenticatedMicroRoute
+  '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
@@ -213,6 +220,7 @@ export interface FileRoutesByTo {
   '/goals': typeof AuthenticatedGoalsRoute
   '/listen': typeof AuthenticatedListenRoute
   '/micro': typeof AuthenticatedMicroRoute
+  '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
@@ -242,6 +250,7 @@ export interface FileRoutesById {
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/listen': typeof AuthenticatedListenRoute
   '/_authenticated/micro': typeof AuthenticatedMicroRoute
+  '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
@@ -271,6 +280,7 @@ export interface FileRouteTypes {
     | '/goals'
     | '/listen'
     | '/micro'
+    | '/notes'
     | '/notifications'
     | '/practice'
     | '/questions'
@@ -298,6 +308,7 @@ export interface FileRouteTypes {
     | '/goals'
     | '/listen'
     | '/micro'
+    | '/notes'
     | '/notifications'
     | '/practice'
     | '/questions'
@@ -326,6 +337,7 @@ export interface FileRouteTypes {
     | '/_authenticated/goals'
     | '/_authenticated/listen'
     | '/_authenticated/micro'
+    | '/_authenticated/notes'
     | '/_authenticated/notifications'
     | '/_authenticated/practice'
     | '/_authenticated/questions'
@@ -456,6 +468,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/notes': {
+      id: '/_authenticated/notes'
+      path: '/notes'
+      fullPath: '/notes'
+      preLoaderRoute: typeof AuthenticatedNotesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/micro': {
       id: '/_authenticated/micro'
       path: '/micro'
@@ -546,6 +565,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedListenRoute: typeof AuthenticatedListenRoute
   AuthenticatedMicroRoute: typeof AuthenticatedMicroRoute
+  AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedQuestionsRoute: typeof AuthenticatedQuestionsRoute
@@ -567,6 +587,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedListenRoute: AuthenticatedListenRoute,
   AuthenticatedMicroRoute: AuthenticatedMicroRoute,
+  AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedQuestionsRoute: AuthenticatedQuestionsRoute,
