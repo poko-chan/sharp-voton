@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -15,7 +15,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { emitProfileChange } from "@/lib/profile-events";
 import { Download, Upload } from "lucide-react";
-import { useRef } from "react";
 
 export const Route = createFileRoute("/_authenticated/study")({
   component: StudyPage,
