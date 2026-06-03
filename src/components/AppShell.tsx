@@ -33,8 +33,8 @@ const NAV = [
   { to: "/listen", labelKey: "nav.listen" as const, icon: Headphones },
   { to: "/classroom", labelKey: "nav.classroom" as const, icon: GraduationCap },
   { to: "/chat", labelKey: "nav.chat" as const, icon: MessagesSquare },
-  { to: "/classchat", labelKey: "nav.classroom" as const, icon: Users },
-  { to: "/notes", labelKey: "nav.dashboard" as const, icon: StickyNote },
+  { to: "/classchat", labelKey: "nav.classchat" as const, icon: Users },
+  { to: "/notes", labelKey: "nav.notes" as const, icon: StickyNote },
   { to: "/announcements", labelKey: "nav.announcements" as const, icon: Megaphone },
   { to: "/settings", labelKey: "nav.settings" as const, icon: Settings },
 ] as const;
