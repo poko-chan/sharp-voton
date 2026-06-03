@@ -19,6 +19,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { emitProfileChange } from "@/lib/profile-events";
 import { useI18n } from "@/lib/i18n";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { THEMES, saveUserTheme, type ThemeName } from "@/lib/theme";
 
 function UserSettingsPage() {
   const { user } = useAuth();
@@ -155,6 +156,8 @@ function UserSettingsPage() {
 
       <LanguageSettings />
 
+      <ThemeSettings />
+
       <TownSettings />
 
       <DangerZone />
@@ -175,6 +178,44 @@ function LanguageSettings() {
           <SelectItem value="en">{t("lang.en")}</SelectItem>
         </SelectContent>
       </Select>
+    </Card>
+  );
+}
+
+function ThemeSettings() {
+  const { user } = useAuth();
+  const [theme, setTheme] = useState<ThemeName>("default");
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("theme")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => setTheme(((data as { theme?: ThemeName } | null)?.theme ?? "default") as ThemeName));
+  }, [user]);
+  const onPick = async (t: ThemeName) => {
+    setTheme(t);
+    if (user) await saveUserTheme(user.id, t);
+  };
+  return (
+    <Card className="p-6 space-y-3">
+      <div className="font-semibold">テーマカラー</div>
+      <p className="text-xs text-muted-foreground">アプリの配色をお好みに切り替えできます</p>
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+        {THEMES.map((tm) => (
+          <button
+            key={tm.key}
+            onClick={() => onPick(tm.key)}
+            className={`p-3 rounded-lg border-2 text-xs flex flex-col items-center gap-2 transition ${
+              theme === tm.key ? "border-primary ring-2 ring-primary/30" : "border-border hover:border-primary/50"
+            }`}
+          >
+            <span className="h-8 w-8 rounded-full border" style={{ background: tm.swatch }} />
+            <span>{tm.label}</span>
+          </button>
+        ))}
+      </div>
     </Card>
   );
 }

@@ -18,6 +18,8 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, PieChart, Pi
 import { localDateStr, addDaysStr } from "@/lib/date";
 import { levelInfo } from "@/lib/level";
 import { Town } from "@/components/Town";
+import { buildReport } from "@/lib/report-pdf";
+import { FileDown } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -203,7 +205,41 @@ function Dashboard() {
           <h1 className="text-3xl font-bold">ダッシュボード</h1>
           <p className="text-muted-foreground">学習の積み重ねを見える化</p>
         </div>
-        <NotificationBell />
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={async () => {
+              if (!user) return;
+              const { data } = await supabase
+                .from("study_logs")
+                .select("date, duration_minutes, subjects(name)")
+                .eq("user_id", user.id)
+                .order("date", { ascending: false })
+                .limit(2000);
+              buildReport((data as any) ?? [], "week");
+            }}
+          >
+            <FileDown className="h-4 w-4 mr-1" />週レポート
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={async () => {
+              if (!user) return;
+              const { data } = await supabase
+                .from("study_logs")
+                .select("date, duration_minutes, subjects(name)")
+                .eq("user_id", user.id)
+                .order("date", { ascending: false })
+                .limit(2000);
+              buildReport((data as any) ?? [], "month");
+            }}
+          >
+            <FileDown className="h-4 w-4 mr-1" />月レポート
+          </Button>
+          <NotificationBell />
+        </div>
       </div>
 
       {/* あなたの街 */}

@@ -196,6 +196,36 @@ export type Database = {
         }
         Relationships: []
       }
+      class_chat_messages: {
+        Row: {
+          body: string
+          class_id: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          class_id: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          class_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
       class_files: {
         Row: {
           class_id: string
@@ -635,6 +665,7 @@ export type Database = {
           notify_email: boolean
           notify_streak_break: boolean
           reminder_time: string
+          theme: string
           updated_at: string
           username: string | null
         }
@@ -653,6 +684,7 @@ export type Database = {
           notify_email?: boolean
           notify_streak_break?: boolean
           reminder_time?: string
+          theme?: string
           updated_at?: string
           username?: string | null
         }
@@ -671,6 +703,7 @@ export type Database = {
           notify_email?: boolean
           notify_streak_break?: boolean
           reminder_time?: string
+          theme?: string
           updated_at?: string
           username?: string | null
         }
@@ -715,6 +748,39 @@ export type Database = {
           topic?: string
           user_id?: string
           was_wrong?: boolean | null
+        }
+        Relationships: []
+      }
+      sticky_notes: {
+        Row: {
+          color: string
+          content: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+          x: number
+          y: number
+        }
+        Insert: {
+          color?: string
+          content?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          x?: number
+          y?: number
+        }
+        Update: {
+          color?: string
+          content?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          x?: number
+          y?: number
         }
         Relationships: []
       }

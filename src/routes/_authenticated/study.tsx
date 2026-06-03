@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import { localDateStr } from "@/lib/date";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { emitProfileChange } from "@/lib/profile-events";
+import { Download, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/study")({
   component: StudyPage,
@@ -89,11 +90,113 @@ function StudyPage() {
     load();
   };
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const exportCsv = () => {
+    const rows = [["date", "subject", "duration_minutes", "start_time", "content"]];
+    logs.forEach((l: any) =>
+      rows.push([
+        l.date ?? "",
+        l.subjects?.name ?? "",
+        String(l.duration_minutes ?? 0),
+        l.start_time ?? "",
+        (l.content ?? "").replace(/"/g, '""'),
+      ]),
+    );
+    const csv = rows
+      .map((r) => r.map((v) => `"${v}"`).join(","))
+      .join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `study-logs-${localDateStr()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("CSVをダウンロードしました");
+  };
+
+  const importCsv = async (file: File) => {
+    if (!user) return;
+    const text = await file.text();
+    const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/).filter(Boolean);
+    if (lines.length < 2) return toast.error("CSVが空です");
+    const header = lines[0].split(",").map((h) => h.replace(/^"|"$/g, "").trim());
+    const idx = (k: string) => header.indexOf(k);
+    const iDate = idx("date"), iSubj = idx("subject"), iDur = idx("duration_minutes"), iTime = idx("start_time"), iContent = idx("content");
+    if (iDate < 0 || iSubj < 0 || iDur < 0) return toast.error("ヘッダに date, subject, duration_minutes が必要です");
+    const subjMap = new Map(subjects.map((s) => [s.name, s.id] as const));
+    const rows: any[] = [];
+    for (const line of lines.slice(1)) {
+      // simple CSV parse: handle quoted fields
+      const cells: string[] = [];
+      let cur = "", inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (inQ) {
+          if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+          else if (c === '"') inQ = false;
+          else cur += c;
+        } else {
+          if (c === '"') inQ = true;
+          else if (c === ",") { cells.push(cur); cur = ""; }
+          else cur += c;
+        }
+      }
+      cells.push(cur);
+      const subjName = cells[iSubj]?.trim();
+      let subjectId = subjMap.get(subjName);
+      if (!subjectId && subjName) {
+        const { data: ns } = await supabase.from("subjects").insert({ user_id: user.id, name: subjName, color: "#10b981" }).select("id").single();
+        if (ns) {
+          subjectId = ns.id;
+          subjMap.set(subjName, ns.id);
+        }
+      }
+      const dur = parseInt(cells[iDur] ?? "0", 10);
+      if (!cells[iDate] || isNaN(dur)) continue;
+      rows.push({
+        user_id: user.id,
+        date: cells[iDate].trim(),
+        subject_id: subjectId ?? null,
+        duration_minutes: Math.min(400, Math.max(1, dur)),
+        start_time: iTime >= 0 ? (cells[iTime]?.trim() || null) : null,
+        content: iContent >= 0 ? cells[iContent] : "",
+      });
+    }
+    if (!rows.length) return toast.error("有効な行がありません");
+    const { error } = await supabase.from("study_logs").insert(rows as never);
+    if (error) return toast.error(error.message);
+    toast.success(`${rows.length}件を取り込みました`);
+    load();
+  };
+
   return (
     <div className="p-8 space-y-6 max-w-6xl mx-auto">
-      <div>
-        <h1 className="text-3xl font-bold flex items-center gap-2"><BookOpen /> 勉強記録</h1>
-        <p className="text-muted-foreground">毎日の学習内容を記録しよう（過去の日付も編集可）</p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-2"><BookOpen /> 勉強記録</h1>
+          <p className="text-muted-foreground">毎日の学習内容を記録しよう（過去の日付も編集可）</p>
+        </div>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={exportCsv}>
+            <Download className="h-4 w-4 mr-1" />CSV出力
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
+            <Upload className="h-4 w-4 mr-1" />CSV取込
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) importCsv(f);
+              e.target.value = "";
+            }}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
