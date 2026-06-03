@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { RouteLoading } from "@/components/RouteLoading";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { loadAndApplyUserTheme } from "@/lib/theme";
 
 function NotFoundComponent() {
   return (
@@ -164,9 +165,12 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    loadAndApplyUserTheme(undefined);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       router.invalidate();
+      loadAndApplyUserTheme(session?.user?.id);
     });
+    supabase.auth.getUser().then(({ data }) => loadAndApplyUserTheme(data.user?.id));
     return () => subscription.unsubscribe();
   }, [router]);
 
