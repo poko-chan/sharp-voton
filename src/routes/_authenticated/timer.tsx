@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Play, Pause, Square, RotateCcw, Maximize2, Minimize2, Volume2, VolumeX, Wind } from "lucide-react";
+import { Play, Pause, Square, RotateCcw, Maximize2, Minimize2, Wind } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTimer, fmtMs } from "@/lib/timer-context";
 
@@ -27,16 +27,15 @@ function TimerPage() {
   return (
     <div className={cn("p-8 max-w-4xl mx-auto", focus && "fixed inset-0 z-50 max-w-none bg-background overflow-auto p-6")}>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">タイマー</h1>
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-foreground to-primary/70 bg-clip-text text-transparent">タイマー</h1>
         <div className="flex items-center gap-2">
-          <NoiseControl />
           <Button variant="outline" size="sm" onClick={() => setFocus((v) => !v)}>
             {focus ? <Minimize2 className="h-4 w-4 mr-1" /> : <Maximize2 className="h-4 w-4 mr-1" />}
             {focus ? "解除" : "集中モード"}
           </Button>
         </div>
       </div>
-      <p className="text-xs text-muted-foreground mb-3">💡 タイマーは他のページに移動しても動き続けます。</p>
+      <p className="text-xs text-muted-foreground mb-3">💡 タイマーは他のページに移動しても動き続けます。右下の音楽ボタンから環境音/ノイズを再生できます。</p>
       <Tabs defaultValue={initialTab}>
         <TabsList>
           <TabsTrigger value="stopwatch">ストップウォッチ</TabsTrigger>
@@ -240,74 +239,3 @@ function Breathing() {
   );
 }
 
-// === Ambient noise (Web Audio) ===
-type NoiseKind = "off" | "white" | "brown" | "pink" | "birds";
-
-function NoiseControl() {
-  const [kind, setKind] = useState<NoiseKind>("off");
-  const [vol, setVol] = useState(0.3);
-  const ctxRef = useRef<AudioContext | null>(null);
-  const nodeRef = useRef<AudioBufferSourceNode | null>(null);
-  const gainRef = useRef<GainNode | null>(null);
-
-  const stop = () => {
-    nodeRef.current?.stop(); nodeRef.current?.disconnect(); nodeRef.current = null;
-  };
-
-  const play = (k: NoiseKind) => {
-    stop();
-    if (k === "off") return;
-    if (!ctxRef.current) ctxRef.current = new AudioContext();
-    const ctx = ctxRef.current;
-    const buf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
-    const d = buf.getChannelData(0);
-    if (k === "white") {
-      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-    } else if (k === "brown") {
-      let last = 0;
-      for (let i = 0; i < d.length; i++) {
-        const w = Math.random() * 2 - 1;
-        last = (last + 0.02 * w) / 1.02;
-        d[i] = last * 3.5;
-      }
-    } else {
-      let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
-      for (let i = 0; i < d.length; i++) {
-        const w = Math.random()*2-1;
-        b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
-        b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
-        b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
-        d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11; b6=w*0.115926;
-      }
-    }
-    const src = ctx.createBufferSource();
-    src.buffer = buf; src.loop = true;
-    const g = ctx.createGain(); g.gain.value = vol;
-    src.connect(g).connect(ctx.destination);
-    src.start();
-    nodeRef.current = src; gainRef.current = g;
-  };
-
-  useEffect(() => { if (gainRef.current) gainRef.current.gain.value = vol; }, [vol]);
-  useEffect(() => () => stop(), []);
-
-  return (
-    <div className="flex items-center gap-2">
-      <Select value={kind} onValueChange={(v) => { const k = v as NoiseKind; setKind(k); play(k); }}>
-        <SelectTrigger className="w-36 h-9">
-          {kind === "off" ? <VolumeX className="h-4 w-4 mr-1" /> : <Volume2 className="h-4 w-4 mr-1" />}
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="off">環境音オフ</SelectItem>
-          <SelectItem value="white">ホワイトノイズ</SelectItem>
-          <SelectItem value="pink">ピンクノイズ</SelectItem>
-          <SelectItem value="brown">ブラウンノイズ(雨)</SelectItem>
-        </SelectContent>
-      </Select>
-      {kind !== "off" && (
-        <input type="range" min={0} max={1} step={0.05} value={vol} onChange={(e) => setVol(+e.target.value)} className="w-20" />
-      )}
-    </div>
-  );
-}
