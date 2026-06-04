@@ -141,7 +141,11 @@ function NotesPage() {
                 style={{ color: c.ring }}
               >
                 <span>📌 ドラッグで移動</span>
-                <button onClick={() => deleteNote(n.id)} className="hover:opacity-70">
+                <button
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => { e.stopPropagation(); deleteNote(n.id); }}
+                  className="hover:opacity-70 p-1"
+                >
                   <Trash2 className="h-3 w-3" />
                 </button>
               </div>
