@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { Music2, Volume2, VolumeX, X } from "lucide-react";
 
-type Preset = "off" | "birds" | "rain" | "wave" | "fire";
+type Preset = "off" | "birds" | "rain" | "wave" | "fire" | "white" | "pink" | "brown";
 
 /**
  * Procedural ambient sounds using Web Audio API — no external assets.
@@ -11,9 +11,7 @@ type Preset = "off" | "birds" | "rain" | "wave" | "fire";
  */
 export function AmbientSound() {
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const hidden =
-    path === "/login" || path === "/admin-login" || path === "/help" ||
-    path === "/" || path === "/privacy" || path === "/terms";
+  const visible = path === "/timer";
   const [open, setOpen] = useState(false);
   const [preset, setPreset] = useState<Preset>("off");
   const [vol, setVol] = useState(0.4);
@@ -58,6 +56,33 @@ export function AmbientSound() {
     const src = ctx.createBufferSource();
     src.buffer = buf;
     src.loop = true;
+    return src;
+  };
+
+  const makeColoredNoise = (ctx: AudioContext, kind: "white" | "pink" | "brown") => {
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    if (kind === "white") {
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    } else if (kind === "brown") {
+      let last = 0;
+      for (let i = 0; i < d.length; i++) {
+        const w = Math.random() * 2 - 1;
+        last = (last + 0.02 * w) / 1.02;
+        d[i] = last * 3.5;
+      }
+    } else {
+      let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+      for (let i = 0; i < d.length; i++) {
+        const w = Math.random()*2-1;
+        b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
+        b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
+        b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
+        d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11; b6=w*0.115926;
+      }
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf; src.loop = true;
     return src;
   };
 
@@ -125,25 +150,31 @@ export function AmbientSound() {
         o.stop(ctx.currentTime + 0.3);
       }, 600 + Math.random() * 400);
       cleanupRef.current = () => { clearInterval(chirpInt); src.stop(); src.disconnect(); lp.disconnect(); ng.disconnect(); };
+    } else if (p === "white" || p === "pink" || p === "brown") {
+      const src = makeColoredNoise(ctx, p);
+      const g = ctx.createGain(); g.gain.value = 0.6;
+      src.connect(g).connect(out);
+      src.start();
+      cleanupRef.current = () => { src.stop(); src.disconnect(); g.disconnect(); };
     }
   };
 
-  if (hidden) return null;
+  if (!visible) return null;
 
   return (
     <>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-20 right-4 z-40 h-11 w-11 rounded-full bg-card border shadow-lg flex items-center justify-center hover:bg-accent transition"
-        title="環境音"
-        aria-label="環境音"
+        className="fixed bottom-20 right-4 z-40 h-12 w-12 rounded-full bg-gradient-to-br from-primary/90 via-primary to-primary/60 text-primary-foreground border border-white/30 ring-1 ring-white/10 shadow-[0_10px_30px_-10px_hsl(var(--primary)/0.7)] backdrop-blur-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300"
+        title="音楽 / 環境音"
+        aria-label="音楽 / 環境音"
       >
-        {preset === "off" ? <Music2 className="h-5 w-5" /> : <Volume2 className="h-5 w-5 text-primary" />}
+        {preset === "off" ? <Music2 className="h-5 w-5 drop-shadow" /> : <Volume2 className="h-5 w-5 drop-shadow animate-pulse" />}
       </button>
       {open && (
-        <div className="fixed bottom-32 right-4 z-40 w-64 rounded-xl border bg-popover p-3 shadow-xl space-y-2">
+        <div className="fixed bottom-36 right-4 z-40 w-72 rounded-2xl border border-white/20 bg-popover/95 backdrop-blur-2xl p-4 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] space-y-3 ring-1 ring-white/10">
           <div className="flex items-center justify-between">
-            <div className="text-sm font-semibold">環境音</div>
+            <div className="text-sm font-semibold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">🎵 音楽 / 環境音</div>
             <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
           </div>
           <div className="grid grid-cols-2 gap-1.5">
@@ -153,12 +184,17 @@ export function AmbientSound() {
               ["rain", "雨音", "🌧️"],
               ["wave", "波の音", "🌊"],
               ["fire", "焚き火", "🔥"],
+              ["white", "ホワイトノイズ", "⚪"],
+              ["pink", "ピンクノイズ", "🌸"],
+              ["brown", "ブラウンノイズ", "🟤"],
             ] as [Preset, string, string][]).map(([k, label, emoji]) => (
               <button
                 key={k}
                 onClick={() => start(k)}
-                className={`text-xs px-2 py-2 rounded-md border text-left flex items-center gap-1.5 ${
-                  preset === k ? "bg-primary text-primary-foreground border-primary" : "hover:bg-accent"
+                className={`text-xs px-2 py-2 rounded-lg border text-left flex items-center gap-1.5 transition-all ${
+                  preset === k
+                    ? "bg-gradient-to-br from-primary to-primary/70 text-primary-foreground border-primary shadow-md scale-[1.02]"
+                    : "hover:bg-accent hover:scale-[1.02] border-border/60"
                 }`}
               >
                 <span>{emoji}</span>
@@ -171,7 +207,7 @@ export function AmbientSound() {
             <input
               type="range" min={0} max={1} step={0.05} value={vol}
               onChange={(e) => setVol(Number(e.target.value))}
-              className="flex-1"
+              className="flex-1 accent-primary"
             />
           </div>
         </div>
