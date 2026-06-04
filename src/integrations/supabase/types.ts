@@ -1138,6 +1138,137 @@ export type Database = {
         }
         Relationships: []
       }
+      today_activities: {
+        Row: {
+          category: string
+          color: string
+          created_at: string
+          default_duration_min: number
+          id: string
+          location: string | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          color?: string
+          created_at?: string
+          default_duration_min?: number
+          id?: string
+          location?: string | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          color?: string
+          created_at?: string
+          default_duration_min?: number
+          id?: string
+          location?: string | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      today_entries: {
+        Row: {
+          activity_id: string | null
+          category: string
+          color: string
+          created_at: string
+          date: string
+          end_time: string
+          id: string
+          label: string | null
+          notes: string | null
+          start_time: string
+          subject_id: string | null
+          travel_after_min: number
+          travel_before_min: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_id?: string | null
+          category: string
+          color?: string
+          created_at?: string
+          date?: string
+          end_time: string
+          id?: string
+          label?: string | null
+          notes?: string | null
+          start_time: string
+          subject_id?: string | null
+          travel_after_min?: number
+          travel_before_min?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_id?: string | null
+          category?: string
+          color?: string
+          created_at?: string
+          date?: string
+          end_time?: string
+          id?: string
+          label?: string | null
+          notes?: string | null
+          start_time?: string
+          subject_id?: string | null
+          travel_after_min?: number
+          travel_before_min?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "today_entries_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "today_activities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      today_templates: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          name: string
+          payload: Json
+          shared: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: string
+          name: string
+          payload?: Json
+          shared?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          name?: string
+          payload?: Json
+          shared?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       town_events: {
         Row: {
           created_at: string
