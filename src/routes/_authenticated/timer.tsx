@@ -8,9 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Play, Pause, Square, RotateCcw, Maximize2, Minimize2, Volume2, VolumeX, Wind } from "lucide-react";
+import { Play, Pause, Square, RotateCcw, Maximize2, Minimize2, Wind } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTimer, fmtMs } from "@/lib/timer-context";
 
@@ -27,16 +26,15 @@ function TimerPage() {
   return (
     <div className={cn("p-8 max-w-4xl mx-auto", focus && "fixed inset-0 z-50 max-w-none bg-background overflow-auto p-6")}>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">タイマー</h1>
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-foreground to-primary/70 bg-clip-text text-transparent">タイマー</h1>
         <div className="flex items-center gap-2">
-          <NoiseControl />
           <Button variant="outline" size="sm" onClick={() => setFocus((v) => !v)}>
             {focus ? <Minimize2 className="h-4 w-4 mr-1" /> : <Maximize2 className="h-4 w-4 mr-1" />}
             {focus ? "解除" : "集中モード"}
           </Button>
         </div>
       </div>
-      <p className="text-xs text-muted-foreground mb-3">💡 タイマーは他のページに移動しても動き続けます。</p>
+      <p className="text-xs text-muted-foreground mb-3">💡 タイマーは他のページに移動しても動き続けます。右下の音楽ボタンから環境音/ノイズを再生できます。</p>
       <Tabs defaultValue={initialTab}>
         <TabsList>
           <TabsTrigger value="stopwatch">ストップウォッチ</TabsTrigger>
