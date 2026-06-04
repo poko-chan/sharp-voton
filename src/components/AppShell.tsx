@@ -4,6 +4,7 @@ import {
   MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy,
   Megaphone, GraduationCap, Zap, Headphones, Menu, X, MoreHorizontal,
   StickyNote, Users, Ban, AlertOctagon, HelpCircle,
+  CalendarClock,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
+  { to: "/today", labelKey: "nav.today" as const, icon: CalendarClock },
   { to: "/study", labelKey: "nav.study" as const, icon: BookOpen },
   { to: "/timer", labelKey: "nav.timer" as const, icon: Timer },
   { to: "/calendar", labelKey: "nav.calendar" as const, icon: CalendarDays },
