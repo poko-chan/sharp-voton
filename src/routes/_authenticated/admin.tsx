@@ -649,3 +649,190 @@ function AdminThreadDialog({ feedbackId }: { feedbackId: string }) {
   );
 }
 
+
+function ServiceStopTab() {
+  const [enabled, setEnabled] = useState(false);
+  const [message, setMessage] = useState("");
+  const [until, setUntil] = useState("");
+  useEffect(() => {
+    supabase.from("app_settings").select("*").eq("id", 2).maybeSingle().then(({ data }) => {
+      if (data) {
+        setEnabled(!!data.maintenance_mode);
+        setMessage(data.maintenance_message ?? "");
+        setUntil(data.maintenance_until ? new Date(data.maintenance_until).toISOString().slice(0, 16) : "");
+      }
+    });
+  }, []);
+  const save = async () => {
+    const payload: any = {
+      id: 2,
+      maintenance_mode: enabled,
+      maintenance_message: message || null,
+      maintenance_until: until ? new Date(until).toISOString() : null,
+      app_version: "service-stop",
+    };
+    const { error } = await supabase.from("app_settings").upsert(payload);
+    if (error) toast.error(error.message); else toast.success("保存しました");
+  };
+  return (
+    <Card className="p-6 mt-4 space-y-4 max-w-2xl">
+      <div className="flex items-center gap-2 text-red-600"><Ban className="h-5 w-5" /><h3 className="font-semibold">サービス利用停止</h3></div>
+      <p className="text-sm text-muted-foreground">有効にすると、一般ユーザーの画面全体が赤の半透明オーバーレイで覆われ、利用できなくなります（管理者は影響を受けません）。</p>
+      <label className="flex items-center gap-2"><Switch checked={enabled} onCheckedChange={setEnabled} />サービス停止する</label>
+      <div><Label>ユーザー向けメッセージ</Label><Textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="改修のため一時停止しています…" /></div>
+      <div><Label>解除予定時刻（任意）</Label><Input type="datetime-local" value={until} onChange={(e) => setUntil(e.target.value)} /></div>
+      <Button onClick={save} className="bg-red-600 hover:bg-red-700">保存</Button>
+    </Card>
+  );
+}
+
+function UserRestrictionsTab() {
+  const [users, setUsers] = useState<any[]>([]);
+  const [restrictions, setRestrictions] = useState<Record<string, any>>({});
+  const [filter, setFilter] = useState("");
+
+  const load = async () => {
+    const { data: profiles } = await supabase.from("profiles").select("id, username, display_name, email").order("display_name");
+    setUsers(profiles ?? []);
+    const { data: rs } = await supabase.from("user_restrictions").select("*");
+    const map: Record<string, any> = {};
+    (rs ?? []).forEach((r) => { map[r.user_id] = r; });
+    setRestrictions(map);
+  };
+  useEffect(() => { load(); }, []);
+
+  const toggle = async (userId: string, restricted: boolean) => {
+    const cur = restrictions[userId] || { message: "", restricted_until: null };
+    const { error } = await supabase.from("user_restrictions").upsert({
+      user_id: userId,
+      restricted,
+      message: cur.message,
+      restricted_until: cur.restricted_until,
+    });
+    if (error) toast.error(error.message); else { toast.success(restricted ? "制限しました" : "解除しました"); load(); }
+  };
+
+  const updateField = async (userId: string, patch: { message?: string; restricted_until?: string | null }) => {
+    const cur = restrictions[userId] || { restricted: true, message: "", restricted_until: null };
+    const { error } = await supabase.from("user_restrictions").upsert({
+      user_id: userId,
+      restricted: cur.restricted ?? true,
+      message: patch.message ?? cur.message,
+      restricted_until: patch.restricted_until !== undefined ? patch.restricted_until : cur.restricted_until,
+    });
+    if (error) toast.error(error.message); else load();
+  };
+
+  const filtered = users.filter((u) => {
+    const q = filter.toLowerCase();
+    return !q || (u.username ?? "").toLowerCase().includes(q) || (u.display_name ?? "").toLowerCase().includes(q) || (u.email ?? "").toLowerCase().includes(q);
+  });
+
+  return (
+    <div className="space-y-4 mt-4">
+      <Card className="p-4 max-w-3xl space-y-2 border-blue-500/30">
+        <div className="flex items-center gap-2 text-blue-600"><AlertOctagon className="h-5 w-5" /><h3 className="font-semibold">ユーザー個別制限</h3></div>
+        <p className="text-sm text-muted-foreground">制限したユーザーには、青の半透明オーバーレイとメッセージが表示されます。</p>
+        <Input placeholder="ユーザー名・メールで検索" value={filter} onChange={(e) => setFilter(e.target.value)} />
+      </Card>
+      <Card className="p-0 overflow-hidden max-w-4xl">
+        <table className="w-full text-sm">
+          <thead className="bg-muted"><tr className="text-left">
+            <th className="p-3">ユーザー</th><th className="p-3">制限</th><th className="p-3">メッセージ</th><th className="p-3">解除予定</th>
+          </tr></thead>
+          <tbody>
+            {filtered.map((u) => {
+              const r = restrictions[u.id];
+              const restricted = !!r?.restricted;
+              return (
+                <tr key={u.id} className="border-t align-top">
+                  <td className="p-3"><div className="font-medium">{u.display_name ?? u.username}</div><div className="text-xs text-muted-foreground">@{u.username}</div></td>
+                  <td className="p-3"><Switch checked={restricted} onCheckedChange={(v) => toggle(u.id, v)} /></td>
+                  <td className="p-3"><Textarea rows={2} defaultValue={r?.message ?? ""} onBlur={(e) => updateField(u.id, { message: e.target.value })} placeholder="制限の理由…" /></td>
+                  <td className="p-3"><Input type="datetime-local" defaultValue={r?.restricted_until ? new Date(r.restricted_until).toISOString().slice(0, 16) : ""} onBlur={(e) => updateField(u.id, { restricted_until: e.target.value ? new Date(e.target.value).toISOString() : null })} /></td>
+                </tr>
+              );
+            })}
+            {filtered.length === 0 && <tr><td colSpan={4} className="p-6 text-center text-muted-foreground text-sm">ユーザーがいません</td></tr>}
+          </tbody>
+        </table>
+      </Card>
+    </div>
+  );
+}
+
+function FaqTab() {
+  const [items, setItems] = useState<any[]>([]);
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+
+  const load = async () => {
+    const { data } = await supabase.from("faq_entries").select("*").order("order_index");
+    setItems(data ?? []);
+  };
+  useEffect(() => { load(); }, []);
+
+  const add = async () => {
+    if (!question.trim() || !answer.trim()) return toast.error("質問と回答を入力");
+    const { error } = await supabase.from("faq_entries").insert({
+      question: question.trim(),
+      answer: answer.trim(),
+      order_index: items.length,
+      published: true,
+    });
+    if (error) toast.error(error.message); else { setQuestion(""); setAnswer(""); toast.success("追加しました"); load(); }
+  };
+  const save = async (id: string, patch: any) => {
+    const { error } = await supabase.from("faq_entries").update(patch).eq("id", id);
+    if (error) toast.error(error.message); else load();
+  };
+  const remove = async (id: string) => {
+    if (!confirm("削除しますか？")) return;
+    const { error } = await supabase.from("faq_entries").delete().eq("id", id);
+    if (error) toast.error(error.message); else load();
+  };
+  const move = async (id: string, dir: -1 | 1) => {
+    const i = items.findIndex((x) => x.id === id);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= items.length) return;
+    await supabase.from("faq_entries").update({ order_index: items[j].order_index }).eq("id", items[i].id);
+    await supabase.from("faq_entries").update({ order_index: items[i].order_index }).eq("id", items[j].id);
+    load();
+  };
+
+  return (
+    <div className="space-y-4 mt-4">
+      <Card className="p-6 max-w-2xl space-y-3 border-emerald-500/30">
+        <div className="flex items-center gap-2 text-emerald-600"><HelpCircle className="h-5 w-5" /><h3 className="font-semibold">FAQ を追加</h3></div>
+        <p className="text-xs text-muted-foreground">ログイン画面の「ヘルプ」ボタンから誰でも閲覧できます。</p>
+        <div><Label>質問</Label><Input value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="ログインできない時は？" /></div>
+        <div><Label>回答</Label><Textarea value={answer} onChange={(e) => setAnswer(e.target.value)} rows={4} placeholder="まずブラウザを最新にして…" /></div>
+        <Button onClick={add} className="bg-emerald-600 hover:bg-emerald-700"><Plus className="h-4 w-4 mr-1" />追加</Button>
+      </Card>
+      <Card className="p-0 overflow-hidden max-w-3xl">
+        <table className="w-full text-sm">
+          <thead className="bg-muted"><tr className="text-left">
+            <th className="p-3">質問/回答</th><th className="p-3">公開</th><th className="p-3">並び</th><th className="p-3"></th>
+          </tr></thead>
+          <tbody>
+            {items.map((f) => (
+              <tr key={f.id} className="border-t align-top">
+                <td className="p-3 space-y-1">
+                  <Input defaultValue={f.question} onBlur={(e) => save(f.id, { question: e.target.value })} />
+                  <Textarea rows={3} defaultValue={f.answer} onBlur={(e) => save(f.id, { answer: e.target.value })} />
+                </td>
+                <td className="p-3"><Switch checked={f.published} onCheckedChange={(v) => save(f.id, { published: v })} /></td>
+                <td className="p-3 space-x-1 whitespace-nowrap">
+                  <Button size="sm" variant="outline" onClick={() => move(f.id, -1)}>↑</Button>
+                  <Button size="sm" variant="outline" onClick={() => move(f.id, 1)}>↓</Button>
+                </td>
+                <td className="p-3"><Button size="sm" variant="destructive" onClick={() => remove(f.id)}><Trash2 className="h-3.5 w-3.5" /></Button></td>
+              </tr>
+            ))}
+            {items.length === 0 && <tr><td colSpan={4} className="p-6 text-center text-muted-foreground text-sm">まだ FAQ がありません</td></tr>}
+          </tbody>
+        </table>
+      </Card>
+    </div>
+  );
+}
