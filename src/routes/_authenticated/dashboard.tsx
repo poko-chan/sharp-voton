@@ -444,6 +444,7 @@ function Dashboard() {
           </div>
         </Card>
       )}
+      <TodayBreakdownChart />
     </div>
   );
 }
