@@ -209,15 +209,7 @@ function StudyPage() {
           </div>
           <div className="space-y-1">
             {subjects.map((s) => (
-              <div key={s.id} className="flex items-center justify-between p-2 rounded hover:bg-muted">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full" style={{ background: s.color }} />
-                  <span>{s.name}</span>
-                </div>
-                <button onClick={() => delSubject(s.id)} className="text-destructive hover:opacity-70">
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
+              <SubjectRow key={s.id} subject={s} onChanged={load} onDelete={() => delSubject(s.id)} />
             ))}
           </div>
         </Card>
