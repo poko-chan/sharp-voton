@@ -20,6 +20,7 @@ import { levelInfo } from "@/lib/level";
 import { Town } from "@/components/Town";
 import { buildReport } from "@/lib/report-pdf";
 import { FileDown } from "lucide-react";
+import { TodayBreakdownChart } from "@/components/TodayBreakdownChart";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
