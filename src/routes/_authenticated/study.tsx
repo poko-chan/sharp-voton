@@ -209,15 +209,7 @@ function StudyPage() {
           </div>
           <div className="space-y-1">
             {subjects.map((s) => (
-              <div key={s.id} className="flex items-center justify-between p-2 rounded hover:bg-muted">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full" style={{ background: s.color }} />
-                  <span>{s.name}</span>
-                </div>
-                <button onClick={() => delSubject(s.id)} className="text-destructive hover:opacity-70">
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
+              <SubjectRow key={s.id} subject={s} onChanged={load} onDelete={() => delSubject(s.id)} />
             ))}
           </div>
         </Card>
@@ -467,6 +459,40 @@ function LogRow({ log, onChange }: { log: any; onChange: () => void }) {
       <div className="flex flex-col gap-1">
         <button onClick={() => setEdit(true)} className="text-muted-foreground hover:text-foreground"><Pencil className="h-4 w-4" /></button>
         <button onClick={remove} className="text-destructive hover:opacity-70"><Trash2 className="h-4 w-4" /></button>
+      </div>
+    </div>
+  );
+}
+
+function SubjectRow({ subject, onChanged, onDelete }: { subject: Subject; onChanged: () => void; onDelete: () => void }) {
+  const [edit, setEdit] = useState(false);
+  const [name, setName] = useState(subject.name);
+  const [color, setColor] = useState(subject.color);
+  const save = async () => {
+    const { error } = await supabase.from("subjects").update({ name: name.trim() || subject.name, color }).eq("id", subject.id);
+    if (error) return toast.error(error.message);
+    toast.success("教科を更新しました");
+    setEdit(false); onChanged();
+  };
+  if (edit) {
+    return (
+      <div className="flex items-center gap-1 p-2 rounded bg-muted/40">
+        <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-8 w-10 rounded border shrink-0" />
+        <Input value={name} onChange={(e) => setName(e.target.value)} className="h-8" />
+        <button onClick={save} className="text-primary hover:opacity-70 p-1"><Save className="h-4 w-4" /></button>
+        <button onClick={() => { setEdit(false); setName(subject.name); setColor(subject.color); }} className="text-muted-foreground hover:opacity-70 p-1"><X className="h-4 w-4" /></button>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center justify-between p-2 rounded hover:bg-muted group">
+      <div className="flex items-center gap-2">
+        <div className="h-3 w-3 rounded-full" style={{ background: subject.color }} />
+        <span>{subject.name}</span>
+      </div>
+      <div className="flex items-center gap-1">
+        <button onClick={() => setEdit(true)} className="text-muted-foreground hover:text-foreground p-1" title="編集"><Pencil className="h-3.5 w-3.5" /></button>
+        <button onClick={onDelete} className="text-destructive hover:opacity-70 p-1" title="削除"><Trash2 className="h-4 w-4" /></button>
       </div>
     </div>
   );

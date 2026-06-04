@@ -272,6 +272,9 @@ function LoginPage() {
       <Link to="/admin-login" className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-md border bg-background/80 backdrop-blur px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition">
         <Shield className="h-3.5 w-3.5" /> 管理
       </Link>
+      <Link to="/help" className="absolute bottom-4 left-4 inline-flex items-center gap-1.5 rounded-md border bg-background/80 backdrop-blur px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition">
+        <span aria-hidden>❓</span> ヘルプ
+      </Link>
     </div>
   );
 }

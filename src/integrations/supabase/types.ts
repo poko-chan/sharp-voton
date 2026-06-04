@@ -458,6 +458,39 @@ export type Database = {
         }
         Relationships: []
       }
+      faq_entries: {
+        Row: {
+          answer: string
+          created_at: string
+          created_by: string | null
+          id: string
+          order_index: number
+          published: boolean
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          order_index?: number
+          published?: boolean
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          order_index?: number
+          published?: boolean
+          question?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       feedback: {
         Row: {
           admin_reply: string | null
@@ -1153,6 +1186,33 @@ export type Database = {
         Update: {
           balance?: number
           total_earned?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_restrictions: {
+        Row: {
+          created_at: string
+          message: string | null
+          restricted: boolean
+          restricted_until: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          message?: string | null
+          restricted?: boolean
+          restricted_until?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          message?: string | null
+          restricted?: boolean
+          restricted_until?: string | null
           updated_at?: string
           user_id?: string
         }

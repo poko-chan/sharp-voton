@@ -4,14 +4,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessagesSquare, Send } from "lucide-react";
+import { MessagesSquare, Send, Pencil, Trash2, Check, CheckCheck, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import { levelFromMinutes } from "@/lib/level";
 import { localDateStr } from "@/lib/date";
 
-type Msg = { id: string; sender_id: string; recipient_id: string; content: string; created_at: string };
+type Msg = { id: string; sender_id: string; recipient_id: string; content: string; created_at: string; edited_at: string | null; read_at: string | null; deleted_at: string | null };
 type Profile = { id: string; display_name: string | null; email: string | null };
 
 function ChatPage() {
@@ -76,8 +76,8 @@ function ChatPage() {
     if (!user) return;
     const ch = supabase
       .channel("chat-realtime")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages" }, (payload) => {
-        const m = payload.new as Msg;
+      .on("postgres_changes", { event: "*", schema: "public", table: "chat_messages" }, (payload) => {
+        const m = (payload.new ?? payload.old) as Msg;
         if (
           partnerId &&
           ((m.sender_id === user.id && m.recipient_id === partnerId) ||
@@ -91,6 +91,36 @@ function ChatPage() {
   }, [user, partnerId, qc]);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages.data]);
+
+  // Mark partner messages as read when viewing.
+  useEffect(() => {
+    if (!partnerId || !user || !messages.data) return;
+    const unread = messages.data.filter((m) => m.recipient_id === user.id && !m.read_at).map((m) => m.id);
+    if (unread.length === 0) return;
+    supabase.from("chat_messages").update({ read_at: new Date().toISOString() }).in("id", unread).then(() => {
+      qc.invalidateQueries({ queryKey: ["chat", partnerId] });
+    });
+  }, [messages.data, partnerId, user, qc]);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+
+  const startEdit = (m: Msg) => { setEditingId(m.id); setEditText(m.content); };
+  const saveEdit = async () => {
+    if (!editingId) return;
+    const t = editText.trim();
+    if (!t) return;
+    const { error } = await supabase.from("chat_messages").update({ content: t, edited_at: new Date().toISOString() }).eq("id", editingId);
+    if (error) toast.error(error.message);
+    setEditingId(null); setEditText("");
+    qc.invalidateQueries({ queryKey: ["chat", partnerId] });
+  };
+  const removeMsg = async (id: string) => {
+    if (!confirm("削除しますか？")) return;
+    const { error } = await supabase.from("chat_messages").update({ deleted_at: new Date().toISOString(), content: "（削除されました）" }).eq("id", id);
+    if (error) toast.error(error.message);
+    qc.invalidateQueries({ queryKey: ["chat", partnerId] });
+  };
 
   const send = async () => {
     const t = text.trim();
@@ -141,13 +171,48 @@ function ChatPage() {
               <RankBadge level={rankOf(partner.id)} />
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              {messages.data?.map((m) => (
-                <div key={m.id} className={`flex ${m.sender_id === user?.id ? "justify-end" : "justify-start"}`}>
-                  <Card className={`px-3 py-2 max-w-[70%] ${m.sender_id === user?.id ? "bg-primary text-primary-foreground" : ""}`}>
-                    <div className="text-sm whitespace-pre-wrap">{m.content}</div>
-                  </Card>
-                </div>
-              ))}
+              {messages.data?.map((m) => {
+                const mine = m.sender_id === user?.id;
+                const isDeleted = !!m.deleted_at;
+                const isEditing = editingId === m.id;
+                return (
+                  <div key={m.id} className={`flex group ${mine ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[70%] space-y-0.5 ${mine ? "items-end" : "items-start"} flex flex-col`}>
+                      <Card className={`px-3 py-2 ${mine ? "bg-primary text-primary-foreground" : ""} ${isDeleted ? "opacity-60 italic" : ""}`}>
+                        {isEditing ? (
+                          <div className="flex gap-1 items-center min-w-[200px]">
+                            <Input
+                              autoFocus value={editText}
+                              onChange={(e) => setEditText(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditingId(null); }}
+                              className="h-8 text-sm bg-background text-foreground"
+                            />
+                            <button onClick={saveEdit} className="p-1 hover:opacity-70"><Check className="h-4 w-4" /></button>
+                            <button onClick={() => setEditingId(null)} className="p-1 hover:opacity-70"><X className="h-4 w-4" /></button>
+                          </div>
+                        ) : (
+                          <div className="text-sm whitespace-pre-wrap break-words">{m.content}</div>
+                        )}
+                      </Card>
+                      <div className={`flex items-center gap-1.5 text-[10px] text-muted-foreground px-1 ${mine ? "flex-row-reverse" : ""}`}>
+                        <span>{new Date(m.created_at).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}</span>
+                        {m.edited_at && !isDeleted && <span>(編集済み)</span>}
+                        {mine && !isDeleted && (
+                          m.read_at
+                            ? <span className="flex items-center gap-0.5 text-primary"><CheckCheck className="h-3 w-3" />既読</span>
+                            : <span className="flex items-center gap-0.5"><Check className="h-3 w-3" />送信</span>
+                        )}
+                        {mine && !isDeleted && !isEditing && (
+                          <>
+                            <button onClick={() => startEdit(m)} className="opacity-0 group-hover:opacity-100 transition hover:text-foreground" title="編集"><Pencil className="h-3 w-3" /></button>
+                            <button onClick={() => removeMsg(m.id)} className="opacity-0 group-hover:opacity-100 transition hover:text-destructive" title="削除"><Trash2 className="h-3 w-3" /></button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
               <div ref={endRef} />
             </div>
             <form className="border-t p-3 flex gap-2" onSubmit={(e) => { e.preventDefault(); void send(); }}>
