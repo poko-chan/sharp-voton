@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
@@ -26,15 +26,18 @@ const TAGS = [
 ];
 const tagMeta = (v: string) => TAGS.find((t) => t.value === v) ?? TAGS[3];
 import { Shield, Trash2, Pencil, LogIn, Plus, Wrench, Megaphone, Send } from "lucide-react";
+import { Ban, AlertOctagon, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin")({
+  validateSearch: (s: Record<string, unknown>) => ({ tab: (s.tab as string) || "users" }),
   component: AdminPage,
 });
 
 function AdminPage() {
   const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
+  const search = useSearch({ from: "/_authenticated/admin" });
   useEffect(() => { if (!loading && !isAdmin) navigate({ to: "/dashboard" }); }, [isAdmin, loading]);
   if (!isAdmin) return null;
 
@@ -44,16 +47,22 @@ function AdminPage() {
         <Shield className="h-7 w-7" />
         <h1 className="text-3xl font-bold">管理者ダッシュボード</h1>
       </div>
-      <Tabs defaultValue="users">
-        <TabsList>
+      <Tabs value={search.tab} onValueChange={(v) => navigate({ to: "/admin", search: { tab: v } as any })}>
+        <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="users">ユーザー管理</TabsTrigger>
           <TabsTrigger value="maintenance">メンテナンス</TabsTrigger>
+          <TabsTrigger value="restrictions" className="data-[state=active]:bg-red-500/10 data-[state=active]:text-red-600">利用停止</TabsTrigger>
+          <TabsTrigger value="user-restrictions" className="data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-600">個別制限</TabsTrigger>
+          <TabsTrigger value="faq" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600">FAQ</TabsTrigger>
           <TabsTrigger value="version">バージョン</TabsTrigger>
           <TabsTrigger value="announcements">お知らせ</TabsTrigger>
           <TabsTrigger value="feedback">フィードバック</TabsTrigger>
         </TabsList>
         <TabsContent value="users"><UsersTab /></TabsContent>
         <TabsContent value="maintenance"><MaintenanceTab /></TabsContent>
+        <TabsContent value="restrictions"><ServiceStopTab /></TabsContent>
+        <TabsContent value="user-restrictions"><UserRestrictionsTab /></TabsContent>
+        <TabsContent value="faq"><FaqTab /></TabsContent>
         <TabsContent value="version"><VersionTab /></TabsContent>
         <TabsContent value="announcements"><AnnouncementsTab /></TabsContent>
         <TabsContent value="feedback"><FeedbackTab /></TabsContent>
