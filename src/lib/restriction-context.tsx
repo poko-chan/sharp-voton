@@ -2,97 +2,66 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 
-export interface RestrictionState {
-  serviceStopped: boolean;
-  stopMessage: string | null;
-  stopUntil: string | null;
-  userRestricted: boolean;
-  userRestrictMessage: string | null;
-  userRestrictUntil: string | null;
+/**
+ * Per-service restrictions.
+ * - service_restrictions (global, by service_key)
+ * - user_service_restrictions (per user × service_key)
+ */
+export const SERVICES = [
+  { key: "timer",     label: "タイマー" },
+  { key: "tutor",     label: "AI家庭教師" },
+  { key: "classroom", label: "Voton Classroom" },
+  { key: "chat",      label: "メッセージ" },
+  { key: "classchat", label: "クラスチャット" },
+  { key: "notes",     label: "付箋" },
+  { key: "today",     label: "Today" },
+  { key: "practice",  label: "AI問題演習" },
+  { key: "questions", label: "AI問題作成" },
+  { key: "coach",     label: "AIコーチ" },
+  { key: "micro",     label: "マイクロラーニング" },
+  { key: "listen",    label: "リスニング" },
+] as const;
+
+type ServiceRow = { service_key: string; restricted: boolean; message: string | null; restricted_until: string | null };
+
+interface RestrictionState {
+  global: Record<string, ServiceRow>;
+  forMe: Record<string, ServiceRow>;
 }
 
-const RestrictionContext = createContext<RestrictionState>({
-  serviceStopped: false,
-  stopMessage: null,
-  stopUntil: null,
-  userRestricted: false,
-  userRestrictMessage: null,
-  userRestrictUntil: null,
-});
-
-// app_settings stores service-stop flags reusing maintenance-style columns.
-// We use a JSON convention in maintenance_message? No — let's use dedicated columns later.
-// For now: service_stopped is stored as app_settings.maintenance_mode === false but with
-// app_settings.app_version starting with "STOP::" — keep it simple: read from separate columns
-// we'll fall back to checking a row in app_settings with id=2.
+const RestrictionContext = createContext<RestrictionState>({ global: {}, forMe: {} });
 
 export function RestrictionProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [state, setState] = useState<RestrictionState>({
-    serviceStopped: false,
-    stopMessage: null,
-    stopUntil: null,
-    userRestricted: false,
-    userRestrictMessage: null,
-    userRestrictUntil: null,
-  });
+  const [state, setState] = useState<RestrictionState>({ global: {}, forMe: {} });
 
   const load = async () => {
-    const next: RestrictionState = {
-      serviceStopped: false,
-      stopMessage: null,
-      stopUntil: null,
-      userRestricted: false,
-      userRestrictMessage: null,
-      userRestrictUntil: null,
+    const [{ data: g }, { data: u }] = await Promise.all([
+      supabase.from("service_restrictions").select("service_key, restricted, message, restricted_until"),
+      user
+        ? supabase.from("user_service_restrictions").select("service_key, restricted, message, restricted_until").eq("user_id", user.id)
+        : Promise.resolve({ data: [] as any[] }),
+    ]);
+    const expired = (r: any) => r.restricted_until && new Date(r.restricted_until).getTime() < Date.now();
+    const toMap = (rows: any[]) => {
+      const m: Record<string, ServiceRow> = {};
+      for (const r of rows ?? []) {
+        if (r.restricted && !expired(r)) m[r.service_key] = r;
+      }
+      return m;
     };
-
-    // Service-wide stop is stored in app_settings (id=2) reusing maintenance_* fields.
-    const { data: s } = await supabase
-      .from("app_settings")
-      .select("maintenance_mode, maintenance_message, maintenance_until")
-      .eq("id", 2)
-      .maybeSingle();
-    if (s) {
-      next.serviceStopped = !!s.maintenance_mode;
-      next.stopMessage = s.maintenance_message;
-      next.stopUntil = s.maintenance_until;
-      const now = Date.now();
-      if (s.maintenance_until && new Date(s.maintenance_until).getTime() < now) {
-        next.serviceStopped = false;
-      }
-    }
-
-    if (user) {
-      const { data: r } = await supabase
-        .from("user_restrictions")
-        .select("restricted, message, restricted_until")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (r && r.restricted) {
-        next.userRestricted = true;
-        next.userRestrictMessage = r.message;
-        next.userRestrictUntil = r.restricted_until;
-        if (r.restricted_until && new Date(r.restricted_until).getTime() < Date.now()) {
-          next.userRestricted = false;
-        }
-      }
-    }
-    setState(next);
+    setState({ global: toMap(g ?? []), forMe: toMap((u as any[]) ?? []) });
   };
 
   useEffect(() => {
     load();
     const ch = supabase
       .channel("restriction-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "app_settings" }, () => load())
-      .on("postgres_changes", { event: "*", schema: "public", table: "user_restrictions" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "service_restrictions" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_service_restrictions" }, () => load())
       .subscribe();
     const i = setInterval(load, 60000);
-    return () => {
-      supabase.removeChannel(ch);
-      clearInterval(i);
-    };
+    return () => { supabase.removeChannel(ch); clearInterval(i); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
@@ -100,3 +69,12 @@ export function RestrictionProvider({ children }: { children: ReactNode }) {
 }
 
 export const useRestriction = () => useContext(RestrictionContext);
+
+export function useServiceStatus(serviceKey: string) {
+  const { global, forMe } = useRestriction();
+  const g = global[serviceKey];
+  const u = forMe[serviceKey];
+  if (g) return { blocked: true as const, variant: "stop" as const, message: g.message, until: g.restricted_until };
+  if (u) return { blocked: true as const, variant: "restrict" as const, message: u.message, until: u.restricted_until };
+  return { blocked: false as const, variant: null, message: null, until: null };
+}

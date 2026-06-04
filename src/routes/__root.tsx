@@ -14,8 +14,7 @@ import appCss from "../styles.css?url";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { MaintenanceProvider, useMaintenance } from "@/lib/maintenance-context";
 import { MaintenanceScreen } from "@/components/MaintenanceScreen";
-import { RestrictionProvider, useRestriction } from "@/lib/restriction-context";
-import { RestrictionScreen } from "@/components/RestrictionScreen";
+import { RestrictionProvider } from "@/lib/restriction-context";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { RouteLoading } from "@/components/RouteLoading";
@@ -163,28 +162,6 @@ function MaintenanceGate({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function RestrictionGate({ children }: { children: React.ReactNode }) {
-  const r = useRestriction();
-  const { role } = useAuth();
-  const isAdmin = role === "admin";
-  return (
-    <>
-      {children}
-      {!isAdmin && r.serviceStopped && (
-        <RestrictionScreen variant="stop" message={r.stopMessage} until={r.stopUntil} />
-      )}
-      {!isAdmin && !r.serviceStopped && r.userRestricted && (
-        <RestrictionScreen
-          variant="restrict"
-          message={r.userRestrictMessage}
-          until={r.userRestrictUntil}
-          title="アクセス制限中"
-        />
-      )}
-    </>
-  );
-}
-
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
@@ -205,11 +182,9 @@ function RootComponent() {
         <MaintenanceProvider>
           <RestrictionProvider>
             <MaintenanceGate>
-              <RestrictionGate>
-                <main id="main">
-                  <Outlet />
-                </main>
-              </RestrictionGate>
+              <main id="main">
+                <Outlet />
+              </main>
             </MaintenanceGate>
           </RestrictionProvider>
           <RouteLoading />
