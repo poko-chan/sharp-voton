@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useRouterState } from "@tanstack/react-router";
 import { Music2, Volume2, VolumeX, X } from "lucide-react";
 
 type Preset = "off" | "birds" | "rain" | "wave" | "fire";
@@ -9,6 +10,10 @@ type Preset = "off" | "birds" | "rain" | "wave" | "fire";
  * Fire: noise with crackle bursts.
  */
 export function AmbientSound() {
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const hidden =
+    path === "/login" || path === "/admin-login" || path === "/help" ||
+    path === "/" || path === "/privacy" || path === "/terms";
   const [open, setOpen] = useState(false);
   const [preset, setPreset] = useState<Preset>("off");
   const [vol, setVol] = useState(0.4);
@@ -122,6 +127,8 @@ export function AmbientSound() {
       cleanupRef.current = () => { clearInterval(chirpInt); src.stop(); src.disconnect(); lp.disconnect(); ng.disconnect(); };
     }
   };
+
+  if (hidden) return null;
 
   return (
     <>
