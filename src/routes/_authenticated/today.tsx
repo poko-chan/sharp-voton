@@ -201,7 +201,8 @@ function AddEntryDialog({ open, onOpenChange, activities, date, onCreated }:
     if (!user) return;
     if (toMin(end) <= toMin(start)) return toast.error("終了時刻は開始より後にしてください");
     const cat = CATEGORIES.find(c => c.key === category)!;
-    let color = cat.color, lbl = label || cat.label;
+    let color: string = cat.color;
+    let lbl: string = label || cat.label;
     if (activityId) {
       const a = activities.find(x => x.id === activityId);
       if (a) { color = a.color; lbl = a.name; }

@@ -19,6 +19,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedTutorRouteImport } from './routes/_authenticated/tutor'
+import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
 import { Route as AuthenticatedStudyRouteImport } from './routes/_authenticated/study'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -86,6 +87,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
 const AuthenticatedTutorRoute = AuthenticatedTutorRouteImport.update({
   id: '/tutor',
   path: '/tutor',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTodayRoute = AuthenticatedTodayRouteImport.update({
+  id: '/today',
+  path: '/today',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTimerRoute = AuthenticatedTimerRouteImport.update({
@@ -213,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
+  '/today': typeof AuthenticatedTodayRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/api/chat': typeof ApiChatRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
@@ -243,6 +250,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
+  '/today': typeof AuthenticatedTodayRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/api/chat': typeof ApiChatRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
@@ -275,6 +283,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/study': typeof AuthenticatedStudyRoute
   '/_authenticated/timer': typeof AuthenticatedTimerRoute
+  '/_authenticated/today': typeof AuthenticatedTodayRoute
   '/_authenticated/tutor': typeof AuthenticatedTutorRoute
   '/api/chat': typeof ApiChatRoute
   '/_authenticated/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
@@ -307,6 +316,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/study'
     | '/timer'
+    | '/today'
     | '/tutor'
     | '/api/chat'
     | '/classroom/$classId'
@@ -337,6 +347,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/study'
     | '/timer'
+    | '/today'
     | '/tutor'
     | '/api/chat'
     | '/classroom/$classId'
@@ -368,6 +379,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/study'
     | '/_authenticated/timer'
+    | '/_authenticated/today'
     | '/_authenticated/tutor'
     | '/api/chat'
     | '/_authenticated/classroom/$classId'
@@ -456,6 +468,13 @@ declare module '@tanstack/react-router' {
       path: '/tutor'
       fullPath: '/tutor'
       preLoaderRoute: typeof AuthenticatedTutorRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/today': {
+      id: '/_authenticated/today'
+      path: '/today'
+      fullPath: '/today'
+      preLoaderRoute: typeof AuthenticatedTodayRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/timer': {
@@ -612,6 +631,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedStudyRoute: typeof AuthenticatedStudyRoute
   AuthenticatedTimerRoute: typeof AuthenticatedTimerRoute
+  AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
   AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
   AuthenticatedClassroomClassIdRoute: typeof AuthenticatedClassroomClassIdRoute
   AuthenticatedClassroomIndexRoute: typeof AuthenticatedClassroomIndexRoute
@@ -635,6 +655,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedStudyRoute: AuthenticatedStudyRoute,
   AuthenticatedTimerRoute: AuthenticatedTimerRoute,
+  AuthenticatedTodayRoute: AuthenticatedTodayRoute,
   AuthenticatedTutorRoute: AuthenticatedTutorRoute,
   AuthenticatedClassroomClassIdRoute: AuthenticatedClassroomClassIdRoute,
   AuthenticatedClassroomIndexRoute: AuthenticatedClassroomIndexRoute,
