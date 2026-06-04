@@ -649,6 +649,30 @@ export type Database = {
         }
         Relationships: []
       }
+      lessons: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
@@ -781,6 +805,66 @@ export type Database = {
           topic?: string
           user_id?: string
           was_wrong?: boolean | null
+        }
+        Relationships: []
+      }
+      school_timetable: {
+        Row: {
+          created_at: string
+          end_time: string
+          id: string
+          label: string | null
+          period: number
+          start_time: string
+          subject_id: string | null
+          user_id: string
+          weekday: number
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          id?: string
+          label?: string | null
+          period: number
+          start_time: string
+          subject_id?: string | null
+          user_id: string
+          weekday: number
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          id?: string
+          label?: string | null
+          period?: number
+          start_time?: string
+          subject_id?: string | null
+          user_id?: string
+          weekday?: number
+        }
+        Relationships: []
+      }
+      service_restrictions: {
+        Row: {
+          message: string | null
+          restricted: boolean
+          restricted_until: string | null
+          service_key: string
+          updated_at: string
+        }
+        Insert: {
+          message?: string | null
+          restricted?: boolean
+          restricted_until?: string | null
+          service_key: string
+          updated_at?: string
+        }
+        Update: {
+          message?: string | null
+          restricted?: boolean
+          restricted_until?: string | null
+          service_key?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -978,6 +1062,81 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      time_category_settings: {
+        Row: {
+          category: string
+          color: string
+          created_at: string
+          id: string
+          label: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          color: string
+          created_at?: string
+          id?: string
+          label?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          color?: string
+          created_at?: string
+          id?: string
+          label?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      time_entries: {
+        Row: {
+          category: string
+          color: string | null
+          created_at: string
+          date: string
+          end_time: string
+          id: string
+          label: string | null
+          note: string | null
+          start_time: string
+          subject_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          color?: string | null
+          created_at?: string
+          date?: string
+          end_time: string
+          id?: string
+          label?: string | null
+          note?: string | null
+          start_time: string
+          subject_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          color?: string | null
+          created_at?: string
+          date?: string
+          end_time?: string
+          id?: string
+          label?: string | null
+          note?: string | null
+          start_time?: string
+          subject_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       town_events: {
         Row: {
@@ -1235,6 +1394,39 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_service_restrictions: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          restricted: boolean
+          restricted_until: string | null
+          service_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          restricted?: boolean
+          restricted_until?: string | null
+          service_key: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          restricted?: boolean
+          restricted_until?: string | null
+          service_key?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
