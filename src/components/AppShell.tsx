@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Timer, CalendarDays, BookOpen, Brain,
   MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy,
   Megaphone, GraduationCap, Zap, Headphones, Menu, X, MoreHorizontal,
-  StickyNote, Users,
+  StickyNote, Users, Ban, AlertOctagon, HelpCircle,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -156,6 +156,34 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Shield className="h-4 w-4" />
             {t("nav.admin")}
           </Link>
+        )}
+        {isAdmin && (
+          <>
+            <Link
+              to="/admin"
+              search={{ tab: "restrictions" } as any}
+              className="mt-1 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition border border-red-500/40 text-red-600 hover:bg-red-500/10"
+            >
+              <Ban className="h-4 w-4" />
+              利用停止サービス
+            </Link>
+            <Link
+              to="/admin"
+              search={{ tab: "user-restrictions" } as any}
+              className="mt-1 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition border border-blue-500/40 text-blue-600 hover:bg-blue-500/10"
+            >
+              <AlertOctagon className="h-4 w-4" />
+              制限
+            </Link>
+            <Link
+              to="/admin"
+              search={{ tab: "faq" } as any}
+              className="mt-1 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition border border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10"
+            >
+              <HelpCircle className="h-4 w-4" />
+              FAQ管理
+            </Link>
+          </>
         )}
       </nav>
       <div className="p-3 border-t">
