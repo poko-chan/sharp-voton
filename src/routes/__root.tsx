@@ -21,6 +21,7 @@ import { RouteLoading } from "@/components/RouteLoading";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { AmbientSound } from "@/components/AmbientSound";
+import { QuickMemo } from "@/components/QuickMemo";
 import { loadAndApplyUserTheme } from "@/lib/theme";
 
 function NotFoundComponent() {
@@ -191,6 +192,7 @@ function RootComponent() {
           <FeedbackWidget />
           <PWAInstallPrompt />
           <AmbientSound />
+          <QuickMemo />
           <Toaster richColors position="top-center" />
         </MaintenanceProvider>
       </AuthProvider>
