@@ -36,6 +36,8 @@ export function FeedbackWidget() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const unreadFn = useServerFn(myThreadsUnreadCount);
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const visible = path === "/login" || path === "/admin-login" || path === "/settings";
 
   // Only fetch unread count when logged in
   const { data: unread } = useQuery({
@@ -48,14 +50,16 @@ export function FeedbackWidget() {
   });
   const count = unread?.count ?? 0;
 
+  if (!visible) return null;
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button
           aria-label="フィードバック / サポート"
-          className="fixed top-3 right-3 md:top-4 md:right-4 z-50 inline-flex items-center gap-1.5 rounded-full bg-primary/90 text-primary-foreground shadow-lg backdrop-blur-md px-3 py-2 text-sm hover:bg-primary transition border border-white/20"
+          className="fixed top-3 right-3 md:top-4 md:right-4 z-50 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-br from-primary via-primary to-primary/70 text-primary-foreground shadow-[0_8px_30px_-8px_hsl(var(--primary)/0.6)] backdrop-blur-xl px-3.5 py-2 text-sm hover:scale-105 hover:shadow-[0_12px_40px_-8px_hsl(var(--primary)/0.7)] transition-all duration-300 border border-white/30 ring-1 ring-white/10"
         >
-          <MessageCircleQuestion className="h-4 w-4" />
+          <MessageCircleQuestion className="h-4 w-4 drop-shadow" />
           <span className="hidden sm:inline">サポート</span>
           {count > 0 && (
             <span className="ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
