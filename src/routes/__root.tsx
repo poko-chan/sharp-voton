@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { RouteLoading } from "@/components/RouteLoading";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { AmbientSound } from "@/components/AmbientSound";
 import { loadAndApplyUserTheme } from "@/lib/theme";
 
 function NotFoundComponent() {
@@ -214,6 +215,7 @@ function RootComponent() {
           <RouteLoading />
           <FeedbackWidget />
           <PWAInstallPrompt />
+          <AmbientSound />
           <Toaster richColors position="top-center" />
         </MaintenanceProvider>
       </AuthProvider>
