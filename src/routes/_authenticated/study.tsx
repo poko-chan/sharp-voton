@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { emitProfileChange } from "@/lib/profile-events";
 import { Download, Upload } from "lucide-react";
+import { VoiceMicButton } from "@/components/VoiceMicButton";
 
 export const Route = createFileRoute("/_authenticated/study")({
   component: StudyPage,

@@ -10,9 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trash2, Plus, CalendarClock, Sparkles } from "lucide-react";
-import { School, BookOpen } from "lucide-react";
+import { School, BookOpen, Brain } from "lucide-react";
 import { toast } from "sonner";
 import { localDateStr } from "@/lib/date";
+import { useServerFn } from "@tanstack/react-start";
+import { generateDailyReflection } from "@/lib/reflection.functions";
 
 export const Route = createFileRoute("/_authenticated/today")({ component: TodayPage });
 
@@ -76,6 +78,9 @@ function TodayPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [actOpen, setActOpen] = useState(false);
   const [schoolOpen, setSchoolOpen] = useState(false);
+  const [reflection, setReflection] = useState<string>("");
+  const [reflecting, setReflecting] = useState(false);
+  const reflectFn = useServerFn(generateDailyReflection);
 
   const load = async () => {
     if (!user) return;
@@ -97,6 +102,25 @@ function TodayPage() {
     setSubjects((subs as any[]) ?? []);
   };
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [user?.id, date]);
+
+  // Load saved reflection for date
+  useEffect(() => {
+    if (!user) { setReflection(""); return; }
+    supabase.from("daily_reflections").select("summary").eq("user_id", user.id).eq("date", date).maybeSingle()
+      .then(({ data }) => setReflection(data?.summary ?? ""));
+  }, [user?.id, date]);
+
+  const doReflect = async () => {
+    setReflecting(true);
+    try {
+      const r = await reflectFn({ data: { date } });
+      setReflection(r.summary);
+    } catch (e: any) {
+      toast.error(e.message ?? "AI失敗");
+    } finally {
+      setReflecting(false);
+    }
+  };
 
   // Convert entries into render segments (splitting cross-day blocks at midnight).
   const segments = useMemo(() => {
@@ -171,8 +195,16 @@ function TodayPage() {
         <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-44 ml-auto" />
         <Button variant="outline" onClick={() => setSchoolOpen(true)}><School className="h-4 w-4 mr-1" />学校テンプレ</Button>
         <Button variant="outline" onClick={() => setActOpen(true)}><Sparkles className="h-4 w-4 mr-1" />習い事登録</Button>
+        <Button variant="outline" onClick={doReflect} disabled={reflecting}><Brain className="h-4 w-4 mr-1" />{reflecting ? "AI考え中..." : "AI振り返り"}</Button>
         <Button onClick={() => setAddOpen(true)}><Plus className="h-4 w-4 mr-1" />追加</Button>
       </div>
+
+      {reflection && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-1.5"><Brain className="h-4 w-4 text-primary" />AIによる振り返り</CardTitle></CardHeader>
+          <CardContent className="text-sm whitespace-pre-wrap leading-relaxed">{reflection}</CardContent>
+        </Card>
+      )}
 
       <div className="grid md:grid-cols-3 gap-4">
         <Card className="md:col-span-2">
