@@ -428,6 +428,30 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_reflections: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          summary: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          summary: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          summary?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string
@@ -649,6 +673,30 @@ export type Database = {
         }
         Relationships: []
       }
+      habit_stamps: {
+        Row: {
+          created_at: string
+          date: string
+          habit_key: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          habit_key: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          habit_key?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       lessons: {
         Row: {
           color: string
@@ -865,6 +913,30 @@ export type Database = {
           restricted_until?: string | null
           service_key?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      share_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          label: string | null
+          token: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          label?: string | null
+          token: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          label?: string | null
+          token?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -1238,6 +1310,7 @@ export type Database = {
       }
       today_templates: {
         Row: {
+          auto_weekdays: number[]
           created_at: string
           id: string
           kind: string
@@ -1248,6 +1321,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          auto_weekdays?: number[]
           created_at?: string
           id?: string
           kind?: string
@@ -1258,6 +1332,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          auto_weekdays?: number[]
           created_at?: string
           id?: string
           kind?: string
@@ -1595,6 +1670,15 @@ export type Database = {
         Returns: boolean
       }
       join_class_by_code: { Args: { _code: string }; Returns: string }
+      share_study_summary: {
+        Args: { _token: string }
+        Returns: {
+          color: string
+          date: string
+          minutes: number
+          subject_name: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "user"

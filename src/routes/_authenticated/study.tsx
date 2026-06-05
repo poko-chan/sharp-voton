@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { emitProfileChange } from "@/lib/profile-events";
 import { Download, Upload } from "lucide-react";
+import { VoiceMicButton } from "@/components/VoiceMicButton";
 
 export const Route = createFileRoute("/_authenticated/study")({
   component: StudyPage,
@@ -240,7 +241,13 @@ function StudyPage() {
                 </p>
               )}
             </div>
-            <div className="col-span-2"><Label>学習内容</Label><Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="今日の学習内容を記入..." /></div>
+            <div className="col-span-2">
+              <div className="flex items-center justify-between mb-1">
+                <Label>学習内容</Label>
+                <VoiceMicButton onResult={(t) => setContent((c) => (c ? c + " " : "") + t)} />
+              </div>
+              <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="今日の学習内容を記入...（マイクボタンで音声入力可）" />
+            </div>
           </div>
           <Button onClick={addLog} className="w-full" disabled={!subjectId || duration <= 0 || duration > 400}>記録する</Button>
         </Card>

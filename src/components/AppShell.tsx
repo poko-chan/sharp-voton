@@ -4,7 +4,7 @@ import {
   MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy,
   Megaphone, GraduationCap, Zap, Headphones, Menu, X, MoreHorizontal,
   StickyNote, Users, Ban, AlertOctagon, HelpCircle,
-  CalendarClock,
+  CalendarClock, Stamp, Activity, Share2,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,8 @@ const NAV = [
   { to: "/timer", labelKey: "nav.timer" as const, icon: Timer },
   { to: "/calendar", labelKey: "nav.calendar" as const, icon: CalendarDays },
   { to: "/goals", labelKey: "nav.goals" as const, icon: Trophy },
+  { to: "/habits", labelKey: "nav.habits" as const, icon: Stamp },
+  { to: "/heatmap", labelKey: "nav.heatmap" as const, icon: Activity },
   { to: "/questions", labelKey: "nav.questions" as const, icon: Brain },
   { to: "/practice", labelKey: "nav.practice" as const, icon: Target },
   { to: "/tutor", labelKey: "nav.tutor" as const, icon: Sparkles },
@@ -38,6 +40,7 @@ const NAV = [
   { to: "/classchat", labelKey: "nav.classchat" as const, icon: Users },
   { to: "/notes", labelKey: "nav.notes" as const, icon: StickyNote },
   { to: "/announcements", labelKey: "nav.announcements" as const, icon: Megaphone },
+  { to: "/share", labelKey: "nav.share" as const, icon: Share2 },
   { to: "/settings", labelKey: "nav.settings" as const, icon: Settings },
 ] as const;
 
