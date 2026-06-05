@@ -265,7 +265,9 @@ function AddEntryDialog({ open, onOpenChange, activities, date, onCreated }:
 
   const submit = async () => {
     if (!user) return;
-    if (toMin(end) <= toMin(start)) return toast.error("終了時刻は開始より後にしてください");
+    if (toMin(end) <= toMin(start) && category !== "sleep") {
+      return toast.error("終了時刻は開始より後にしてください（睡眠のみ翌日跨ぎ可）");
+    }
     const cat = CATEGORIES.find(c => c.key === category)!;
     let color: string = cat.color;
     let lbl: string = label || cat.label;
