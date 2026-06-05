@@ -21,6 +21,7 @@ import { Town } from "@/components/Town";
 import { buildReport } from "@/lib/report-pdf";
 import { FileDown } from "lucide-react";
 import { TodayBreakdownChart } from "@/components/TodayBreakdownChart";
+import { WeeklySubjectDiff } from "@/components/WeeklySubjectDiff";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -446,6 +447,7 @@ function Dashboard() {
         </Card>
       )}
       <TodayBreakdownChart />
+      <WeeklySubjectDiff />
     </div>
   );
 }
