@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trash2, Plus, CalendarClock, Sparkles } from "lucide-react";
+import { School, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { localDateStr } from "@/lib/date";
 
@@ -42,6 +43,16 @@ type Entry = {
   travel_after_min: number;
 };
 
+type StudyLog = {
+  id: string;
+  date: string;
+  start_time: string | null;
+  duration_minutes: number;
+  content: string | null;
+  subject_id: string | null;
+};
+type Subject = { id: string; name: string; color: string };
+
 type Activity = {
   id: string;
   name: string;
@@ -60,47 +71,94 @@ function TodayPage() {
   const [date, setDate] = useState<string>(() => localDateStr());
   const [entries, setEntries] = useState<Entry[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [logs, setLogs] = useState<StudyLog[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [addOpen, setAddOpen] = useState(false);
   const [actOpen, setActOpen] = useState(false);
+  const [schoolOpen, setSchoolOpen] = useState(false);
 
   const load = async () => {
     if (!user) return;
-    const [{ data: es }, { data: as }] = await Promise.all([
+    // Fetch entries for selected date AND the previous day (to render cross-midnight sleep).
+    const prev = new Date(date + "T00:00:00"); prev.setDate(prev.getDate() - 1);
+    const prevStr = prev.toISOString().slice(0, 10);
+    const [{ data: es }, { data: as }, { data: ls }, { data: subs }] = await Promise.all([
       supabase.from("today_entries").select("*").eq("user_id", user.id).eq("date", date).order("start_time"),
       supabase.from("today_activities").select("*").eq("user_id", user.id).order("name"),
+      supabase.from("study_logs").select("id,date,start_time,duration_minutes,content,subject_id").eq("user_id", user.id).eq("date", date),
+      supabase.from("subjects").select("id,name,color").eq("user_id", user.id),
     ]);
-    setEntries((es as any[]) ?? []);
+    // Also fetch sleep that started yesterday and crosses midnight
+    const { data: prevEs } = await supabase.from("today_entries").select("*").eq("user_id", user.id).eq("date", prevStr).eq("category", "sleep");
+    const crossing = ((prevEs as any[]) ?? []).filter((e) => e.end_time <= e.start_time);
+    setEntries([...((es as any[]) ?? []), ...crossing.map((e) => ({ ...e, _fromPrev: true }))]);
     setActivities((as as any[]) ?? []);
+    setLogs((ls as any[]) ?? []);
+    setSubjects((subs as any[]) ?? []);
   };
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [user?.id, date]);
 
-  const sorted = useMemo(() => [...entries].sort((a, b) => a.start_time.localeCompare(b.start_time)), [entries]);
+  // Convert entries into render segments (splitting cross-day blocks at midnight).
+  const segments = useMemo(() => {
+    type Seg = { id: string; entry: Entry; start: number; end: number };
+    const out: Seg[] = [];
+    for (const e of entries as (Entry & { _fromPrev?: boolean })[]) {
+      const s = toMin(e.start_time), eN = toMin(e.end_time);
+      if (eN > s && !e._fromPrev) {
+        out.push({ id: e.id, entry: e, start: s, end: eN });
+      } else if (eN <= s && !e._fromPrev) {
+        // crosses midnight: today shows start→1440
+        out.push({ id: e.id + "-a", entry: e, start: s, end: 1440 });
+      } else if (e._fromPrev) {
+        // yesterday's cross-midnight block shows 0→end on today
+        out.push({ id: e.id + "-b", entry: e, start: 0, end: eN });
+      }
+    }
+    // Merge study_logs into segments as "study" category
+    for (const l of logs) {
+      if (!l.start_time || !l.duration_minutes) continue;
+      const s = toMin(l.start_time.slice(0, 5));
+      const eN = Math.min(1440, s + l.duration_minutes);
+      const subj = subjects.find((x) => x.id === l.subject_id);
+      const color = subj?.color ?? "#22c55e";
+      const label = (subj?.name ? subj.name + (l.content ? `：${l.content}` : "") : l.content) || "勉強";
+      out.push({
+        id: "log-" + l.id,
+        entry: { id: "log-" + l.id, date: l.date, category: "study", label, color, start_time: l.start_time.slice(0, 5), end_time: fromMin(eN), activity_id: null, notes: null, travel_before_min: 0, travel_after_min: 0 },
+        start: s, end: eN,
+      });
+    }
+    return out.sort((a, b) => a.start - b.start);
+  }, [entries, logs, subjects]);
 
   // Build full-day blocks including gray "未割当"
   const blocks = useMemo(() => {
-    const out: Array<{ kind: "entry" | "gap"; start: number; end: number; data?: Entry }> = [];
+    const out: Array<{ kind: "entry" | "gap"; start: number; end: number; data?: Entry; segId?: string }> = [];
     let cursor = 0;
-    for (const e of sorted) {
-      const s = toMin(e.start_time), eN = toMin(e.end_time);
-      if (s > cursor) out.push({ kind: "gap", start: cursor, end: s });
-      out.push({ kind: "entry", start: s, end: eN, data: e });
-      cursor = Math.max(cursor, eN);
+    for (const seg of segments) {
+      if (seg.start > cursor) out.push({ kind: "gap", start: cursor, end: seg.start });
+      out.push({ kind: "entry", start: seg.start, end: seg.end, data: seg.entry, segId: seg.id });
+      cursor = Math.max(cursor, seg.end);
     }
     if (cursor < 1440) out.push({ kind: "gap", start: cursor, end: 1440 });
     return out;
-  }, [sorted]);
+  }, [segments]);
 
   const totals = useMemo(() => {
     const map = new Map<string, number>();
-    for (const e of sorted) {
-      const d = toMin(e.end_time) - toMin(e.start_time);
-      map.set(e.category, (map.get(e.category) ?? 0) + d);
+    for (const seg of segments) {
+      const d = seg.end - seg.start;
+      map.set(seg.entry.category, (map.get(seg.entry.category) ?? 0) + d);
     }
     const used = Array.from(map.values()).reduce((s, v) => s + v, 0);
     return { map, used, unassigned: 1440 - used };
-  }, [sorted]);
+  }, [segments]);
 
   const removeEntry = async (id: string) => {
+    if (id.startsWith("log-")) {
+      toast.info("勉強記録は「勉強記録」画面から削除してください");
+      return;
+    }
     await supabase.from("today_entries").delete().eq("id", id);
     setEntries((p) => p.filter((e) => e.id !== id));
   };
@@ -111,6 +169,7 @@ function TodayPage() {
         <CalendarClock className="h-7 w-7 text-primary" />
         <h1 className="text-2xl font-bold">Today</h1>
         <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-44 ml-auto" />
+        <Button variant="outline" onClick={() => setSchoolOpen(true)}><School className="h-4 w-4 mr-1" />学校テンプレ</Button>
         <Button variant="outline" onClick={() => setActOpen(true)}><Sparkles className="h-4 w-4 mr-1" />習い事登録</Button>
         <Button onClick={() => setAddOpen(true)}><Plus className="h-4 w-4 mr-1" />追加</Button>
       </div>
@@ -138,15 +197,21 @@ function TodayPage() {
                     );
                   }
                   const e = b.data!;
+                  const isLog = (b.segId || "").startsWith("log-");
                   return (
                     <div key={i}
                       className="absolute left-1 right-1 rounded-lg shadow-sm border text-white text-xs p-2 overflow-hidden group"
                       style={{ top, height: h, background: e.color, borderColor: e.color }}>
-                      <div className="font-semibold truncate">{e.label || CATEGORIES.find(c => c.key === e.category)?.label}</div>
+                      <div className="font-semibold truncate flex items-center gap-1">
+                        {isLog && <BookOpen className="h-3 w-3 shrink-0" />}
+                        {e.label || CATEGORIES.find(c => c.key === e.category)?.label}
+                      </div>
                       <div className="opacity-90 tabular-nums">{e.start_time.slice(0, 5)}–{e.end_time.slice(0, 5)}</div>
-                      <button onClick={() => removeEntry(e.id)} className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition bg-black/30 hover:bg-black/50 rounded p-1">
-                        <Trash2 className="h-3 w-3" />
-                      </button>
+                      {!isLog && (
+                        <button onClick={() => removeEntry(e.id)} className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition bg-black/30 hover:bg-black/50 rounded p-1">
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      )}
                     </div>
                   );
                 })}
@@ -181,6 +246,7 @@ function TodayPage() {
 
       <AddEntryDialog open={addOpen} onOpenChange={setAddOpen} activities={activities} date={date} onCreated={load} />
       <ActivitiesDialog open={actOpen} onOpenChange={setActOpen} activities={activities} reload={load} />
+      <SchoolTemplateDialog open={schoolOpen} onOpenChange={setSchoolOpen} date={date} subjects={subjects} onCreated={load} />
     </div>
   );
 }
@@ -199,7 +265,9 @@ function AddEntryDialog({ open, onOpenChange, activities, date, onCreated }:
 
   const submit = async () => {
     if (!user) return;
-    if (toMin(end) <= toMin(start)) return toast.error("終了時刻は開始より後にしてください");
+    if (toMin(end) <= toMin(start) && category !== "sleep") {
+      return toast.error("終了時刻は開始より後にしてください（睡眠のみ翌日跨ぎ可）");
+    }
     const cat = CATEGORIES.find(c => c.key === category)!;
     let color: string = cat.color;
     let lbl: string = label || cat.label;
@@ -286,6 +354,99 @@ function AddEntryDialog({ open, onOpenChange, activities, date, onCreated }:
           </div>
         </div>
         <DialogFooter><Button onClick={submit}>追加</Button></DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ---------- School Template Dialog ---------- */
+type Period = { type: "lesson" | "break" | "lunch" | "custom"; name: string; start: string; end: string; subject?: string };
+
+function SchoolTemplateDialog({ open, onOpenChange, date, subjects, onCreated }: {
+  open: boolean; onOpenChange: (v: boolean) => void; date: string; subjects: Subject[]; onCreated: () => void;
+}) {
+  const { user } = useAuth();
+  const [departHome, setDepartHome] = useState("07:30");
+  const [arriveSchool, setArriveSchool] = useState("08:10");
+  const [departSchool, setDepartSchool] = useState("15:30");
+  const [arriveHome, setArriveHome] = useState("16:00");
+  const [periods, setPeriods] = useState<Period[]>([
+    { type: "lesson", name: "1限", start: "08:30", end: "09:20", subject: "" },
+    { type: "lesson", name: "2限", start: "09:30", end: "10:20", subject: "" },
+    { type: "break", name: "休み時間", start: "10:20", end: "10:35" },
+    { type: "lesson", name: "3限", start: "10:35", end: "11:25", subject: "" },
+    { type: "lesson", name: "4限", start: "11:35", end: "12:25", subject: "" },
+    { type: "lunch", name: "昼食", start: "12:25", end: "13:10" },
+    { type: "lesson", name: "5限", start: "13:15", end: "14:05", subject: "" },
+    { type: "lesson", name: "6限", start: "14:15", end: "15:05", subject: "" },
+  ]);
+
+  const addPeriod = () => setPeriods((p) => [...p, { type: "lesson", name: `${p.length + 1}限`, start: "13:00", end: "13:50", subject: "" }]);
+  const delPeriod = (i: number) => setPeriods((p) => p.filter((_, idx) => idx !== i));
+  const updPeriod = (i: number, patch: Partial<Period>) => setPeriods((p) => p.map((x, idx) => idx === i ? { ...x, ...patch } : x));
+
+  const apply = async () => {
+    if (!user) return;
+    const rows: any[] = [];
+    // 出発→学校到着 = 移動
+    rows.push({ user_id: user.id, date, category: "travel", label: "登校", color: "#94a3b8", start_time: departHome, end_time: arriveSchool });
+    for (const p of periods) {
+      const cat = p.type === "lesson" ? "school" : p.type === "lunch" ? "meal" : p.type === "break" ? "school" : "school";
+      const color = p.type === "lesson" ? "#60a5fa" : p.type === "lunch" ? "#f59e0b" : "#93c5fd";
+      let label = p.name;
+      if (p.type === "lesson" && p.subject) label = `${p.name}・${p.subject}`;
+      rows.push({ user_id: user.id, date, category: cat, label, color, start_time: p.start, end_time: p.end });
+    }
+    // 下校移動
+    rows.push({ user_id: user.id, date, category: "travel", label: "下校", color: "#94a3b8", start_time: departSchool, end_time: arriveHome });
+    const { error } = await supabase.from("today_entries").insert(rows);
+    if (error) return toast.error(error.message);
+    toast.success(`${rows.length} 件追加しました`);
+    onOpenChange(false); onCreated();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>学校テンプレ適用</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            <div><Label>家を出発</Label><Input type="time" value={departHome} onChange={(e) => setDepartHome(e.target.value)} /></div>
+            <div><Label>学校到着</Label><Input type="time" value={arriveSchool} onChange={(e) => setArriveSchool(e.target.value)} /></div>
+            <div><Label>学校出発</Label><Input type="time" value={departSchool} onChange={(e) => setDepartSchool(e.target.value)} /></div>
+            <div><Label>帰宅</Label><Input type="time" value={arriveHome} onChange={(e) => setArriveHome(e.target.value)} /></div>
+          </div>
+          <div className="border-t pt-3">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold text-sm">時程</h3>
+              <Button size="sm" variant="outline" onClick={addPeriod}><Plus className="h-3 w-3 mr-1" />追加</Button>
+            </div>
+            <div className="space-y-1.5 max-h-[40vh] overflow-auto pr-1">
+              {periods.map((p, i) => (
+                <div key={i} className="flex gap-1 items-center bg-muted/30 rounded p-1.5">
+                  <Select value={p.type} onValueChange={(v) => updPeriod(i, { type: v as any })}>
+                    <SelectTrigger className="w-24 h-8"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="lesson">授業</SelectItem>
+                      <SelectItem value="break">休み時間</SelectItem>
+                      <SelectItem value="lunch">昼食</SelectItem>
+                      <SelectItem value="custom">その他</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input className="h-8 flex-1" placeholder="名前" value={p.name} onChange={(e) => updPeriod(i, { name: e.target.value })} />
+                  {p.type === "lesson" && (
+                    <Input className="h-8 w-28" placeholder="教科" list={`subjs-${i}`} value={p.subject || ""} onChange={(e) => updPeriod(i, { subject: e.target.value })} />
+                  )}
+                  <datalist id={`subjs-${i}`}>{subjects.map((s) => <option key={s.id} value={s.name} />)}</datalist>
+                  <Input className="h-8 w-24" type="time" value={p.start} onChange={(e) => updPeriod(i, { start: e.target.value })} />
+                  <Input className="h-8 w-24" type="time" value={p.end} onChange={(e) => updPeriod(i, { end: e.target.value })} />
+                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => delPeriod(i)}><Trash2 className="h-3 w-3" /></Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <DialogFooter><Button onClick={apply}>テンプレ適用（{periods.length + 2}件追加）</Button></DialogFooter>
       </DialogContent>
     </Dialog>
   );
