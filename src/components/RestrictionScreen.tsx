@@ -1,4 +1,6 @@
 import { Ban, AlertOctagon } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ArrowLeft, LayoutDashboard } from "lucide-react";
 
 export function RestrictionScreen({
   variant,
@@ -34,6 +36,20 @@ export function RestrictionScreen({
           </div>
         )}
         <p className="text-sm opacity-80">詳しくは管理者へお問い合わせください。</p>
+        <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+          <button
+            onClick={() => { if (typeof window !== "undefined") window.history.back(); }}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-white/15 hover:bg-white/25 border border-white/30 px-4 py-2 text-sm font-medium transition"
+          >
+            <ArrowLeft className="h-4 w-4" /> 戻る
+          </button>
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-white text-foreground hover:bg-white/90 px-4 py-2 text-sm font-medium transition"
+          >
+            <LayoutDashboard className="h-4 w-4" /> ダッシュボードへ
+          </Link>
+        </div>
       </div>
     </div>
   );
