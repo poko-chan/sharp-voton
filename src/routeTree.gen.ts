@@ -17,11 +17,13 @@ import { Route as HelpRouteImport } from './routes/help'
 import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedTutorRouteImport } from './routes/_authenticated/tutor'
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
 import { Route as AuthenticatedStudyRouteImport } from './routes/_authenticated/study'
+import { Route as AuthenticatedShareRouteImport } from './routes/_authenticated/share'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedQuestionsRouteImport } from './routes/_authenticated/questions'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
@@ -29,6 +31,8 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedMicroRouteImport } from './routes/_authenticated/micro'
 import { Route as AuthenticatedListenRouteImport } from './routes/_authenticated/listen'
+import { Route as AuthenticatedHeatmapRouteImport } from './routes/_authenticated/heatmap'
+import { Route as AuthenticatedHabitsRouteImport } from './routes/_authenticated/habits'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/coach'
@@ -79,6 +83,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShareTokenRoute = ShareTokenRouteImport.update({
+  id: '/share/$token',
+  path: '/share/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -102,6 +111,11 @@ const AuthenticatedTimerRoute = AuthenticatedTimerRouteImport.update({
 const AuthenticatedStudyRoute = AuthenticatedStudyRouteImport.update({
   id: '/study',
   path: '/study',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedShareRoute = AuthenticatedShareRouteImport.update({
+  id: '/share',
+  path: '/share',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -138,6 +152,16 @@ const AuthenticatedMicroRoute = AuthenticatedMicroRouteImport.update({
 const AuthenticatedListenRoute = AuthenticatedListenRouteImport.update({
   id: '/listen',
   path: '/listen',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedHeatmapRoute = AuthenticatedHeatmapRouteImport.update({
+  id: '/heatmap',
+  path: '/heatmap',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedHabitsRoute = AuthenticatedHabitsRouteImport.update({
+  id: '/habits',
+  path: '/habits',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedGoalsRoute = AuthenticatedGoalsRouteImport.update({
@@ -210,6 +234,8 @@ export interface FileRoutesByFullPath {
   '/coach': typeof AuthenticatedCoachRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/goals': typeof AuthenticatedGoalsRoute
+  '/habits': typeof AuthenticatedHabitsRoute
+  '/heatmap': typeof AuthenticatedHeatmapRoute
   '/listen': typeof AuthenticatedListenRoute
   '/micro': typeof AuthenticatedMicroRoute
   '/notes': typeof AuthenticatedNotesRoute
@@ -217,11 +243,13 @@ export interface FileRoutesByFullPath {
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/share': typeof AuthenticatedShareRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
   '/today': typeof AuthenticatedTodayRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/api/chat': typeof ApiChatRoute
+  '/share/$token': typeof ShareTokenRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/classroom/': typeof AuthenticatedClassroomIndexRoute
 }
@@ -241,6 +269,8 @@ export interface FileRoutesByTo {
   '/coach': typeof AuthenticatedCoachRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/goals': typeof AuthenticatedGoalsRoute
+  '/habits': typeof AuthenticatedHabitsRoute
+  '/heatmap': typeof AuthenticatedHeatmapRoute
   '/listen': typeof AuthenticatedListenRoute
   '/micro': typeof AuthenticatedMicroRoute
   '/notes': typeof AuthenticatedNotesRoute
@@ -248,11 +278,13 @@ export interface FileRoutesByTo {
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/share': typeof AuthenticatedShareRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
   '/today': typeof AuthenticatedTodayRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/api/chat': typeof ApiChatRoute
+  '/share/$token': typeof ShareTokenRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/classroom': typeof AuthenticatedClassroomIndexRoute
 }
@@ -274,6 +306,8 @@ export interface FileRoutesById {
   '/_authenticated/coach': typeof AuthenticatedCoachRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
+  '/_authenticated/habits': typeof AuthenticatedHabitsRoute
+  '/_authenticated/heatmap': typeof AuthenticatedHeatmapRoute
   '/_authenticated/listen': typeof AuthenticatedListenRoute
   '/_authenticated/micro': typeof AuthenticatedMicroRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
@@ -281,11 +315,13 @@ export interface FileRoutesById {
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/share': typeof AuthenticatedShareRoute
   '/_authenticated/study': typeof AuthenticatedStudyRoute
   '/_authenticated/timer': typeof AuthenticatedTimerRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
   '/_authenticated/tutor': typeof AuthenticatedTutorRoute
   '/api/chat': typeof ApiChatRoute
+  '/share/$token': typeof ShareTokenRoute
   '/_authenticated/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/_authenticated/classroom/': typeof AuthenticatedClassroomIndexRoute
 }
@@ -307,6 +343,8 @@ export interface FileRouteTypes {
     | '/coach'
     | '/dashboard'
     | '/goals'
+    | '/habits'
+    | '/heatmap'
     | '/listen'
     | '/micro'
     | '/notes'
@@ -314,11 +352,13 @@ export interface FileRouteTypes {
     | '/practice'
     | '/questions'
     | '/settings'
+    | '/share'
     | '/study'
     | '/timer'
     | '/today'
     | '/tutor'
     | '/api/chat'
+    | '/share/$token'
     | '/classroom/$classId'
     | '/classroom/'
   fileRoutesByTo: FileRoutesByTo
@@ -338,6 +378,8 @@ export interface FileRouteTypes {
     | '/coach'
     | '/dashboard'
     | '/goals'
+    | '/habits'
+    | '/heatmap'
     | '/listen'
     | '/micro'
     | '/notes'
@@ -345,11 +387,13 @@ export interface FileRouteTypes {
     | '/practice'
     | '/questions'
     | '/settings'
+    | '/share'
     | '/study'
     | '/timer'
     | '/today'
     | '/tutor'
     | '/api/chat'
+    | '/share/$token'
     | '/classroom/$classId'
     | '/classroom'
   id:
@@ -370,6 +414,8 @@ export interface FileRouteTypes {
     | '/_authenticated/coach'
     | '/_authenticated/dashboard'
     | '/_authenticated/goals'
+    | '/_authenticated/habits'
+    | '/_authenticated/heatmap'
     | '/_authenticated/listen'
     | '/_authenticated/micro'
     | '/_authenticated/notes'
@@ -377,11 +423,13 @@ export interface FileRouteTypes {
     | '/_authenticated/practice'
     | '/_authenticated/questions'
     | '/_authenticated/settings'
+    | '/_authenticated/share'
     | '/_authenticated/study'
     | '/_authenticated/timer'
     | '/_authenticated/today'
     | '/_authenticated/tutor'
     | '/api/chat'
+    | '/share/$token'
     | '/_authenticated/classroom/$classId'
     | '/_authenticated/classroom/'
   fileRoutesById: FileRoutesById
@@ -396,6 +444,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   ApiChatRoute: typeof ApiChatRoute
+  ShareTokenRoute: typeof ShareTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -456,6 +505,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/share/$token': {
+      id: '/share/$token'
+      path: '/share/$token'
+      fullPath: '/share/$token'
+      preLoaderRoute: typeof ShareTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -489,6 +545,13 @@ declare module '@tanstack/react-router' {
       path: '/study'
       fullPath: '/study'
       preLoaderRoute: typeof AuthenticatedStudyRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/share': {
+      id: '/_authenticated/share'
+      path: '/share'
+      fullPath: '/share'
+      preLoaderRoute: typeof AuthenticatedShareRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/settings': {
@@ -538,6 +601,20 @@ declare module '@tanstack/react-router' {
       path: '/listen'
       fullPath: '/listen'
       preLoaderRoute: typeof AuthenticatedListenRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/heatmap': {
+      id: '/_authenticated/heatmap'
+      path: '/heatmap'
+      fullPath: '/heatmap'
+      preLoaderRoute: typeof AuthenticatedHeatmapRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/habits': {
+      id: '/_authenticated/habits'
+      path: '/habits'
+      fullPath: '/habits'
+      preLoaderRoute: typeof AuthenticatedHabitsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/goals': {
@@ -622,6 +699,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCoachRoute: typeof AuthenticatedCoachRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
+  AuthenticatedHabitsRoute: typeof AuthenticatedHabitsRoute
+  AuthenticatedHeatmapRoute: typeof AuthenticatedHeatmapRoute
   AuthenticatedListenRoute: typeof AuthenticatedListenRoute
   AuthenticatedMicroRoute: typeof AuthenticatedMicroRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
@@ -629,6 +708,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedQuestionsRoute: typeof AuthenticatedQuestionsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedShareRoute: typeof AuthenticatedShareRoute
   AuthenticatedStudyRoute: typeof AuthenticatedStudyRoute
   AuthenticatedTimerRoute: typeof AuthenticatedTimerRoute
   AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
@@ -646,6 +726,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCoachRoute: AuthenticatedCoachRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
+  AuthenticatedHabitsRoute: AuthenticatedHabitsRoute,
+  AuthenticatedHeatmapRoute: AuthenticatedHeatmapRoute,
   AuthenticatedListenRoute: AuthenticatedListenRoute,
   AuthenticatedMicroRoute: AuthenticatedMicroRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
@@ -653,6 +735,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedQuestionsRoute: AuthenticatedQuestionsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedShareRoute: AuthenticatedShareRoute,
   AuthenticatedStudyRoute: AuthenticatedStudyRoute,
   AuthenticatedTimerRoute: AuthenticatedTimerRoute,
   AuthenticatedTodayRoute: AuthenticatedTodayRoute,
@@ -675,6 +758,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   ApiChatRoute: ApiChatRoute,
+  ShareTokenRoute: ShareTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
