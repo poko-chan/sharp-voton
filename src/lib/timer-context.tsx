@@ -81,16 +81,37 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     if (!user || !state) return;
     if (!state.record || minutes <= 0) return;
     const now = new Date();
+    const endH = String(now.getHours()).padStart(2, "0");
+    const endM = String(now.getMinutes()).padStart(2, "0");
+    const endTime = `${endH}:${endM}`;
+    // derive start time by subtracting minutes
+    const startD = new Date(now.getTime() - minutes * 60000);
+    const startTime = `${String(startD.getHours()).padStart(2, "0")}:${String(startD.getMinutes()).padStart(2, "0")}`;
     const { error } = await supabase.from("study_logs").insert({
       user_id: user.id,
       subject_id: state.subjectId || null,
       date: localDateStr(),
       duration_minutes: minutes,
       content: state.content || kindLabel,
-      start_time: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`,
+      start_time: startTime,
     } as any);
     if (error) toast.error(error.message);
-    else { toast.success(`${minutes}分を記録しました🎉`); emitProfileChange(); }
+    else {
+      // Also snap into Today timeline as a study block (#5/#6 timer→Today auto sync)
+      try {
+        await supabase.from("today_entries").insert({
+          user_id: user.id,
+          date: localDateStr(),
+          category: "study",
+          label: state.content || kindLabel,
+          color: "#22c55e",
+          start_time: startTime,
+          end_time: endTime,
+        });
+      } catch {}
+      toast.success(`${minutes}分を記録しました🎉`);
+      emitProfileChange();
+    }
   }, [user, state]);
 
   const finish = useCallback(async () => {
