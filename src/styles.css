@@ -227,3 +227,27 @@ html[data-theme="sunset"] {
   --sidebar: oklch(0.96 0.05 50);
 }
 
+
+/* High-contrast accessibility mode */
+html.high-contrast {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0 0 0);
+  --border: oklch(0 0 0);
+  --primary: oklch(0.2 0 0);
+  --primary-foreground: oklch(1 0 0);
+  --muted-foreground: oklch(0.15 0 0);
+}
+html.high-contrast.dark, html.high-contrast[data-theme="dark"] {
+  --background: oklch(0 0 0);
+  --foreground: oklch(1 0 0);
+  --border: oklch(1 0 0);
+  --primary: oklch(0.95 0 0);
+  --primary-foreground: oklch(0 0 0);
+}
+html.high-contrast * { border-color: currentColor !important; }
+
+/* Print: keep main content, hide chrome */
+@media print {
+  aside, header, nav, .no-print { display: none !important; }
+  body { background: white !important; color: black !important; }
+}
