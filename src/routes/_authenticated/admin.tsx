@@ -53,7 +53,6 @@ function AdminPage() {
           <TabsTrigger value="users">ユーザー管理</TabsTrigger>
           <TabsTrigger value="maintenance">メンテナンス</TabsTrigger>
           <TabsTrigger value="restrictions" className="data-[state=active]:bg-red-500/10 data-[state=active]:text-red-600">利用停止</TabsTrigger>
-          <TabsTrigger value="user-restrictions" className="data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-600">個別制限</TabsTrigger>
           <TabsTrigger value="faq" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600">FAQ</TabsTrigger>
           <TabsTrigger value="version">バージョン</TabsTrigger>
           <TabsTrigger value="announcements">お知らせ</TabsTrigger>
@@ -61,8 +60,7 @@ function AdminPage() {
         </TabsList>
         <TabsContent value="users"><UsersTab /></TabsContent>
         <TabsContent value="maintenance"><MaintenanceTab /></TabsContent>
-        <TabsContent value="restrictions"><ServiceStopTab /></TabsContent>
-        <TabsContent value="user-restrictions"><UserRestrictionsTab /></TabsContent>
+        <TabsContent value="restrictions"><RestrictionsHub /></TabsContent>
         <TabsContent value="faq"><FaqTab /></TabsContent>
         <TabsContent value="version"><VersionTab /></TabsContent>
         <TabsContent value="announcements"><AnnouncementsTab /></TabsContent>
