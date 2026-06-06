@@ -208,6 +208,9 @@ function Dashboard() {
           <p className="text-muted-foreground">学習の積み重ねを見える化</p>
         </div>
         <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={() => window.print()} className="no-print">
+            🖨 印刷
+          </Button>
           <Button
             size="sm"
             variant="outline"
