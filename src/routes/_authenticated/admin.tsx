@@ -71,6 +71,24 @@ function AdminPage() {
 }
 
 function UsersTab() {
+  return <UsersTabImpl />;
+}
+function RestrictionsHub() {
+  const [inner, setInner] = useState<"global" | "user">("global");
+  return (
+    <div className="mt-4 space-y-4">
+      <Tabs value={inner} onValueChange={(v) => setInner(v as any)}>
+        <TabsList>
+          <TabsTrigger value="global" className="data-[state=active]:bg-red-500/10 data-[state=active]:text-red-600">全体停止</TabsTrigger>
+          <TabsTrigger value="user" className="data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-600">ユーザー別</TabsTrigger>
+        </TabsList>
+        <TabsContent value="global"><ServiceStopTab /></TabsContent>
+        <TabsContent value="user"><UserRestrictionsTab /></TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+function UsersTabImpl() {
   const list = useServerFn(adminListUsers);
   const create = useServerFn(adminCreateUser);
   const update = useServerFn(adminUpdateUser);
