@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Timer, CalendarDays, BookOpen, Brain,
   MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy,
   Megaphone, GraduationCap, Zap, Headphones, Menu, X, MoreHorizontal,
-  StickyNote, Users, Ban, AlertOctagon, HelpCircle,
+  StickyNote, Users, Ban, HelpCircle,
   CalendarClock, Stamp, Activity, Share2, ScanLine, Vote, Flame,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
