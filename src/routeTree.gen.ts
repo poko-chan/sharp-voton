@@ -28,6 +28,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
 import { Route as AuthenticatedQuestionsRouteImport } from './routes/_authenticated/questions'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
+import { Route as AuthenticatedOcrRouteImport } from './routes/_authenticated/ocr'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedMicroRouteImport } from './routes/_authenticated/micro'
@@ -140,6 +141,11 @@ const AuthenticatedQuestionsRoute = AuthenticatedQuestionsRouteImport.update({
 const AuthenticatedPracticeRoute = AuthenticatedPracticeRouteImport.update({
   id: '/practice',
   path: '/practice',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedOcrRoute = AuthenticatedOcrRouteImport.update({
+  id: '/ocr',
+  path: '/ocr',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedNotificationsRoute =
@@ -267,6 +273,7 @@ export interface FileRoutesByFullPath {
   '/micro': typeof AuthenticatedMicroRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/ocr': typeof AuthenticatedOcrRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
   '/rooms': typeof AuthenticatedRoomsRouteWithChildren
@@ -306,6 +313,7 @@ export interface FileRoutesByTo {
   '/micro': typeof AuthenticatedMicroRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/ocr': typeof AuthenticatedOcrRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
   '/rooms': typeof AuthenticatedRoomsRouteWithChildren
@@ -347,6 +355,7 @@ export interface FileRoutesById {
   '/_authenticated/micro': typeof AuthenticatedMicroRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/ocr': typeof AuthenticatedOcrRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
   '/_authenticated/rooms': typeof AuthenticatedRoomsRouteWithChildren
@@ -388,6 +397,7 @@ export interface FileRouteTypes {
     | '/micro'
     | '/notes'
     | '/notifications'
+    | '/ocr'
     | '/practice'
     | '/questions'
     | '/rooms'
@@ -427,6 +437,7 @@ export interface FileRouteTypes {
     | '/micro'
     | '/notes'
     | '/notifications'
+    | '/ocr'
     | '/practice'
     | '/questions'
     | '/rooms'
@@ -467,6 +478,7 @@ export interface FileRouteTypes {
     | '/_authenticated/micro'
     | '/_authenticated/notes'
     | '/_authenticated/notifications'
+    | '/_authenticated/ocr'
     | '/_authenticated/practice'
     | '/_authenticated/questions'
     | '/_authenticated/rooms'
@@ -629,6 +641,13 @@ declare module '@tanstack/react-router' {
       path: '/practice'
       fullPath: '/practice'
       preLoaderRoute: typeof AuthenticatedPracticeRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/ocr': {
+      id: '/_authenticated/ocr'
+      path: '/ocr'
+      fullPath: '/ocr'
+      preLoaderRoute: typeof AuthenticatedOcrRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/notifications': {
@@ -795,6 +814,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMicroRoute: typeof AuthenticatedMicroRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedOcrRoute: typeof AuthenticatedOcrRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedQuestionsRoute: typeof AuthenticatedQuestionsRoute
   AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRouteWithChildren
@@ -825,6 +845,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMicroRoute: AuthenticatedMicroRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedOcrRoute: AuthenticatedOcrRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedQuestionsRoute: AuthenticatedQuestionsRoute,
   AuthenticatedRoomsRoute: AuthenticatedRoomsRouteWithChildren,
@@ -857,3 +878,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
