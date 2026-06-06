@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { emitProfileChange } from "@/lib/profile-events";
 import { useI18n } from "@/lib/i18n";
+import { AccessibilityPanel } from "@/components/AccessibilityPanel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { THEMES, saveUserTheme, type ThemeName } from "@/lib/theme";
 
@@ -108,6 +109,7 @@ function UserSettingsPage() {
   return (
     <div className="p-8 max-w-2xl mx-auto space-y-6">
       <h1 className="text-3xl font-bold flex items-center gap-2"><Settings /> ユーザー設定</h1>
+      <AccessibilityPanel />
 
       <Card className="p-6 space-y-5">
         <div className="flex items-center gap-2 font-semibold"><User className="h-4 w-4" /> プロフィール</div>

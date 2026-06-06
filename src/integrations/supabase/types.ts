@@ -598,6 +598,96 @@ export type Database = {
           },
         ]
       }
+      flashcards: {
+        Row: {
+          back: string
+          created_at: string
+          deck: string
+          ease: number
+          front: string
+          id: string
+          interval_days: number
+          next_review_at: string
+          reviews: number
+          user_id: string
+        }
+        Insert: {
+          back: string
+          created_at?: string
+          deck?: string
+          ease?: number
+          front: string
+          id?: string
+          interval_days?: number
+          next_review_at?: string
+          reviews?: number
+          user_id: string
+        }
+        Update: {
+          back?: string
+          created_at?: string
+          deck?: string
+          ease?: number
+          front?: string
+          id?: string
+          interval_days?: number
+          next_review_at?: string
+          reviews?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      focus_logs: {
+        Row: {
+          blur_count: number
+          created_at: string
+          date: string
+          id: string
+          minutes: number
+          score: number
+          user_id: string
+        }
+        Insert: {
+          blur_count?: number
+          created_at?: string
+          date?: string
+          id?: string
+          minutes?: number
+          score?: number
+          user_id: string
+        }
+        Update: {
+          blur_count?: number
+          created_at?: string
+          date?: string
+          id?: string
+          minutes?: number
+          score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
       goals: {
         Row: {
           count_from: string | null
@@ -670,6 +760,68 @@ export type Database = {
           score?: number
           user_answer?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      group_room_members: {
+        Row: {
+          id: string
+          joined_at: string
+          room_id: string
+          started_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          room_id: string
+          started_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          room_id?: string
+          started_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_room_members_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "group_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_rooms: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
         }
         Relationships: []
       }
@@ -751,6 +903,89 @@ export type Database = {
           title?: string
           type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      ocr_notes: {
+        Row: {
+          created_at: string
+          id: string
+          text: string
+          title: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          text: string
+          title?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          text?: string
+          title?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      poll_votes: {
+        Row: {
+          created_at: string
+          id: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          option_index?: number
+          poll_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      polls: {
+        Row: {
+          created_at: string
+          created_by: string
+          ends_at: string | null
+          id: string
+          options: Json
+          question: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          ends_at?: string | null
+          id?: string
+          options: Json
+          question: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          ends_at?: string | null
+          id?: string
+          options?: Json
+          question?: string
         }
         Relationships: []
       }
@@ -970,6 +1205,27 @@ export type Database = {
           user_id?: string
           x?: number
           y?: number
+        }
+        Relationships: []
+      }
+      streak_freezes: {
+        Row: {
+          date: string
+          id: string
+          used_at: string
+          user_id: string
+        }
+        Insert: {
+          date: string
+          id?: string
+          used_at?: string
+          user_id: string
+        }
+        Update: {
+          date?: string
+          id?: string
+          used_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -1553,6 +1809,30 @@ export type Database = {
           total_earned?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_prefs: {
+        Row: {
+          font_scale: number
+          high_contrast: boolean
+          updated_at: string
+          user_id: string
+          widgets: Json
+        }
+        Insert: {
+          font_scale?: number
+          high_contrast?: boolean
+          updated_at?: string
+          user_id: string
+          widgets?: Json
+        }
+        Update: {
+          font_scale?: number
+          high_contrast?: boolean
+          updated_at?: string
+          user_id?: string
+          widgets?: Json
         }
         Relationships: []
       }
