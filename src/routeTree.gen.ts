@@ -44,6 +44,7 @@ import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedClassroomIndexRouteImport } from './routes/_authenticated/classroom.index'
+import { Route as AuthenticatedRoomsRoomIdRouteImport } from './routes/_authenticated/rooms.$roomId'
 import { Route as AuthenticatedClassroomClassIdRouteImport } from './routes/_authenticated/classroom.$classId'
 
 const TermsRoute = TermsRouteImport.update({
@@ -223,6 +224,12 @@ const AuthenticatedClassroomIndexRoute =
     path: '/classroom/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedRoomsRoomIdRoute =
+  AuthenticatedRoomsRoomIdRouteImport.update({
+    id: '/$roomId',
+    path: '/$roomId',
+    getParentRoute: () => AuthenticatedRoomsRoute,
+  } as any)
 const AuthenticatedClassroomClassIdRoute =
   AuthenticatedClassroomClassIdRouteImport.update({
     id: '/classroom/$classId',
@@ -255,7 +262,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
-  '/rooms': typeof AuthenticatedRoomsRoute
+  '/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
   '/study': typeof AuthenticatedStudyRoute
@@ -265,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/share/$token': typeof ShareTokenRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
+  '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom/': typeof AuthenticatedClassroomIndexRoute
 }
 export interface FileRoutesByTo {
@@ -292,7 +300,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
-  '/rooms': typeof AuthenticatedRoomsRoute
+  '/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
   '/study': typeof AuthenticatedStudyRoute
@@ -302,6 +310,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/share/$token': typeof ShareTokenRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
+  '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom': typeof AuthenticatedClassroomIndexRoute
 }
 export interface FileRoutesById {
@@ -331,7 +340,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
-  '/_authenticated/rooms': typeof AuthenticatedRoomsRoute
+  '/_authenticated/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/share': typeof AuthenticatedShareRoute
   '/_authenticated/study': typeof AuthenticatedStudyRoute
@@ -341,6 +350,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/share/$token': typeof ShareTokenRoute
   '/_authenticated/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
+  '/_authenticated/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/_authenticated/classroom/': typeof AuthenticatedClassroomIndexRoute
 }
 export interface FileRouteTypes {
@@ -380,6 +390,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/share/$token'
     | '/classroom/$classId'
+    | '/rooms/$roomId'
     | '/classroom/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -417,6 +428,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/share/$token'
     | '/classroom/$classId'
+    | '/rooms/$roomId'
     | '/classroom'
   id:
     | '__root__'
@@ -455,6 +467,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/share/$token'
     | '/_authenticated/classroom/$classId'
+    | '/_authenticated/rooms/$roomId'
     | '/_authenticated/classroom/'
   fileRoutesById: FileRoutesById
 }
@@ -718,6 +731,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClassroomIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/rooms/$roomId': {
+      id: '/_authenticated/rooms/$roomId'
+      path: '/$roomId'
+      fullPath: '/rooms/$roomId'
+      preLoaderRoute: typeof AuthenticatedRoomsRoomIdRouteImport
+      parentRoute: typeof AuthenticatedRoomsRoute
+    }
     '/_authenticated/classroom/$classId': {
       id: '/_authenticated/classroom/$classId'
       path: '/classroom/$classId'
@@ -727,6 +747,17 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthenticatedRoomsRouteChildren {
+  AuthenticatedRoomsRoomIdRoute: typeof AuthenticatedRoomsRoomIdRoute
+}
+
+const AuthenticatedRoomsRouteChildren: AuthenticatedRoomsRouteChildren = {
+  AuthenticatedRoomsRoomIdRoute: AuthenticatedRoomsRoomIdRoute,
+}
+
+const AuthenticatedRoomsRouteWithChildren =
+  AuthenticatedRoomsRoute._addFileChildren(AuthenticatedRoomsRouteChildren)
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
@@ -746,7 +777,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedQuestionsRoute: typeof AuthenticatedQuestionsRoute
-  AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRoute
+  AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedShareRoute: typeof AuthenticatedShareRoute
   AuthenticatedStudyRoute: typeof AuthenticatedStudyRoute
@@ -775,7 +806,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedQuestionsRoute: AuthenticatedQuestionsRoute,
-  AuthenticatedRoomsRoute: AuthenticatedRoomsRoute,
+  AuthenticatedRoomsRoute: AuthenticatedRoomsRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedShareRoute: AuthenticatedShareRoute,
   AuthenticatedStudyRoute: AuthenticatedStudyRoute,
