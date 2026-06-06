@@ -4,7 +4,7 @@ import {
   MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy,
   Megaphone, GraduationCap, Zap, Headphones, Menu, X, MoreHorizontal,
   StickyNote, Users, Ban, AlertOctagon, HelpCircle,
-  CalendarClock, Stamp, Activity, Share2,
+  CalendarClock, Stamp, Activity, Share2, ScanLine, Vote, Flame,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,8 @@ import { useTimer } from "@/lib/timer-context";
 import { useI18n } from "@/lib/i18n";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { SearchBar } from "@/components/SearchBar";
+import { useUserPrefs } from "@/lib/user-prefs";
 
 const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
@@ -29,6 +31,12 @@ const NAV = [
   { to: "/goals", labelKey: "nav.goals" as const, icon: Trophy },
   { to: "/habits", labelKey: "nav.habits" as const, icon: Stamp },
   { to: "/heatmap", labelKey: "nav.heatmap" as const, icon: Activity },
+  { to: "/streak", labelKey: "nav.streak" as const, icon: Flame },
+  { to: "/flashcards", labelKey: "nav.flashcards" as const, icon: Brain },
+  { to: "/ocr", labelKey: "nav.ocr" as const, icon: ScanLine },
+  { to: "/friends", labelKey: "nav.friends" as const, icon: Users },
+  { to: "/rooms", labelKey: "nav.rooms" as const, icon: Users },
+  { to: "/polls", labelKey: "nav.polls" as const, icon: Vote },
   { to: "/questions", labelKey: "nav.questions" as const, icon: Brain },
   { to: "/practice", labelKey: "nav.practice" as const, icon: Target },
   { to: "/tutor", labelKey: "nav.tutor" as const, icon: Sparkles },
@@ -57,6 +65,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { t } = useI18n();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const isMobile = useIsMobile();
+  useUserPrefs(); // apply font scale / contrast on mount
   const [version, setVersion] = useState<string>("");
   const [profile, setProfile] = useState<{ display_name: string | null; username: string | null; avatar_url: string | null } | null>(null);
   const [level, setLevel] = useState<number>(1);
@@ -170,15 +179,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               className="mt-1 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition border border-red-500/40 text-red-600 hover:bg-red-500/10"
             >
               <Ban className="h-4 w-4" />
-              利用停止サービス
-            </Link>
-            <Link
-              to="/admin"
-              search={{ tab: "user-restrictions" } as any}
-              className="mt-1 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition border border-blue-500/40 text-blue-600 hover:bg-blue-500/10"
-            >
-              <AlertOctagon className="h-4 w-4" />
-              制限
+              利用停止
             </Link>
             <Link
               to="/admin"
@@ -231,6 +232,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Sheet>
             <img src={logoUrl} alt="" className="h-8 w-8 rounded-lg" />
             <ClockHeader version={version} compact />
+            <div className="ml-2"><SearchBar /></div>
             <Avatar className="h-9 w-9 ml-auto">
               {profile?.avatar_url ? <AvatarImage src={profile.avatar_url} alt={displayName} /> : null}
               <AvatarFallback>{initial}</AvatarFallback>
