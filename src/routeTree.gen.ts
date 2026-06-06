@@ -23,6 +23,7 @@ import { Route as AuthenticatedTutorRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
 import { Route as AuthenticatedStudyRouteImport } from './routes/_authenticated/study'
+import { Route as AuthenticatedStreakRouteImport } from './routes/_authenticated/streak'
 import { Route as AuthenticatedShareRouteImport } from './routes/_authenticated/share'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
@@ -117,6 +118,11 @@ const AuthenticatedTimerRoute = AuthenticatedTimerRouteImport.update({
 const AuthenticatedStudyRoute = AuthenticatedStudyRouteImport.update({
   id: '/study',
   path: '/study',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedStreakRoute = AuthenticatedStreakRouteImport.update({
+  id: '/streak',
+  path: '/streak',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedShareRoute = AuthenticatedShareRouteImport.update({
@@ -286,6 +292,7 @@ export interface FileRoutesByFullPath {
   '/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
+  '/streak': typeof AuthenticatedStreakRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
   '/today': typeof AuthenticatedTodayRoute
@@ -327,6 +334,7 @@ export interface FileRoutesByTo {
   '/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
+  '/streak': typeof AuthenticatedStreakRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
   '/today': typeof AuthenticatedTodayRoute
@@ -370,6 +378,7 @@ export interface FileRoutesById {
   '/_authenticated/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/share': typeof AuthenticatedShareRoute
+  '/_authenticated/streak': typeof AuthenticatedStreakRoute
   '/_authenticated/study': typeof AuthenticatedStudyRoute
   '/_authenticated/timer': typeof AuthenticatedTimerRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
@@ -413,6 +422,7 @@ export interface FileRouteTypes {
     | '/rooms'
     | '/settings'
     | '/share'
+    | '/streak'
     | '/study'
     | '/timer'
     | '/today'
@@ -454,6 +464,7 @@ export interface FileRouteTypes {
     | '/rooms'
     | '/settings'
     | '/share'
+    | '/streak'
     | '/study'
     | '/timer'
     | '/today'
@@ -496,6 +507,7 @@ export interface FileRouteTypes {
     | '/_authenticated/rooms'
     | '/_authenticated/settings'
     | '/_authenticated/share'
+    | '/_authenticated/streak'
     | '/_authenticated/study'
     | '/_authenticated/timer'
     | '/_authenticated/today'
@@ -618,6 +630,13 @@ declare module '@tanstack/react-router' {
       path: '/study'
       fullPath: '/study'
       preLoaderRoute: typeof AuthenticatedStudyRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/streak': {
+      id: '/_authenticated/streak'
+      path: '/streak'
+      fullPath: '/streak'
+      preLoaderRoute: typeof AuthenticatedStreakRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/share': {
@@ -840,6 +859,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedShareRoute: typeof AuthenticatedShareRoute
+  AuthenticatedStreakRoute: typeof AuthenticatedStreakRoute
   AuthenticatedStudyRoute: typeof AuthenticatedStudyRoute
   AuthenticatedTimerRoute: typeof AuthenticatedTimerRoute
   AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
@@ -872,6 +892,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedRoomsRoute: AuthenticatedRoomsRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedShareRoute: AuthenticatedShareRoute,
+  AuthenticatedStreakRoute: AuthenticatedStreakRoute,
   AuthenticatedStudyRoute: AuthenticatedStudyRoute,
   AuthenticatedTimerRoute: AuthenticatedTimerRoute,
   AuthenticatedTodayRoute: AuthenticatedTodayRoute,
