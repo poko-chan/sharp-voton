@@ -36,6 +36,7 @@ function LoginPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [accountKind, setAccountKind] = useState<"child" | "parent">("child");
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -83,10 +84,15 @@ function LoginPage() {
           password,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { username: uname, display_name: dname },
+            data: { username: uname, display_name: dname, account_kind: accountKind },
           },
         });
         if (error) throw error;
+        // update kind (trigger may not honor metadata)
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          await supabase.from("profiles").update({ account_kind: accountKind } as any).eq("id", session.user.id);
+        }
         toast.success("登録完了！自動ログインします");
       } else {
         const uname = username.trim();
