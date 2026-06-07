@@ -21,6 +21,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SearchBar } from "@/components/SearchBar";
 import { useUserPrefs } from "@/lib/user-prefs";
+import { useRestriction } from "@/lib/restriction-context";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
@@ -52,6 +54,14 @@ const NAV = [
   { to: "/settings", labelKey: "nav.settings" as const, icon: Settings },
 ] as const;
 
+// Map prefix -> service key (for filtering hidden services)
+const ROUTE_SERVICE: Record<string, string> = {
+  "/timer": "timer", "/tutor": "tutor", "/classroom": "classroom",
+  "/classchat": "classchat", "/chat": "chat", "/notes": "notes",
+  "/today": "today", "/practice": "practice", "/questions": "questions",
+  "/coach": "coach", "/micro": "micro", "/listen": "listen",
+};
+
 // Bottom-bar mobile shortcuts (5 primary, last is "more")
 const BOTTOM_NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
@@ -61,11 +71,12 @@ const BOTTOM_NAV = [
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin, signOut, accountKind } = useAuth();
   const { t } = useI18n();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const isMobile = useIsMobile();
-  useUserPrefs(); // apply font scale / contrast on mount
+  const { prefs } = useUserPrefs(); // apply font scale / contrast on mount
+  const restriction = useRestriction();
   const [version, setVersion] = useState<string>("");
   const [profile, setProfile] = useState<{ display_name: string | null; username: string | null; avatar_url: string | null } | null>(null);
   const [level, setLevel] = useState<number>(1);
@@ -112,6 +123,19 @@ export function AppShell({ children }: { children: ReactNode }) {
   const initial = (displayName || "U").slice(0, 1).toUpperCase();
   const shortId = user?.id ? `ID: ${user.id.slice(0, 8)}` : "";
 
+  // Compute hidden/restricted nav items
+  const hiddenByUser = new Set(prefs.sidebar_hidden ?? []);
+  const bypass = isAdmin && prefs.act_as_admin;
+  const isRestricted = (to: string) => {
+    const svc = ROUTE_SERVICE[to];
+    if (!svc) return false;
+    if (bypass) return false;
+    return !!restriction.global[svc] || !!restriction.forMe[svc];
+  };
+  const navVisible = NAV.filter((n) => !isRestricted(n.to) && !hiddenByUser.has(n.to));
+  const navRestricted = NAV.filter((n) => isRestricted(n.to));
+  const navHiddenByUser = NAV.filter((n) => !isRestricted(n.to) && hiddenByUser.has(n.to));
+
   const sidebarContent = (
     <>
       <div className="p-5 flex items-center gap-3">
@@ -141,7 +165,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </div>
       <nav className="flex-1 px-3 space-y-0.5 overflow-auto pb-4">
-        {NAV.map((n) => {
+        {navVisible.map((n) => {
           const active = path === n.to || path.startsWith(n.to + "/");
           return (
             <Link
@@ -158,6 +182,43 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Link>
           );
         })}
+
+        {accountKind === "parent" && (
+          <Link to={"/parent" as any} className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition border border-blue-500/30 text-blue-600 hover:bg-blue-500/10 mt-2">
+            <Users className="h-4 w-4" /> 保護者ダッシュボード
+          </Link>
+        )}
+
+        {navHiddenByUser.length > 0 && (
+          <Popover>
+            <PopoverTrigger className="mt-2 w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm border border-border/60 hover:bg-accent">
+              <MoreHorizontal className="h-4 w-4" /> その他 ({navHiddenByUser.length})
+            </PopoverTrigger>
+            <PopoverContent side="right" align="start" className="w-56 p-2">
+              {navHiddenByUser.map((n) => (
+                <Link key={n.to} to={n.to} className="flex items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent">
+                  <n.icon className="h-4 w-4" /> {t(n.labelKey)}
+                </Link>
+              ))}
+            </PopoverContent>
+          </Popover>
+        )}
+
+        {navRestricted.length > 0 && (
+          <Popover>
+            <PopoverTrigger className="mt-2 w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm border border-red-500/30 text-red-600 hover:bg-red-500/10">
+              <Ban className="h-4 w-4" /> 利用停止中 ({navRestricted.length})
+            </PopoverTrigger>
+            <PopoverContent side="right" align="start" className="w-56 p-2">
+              {navRestricted.map((n) => (
+                <Link key={n.to} to={n.to} className="flex items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent text-red-600">
+                  <n.icon className="h-4 w-4" /> {t(n.labelKey)}
+                </Link>
+              ))}
+            </PopoverContent>
+          </Popover>
+        )}
+
         {isAdmin && (
           <Link
             to="/admin"
