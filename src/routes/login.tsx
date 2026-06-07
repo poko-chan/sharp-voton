@@ -228,6 +228,16 @@ function LoginPage() {
           {mode === "signup" && (
             <>
               <div className="space-y-1">
+                <Label>アカウント種別</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button type="button" onClick={() => setAccountKind("child")} className={`rounded-md border p-2 text-sm ${accountKind === "child" ? "border-primary bg-primary/10 font-semibold" : ""}`}>👦 子供アカウント</button>
+                  <button type="button" onClick={() => setAccountKind("parent")} className={`rounded-md border p-2 text-sm ${accountKind === "parent" ? "border-primary bg-primary/10 font-semibold" : ""}`}>👨‍👩‍👧 保護者アカウント</button>
+                </div>
+                {accountKind === "parent" && (
+                  <p className="text-[11px] text-muted-foreground">保護者アカウントは登録後「保護者ダッシュボード」から子供アカウントとリンクできます。</p>
+                )}
+              </div>
+              <div className="space-y-1">
                 <Label>表示名 <span className="text-xs text-muted-foreground">(任意・空欄ならユーザー名と同じ)</span></Label>
                 <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={40} placeholder="ぽこちゃん" />
               </div>
