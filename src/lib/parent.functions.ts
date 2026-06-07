@@ -81,10 +81,8 @@ export const updateChildProfile = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: ok } = await supabaseAdmin.from("parent_child_links").select("id").eq("parent_id", context.userId).eq("child_id", data.childId).maybeSingle();
     if (!ok) throw new Error("子供アカウントとリンクされていません");
-    const patch: Record<string, unknown> = {};
-    if (data.display_name) patch.display_name = data.display_name;
-    if (Object.keys(patch).length === 0) return { ok: true };
-    const { error } = await supabaseAdmin.from("profiles").update(patch).eq("id", data.childId);
+    if (!data.display_name) return { ok: true };
+    const { error } = await supabaseAdmin.from("profiles").update({ display_name: data.display_name }).eq("id", data.childId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
