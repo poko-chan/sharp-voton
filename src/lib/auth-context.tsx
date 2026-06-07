@@ -8,6 +8,7 @@ interface AuthContextValue {
   session: Session | null;
   user: User | null;
   role: AppRole | null;
+  accountKind: "child" | "parent" | "adult" | null;
   loading: boolean;
   isAdmin: boolean;
   signOut: () => Promise<void>;
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
+  const [accountKind, setAccountKind] = useState<"child" | "parent" | "adult" | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchRole = async (userId: string) => {
@@ -29,6 +31,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else {
       setRole("user");
     }
+    const { data: prof } = await supabase.from("profiles").select("account_kind" as any).eq("id", userId).maybeSingle();
+    setAccountKind(((prof as any)?.account_kind as any) ?? "child");
   };
 
   useEffect(() => {
@@ -38,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setTimeout(() => fetchRole(s.user.id), 0);
       } else {
         setRole(null);
+        setAccountKind(null);
       }
     });
     supabase.auth.getSession().then(({ data }) => {
@@ -52,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setSession(null);
     setRole(null);
+    setAccountKind(null);
   };
 
   const refresh = async () => {
@@ -66,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         user: session?.user ?? null,
         role,
+        accountKind,
         loading,
         isAdmin: role === "admin",
         signOut,
