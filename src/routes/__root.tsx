@@ -21,8 +21,9 @@ import { RouteLoading } from "@/components/RouteLoading";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { AmbientSound } from "@/components/AmbientSound";
-import { QuickMemo } from "@/components/QuickMemo";
 import { loadAndApplyUserTheme } from "@/lib/theme";
+import { useRouterState as useRS } from "@tanstack/react-router";
+import { useUserPrefs } from "@/lib/user-prefs";
 
 function NotFoundComponent() {
   return (
@@ -189,13 +190,21 @@ function RootComponent() {
             </MaintenanceGate>
           </RestrictionProvider>
           <RouteLoading />
-          <FeedbackWidget />
+          <DockedWidgets />
           <PWAInstallPrompt />
           <AmbientSound />
-          <QuickMemo />
           <Toaster richColors position="top-center" />
         </MaintenanceProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
+}
+
+function DockedWidgets() {
+  const path = useRS({ select: (s) => s.location.pathname });
+  const onAuthSurface = !["/login","/admin-login","/help","/terms","/privacy","/"].includes(path) && !path.startsWith("/share/");
+  const { prefs } = useUserPrefs();
+  if (!onAuthSurface) return null;
+  const dock = (prefs as any).right_dock ?? ["ambient","feedback"];
+  return <>{dock.includes("feedback") && <FeedbackWidget />}</>;
 }

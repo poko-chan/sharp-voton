@@ -1,8 +1,22 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type UserPrefs = { widgets: string[]; font_scale: number; high_contrast: boolean };
-const DEFAULT: UserPrefs = { widgets: ["streak", "today-chart", "weekly-diff", "habits"], font_scale: 1.0, high_contrast: false };
+export type UserPrefs = {
+  widgets: string[];
+  font_scale: number;
+  high_contrast: boolean;
+  right_dock: string[];
+  sidebar_hidden: string[];
+  act_as_admin: boolean;
+};
+const DEFAULT: UserPrefs = {
+  widgets: ["streak", "today-chart", "weekly-diff", "habits"],
+  font_scale: 1.0,
+  high_contrast: false,
+  right_dock: ["ambient", "feedback"],
+  sidebar_hidden: [],
+  act_as_admin: false,
+};
 
 export function useUserPrefs() {
   const [prefs, setPrefs] = useState<UserPrefs>(DEFAULT);
@@ -15,6 +29,9 @@ export function useUserPrefs() {
         widgets: (data.widgets as string[]) ?? DEFAULT.widgets,
         font_scale: data.font_scale ?? 1,
         high_contrast: !!data.high_contrast,
+        right_dock: ((data as any).right_dock as string[]) ?? DEFAULT.right_dock,
+        sidebar_hidden: ((data as any).sidebar_hidden as string[]) ?? DEFAULT.sidebar_hidden,
+        act_as_admin: !!(data as any).act_as_admin,
       });
     })();
   }, []);

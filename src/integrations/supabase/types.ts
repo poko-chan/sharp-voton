@@ -930,6 +930,27 @@ export type Database = {
         }
         Relationships: []
       }
+      parent_child_links: {
+        Row: {
+          child_id: string
+          created_at: string
+          id: string
+          parent_id: string
+        }
+        Insert: {
+          child_id: string
+          created_at?: string
+          id?: string
+          parent_id: string
+        }
+        Update: {
+          child_id?: string
+          created_at?: string
+          id?: string
+          parent_id?: string
+        }
+        Relationships: []
+      }
       poll_votes: {
         Row: {
           created_at: string
@@ -991,6 +1012,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_kind: string
           avatar_url: string | null
           created_at: string
           deletion_code: string | null
@@ -1010,6 +1032,7 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          account_kind?: string
           avatar_url?: string | null
           created_at?: string
           deletion_code?: string | null
@@ -1029,6 +1052,7 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          account_kind?: string
           avatar_url?: string | null
           created_at?: string
           deletion_code?: string | null
@@ -1814,22 +1838,31 @@ export type Database = {
       }
       user_prefs: {
         Row: {
+          act_as_admin: boolean
           font_scale: number
           high_contrast: boolean
+          right_dock: Json | null
+          sidebar_hidden: Json | null
           updated_at: string
           user_id: string
           widgets: Json
         }
         Insert: {
+          act_as_admin?: boolean
           font_scale?: number
           high_contrast?: boolean
+          right_dock?: Json | null
+          sidebar_hidden?: Json | null
           updated_at?: string
           user_id: string
           widgets?: Json
         }
         Update: {
+          act_as_admin?: boolean
           font_scale?: number
           high_contrast?: boolean
+          right_dock?: Json | null
+          sidebar_hidden?: Json | null
           updated_at?: string
           user_id?: string
           widgets?: Json
@@ -1947,6 +1980,10 @@ export type Database = {
       }
       is_class_teacher: {
         Args: { _class_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_parent_of: {
+        Args: { _child: string; _parent: string }
         Returns: boolean
       }
       join_class_by_code: { Args: { _code: string }; Returns: string }

@@ -21,6 +21,7 @@ import { useI18n } from "@/lib/i18n";
 import { AccessibilityPanel } from "@/components/AccessibilityPanel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { THEMES, saveUserTheme, type ThemeName } from "@/lib/theme";
+import { useUserPrefs } from "@/lib/user-prefs";
 
 function UserSettingsPage() {
   const { user } = useAuth();
@@ -110,6 +111,7 @@ function UserSettingsPage() {
     <div className="p-8 max-w-2xl mx-auto space-y-6">
       <h1 className="text-3xl font-bold flex items-center gap-2"><Settings /> ユーザー設定</h1>
       <AccessibilityPanel />
+      <CustomizationPanel />
 
       <Card className="p-6 space-y-5">
         <div className="flex items-center gap-2 font-semibold"><User className="h-4 w-4" /> プロフィール</div>
@@ -164,6 +166,93 @@ function UserSettingsPage() {
 
       <DangerZone />
     </div>
+  );
+}
+
+function CustomizationPanel() {
+  const { prefs, save } = useUserPrefs();
+  const { isAdmin } = useAuth();
+  const NAV_ITEMS: { to: string; label: string }[] = [
+    { to: "/dashboard", label: "ダッシュボード" },
+    { to: "/today", label: "Today" },
+    { to: "/study", label: "勉強記録" },
+    { to: "/timer", label: "タイマー" },
+    { to: "/calendar", label: "カレンダー" },
+    { to: "/goals", label: "目標" },
+    { to: "/habits", label: "習慣" },
+    { to: "/heatmap", label: "ヒートマップ" },
+    { to: "/streak", label: "ストリーク" },
+    { to: "/flashcards", label: "暗記カード" },
+    { to: "/ocr", label: "OCR" },
+    { to: "/friends", label: "フレンド" },
+    { to: "/rooms", label: "ルーム" },
+    { to: "/polls", label: "投票" },
+    { to: "/questions", label: "AI問題作成" },
+    { to: "/practice", label: "AI演習" },
+    { to: "/tutor", label: "AI家庭教師" },
+    { to: "/coach", label: "AIコーチ" },
+    { to: "/micro", label: "マイクロ学習" },
+    { to: "/listen", label: "リスニング" },
+    { to: "/classroom", label: "Classroom" },
+    { to: "/chat", label: "チャット" },
+    { to: "/classchat", label: "クラスチャット" },
+    { to: "/notes", label: "付箋" },
+    { to: "/announcements", label: "お知らせ" },
+    { to: "/share", label: "共有" },
+  ];
+  const hidden = new Set(prefs.sidebar_hidden ?? []);
+  const toggleNav = (to: string) => {
+    const next = new Set(hidden);
+    if (next.has(to)) next.delete(to); else next.add(to);
+    save({ sidebar_hidden: Array.from(next) });
+  };
+  const dock = new Set(prefs.right_dock ?? ["ambient","feedback"]);
+  const toggleDock = (k: string) => {
+    const next = new Set(dock);
+    if (next.has(k)) next.delete(k); else next.add(k);
+    save({ right_dock: Array.from(next) });
+  };
+  return (
+    <Card className="p-6 space-y-4">
+      <div className="font-semibold">画面カスタマイズ</div>
+      <div className="space-y-2">
+        <Label>右下のフローティング機能</Label>
+        <div className="grid grid-cols-2 gap-2">
+          <label className="flex items-center justify-between rounded border p-2 text-sm">
+            <span>サポート/フィードバック</span>
+            <Switch checked={dock.has("feedback")} onCheckedChange={() => toggleDock("feedback")} />
+          </label>
+          <label className="flex items-center justify-between rounded border p-2 text-sm">
+            <span>環境音 (タイマーのみ)</span>
+            <Switch checked={dock.has("ambient")} onCheckedChange={() => toggleDock("ambient")} />
+          </label>
+        </div>
+        <p className="text-[11px] text-muted-foreground">※ 環境音ボタンはタイマー画面のみで表示されます。</p>
+      </div>
+      <div className="space-y-2">
+        <Label>左メニューに表示する項目</Label>
+        <p className="text-[11px] text-muted-foreground">OFFにした項目は「その他」メニューから引き続きアクセスできます。</p>
+        <div className="grid grid-cols-2 gap-1.5 max-h-72 overflow-auto rounded border p-2">
+          {NAV_ITEMS.map((n) => (
+            <label key={n.to} className="flex items-center justify-between text-xs px-2 py-1 rounded hover:bg-accent">
+              <span className="truncate">{n.label}</span>
+              <Switch checked={!hidden.has(n.to)} onCheckedChange={() => toggleNav(n.to)} />
+            </label>
+          ))}
+        </div>
+      </div>
+      {isAdmin && (
+        <div className="rounded border border-warning/40 bg-warning/5 p-3 space-y-1">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium">管理者として実行</div>
+              <div className="text-[11px] text-muted-foreground">ON にすると、利用停止サービスを管理者として閲覧・操作できます。OFFでは一般ユーザーと同じ制限を受けます。</div>
+            </div>
+            <Switch checked={prefs.act_as_admin} onCheckedChange={(v) => save({ act_as_admin: v })} />
+          </div>
+        </div>
+      )}
+    </Card>
   );
 }
 

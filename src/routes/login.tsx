@@ -36,6 +36,7 @@ function LoginPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [accountKind, setAccountKind] = useState<"child" | "parent">("child");
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -83,10 +84,15 @@ function LoginPage() {
           password,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { username: uname, display_name: dname },
+            data: { username: uname, display_name: dname, account_kind: accountKind },
           },
         });
         if (error) throw error;
+        // update kind (trigger may not honor metadata)
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          await supabase.from("profiles").update({ account_kind: accountKind } as any).eq("id", session.user.id);
+        }
         toast.success("登録完了！自動ログインします");
       } else {
         const uname = username.trim();
@@ -221,6 +227,16 @@ function LoginPage() {
           </div>
           {mode === "signup" && (
             <>
+              <div className="space-y-1">
+                <Label>アカウント種別</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button type="button" onClick={() => setAccountKind("child")} className={`rounded-md border p-2 text-sm ${accountKind === "child" ? "border-primary bg-primary/10 font-semibold" : ""}`}>👦 子供アカウント</button>
+                  <button type="button" onClick={() => setAccountKind("parent")} className={`rounded-md border p-2 text-sm ${accountKind === "parent" ? "border-primary bg-primary/10 font-semibold" : ""}`}>👨‍👩‍👧 保護者アカウント</button>
+                </div>
+                {accountKind === "parent" && (
+                  <p className="text-[11px] text-muted-foreground">保護者アカウントは登録後「保護者ダッシュボード」から子供アカウントとリンクできます。</p>
+                )}
+              </div>
               <div className="space-y-1">
                 <Label>表示名 <span className="text-xs text-muted-foreground">(任意・空欄ならユーザー名と同じ)</span></Label>
                 <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={40} placeholder="ぽこちゃん" />

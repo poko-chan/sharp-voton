@@ -11,7 +11,7 @@ type Preset = "off" | "birds" | "rain" | "wave" | "fire" | "white" | "pink" | "b
  */
 export function AmbientSound() {
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const visible = path === "/timer";
+  const visible = path === "/timer" || path.startsWith("/timer/");
   const [open, setOpen] = useState(false);
   const [preset, setPreset] = useState<Preset>("off");
   const [vol, setVol] = useState(0.4);
@@ -165,14 +165,14 @@ export function AmbientSound() {
     <>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-20 right-4 z-40 h-12 w-12 rounded-full bg-gradient-to-br from-primary/90 via-primary to-primary/60 text-primary-foreground border border-white/30 ring-1 ring-white/10 shadow-[0_10px_30px_-10px_hsl(var(--primary)/0.7)] backdrop-blur-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300"
+        className="fixed bottom-20 right-4 z-[60] h-12 w-12 rounded-full bg-gradient-to-br from-primary/90 via-primary to-primary/60 text-primary-foreground border border-white/30 ring-1 ring-white/10 shadow-[0_10px_30px_-10px_hsl(var(--primary)/0.7)] backdrop-blur-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300"
         title="音楽 / 環境音"
         aria-label="音楽 / 環境音"
       >
         {preset === "off" ? <Music2 className="h-5 w-5 drop-shadow" /> : <Volume2 className="h-5 w-5 drop-shadow animate-pulse" />}
       </button>
       {open && (
-        <div className="fixed bottom-36 right-4 z-40 w-72 rounded-2xl border border-white/20 bg-popover/95 backdrop-blur-2xl p-4 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] space-y-3 ring-1 ring-white/10">
+        <div className="fixed bottom-36 right-4 z-[60] w-72 rounded-2xl border border-white/20 bg-popover/95 backdrop-blur-2xl p-4 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] space-y-3 ring-1 ring-white/10">
           <div className="flex items-center justify-between">
             <div className="text-sm font-semibold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">🎵 音楽 / 環境音</div>
             <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
