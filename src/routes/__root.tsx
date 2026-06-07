@@ -22,6 +22,9 @@ import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { AmbientSound } from "@/components/AmbientSound";
 import { loadAndApplyUserTheme } from "@/lib/theme";
+import { useRouterState as useRS } from "@tanstack/react-router";
+import { useUserPrefs } from "@/lib/user-prefs";
+import { VoiceMicButton } from "@/components/VoiceMicButton";
 
 function NotFoundComponent() {
   return (
@@ -195,5 +198,19 @@ function RootComponent() {
         </MaintenanceProvider>
       </AuthProvider>
     </QueryClientProvider>
+  );
+}
+
+function DockedWidgets() {
+  const path = useRS({ select: (s) => s.location.pathname });
+  const onAuthSurface = !["/login","/admin-login","/help","/terms","/privacy","/"].includes(path) && !path.startsWith("/share/");
+  const { prefs } = useUserPrefs();
+  if (!onAuthSurface) return null;
+  const dock = prefs.right_dock ?? ["ambient","feedback","voice"];
+  return (
+    <>
+      {dock.includes("feedback") && <FeedbackWidget />}
+      {dock.includes("voice") && <VoiceMicButton />}
+    </>
   );
 }
