@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Users, Plus, LogIn } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/rooms")({ component: RoomsPage });
+export const Route = createFileRoute("/_authenticated/rooms/")({ component: RoomsPage });
 
 function RoomsPage() {
   const { user } = useAuth();
