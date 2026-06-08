@@ -34,8 +34,10 @@ import { Route as AuthenticatedParentRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedOcrRouteImport } from './routes/_authenticated/ocr'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
+import { Route as AuthenticatedMissionsRouteImport } from './routes/_authenticated/missions'
 import { Route as AuthenticatedMicroRouteImport } from './routes/_authenticated/micro'
 import { Route as AuthenticatedListenRouteImport } from './routes/_authenticated/listen'
+import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
 import { Route as AuthenticatedHeatmapRouteImport } from './routes/_authenticated/heatmap'
 import { Route as AuthenticatedHabitsRouteImport } from './routes/_authenticated/habits'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
@@ -178,6 +180,11 @@ const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
   path: '/notes',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedMissionsRoute = AuthenticatedMissionsRouteImport.update({
+  id: '/missions',
+  path: '/missions',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedMicroRoute = AuthenticatedMicroRouteImport.update({
   id: '/micro',
   path: '/micro',
@@ -188,6 +195,12 @@ const AuthenticatedListenRoute = AuthenticatedListenRouteImport.update({
   path: '/listen',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedLeaderboardRoute =
+  AuthenticatedLeaderboardRouteImport.update({
+    id: '/leaderboard',
+    path: '/leaderboard',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedHeatmapRoute = AuthenticatedHeatmapRouteImport.update({
   id: '/heatmap',
   path: '/heatmap',
@@ -293,8 +306,10 @@ export interface FileRoutesByFullPath {
   '/goals': typeof AuthenticatedGoalsRoute
   '/habits': typeof AuthenticatedHabitsRoute
   '/heatmap': typeof AuthenticatedHeatmapRoute
+  '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/listen': typeof AuthenticatedListenRoute
   '/micro': typeof AuthenticatedMicroRoute
+  '/missions': typeof AuthenticatedMissionsRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/ocr': typeof AuthenticatedOcrRoute
@@ -337,8 +352,10 @@ export interface FileRoutesByTo {
   '/goals': typeof AuthenticatedGoalsRoute
   '/habits': typeof AuthenticatedHabitsRoute
   '/heatmap': typeof AuthenticatedHeatmapRoute
+  '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/listen': typeof AuthenticatedListenRoute
   '/micro': typeof AuthenticatedMicroRoute
+  '/missions': typeof AuthenticatedMissionsRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/ocr': typeof AuthenticatedOcrRoute
@@ -382,8 +399,10 @@ export interface FileRoutesById {
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/habits': typeof AuthenticatedHabitsRoute
   '/_authenticated/heatmap': typeof AuthenticatedHeatmapRoute
+  '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/listen': typeof AuthenticatedListenRoute
   '/_authenticated/micro': typeof AuthenticatedMicroRoute
+  '/_authenticated/missions': typeof AuthenticatedMissionsRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/ocr': typeof AuthenticatedOcrRoute
@@ -428,8 +447,10 @@ export interface FileRouteTypes {
     | '/goals'
     | '/habits'
     | '/heatmap'
+    | '/leaderboard'
     | '/listen'
     | '/micro'
+    | '/missions'
     | '/notes'
     | '/notifications'
     | '/ocr'
@@ -472,8 +493,10 @@ export interface FileRouteTypes {
     | '/goals'
     | '/habits'
     | '/heatmap'
+    | '/leaderboard'
     | '/listen'
     | '/micro'
+    | '/missions'
     | '/notes'
     | '/notifications'
     | '/ocr'
@@ -516,8 +539,10 @@ export interface FileRouteTypes {
     | '/_authenticated/goals'
     | '/_authenticated/habits'
     | '/_authenticated/heatmap'
+    | '/_authenticated/leaderboard'
     | '/_authenticated/listen'
     | '/_authenticated/micro'
+    | '/_authenticated/missions'
     | '/_authenticated/notes'
     | '/_authenticated/notifications'
     | '/_authenticated/ocr'
@@ -731,6 +756,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/missions': {
+      id: '/_authenticated/missions'
+      path: '/missions'
+      fullPath: '/missions'
+      preLoaderRoute: typeof AuthenticatedMissionsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/micro': {
       id: '/_authenticated/micro'
       path: '/micro'
@@ -743,6 +775,13 @@ declare module '@tanstack/react-router' {
       path: '/listen'
       fullPath: '/listen'
       preLoaderRoute: typeof AuthenticatedListenRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/leaderboard': {
+      id: '/_authenticated/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof AuthenticatedLeaderboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/heatmap': {
@@ -886,8 +925,10 @@ interface AuthenticatedRouteChildren {
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedHabitsRoute: typeof AuthenticatedHabitsRoute
   AuthenticatedHeatmapRoute: typeof AuthenticatedHeatmapRoute
+  AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
   AuthenticatedListenRoute: typeof AuthenticatedListenRoute
   AuthenticatedMicroRoute: typeof AuthenticatedMicroRoute
+  AuthenticatedMissionsRoute: typeof AuthenticatedMissionsRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOcrRoute: typeof AuthenticatedOcrRoute
@@ -920,8 +961,10 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedHabitsRoute: AuthenticatedHabitsRoute,
   AuthenticatedHeatmapRoute: AuthenticatedHeatmapRoute,
+  AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
   AuthenticatedListenRoute: AuthenticatedListenRoute,
   AuthenticatedMicroRoute: AuthenticatedMicroRoute,
+  AuthenticatedMissionsRoute: AuthenticatedMissionsRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOcrRoute: AuthenticatedOcrRoute,
@@ -960,3 +1003,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
