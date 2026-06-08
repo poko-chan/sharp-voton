@@ -26,7 +26,6 @@ import { Route as AuthenticatedStudyRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedStreakRouteImport } from './routes/_authenticated/streak'
 import { Route as AuthenticatedShareRouteImport } from './routes/_authenticated/share'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
 import { Route as AuthenticatedQuestionsRouteImport } from './routes/_authenticated/questions'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
 import { Route as AuthenticatedPollsRouteImport } from './routes/_authenticated/polls'
@@ -48,6 +47,7 @@ import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/c
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedRoomsIndexRouteImport } from './routes/_authenticated/rooms.index'
 import { Route as AuthenticatedClassroomIndexRouteImport } from './routes/_authenticated/classroom.index'
 import { Route as AuthenticatedRoomsRoomIdRouteImport } from './routes/_authenticated/rooms.$roomId'
 import { Route as AuthenticatedClassroomClassIdRouteImport } from './routes/_authenticated/classroom.$classId'
@@ -134,11 +134,6 @@ const AuthenticatedShareRoute = AuthenticatedShareRouteImport.update({
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedRoomsRoute = AuthenticatedRoomsRouteImport.update({
-  id: '/rooms',
-  path: '/rooms',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedQuestionsRoute = AuthenticatedQuestionsRouteImport.update({
@@ -248,6 +243,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedRoomsIndexRoute = AuthenticatedRoomsIndexRouteImport.update({
+  id: '/rooms/',
+  path: '/rooms/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedClassroomIndexRoute =
   AuthenticatedClassroomIndexRouteImport.update({
     id: '/classroom/',
@@ -256,9 +256,9 @@ const AuthenticatedClassroomIndexRoute =
   } as any)
 const AuthenticatedRoomsRoomIdRoute =
   AuthenticatedRoomsRoomIdRouteImport.update({
-    id: '/$roomId',
-    path: '/$roomId',
-    getParentRoute: () => AuthenticatedRoomsRoute,
+    id: '/rooms/$roomId',
+    path: '/rooms/$roomId',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedClassroomClassIdRoute =
   AuthenticatedClassroomClassIdRouteImport.update({
@@ -296,7 +296,6 @@ export interface FileRoutesByFullPath {
   '/polls': typeof AuthenticatedPollsRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
-  '/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
   '/streak': typeof AuthenticatedStreakRoute
@@ -309,6 +308,7 @@ export interface FileRoutesByFullPath {
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom/': typeof AuthenticatedClassroomIndexRoute
+  '/rooms/': typeof AuthenticatedRoomsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -339,7 +339,6 @@ export interface FileRoutesByTo {
   '/polls': typeof AuthenticatedPollsRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
-  '/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
   '/streak': typeof AuthenticatedStreakRoute
@@ -352,6 +351,7 @@ export interface FileRoutesByTo {
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom': typeof AuthenticatedClassroomIndexRoute
+  '/rooms': typeof AuthenticatedRoomsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -384,7 +384,6 @@ export interface FileRoutesById {
   '/_authenticated/polls': typeof AuthenticatedPollsRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
-  '/_authenticated/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/share': typeof AuthenticatedShareRoute
   '/_authenticated/streak': typeof AuthenticatedStreakRoute
@@ -397,6 +396,7 @@ export interface FileRoutesById {
   '/_authenticated/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/_authenticated/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/_authenticated/classroom/': typeof AuthenticatedClassroomIndexRoute
+  '/_authenticated/rooms/': typeof AuthenticatedRoomsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -429,7 +429,6 @@ export interface FileRouteTypes {
     | '/polls'
     | '/practice'
     | '/questions'
-    | '/rooms'
     | '/settings'
     | '/share'
     | '/streak'
@@ -442,6 +441,7 @@ export interface FileRouteTypes {
     | '/classroom/$classId'
     | '/rooms/$roomId'
     | '/classroom/'
+    | '/rooms/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -472,7 +472,6 @@ export interface FileRouteTypes {
     | '/polls'
     | '/practice'
     | '/questions'
-    | '/rooms'
     | '/settings'
     | '/share'
     | '/streak'
@@ -485,6 +484,7 @@ export interface FileRouteTypes {
     | '/classroom/$classId'
     | '/rooms/$roomId'
     | '/classroom'
+    | '/rooms'
   id:
     | '__root__'
     | '/'
@@ -516,7 +516,6 @@ export interface FileRouteTypes {
     | '/_authenticated/polls'
     | '/_authenticated/practice'
     | '/_authenticated/questions'
-    | '/_authenticated/rooms'
     | '/_authenticated/settings'
     | '/_authenticated/share'
     | '/_authenticated/streak'
@@ -529,6 +528,7 @@ export interface FileRouteTypes {
     | '/_authenticated/classroom/$classId'
     | '/_authenticated/rooms/$roomId'
     | '/_authenticated/classroom/'
+    | '/_authenticated/rooms/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -663,13 +663,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/rooms': {
-      id: '/_authenticated/rooms'
-      path: '/rooms'
-      fullPath: '/rooms'
-      preLoaderRoute: typeof AuthenticatedRoomsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/questions': {
@@ -819,6 +812,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/rooms/': {
+      id: '/_authenticated/rooms/'
+      path: '/rooms'
+      fullPath: '/rooms/'
+      preLoaderRoute: typeof AuthenticatedRoomsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/classroom/': {
       id: '/_authenticated/classroom/'
       path: '/classroom'
@@ -828,10 +828,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/rooms/$roomId': {
       id: '/_authenticated/rooms/$roomId'
-      path: '/$roomId'
+      path: '/rooms/$roomId'
       fullPath: '/rooms/$roomId'
       preLoaderRoute: typeof AuthenticatedRoomsRoomIdRouteImport
-      parentRoute: typeof AuthenticatedRoomsRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/classroom/$classId': {
       id: '/_authenticated/classroom/$classId'
@@ -842,17 +842,6 @@ declare module '@tanstack/react-router' {
     }
   }
 }
-
-interface AuthenticatedRoomsRouteChildren {
-  AuthenticatedRoomsRoomIdRoute: typeof AuthenticatedRoomsRoomIdRoute
-}
-
-const AuthenticatedRoomsRouteChildren: AuthenticatedRoomsRouteChildren = {
-  AuthenticatedRoomsRoomIdRoute: AuthenticatedRoomsRoomIdRoute,
-}
-
-const AuthenticatedRoomsRouteWithChildren =
-  AuthenticatedRoomsRoute._addFileChildren(AuthenticatedRoomsRouteChildren)
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
@@ -876,7 +865,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPollsRoute: typeof AuthenticatedPollsRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedQuestionsRoute: typeof AuthenticatedQuestionsRoute
-  AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedShareRoute: typeof AuthenticatedShareRoute
   AuthenticatedStreakRoute: typeof AuthenticatedStreakRoute
@@ -885,7 +873,9 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
   AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
   AuthenticatedClassroomClassIdRoute: typeof AuthenticatedClassroomClassIdRoute
+  AuthenticatedRoomsRoomIdRoute: typeof AuthenticatedRoomsRoomIdRoute
   AuthenticatedClassroomIndexRoute: typeof AuthenticatedClassroomIndexRoute
+  AuthenticatedRoomsIndexRoute: typeof AuthenticatedRoomsIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -910,7 +900,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPollsRoute: AuthenticatedPollsRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedQuestionsRoute: AuthenticatedQuestionsRoute,
-  AuthenticatedRoomsRoute: AuthenticatedRoomsRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedShareRoute: AuthenticatedShareRoute,
   AuthenticatedStreakRoute: AuthenticatedStreakRoute,
@@ -919,7 +908,9 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTodayRoute: AuthenticatedTodayRoute,
   AuthenticatedTutorRoute: AuthenticatedTutorRoute,
   AuthenticatedClassroomClassIdRoute: AuthenticatedClassroomClassIdRoute,
+  AuthenticatedRoomsRoomIdRoute: AuthenticatedRoomsRoomIdRoute,
   AuthenticatedClassroomIndexRoute: AuthenticatedClassroomIndexRoute,
+  AuthenticatedRoomsIndexRoute: AuthenticatedRoomsIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -941,3 +932,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
