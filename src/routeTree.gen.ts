@@ -48,6 +48,7 @@ import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/c
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedRoomsIndexRouteImport } from './routes/_authenticated/rooms.index'
 import { Route as AuthenticatedClassroomIndexRouteImport } from './routes/_authenticated/classroom.index'
 import { Route as AuthenticatedRoomsRoomIdRouteImport } from './routes/_authenticated/rooms.$roomId'
 import { Route as AuthenticatedClassroomClassIdRouteImport } from './routes/_authenticated/classroom.$classId'
@@ -248,6 +249,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedRoomsIndexRoute = AuthenticatedRoomsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedRoomsRoute,
+} as any)
 const AuthenticatedClassroomIndexRoute =
   AuthenticatedClassroomIndexRouteImport.update({
     id: '/classroom/',
@@ -309,6 +315,7 @@ export interface FileRoutesByFullPath {
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom/': typeof AuthenticatedClassroomIndexRoute
+  '/rooms/': typeof AuthenticatedRoomsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -339,7 +346,6 @@ export interface FileRoutesByTo {
   '/polls': typeof AuthenticatedPollsRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
-  '/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
   '/streak': typeof AuthenticatedStreakRoute
@@ -352,6 +358,7 @@ export interface FileRoutesByTo {
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom': typeof AuthenticatedClassroomIndexRoute
+  '/rooms': typeof AuthenticatedRoomsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -397,6 +404,7 @@ export interface FileRoutesById {
   '/_authenticated/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/_authenticated/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/_authenticated/classroom/': typeof AuthenticatedClassroomIndexRoute
+  '/_authenticated/rooms/': typeof AuthenticatedRoomsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -442,6 +450,7 @@ export interface FileRouteTypes {
     | '/classroom/$classId'
     | '/rooms/$roomId'
     | '/classroom/'
+    | '/rooms/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -472,7 +481,6 @@ export interface FileRouteTypes {
     | '/polls'
     | '/practice'
     | '/questions'
-    | '/rooms'
     | '/settings'
     | '/share'
     | '/streak'
@@ -485,6 +493,7 @@ export interface FileRouteTypes {
     | '/classroom/$classId'
     | '/rooms/$roomId'
     | '/classroom'
+    | '/rooms'
   id:
     | '__root__'
     | '/'
@@ -529,6 +538,7 @@ export interface FileRouteTypes {
     | '/_authenticated/classroom/$classId'
     | '/_authenticated/rooms/$roomId'
     | '/_authenticated/classroom/'
+    | '/_authenticated/rooms/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -819,6 +829,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/rooms/': {
+      id: '/_authenticated/rooms/'
+      path: '/'
+      fullPath: '/rooms/'
+      preLoaderRoute: typeof AuthenticatedRoomsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoomsRoute
+    }
     '/_authenticated/classroom/': {
       id: '/_authenticated/classroom/'
       path: '/classroom'
@@ -845,10 +862,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRoomsRouteChildren {
   AuthenticatedRoomsRoomIdRoute: typeof AuthenticatedRoomsRoomIdRoute
+  AuthenticatedRoomsIndexRoute: typeof AuthenticatedRoomsIndexRoute
 }
 
 const AuthenticatedRoomsRouteChildren: AuthenticatedRoomsRouteChildren = {
   AuthenticatedRoomsRoomIdRoute: AuthenticatedRoomsRoomIdRoute,
+  AuthenticatedRoomsIndexRoute: AuthenticatedRoomsIndexRoute,
 }
 
 const AuthenticatedRoomsRouteWithChildren =
