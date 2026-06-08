@@ -27,6 +27,7 @@ import { Route as AuthenticatedStreakRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedShareRouteImport } from './routes/_authenticated/share'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
+import { Route as AuthenticatedRankRouteImport } from './routes/_authenticated/rank'
 import { Route as AuthenticatedQuestionsRouteImport } from './routes/_authenticated/questions'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
 import { Route as AuthenticatedPollsRouteImport } from './routes/_authenticated/polls'
@@ -142,6 +143,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
 const AuthenticatedRoomsRoute = AuthenticatedRoomsRouteImport.update({
   id: '/rooms',
   path: '/rooms',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedRankRoute = AuthenticatedRankRouteImport.update({
+  id: '/rank',
+  path: '/rank',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedQuestionsRoute = AuthenticatedQuestionsRouteImport.update({
@@ -317,6 +323,7 @@ export interface FileRoutesByFullPath {
   '/polls': typeof AuthenticatedPollsRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
+  '/rank': typeof AuthenticatedRankRoute
   '/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
@@ -363,6 +370,7 @@ export interface FileRoutesByTo {
   '/polls': typeof AuthenticatedPollsRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
+  '/rank': typeof AuthenticatedRankRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
   '/streak': typeof AuthenticatedStreakRoute
@@ -410,6 +418,7 @@ export interface FileRoutesById {
   '/_authenticated/polls': typeof AuthenticatedPollsRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
+  '/_authenticated/rank': typeof AuthenticatedRankRoute
   '/_authenticated/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/share': typeof AuthenticatedShareRoute
@@ -458,6 +467,7 @@ export interface FileRouteTypes {
     | '/polls'
     | '/practice'
     | '/questions'
+    | '/rank'
     | '/rooms'
     | '/settings'
     | '/share'
@@ -504,6 +514,7 @@ export interface FileRouteTypes {
     | '/polls'
     | '/practice'
     | '/questions'
+    | '/rank'
     | '/settings'
     | '/share'
     | '/streak'
@@ -550,6 +561,7 @@ export interface FileRouteTypes {
     | '/_authenticated/polls'
     | '/_authenticated/practice'
     | '/_authenticated/questions'
+    | '/_authenticated/rank'
     | '/_authenticated/rooms'
     | '/_authenticated/settings'
     | '/_authenticated/share'
@@ -705,6 +717,13 @@ declare module '@tanstack/react-router' {
       path: '/rooms'
       fullPath: '/rooms'
       preLoaderRoute: typeof AuthenticatedRoomsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/rank': {
+      id: '/_authenticated/rank'
+      path: '/rank'
+      fullPath: '/rank'
+      preLoaderRoute: typeof AuthenticatedRankRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/questions': {
@@ -936,6 +955,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPollsRoute: typeof AuthenticatedPollsRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedQuestionsRoute: typeof AuthenticatedQuestionsRoute
+  AuthenticatedRankRoute: typeof AuthenticatedRankRoute
   AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedShareRoute: typeof AuthenticatedShareRoute
@@ -972,6 +992,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPollsRoute: AuthenticatedPollsRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedQuestionsRoute: AuthenticatedQuestionsRoute,
+  AuthenticatedRankRoute: AuthenticatedRankRoute,
   AuthenticatedRoomsRoute: AuthenticatedRoomsRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedShareRoute: AuthenticatedShareRoute,
