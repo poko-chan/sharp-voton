@@ -5,6 +5,7 @@ import {
   Megaphone, GraduationCap, Zap, Headphones, Menu, X, MoreHorizontal,
   StickyNote, Users, Ban, HelpCircle,
   CalendarClock, Stamp, Activity, Share2, ScanLine, Vote, Flame,
+  Swords, Award, Download,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,11 @@ const NAV = [
   { to: "/notes", labelKey: "nav.notes" as const, icon: StickyNote },
   { to: "/announcements", labelKey: "nav.announcements" as const, icon: Megaphone },
   { to: "/share", labelKey: "nav.share" as const, icon: Share2 },
+  { to: "/missions", labelKey: "nav.dashboard" as const, icon: Target },
+  { to: "/leaderboard", labelKey: "nav.dashboard" as const, icon: Trophy },
+  { to: "/rank", labelKey: "nav.dashboard" as const, icon: Award },
+  { to: "/battle", labelKey: "nav.dashboard" as const, icon: Swords },
+  { to: "/export", labelKey: "nav.dashboard" as const, icon: Download },
   { to: "/settings", labelKey: "nav.settings" as const, icon: Settings },
 ] as const;
 
