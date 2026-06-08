@@ -8,6 +8,8 @@ export type UserPrefs = {
   right_dock: string[];
   sidebar_hidden: string[];
   act_as_admin: boolean;
+  theme_color?: string;
+  notif_settings?: Record<string, boolean>;
 };
 const DEFAULT: UserPrefs = {
   widgets: ["streak", "today-chart", "weekly-diff", "habits"],
@@ -16,6 +18,8 @@ const DEFAULT: UserPrefs = {
   right_dock: ["ambient", "feedback"],
   sidebar_hidden: [],
   act_as_admin: false,
+  theme_color: "#3B82F6",
+  notif_settings: {},
 };
 
 export function useUserPrefs() {
@@ -32,6 +36,8 @@ export function useUserPrefs() {
         right_dock: ((data as any).right_dock as string[]) ?? DEFAULT.right_dock,
         sidebar_hidden: ((data as any).sidebar_hidden as string[]) ?? DEFAULT.sidebar_hidden,
         act_as_admin: !!(data as any).act_as_admin,
+        theme_color: (data as any).theme_color ?? DEFAULT.theme_color,
+        notif_settings: ((data as any).notif_settings as any) ?? {},
       });
     })();
   }, []);
@@ -39,7 +45,8 @@ export function useUserPrefs() {
     if (typeof document === "undefined") return;
     document.documentElement.style.fontSize = `${prefs.font_scale * 16}px`;
     document.documentElement.classList.toggle("high-contrast", prefs.high_contrast);
-  }, [prefs.font_scale, prefs.high_contrast]);
+    if (prefs.theme_color) document.documentElement.style.setProperty("--primary", prefs.theme_color);
+  }, [prefs.font_scale, prefs.high_contrast, prefs.theme_color]);
   const save = async (patch: Partial<UserPrefs>) => {
     const next = { ...prefs, ...patch };
     setPrefs(next);
