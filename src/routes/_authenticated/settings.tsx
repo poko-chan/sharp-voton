@@ -199,6 +199,11 @@ function CustomizationPanel() {
     { to: "/notes", label: "付箋" },
     { to: "/announcements", label: "お知らせ" },
     { to: "/share", label: "共有" },
+    { to: "/missions", label: "デイリーミッション" },
+    { to: "/leaderboard", label: "ランキング" },
+    { to: "/rank", label: "段位・称号" },
+    { to: "/battle", label: "学習バトル" },
+    { to: "/export", label: "データ出力" },
   ];
   const hidden = new Set(prefs.sidebar_hidden ?? []);
   const toggleNav = (to: string) => {
@@ -215,6 +220,22 @@ function CustomizationPanel() {
   return (
     <Card className="p-6 space-y-4">
       <div className="font-semibold">画面カスタマイズ</div>
+      <div className="space-y-2">
+        <Label>テーマカラー</Label>
+        <div className="flex items-center gap-3">
+          <input
+            type="color"
+            value={(prefs as any).theme_color ?? "#3B82F6"}
+            onChange={(e) => {
+              const v = e.target.value;
+              save({ ...(prefs as any), theme_color: v } as any);
+              document.documentElement.style.setProperty("--primary", v);
+            }}
+            className="h-10 w-16 rounded border"
+          />
+          <span className="text-xs text-muted-foreground">アプリ全体のアクセントカラーを変更します。</span>
+        </div>
+      </div>
       <div className="space-y-2">
         <Label>右下のフローティング機能</Label>
         <div className="grid grid-cols-2 gap-2">

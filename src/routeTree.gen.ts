@@ -27,6 +27,7 @@ import { Route as AuthenticatedStreakRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedShareRouteImport } from './routes/_authenticated/share'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
+import { Route as AuthenticatedRankRouteImport } from './routes/_authenticated/rank'
 import { Route as AuthenticatedQuestionsRouteImport } from './routes/_authenticated/questions'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
 import { Route as AuthenticatedPollsRouteImport } from './routes/_authenticated/polls'
@@ -34,18 +35,22 @@ import { Route as AuthenticatedParentRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedOcrRouteImport } from './routes/_authenticated/ocr'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
+import { Route as AuthenticatedMissionsRouteImport } from './routes/_authenticated/missions'
 import { Route as AuthenticatedMicroRouteImport } from './routes/_authenticated/micro'
 import { Route as AuthenticatedListenRouteImport } from './routes/_authenticated/listen'
+import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
 import { Route as AuthenticatedHeatmapRouteImport } from './routes/_authenticated/heatmap'
 import { Route as AuthenticatedHabitsRouteImport } from './routes/_authenticated/habits'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedFriendsRouteImport } from './routes/_authenticated/friends'
 import { Route as AuthenticatedFlashcardsRouteImport } from './routes/_authenticated/flashcards'
+import { Route as AuthenticatedExportRouteImport } from './routes/_authenticated/export'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/coach'
 import { Route as AuthenticatedClasschatRouteImport } from './routes/_authenticated/classchat'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
+import { Route as AuthenticatedBattleRouteImport } from './routes/_authenticated/battle'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedRoomsIndexRouteImport } from './routes/_authenticated/rooms.index'
@@ -142,6 +147,11 @@ const AuthenticatedRoomsRoute = AuthenticatedRoomsRouteImport.update({
   path: '/rooms',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedRankRoute = AuthenticatedRankRouteImport.update({
+  id: '/rank',
+  path: '/rank',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedQuestionsRoute = AuthenticatedQuestionsRouteImport.update({
   id: '/questions',
   path: '/questions',
@@ -178,6 +188,11 @@ const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
   path: '/notes',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedMissionsRoute = AuthenticatedMissionsRouteImport.update({
+  id: '/missions',
+  path: '/missions',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedMicroRoute = AuthenticatedMicroRouteImport.update({
   id: '/micro',
   path: '/micro',
@@ -188,6 +203,12 @@ const AuthenticatedListenRoute = AuthenticatedListenRouteImport.update({
   path: '/listen',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedLeaderboardRoute =
+  AuthenticatedLeaderboardRouteImport.update({
+    id: '/leaderboard',
+    path: '/leaderboard',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedHeatmapRoute = AuthenticatedHeatmapRouteImport.update({
   id: '/heatmap',
   path: '/heatmap',
@@ -213,6 +234,11 @@ const AuthenticatedFlashcardsRoute = AuthenticatedFlashcardsRouteImport.update({
   path: '/flashcards',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedExportRoute = AuthenticatedExportRouteImport.update({
+  id: '/export',
+  path: '/export',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -236,6 +262,11 @@ const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
 const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedBattleRoute = AuthenticatedBattleRouteImport.update({
+  id: '/battle',
+  path: '/battle',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAnnouncementsRoute =
@@ -283,18 +314,22 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
+  '/battle': typeof AuthenticatedBattleRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/chat': typeof AuthenticatedChatRoute
   '/classchat': typeof AuthenticatedClasschatRoute
   '/coach': typeof AuthenticatedCoachRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/export': typeof AuthenticatedExportRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/friends': typeof AuthenticatedFriendsRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/habits': typeof AuthenticatedHabitsRoute
   '/heatmap': typeof AuthenticatedHeatmapRoute
+  '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/listen': typeof AuthenticatedListenRoute
   '/micro': typeof AuthenticatedMicroRoute
+  '/missions': typeof AuthenticatedMissionsRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/ocr': typeof AuthenticatedOcrRoute
@@ -302,6 +337,7 @@ export interface FileRoutesByFullPath {
   '/polls': typeof AuthenticatedPollsRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
+  '/rank': typeof AuthenticatedRankRoute
   '/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
@@ -327,18 +363,22 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
+  '/battle': typeof AuthenticatedBattleRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/chat': typeof AuthenticatedChatRoute
   '/classchat': typeof AuthenticatedClasschatRoute
   '/coach': typeof AuthenticatedCoachRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/export': typeof AuthenticatedExportRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/friends': typeof AuthenticatedFriendsRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/habits': typeof AuthenticatedHabitsRoute
   '/heatmap': typeof AuthenticatedHeatmapRoute
+  '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/listen': typeof AuthenticatedListenRoute
   '/micro': typeof AuthenticatedMicroRoute
+  '/missions': typeof AuthenticatedMissionsRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/ocr': typeof AuthenticatedOcrRoute
@@ -346,6 +386,7 @@ export interface FileRoutesByTo {
   '/polls': typeof AuthenticatedPollsRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
+  '/rank': typeof AuthenticatedRankRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
   '/streak': typeof AuthenticatedStreakRoute
@@ -372,18 +413,22 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
+  '/_authenticated/battle': typeof AuthenticatedBattleRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/_authenticated/classchat': typeof AuthenticatedClasschatRoute
   '/_authenticated/coach': typeof AuthenticatedCoachRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/export': typeof AuthenticatedExportRoute
   '/_authenticated/flashcards': typeof AuthenticatedFlashcardsRoute
   '/_authenticated/friends': typeof AuthenticatedFriendsRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/habits': typeof AuthenticatedHabitsRoute
   '/_authenticated/heatmap': typeof AuthenticatedHeatmapRoute
+  '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/listen': typeof AuthenticatedListenRoute
   '/_authenticated/micro': typeof AuthenticatedMicroRoute
+  '/_authenticated/missions': typeof AuthenticatedMissionsRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/ocr': typeof AuthenticatedOcrRoute
@@ -391,6 +436,7 @@ export interface FileRoutesById {
   '/_authenticated/polls': typeof AuthenticatedPollsRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
+  '/_authenticated/rank': typeof AuthenticatedRankRoute
   '/_authenticated/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/share': typeof AuthenticatedShareRoute
@@ -418,18 +464,22 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin'
     | '/announcements'
+    | '/battle'
     | '/calendar'
     | '/chat'
     | '/classchat'
     | '/coach'
     | '/dashboard'
+    | '/export'
     | '/flashcards'
     | '/friends'
     | '/goals'
     | '/habits'
     | '/heatmap'
+    | '/leaderboard'
     | '/listen'
     | '/micro'
+    | '/missions'
     | '/notes'
     | '/notifications'
     | '/ocr'
@@ -437,6 +487,7 @@ export interface FileRouteTypes {
     | '/polls'
     | '/practice'
     | '/questions'
+    | '/rank'
     | '/rooms'
     | '/settings'
     | '/share'
@@ -462,18 +513,22 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin'
     | '/announcements'
+    | '/battle'
     | '/calendar'
     | '/chat'
     | '/classchat'
     | '/coach'
     | '/dashboard'
+    | '/export'
     | '/flashcards'
     | '/friends'
     | '/goals'
     | '/habits'
     | '/heatmap'
+    | '/leaderboard'
     | '/listen'
     | '/micro'
+    | '/missions'
     | '/notes'
     | '/notifications'
     | '/ocr'
@@ -481,6 +536,7 @@ export interface FileRouteTypes {
     | '/polls'
     | '/practice'
     | '/questions'
+    | '/rank'
     | '/settings'
     | '/share'
     | '/streak'
@@ -506,18 +562,22 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/admin'
     | '/_authenticated/announcements'
+    | '/_authenticated/battle'
     | '/_authenticated/calendar'
     | '/_authenticated/chat'
     | '/_authenticated/classchat'
     | '/_authenticated/coach'
     | '/_authenticated/dashboard'
+    | '/_authenticated/export'
     | '/_authenticated/flashcards'
     | '/_authenticated/friends'
     | '/_authenticated/goals'
     | '/_authenticated/habits'
     | '/_authenticated/heatmap'
+    | '/_authenticated/leaderboard'
     | '/_authenticated/listen'
     | '/_authenticated/micro'
+    | '/_authenticated/missions'
     | '/_authenticated/notes'
     | '/_authenticated/notifications'
     | '/_authenticated/ocr'
@@ -525,6 +585,7 @@ export interface FileRouteTypes {
     | '/_authenticated/polls'
     | '/_authenticated/practice'
     | '/_authenticated/questions'
+    | '/_authenticated/rank'
     | '/_authenticated/rooms'
     | '/_authenticated/settings'
     | '/_authenticated/share'
@@ -682,6 +743,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRoomsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/rank': {
+      id: '/_authenticated/rank'
+      path: '/rank'
+      fullPath: '/rank'
+      preLoaderRoute: typeof AuthenticatedRankRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/questions': {
       id: '/_authenticated/questions'
       path: '/questions'
@@ -731,6 +799,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/missions': {
+      id: '/_authenticated/missions'
+      path: '/missions'
+      fullPath: '/missions'
+      preLoaderRoute: typeof AuthenticatedMissionsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/micro': {
       id: '/_authenticated/micro'
       path: '/micro'
@@ -743,6 +818,13 @@ declare module '@tanstack/react-router' {
       path: '/listen'
       fullPath: '/listen'
       preLoaderRoute: typeof AuthenticatedListenRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/leaderboard': {
+      id: '/_authenticated/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof AuthenticatedLeaderboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/heatmap': {
@@ -780,6 +862,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFlashcardsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/export': {
+      id: '/_authenticated/export'
+      path: '/export'
+      fullPath: '/export'
+      preLoaderRoute: typeof AuthenticatedExportRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -813,6 +902,13 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/calendar'
       preLoaderRoute: typeof AuthenticatedCalendarRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/battle': {
+      id: '/_authenticated/battle'
+      path: '/battle'
+      fullPath: '/battle'
+      preLoaderRoute: typeof AuthenticatedBattleRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/announcements': {
@@ -876,18 +972,22 @@ const AuthenticatedRoomsRouteWithChildren =
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
+  AuthenticatedBattleRoute: typeof AuthenticatedBattleRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
   AuthenticatedClasschatRoute: typeof AuthenticatedClasschatRoute
   AuthenticatedCoachRoute: typeof AuthenticatedCoachRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedExportRoute: typeof AuthenticatedExportRoute
   AuthenticatedFlashcardsRoute: typeof AuthenticatedFlashcardsRoute
   AuthenticatedFriendsRoute: typeof AuthenticatedFriendsRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedHabitsRoute: typeof AuthenticatedHabitsRoute
   AuthenticatedHeatmapRoute: typeof AuthenticatedHeatmapRoute
+  AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
   AuthenticatedListenRoute: typeof AuthenticatedListenRoute
   AuthenticatedMicroRoute: typeof AuthenticatedMicroRoute
+  AuthenticatedMissionsRoute: typeof AuthenticatedMissionsRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOcrRoute: typeof AuthenticatedOcrRoute
@@ -895,6 +995,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPollsRoute: typeof AuthenticatedPollsRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedQuestionsRoute: typeof AuthenticatedQuestionsRoute
+  AuthenticatedRankRoute: typeof AuthenticatedRankRoute
   AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedShareRoute: typeof AuthenticatedShareRoute
@@ -910,18 +1011,22 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
+  AuthenticatedBattleRoute: AuthenticatedBattleRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedChatRoute: AuthenticatedChatRoute,
   AuthenticatedClasschatRoute: AuthenticatedClasschatRoute,
   AuthenticatedCoachRoute: AuthenticatedCoachRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedExportRoute: AuthenticatedExportRoute,
   AuthenticatedFlashcardsRoute: AuthenticatedFlashcardsRoute,
   AuthenticatedFriendsRoute: AuthenticatedFriendsRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedHabitsRoute: AuthenticatedHabitsRoute,
   AuthenticatedHeatmapRoute: AuthenticatedHeatmapRoute,
+  AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
   AuthenticatedListenRoute: AuthenticatedListenRoute,
   AuthenticatedMicroRoute: AuthenticatedMicroRoute,
+  AuthenticatedMissionsRoute: AuthenticatedMissionsRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOcrRoute: AuthenticatedOcrRoute,
@@ -929,6 +1034,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPollsRoute: AuthenticatedPollsRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedQuestionsRoute: AuthenticatedQuestionsRoute,
+  AuthenticatedRankRoute: AuthenticatedRankRoute,
   AuthenticatedRoomsRoute: AuthenticatedRoomsRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedShareRoute: AuthenticatedShareRoute,

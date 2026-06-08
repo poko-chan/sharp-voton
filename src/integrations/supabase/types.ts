@@ -428,6 +428,42 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_missions: {
+        Row: {
+          completed: boolean
+          created_at: string
+          date: string
+          id: string
+          kind: string
+          progress: number
+          reward_coins: number
+          target_value: number
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          date?: string
+          id?: string
+          kind: string
+          progress?: number
+          reward_coins?: number
+          target_value?: number
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          date?: string
+          id?: string
+          kind?: string
+          progress?: number
+          reward_coins?: number
+          target_value?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_reflections: {
         Row: {
           created_at: string
@@ -1115,6 +1151,42 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_battles: {
+        Row: {
+          challenger_id: string
+          challenger_score: number
+          created_at: string
+          id: string
+          opponent_id: string
+          opponent_score: number
+          status: string
+          updated_at: string
+          winner_id: string | null
+        }
+        Insert: {
+          challenger_id: string
+          challenger_score?: number
+          created_at?: string
+          id?: string
+          opponent_id: string
+          opponent_score?: number
+          status?: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Update: {
+          challenger_id?: string
+          challenger_score?: number
+          created_at?: string
+          id?: string
+          opponent_id?: string
+          opponent_score?: number
+          status?: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Relationships: []
+      }
       school_timetable: {
         Row: {
           created_at: string
@@ -1262,6 +1334,7 @@ export type Database = {
           id: string
           start_time: string | null
           subject_id: string | null
+          tag: string | null
           user_id: string
         }
         Insert: {
@@ -1272,6 +1345,7 @@ export type Database = {
           id?: string
           start_time?: string | null
           subject_id?: string | null
+          tag?: string | null
           user_id: string
         }
         Update: {
@@ -1282,6 +1356,7 @@ export type Database = {
           id?: string
           start_time?: string | null
           subject_id?: string | null
+          tag?: string | null
           user_id?: string
         }
         Relationships: [
@@ -1841,8 +1916,10 @@ export type Database = {
           act_as_admin: boolean
           font_scale: number
           high_contrast: boolean
+          notif_settings: Json | null
           right_dock: Json | null
           sidebar_hidden: Json | null
+          theme_color: string | null
           updated_at: string
           user_id: string
           widgets: Json
@@ -1851,8 +1928,10 @@ export type Database = {
           act_as_admin?: boolean
           font_scale?: number
           high_contrast?: boolean
+          notif_settings?: Json | null
           right_dock?: Json | null
           sidebar_hidden?: Json | null
+          theme_color?: string | null
           updated_at?: string
           user_id: string
           widgets?: Json
@@ -1861,8 +1940,10 @@ export type Database = {
           act_as_admin?: boolean
           font_scale?: number
           high_contrast?: boolean
+          notif_settings?: Json | null
           right_dock?: Json | null
           sidebar_hidden?: Json | null
+          theme_color?: string | null
           updated_at?: string
           user_id?: string
           widgets?: Json
@@ -1958,6 +2039,16 @@ export type Database = {
       can_view_submission: {
         Args: { _assignment_id: string; _user_id: string }
         Returns: boolean
+      }
+      get_leaderboard: {
+        Args: { _limit?: number }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          streak_days: number
+          total_minutes: number
+          user_id: string
+        }[]
       }
       get_user_study_stats: {
         Args: { _user_ids: string[] }

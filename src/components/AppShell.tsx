@@ -5,6 +5,7 @@ import {
   Megaphone, GraduationCap, Zap, Headphones, Menu, X, MoreHorizontal,
   StickyNote, Users, Ban, HelpCircle,
   CalendarClock, Stamp, Activity, Share2, ScanLine, Vote, Flame,
+  Swords, Award, Download,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,11 @@ const NAV = [
   { to: "/notes", labelKey: "nav.notes" as const, icon: StickyNote },
   { to: "/announcements", labelKey: "nav.announcements" as const, icon: Megaphone },
   { to: "/share", labelKey: "nav.share" as const, icon: Share2 },
+  { to: "/missions", labelKey: "nav.dashboard" as const, icon: Target, override: "ミッション" },
+  { to: "/leaderboard", labelKey: "nav.dashboard" as const, icon: Trophy, override: "ランキング" },
+  { to: "/rank", labelKey: "nav.dashboard" as const, icon: Award, override: "段位" },
+  { to: "/battle", labelKey: "nav.dashboard" as const, icon: Swords, override: "バトル" },
+  { to: "/export", labelKey: "nav.dashboard" as const, icon: Download, override: "データ出力" },
   { to: "/settings", labelKey: "nav.settings" as const, icon: Settings },
 ] as const;
 
@@ -178,7 +184,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               }`}
             >
               <n.icon className="h-4 w-4" />
-              {t(n.labelKey)}
+              {(n as any).override ?? t(n.labelKey)}
             </Link>
           );
         })}
@@ -197,7 +203,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <PopoverContent side="right" align="start" className="w-56 p-2">
               {navHiddenByUser.map((n) => (
                 <Link key={n.to} to={n.to} className="flex items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent">
-                  <n.icon className="h-4 w-4" /> {t(n.labelKey)}
+                  <n.icon className="h-4 w-4" /> {(n as any).override ?? t(n.labelKey)}
                 </Link>
               ))}
             </PopoverContent>
@@ -212,7 +218,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <PopoverContent side="right" align="start" className="w-56 p-2">
               {navRestricted.map((n) => (
                 <Link key={n.to} to={n.to} className="flex items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent text-red-600">
-                  <n.icon className="h-4 w-4" /> {t(n.labelKey)}
+                  <n.icon className="h-4 w-4" /> {(n as any).override ?? t(n.labelKey)}
                 </Link>
               ))}
             </PopoverContent>
