@@ -184,7 +184,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               }`}
             >
               <n.icon className="h-4 w-4" />
-              {t(n.labelKey)}
+              {(n as any).override ?? t(n.labelKey)}
             </Link>
           );
         })}
@@ -203,7 +203,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <PopoverContent side="right" align="start" className="w-56 p-2">
               {navHiddenByUser.map((n) => (
                 <Link key={n.to} to={n.to} className="flex items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent">
-                  <n.icon className="h-4 w-4" /> {t(n.labelKey)}
+                  <n.icon className="h-4 w-4" /> {(n as any).override ?? t(n.labelKey)}
                 </Link>
               ))}
             </PopoverContent>
@@ -218,7 +218,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <PopoverContent side="right" align="start" className="w-56 p-2">
               {navRestricted.map((n) => (
                 <Link key={n.to} to={n.to} className="flex items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent text-red-600">
-                  <n.icon className="h-4 w-4" /> {t(n.labelKey)}
+                  <n.icon className="h-4 w-4" /> {(n as any).override ?? t(n.labelKey)}
                 </Link>
               ))}
             </PopoverContent>
