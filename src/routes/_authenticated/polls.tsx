@@ -53,7 +53,19 @@ function PollsPage() {
 
   return (
     <div className="p-8 max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center gap-2"><Vote className="h-7 w-7" /><h1 className="text-3xl font-bold">投票</h1></div>
+      <div className="flex items-center gap-2"><Vote className="h-7 w-7" /><h1 className="text-3xl font-bold">クラス投票</h1></div>
+      {classes.length === 0 ? (
+        <Card className="p-6 text-sm text-muted-foreground">所属するクラスがありません。クラスに参加すると投票を作成・閲覧できます。</Card>
+      ) : (
+        <Card className="p-3 flex items-center gap-2">
+          <span className="text-sm font-medium">クラス:</span>
+          <Select value={classId} onValueChange={setClassId}>
+            <SelectTrigger className="w-72"><SelectValue /></SelectTrigger>
+            <SelectContent>{classes.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+          </Select>
+        </Card>
+      )}
+      {classes.length > 0 && <>
       <Card className="p-4 space-y-2">
         <div className="font-semibold flex items-center gap-1"><Plus className="h-4 w-4" />新規投票</div>
         <Input placeholder="質問" value={q} onChange={(e) => setQ(e.target.value)} />
@@ -89,6 +101,7 @@ function PollsPage() {
           </Card>
         );
       })}
+      </>}
     </div>
   );
 }
