@@ -50,6 +50,15 @@ function BattlePage() {
   return (
     <div className="container mx-auto p-6 max-w-3xl">
       <h1 className="text-3xl font-bold mb-6 flex items-center gap-2"><Swords /> 学習バトル</h1>
+      <Card className="p-4 mb-4 bg-muted/40 text-sm space-y-1">
+        <div className="font-semibold">遊び方</div>
+        <ol className="list-decimal pl-5 space-y-0.5 text-muted-foreground">
+          <li>相手のユーザー名を入力して「挑戦」を押す</li>
+          <li>挑戦中のバトルで「プレイ」を押すと0〜9点が記録される</li>
+          <li>両者がプレイ済みになったら自動的に勝敗が確定する</li>
+          <li>勝つとランキングと段位ボーナスに反映</li>
+        </ol>
+      </Card>
       <Card className="p-4 mb-6 flex gap-2">
         <Input placeholder="相手のユーザー名" value={opponent} onChange={(e) => setOpponent(e.target.value)} />
         <Button onClick={challenge}>挑戦</Button>

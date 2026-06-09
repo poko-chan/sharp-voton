@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Users, Plus, LogIn } from "lucide-react";
+import { Users, Plus, LogIn, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/rooms/")({ component: RoomsPage });
@@ -15,6 +15,8 @@ function RoomsPage() {
   const [rooms, setRooms] = useState<any[]>([]);
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
 
   const load = async () => {
     if (!user) return;
@@ -39,8 +41,28 @@ function RoomsPage() {
     if (!user || !code.trim()) return;
     const { data } = await supabase.from("group_rooms").select("id").eq("code", code.toUpperCase().trim()).maybeSingle();
     if (!data) return toast.error("ルームが見つかりません");
-    await supabase.from("group_room_members").upsert({ room_id: data.id, user_id: user.id });
+    const { error } = await supabase.from("group_room_members").upsert({ room_id: data.id, user_id: user.id });
+    if (error) return toast.error(error.message);
+    toast.success("参加しました");
     setCode(""); load();
+  };
+
+  const saveName = async (r: any) => {
+    if (!editName.trim()) return;
+    const { error } = await supabase.from("group_rooms").update({ name: editName }).eq("id", r.id);
+    if (error) return toast.error(error.message);
+    setEditingId(null); load();
+  };
+  const removeRoom = async (r: any) => {
+    if (!confirm(`「${r.name}」を削除しますか？`)) return;
+    const { error } = await supabase.from("group_rooms").delete().eq("id", r.id);
+    if (error) return toast.error(error.message);
+    toast.success("削除しました"); load();
+  };
+  const leaveRoom = async (r: any) => {
+    if (!user) return;
+    await supabase.from("group_room_members").delete().eq("room_id", r.id).eq("user_id", user.id);
+    load();
   };
 
   return (
@@ -59,14 +81,37 @@ function RoomsPage() {
         </Card>
       </div>
       <div className="space-y-2">
-        {rooms.map((r) => (
-          <Link key={r.id} to="/rooms/$roomId" params={{ roomId: r.id }} className="block">
-            <Card className="p-4 hover:bg-muted/40">
-              <div className="font-medium">{r.name}</div>
-              <div className="text-xs text-muted-foreground">コード: {r.code}</div>
+        {rooms.map((r) => {
+          const isOwner = r.owner_id === user?.id;
+          return (
+            <Card key={r.id} className="p-4 flex items-center gap-3">
+              <Link to="/rooms/$roomId" params={{ roomId: r.id }} className="flex-1 min-w-0">
+                {editingId === r.id ? (
+                  <Input value={editName} onChange={(e) => setEditName(e.target.value)} onClick={(e) => e.preventDefault()} className="h-8" />
+                ) : (
+                  <div className="font-medium truncate">{r.name}</div>
+                )}
+                <div className="text-xs text-muted-foreground">コード: {r.code}</div>
+              </Link>
+              {isOwner ? (
+                editingId === r.id ? (
+                  <>
+                    <Button size="sm" onClick={() => saveName(r)}>保存</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>取消</Button>
+                  </>
+                ) : (
+                  <>
+                    <Button size="sm" variant="ghost" onClick={() => { setEditingId(r.id); setEditName(r.name); }}><Pencil className="h-4 w-4" /></Button>
+                    <Button size="sm" variant="ghost" className="text-destructive" onClick={() => removeRoom(r)}><Trash2 className="h-4 w-4" /></Button>
+                  </>
+                )
+              ) : (
+                <Button size="sm" variant="ghost" onClick={() => leaveRoom(r)}>退出</Button>
+              )}
             </Card>
-          </Link>
-        ))}
+          );
+        })}
+        {rooms.length === 0 && <div className="text-sm text-muted-foreground">参加中のルームはありません</div>}
       </div>
     </div>
   );

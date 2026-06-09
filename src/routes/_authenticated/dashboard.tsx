@@ -27,6 +27,26 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
+const RANKS = [
+  { min: 0, title: "白帯" }, { min: 60, title: "黄帯" }, { min: 300, title: "緑帯" },
+  { min: 900, title: "青帯" }, { min: 2400, title: "紫帯" }, { min: 6000, title: "茶帯" },
+  { min: 12000, title: "黒帯" }, { min: 30000, title: "師範" },
+];
+function RankCard({ totalMin }: { totalMin: number }) {
+  const current = [...RANKS].reverse().find((r) => totalMin >= r.min)!;
+  const nextIdx = RANKS.findIndex((r) => r.title === current.title) + 1;
+  const next = RANKS[nextIdx];
+  return (
+    <div className="mt-4 pt-4 border-t flex items-center justify-between gap-3">
+      <div>
+        <div className="text-[10px] text-muted-foreground">現在の段位</div>
+        <div className="text-lg font-bold flex items-center gap-1"><Award className="h-4 w-4 text-amber-500" />{current.title}</div>
+      </div>
+      {next && <div className="text-xs text-muted-foreground text-right">次「{next.title}」まで<br/>あと {next.min - totalMin} 分</div>}
+    </div>
+  );
+}
+
 type Goal = { id: string; title: string; target_minutes: number; progress_minutes: number; done: boolean; deadline: string | null; scope: string };
 type Announce = { id: string; title: string; body: string; publish_at: string; tag: string };
 
@@ -342,6 +362,7 @@ function Dashboard() {
               );
             })}
           </div>
+          <RankCard totalMin={stats.totalMin} />
         </Card>
         <Card className="p-6">
           <h3 className="font-semibold mb-3 flex items-center gap-2"><Sun className="h-4 w-4" />時間帯別の学習量</h3>
