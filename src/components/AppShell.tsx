@@ -5,7 +5,7 @@ import {
   Megaphone, GraduationCap, Zap, Headphones, Menu, X, MoreHorizontal,
   StickyNote, Users, Ban, HelpCircle,
   CalendarClock, Stamp, Activity, Share2, ScanLine, Vote, Flame,
-  Swords, Award, Download,
+  Swords, Home,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -24,8 +24,10 @@ import { SearchBar } from "@/components/SearchBar";
 import { useUserPrefs } from "@/lib/user-prefs";
 import { useRestriction } from "@/lib/restriction-context";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useAdminNavConfig } from "@/lib/admin-nav";
 
 const NAV = [
+  { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: Home, override: "ホーム" },
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
   { to: "/today", labelKey: "nav.today" as const, icon: CalendarClock },
   { to: "/study", labelKey: "nav.study" as const, icon: BookOpen },
@@ -33,7 +35,6 @@ const NAV = [
   { to: "/calendar", labelKey: "nav.calendar" as const, icon: CalendarDays },
   { to: "/goals", labelKey: "nav.goals" as const, icon: Trophy },
   { to: "/habits", labelKey: "nav.habits" as const, icon: Stamp },
-  { to: "/heatmap", labelKey: "nav.heatmap" as const, icon: Activity },
   { to: "/streak", labelKey: "nav.streak" as const, icon: Flame },
   { to: "/flashcards", labelKey: "nav.flashcards" as const, icon: Brain },
   { to: "/ocr", labelKey: "nav.ocr" as const, icon: ScanLine },
@@ -51,13 +52,10 @@ const NAV = [
   { to: "/classchat", labelKey: "nav.classchat" as const, icon: Users },
   { to: "/notes", labelKey: "nav.notes" as const, icon: StickyNote },
   { to: "/announcements", labelKey: "nav.announcements" as const, icon: Megaphone },
-  { to: "/share", labelKey: "nav.share" as const, icon: Share2 },
   { to: "/missions", labelKey: "nav.dashboard" as const, icon: Target, override: "ミッション" },
   { to: "/leaderboard", labelKey: "nav.dashboard" as const, icon: Trophy, override: "ランキング" },
-  { to: "/rank", labelKey: "nav.dashboard" as const, icon: Award, override: "段位" },
   { to: "/battle", labelKey: "nav.dashboard" as const, icon: Swords, override: "バトル" },
-  { to: "/export", labelKey: "nav.dashboard" as const, icon: Download, override: "データ出力" },
-  { to: "/settings", labelKey: "nav.settings" as const, icon: Settings },
+  { to: "/settings", labelKey: "nav.settings" as const, icon: Settings, override: "設定" },
 ] as const;
 
 // Map prefix -> service key (for filtering hidden services)
@@ -83,6 +81,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile();
   const { prefs } = useUserPrefs(); // apply font scale / contrast on mount
   const restriction = useRestriction();
+  const { map: navCfg } = useAdminNavConfig();
   const [version, setVersion] = useState<string>("");
   const [profile, setProfile] = useState<{ display_name: string | null; username: string | null; avatar_url: string | null } | null>(null);
   const [level, setLevel] = useState<number>(1);
@@ -138,9 +137,29 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (bypass) return false;
     return !!restriction.global[svc] || !!restriction.forMe[svc];
   };
-  const navVisible = NAV.filter((n) => !isRestricted(n.to) && !hiddenByUser.has(n.to));
-  const navRestricted = NAV.filter((n) => isRestricted(n.to));
-  const navHiddenByUser = NAV.filter((n) => !isRestricted(n.to) && hiddenByUser.has(n.to));
+  // apply admin config: hidden by admin -> show only via "その他", rename / reorder
+  const decorated = NAV.map((n) => {
+    const cfg = navCfg[n.to];
+    return {
+      ...n,
+      adminHidden: cfg ? !cfg.visible : false,
+      adminLabel: cfg?.label || null,
+      adminIconUrl: cfg?.icon_url || null,
+      adminQuickbar: !!cfg?.in_quickbar,
+      adminOrder: cfg?.order_idx ?? 100,
+    };
+  });
+  decorated.sort((a, b) => a.adminOrder - b.adminOrder);
+  const navVisible = decorated.filter((n) => !isRestricted(n.to) && !hiddenByUser.has(n.to) && !n.adminHidden);
+  const navRestricted = decorated.filter((n) => isRestricted(n.to));
+  const navHiddenByUser = decorated.filter((n) => !isRestricted(n.to) && (hiddenByUser.has(n.to) || n.adminHidden));
+  const quickbarItems = decorated.filter((n) => n.adminQuickbar && !isRestricted(n.to) && !n.adminHidden);
+
+  const renderLabel = (n: any) => n.adminLabel || n.override || t(n.labelKey);
+  const renderIcon = (n: any, cls = "h-4 w-4") =>
+    n.adminIconUrl
+      ? <img src={n.adminIconUrl} alt="" className={cls + " object-contain"} />
+      : <n.icon className={cls} />;
 
   const sidebarContent = (
     <>
@@ -169,7 +188,23 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="text-[10px] text-muted-foreground truncate">{shortId}</div>
           <div className="text-[10px] text-muted-foreground truncate">{user?.email ?? ""}</div>
         </div>
+        <Button variant="ghost" size="icon" onClick={signOut} title="ログアウト" className="shrink-0">
+          <LogOut className="h-4 w-4" />
+        </Button>
       </div>
+      {quickbarItems.length > 0 && (
+        <div className="px-3 pb-2 flex items-center gap-1 flex-wrap">
+          {quickbarItems.map((n) => {
+            const active = path === n.to || path.startsWith(n.to + "/");
+            return (
+              <Link key={"q-" + n.to} to={n.to} title={renderLabel(n)}
+                className={`h-8 w-8 inline-flex items-center justify-center rounded-md ${active ? "bg-sidebar-primary text-sidebar-primary-foreground" : "hover:bg-sidebar-accent/70 text-sidebar-foreground"}`}>
+                {renderIcon(n, "h-4 w-4")}
+              </Link>
+            );
+          })}
+        </div>
+      )}
       <nav className="flex-1 px-3 space-y-0.5 overflow-auto pb-4">
         {navVisible.map((n) => {
           const active = path === n.to || path.startsWith(n.to + "/");
@@ -183,8 +218,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                   : "hover:bg-sidebar-accent/70 text-sidebar-foreground"
               }`}
             >
-              <n.icon className="h-4 w-4" />
-              {(n as any).override ?? t(n.labelKey)}
+              {renderIcon(n)}
+              {renderLabel(n)}
             </Link>
           );
         })}
@@ -203,7 +238,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <PopoverContent side="right" align="start" className="w-56 p-2">
               {navHiddenByUser.map((n) => (
                 <Link key={n.to} to={n.to} className="flex items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent">
-                  <n.icon className="h-4 w-4" /> {(n as any).override ?? t(n.labelKey)}
+                  {renderIcon(n)} {renderLabel(n)}
                 </Link>
               ))}
             </PopoverContent>
@@ -218,7 +253,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <PopoverContent side="right" align="start" className="w-56 p-2">
               {navRestricted.map((n) => (
                 <Link key={n.to} to={n.to} className="flex items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent text-red-600">
-                  <n.icon className="h-4 w-4" /> {(n as any).override ?? t(n.labelKey)}
+                  {renderIcon(n)} {renderLabel(n)}
                 </Link>
               ))}
             </PopoverContent>
@@ -238,32 +273,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             {t("nav.admin")}
           </Link>
         )}
-        {isAdmin && (
-          <>
-            <Link
-              to="/admin"
-              search={{ tab: "restrictions" } as any}
-              className="mt-1 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition border border-red-500/40 text-red-600 hover:bg-red-500/10"
-            >
-              <Ban className="h-4 w-4" />
-              利用停止
-            </Link>
-            <Link
-              to="/admin"
-              search={{ tab: "faq" } as any}
-              className="mt-1 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition border border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10"
-            >
-              <HelpCircle className="h-4 w-4" />
-              FAQ管理
-            </Link>
-          </>
-        )}
       </nav>
-      <div className="p-3 border-t">
-        <Button variant="ghost" className="w-full justify-start" onClick={signOut}>
-          <LogOut className="mr-2 h-4 w-4" /> {t("nav.logout")}
-        </Button>
-      </div>
     </>
   );
 
