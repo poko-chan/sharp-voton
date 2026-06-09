@@ -65,12 +65,25 @@ function FriendsPage() {
 
   const follow = async (id: string) => {
     if (!user) return;
-    const { error } = await supabase.from("follows").insert({ follower_id: user.id, following_id: id });
-    if (error) toast.error(error.message); else { toast.success("フォローしました"); load(); }
+    const { error } = await supabase.from("follows").insert({ follower_id: user.id, following_id: id, status: "pending" });
+    if (error) toast.error(error.message); else { toast.success("リクエストを送りました（相手の承認待ち）"); load(); }
   };
   const unfollow = async (id: string) => {
     if (!user) return;
     await supabase.from("follows").delete().eq("follower_id", user.id).eq("following_id", id);
+    load();
+  };
+  const accept = async (id: string) => {
+    if (!user) return;
+    // accept the incoming request
+    await supabase.from("follows").update({ status: "accepted" }).eq("follower_id", id).eq("following_id", user.id);
+    // ensure reverse direction so they are mutual
+    await supabase.from("follows").upsert({ follower_id: user.id, following_id: id, status: "accepted" }, { onConflict: "follower_id,following_id" });
+    toast.success("承認しました"); load();
+  };
+  const reject = async (id: string) => {
+    if (!user) return;
+    await supabase.from("follows").delete().eq("follower_id", id).eq("following_id", user.id);
     load();
   };
 

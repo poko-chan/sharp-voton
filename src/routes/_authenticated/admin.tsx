@@ -54,6 +54,7 @@ function AdminPage() {
           <TabsTrigger value="maintenance">メンテナンス</TabsTrigger>
           <TabsTrigger value="restrictions" className="data-[state=active]:bg-red-500/10 data-[state=active]:text-red-600">利用停止</TabsTrigger>
           <TabsTrigger value="faq" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600">FAQ</TabsTrigger>
+          <TabsTrigger value="nav">サイドバー設定</TabsTrigger>
           <TabsTrigger value="version">バージョン</TabsTrigger>
           <TabsTrigger value="announcements">お知らせ</TabsTrigger>
           <TabsTrigger value="feedback">フィードバック</TabsTrigger>
@@ -62,10 +63,89 @@ function AdminPage() {
         <TabsContent value="maintenance"><MaintenanceTab /></TabsContent>
         <TabsContent value="restrictions"><RestrictionsHub /></TabsContent>
         <TabsContent value="faq"><FaqTab /></TabsContent>
+        <TabsContent value="nav"><NavConfigTab /></TabsContent>
         <TabsContent value="version"><VersionTab /></TabsContent>
         <TabsContent value="announcements"><AnnouncementsTab /></TabsContent>
         <TabsContent value="feedback"><FeedbackTab /></TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+const NAV_KEYS: Array<{ key: string; defaultLabel: string }> = [
+  { key: "/dashboard", defaultLabel: "ダッシュボード / ホーム" },
+  { key: "/today", defaultLabel: "今日" },
+  { key: "/study", defaultLabel: "勉強" },
+  { key: "/timer", defaultLabel: "タイマー" },
+  { key: "/calendar", defaultLabel: "カレンダー" },
+  { key: "/goals", defaultLabel: "目標" },
+  { key: "/habits", defaultLabel: "習慣" },
+  { key: "/streak", defaultLabel: "連続" },
+  { key: "/flashcards", defaultLabel: "暗記" },
+  { key: "/ocr", defaultLabel: "OCR" },
+  { key: "/friends", defaultLabel: "フレンド" },
+  { key: "/rooms", defaultLabel: "勉強ルーム" },
+  { key: "/polls", defaultLabel: "投票" },
+  { key: "/questions", defaultLabel: "問題" },
+  { key: "/practice", defaultLabel: "演習" },
+  { key: "/tutor", defaultLabel: "AIチューター" },
+  { key: "/coach", defaultLabel: "AIコーチ" },
+  { key: "/micro", defaultLabel: "マイクロ学習" },
+  { key: "/listen", defaultLabel: "リスニング" },
+  { key: "/classroom", defaultLabel: "教室" },
+  { key: "/chat", defaultLabel: "チャット" },
+  { key: "/classchat", defaultLabel: "クラスチャット" },
+  { key: "/notes", defaultLabel: "ノート" },
+  { key: "/announcements", defaultLabel: "お知らせ" },
+  { key: "/missions", defaultLabel: "ミッション" },
+  { key: "/leaderboard", defaultLabel: "ランキング" },
+  { key: "/battle", defaultLabel: "バトル" },
+  { key: "/settings", defaultLabel: "設定" },
+];
+
+function NavConfigTab() {
+  const [rows, setRows] = useState<Record<string, any>>({});
+  const load = async () => {
+    const { data } = await supabase.from("admin_nav_config").select("*");
+    const m: Record<string, any> = {};
+    for (const r of data ?? []) m[(r as any).key] = r;
+    setRows(m);
+  };
+  useEffect(() => { load(); }, []);
+  const save = async (key: string, patch: any) => {
+    const current = rows[key] ?? { key, label: null, icon_url: null, visible: true, in_quickbar: false, order_idx: 100 };
+    const next = { ...current, ...patch, key };
+    setRows((s) => ({ ...s, [key]: next }));
+    const { error } = await supabase.from("admin_nav_config").upsert(next, { onConflict: "key" });
+    if (error) toast.error(error.message);
+  };
+  return (
+    <div className="mt-4 space-y-2">
+      <p className="text-sm text-muted-foreground">表示/非表示・名前・アイコン画像URL・並び順・クイックバー登録を編集できます。</p>
+      <div className="grid grid-cols-12 gap-2 text-xs font-semibold text-muted-foreground px-2">
+        <div className="col-span-3">項目</div>
+        <div className="col-span-3">表示名</div>
+        <div className="col-span-3">アイコンURL</div>
+        <div className="col-span-1">並び</div>
+        <div className="col-span-1 text-center">表示</div>
+        <div className="col-span-1 text-center">Quick</div>
+      </div>
+      {NAV_KEYS.map((n) => {
+        const r = rows[n.key] ?? {};
+        return (
+          <div key={n.key} className="grid grid-cols-12 gap-2 items-center bg-card border rounded p-2">
+            <div className="col-span-3 text-sm">
+              <div className="font-medium truncate">{n.defaultLabel}</div>
+              <code className="text-[10px] text-muted-foreground">{n.key}</code>
+            </div>
+            <div className="col-span-3"><Input defaultValue={r.label ?? ""} placeholder={n.defaultLabel} onBlur={(e) => save(n.key, { label: e.target.value || null })} className="h-8" /></div>
+            <div className="col-span-3"><Input defaultValue={r.icon_url ?? ""} placeholder="https://..." onBlur={(e) => save(n.key, { icon_url: e.target.value || null })} className="h-8" /></div>
+            <div className="col-span-1"><Input type="number" defaultValue={r.order_idx ?? 100} onBlur={(e) => save(n.key, { order_idx: parseInt(e.target.value, 10) || 100 })} className="h-8" /></div>
+            <div className="col-span-1 flex justify-center"><Switch checked={r.visible !== false} onCheckedChange={(v) => save(n.key, { visible: v })} /></div>
+            <div className="col-span-1 flex justify-center"><Switch checked={!!r.in_quickbar} onCheckedChange={(v) => save(n.key, { in_quickbar: v })} /></div>
+          </div>
+        );
+      })}
     </div>
   );
 }
