@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_nav_config: {
+        Row: {
+          icon_url: string | null
+          in_quickbar: boolean
+          key: string
+          label: string | null
+          order_idx: number
+          updated_at: string
+          visible: boolean
+        }
+        Insert: {
+          icon_url?: string | null
+          in_quickbar?: boolean
+          key: string
+          label?: string | null
+          order_idx?: number
+          updated_at?: string
+          visible?: boolean
+        }
+        Update: {
+          icon_url?: string | null
+          in_quickbar?: boolean
+          key?: string
+          label?: string | null
+          order_idx?: number
+          updated_at?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
       ai_chats: {
         Row: {
           content: string
@@ -709,18 +739,21 @@ export type Database = {
           follower_id: string
           following_id: string
           id: string
+          status: string
         }
         Insert: {
           created_at?: string
           follower_id: string
           following_id: string
           id?: string
+          status?: string
         }
         Update: {
           created_at?: string
           follower_id?: string
           following_id?: string
           id?: string
+          status?: string
         }
         Relationships: []
       }
@@ -842,6 +875,8 @@ export type Database = {
           id: string
           name: string
           owner_id: string
+          status: string
+          topic: string | null
         }
         Insert: {
           active?: boolean
@@ -850,6 +885,8 @@ export type Database = {
           id?: string
           name: string
           owner_id: string
+          status?: string
+          topic?: string | null
         }
         Update: {
           active?: boolean
@@ -858,6 +895,8 @@ export type Database = {
           id?: string
           name?: string
           owner_id?: string
+          status?: string
+          topic?: string | null
         }
         Relationships: []
       }
@@ -1021,6 +1060,7 @@ export type Database = {
       }
       polls: {
         Row: {
+          class_id: string | null
           created_at: string
           created_by: string
           ends_at: string | null
@@ -1029,6 +1069,7 @@ export type Database = {
           question: string
         }
         Insert: {
+          class_id?: string | null
           created_at?: string
           created_by: string
           ends_at?: string | null
@@ -1037,6 +1078,7 @@ export type Database = {
           question: string
         }
         Update: {
+          class_id?: string | null
           created_at?: string
           created_by?: string
           ends_at?: string | null
@@ -1044,7 +1086,15 @@ export type Database = {
           options?: Json
           question?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "polls_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -2036,6 +2086,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      are_mutual_friends: { Args: { _a: string; _b: string }; Returns: boolean }
       can_view_submission: {
         Args: { _assignment_id: string; _user_id: string }
         Returns: boolean
