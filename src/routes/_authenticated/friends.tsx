@@ -18,6 +18,8 @@ function FriendsPage() {
   const { user } = useAuth();
   const [following, setFollowing] = useState<Profile[]>([]);
   const [followers, setFollowers] = useState<Profile[]>([]);
+  const [pending, setPending] = useState<Profile[]>([]);
+  const [outgoingPending, setOutgoingPending] = useState<Profile[]>([]);
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<Profile[]>([]);
   const [board, setBoard] = useState<Array<Profile & { minutes: number }>>([]);
@@ -25,16 +27,20 @@ function FriendsPage() {
   const load = async () => {
     if (!user) return;
     const [{ data: f1 }, { data: f2 }] = await Promise.all([
-      supabase.from("follows").select("following_id").eq("follower_id", user.id),
-      supabase.from("follows").select("follower_id").eq("following_id", user.id),
+      supabase.from("follows").select("following_id, status").eq("follower_id", user.id),
+      supabase.from("follows").select("follower_id, status").eq("following_id", user.id),
     ]);
-    const ids1 = (f1 ?? []).map((r: any) => r.following_id);
-    const ids2 = (f2 ?? []).map((r: any) => r.follower_id);
-    const all = Array.from(new Set([...ids1, ...ids2, user.id]));
+    const ids1 = (f1 ?? []).filter((r: any) => r.status !== "pending").map((r: any) => r.following_id);
+    const ids1Pending = (f1 ?? []).filter((r: any) => r.status === "pending").map((r: any) => r.following_id);
+    const ids2 = (f2 ?? []).filter((r: any) => r.status !== "pending").map((r: any) => r.follower_id);
+    const ids2Pending = (f2 ?? []).filter((r: any) => r.status === "pending").map((r: any) => r.follower_id);
+    const all = Array.from(new Set([...ids1, ...ids2, ...ids1Pending, ...ids2Pending, user.id]));
     const { data: profs } = await supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", all);
     const map = new Map((profs ?? []).map((p: any) => [p.id, p]));
     setFollowing(ids1.map((id) => map.get(id)).filter(Boolean) as Profile[]);
     setFollowers(ids2.map((id) => map.get(id)).filter(Boolean) as Profile[]);
+    setPending(ids2Pending.map((id) => map.get(id)).filter(Boolean) as Profile[]);
+    setOutgoingPending(ids1Pending.map((id) => map.get(id)).filter(Boolean) as Profile[]);
 
     // Leaderboard: me + following, last 7d study minutes
     const since = new Date(); since.setDate(since.getDate() - 7);
@@ -98,6 +104,7 @@ function FriendsPage() {
         <TabsList>
           <TabsTrigger value="board"><Trophy className="h-4 w-4 mr-1" />ランキング</TabsTrigger>
           <TabsTrigger value="find"><UserPlus className="h-4 w-4 mr-1" />探す</TabsTrigger>
+          <TabsTrigger value="requests">承認待ち ({pending.length})</TabsTrigger>
           <TabsTrigger value="following">フォロー中 ({following.length})</TabsTrigger>
           <TabsTrigger value="followers">フォロワー ({followers.length})</TabsTrigger>
         </TabsList>
@@ -115,6 +122,30 @@ function FriendsPage() {
             </Card>
           ))}
           {board.length === 0 && <div className="text-muted-foreground text-sm">フォローするとランキングに表示されます</div>}
+        </TabsContent>
+        <TabsContent value="requests" className="space-y-2 mt-4">
+          <div className="text-sm font-semibold">あなた宛のフレンドリクエスト</div>
+          {pending.length === 0 && <div className="text-xs text-muted-foreground">リクエストはありません</div>}
+          {pending.map((p) => (
+            <Card key={p.id} className="p-3 flex items-center gap-3">
+              <Avatar><AvatarImage src={p.avatar_url ?? undefined} /><AvatarFallback>{(p.display_name ?? "?").slice(0, 1)}</AvatarFallback></Avatar>
+              <div className="flex-1"><div className="font-medium">{p.display_name}</div><div className="text-xs text-muted-foreground">@{p.username}</div></div>
+              <Button size="sm" onClick={() => accept(p.id)}>承認</Button>
+              <Button size="sm" variant="outline" onClick={() => reject(p.id)}>拒否</Button>
+            </Card>
+          ))}
+          {outgoingPending.length > 0 && (
+            <>
+              <div className="text-sm font-semibold mt-4">送信したリクエスト（承認待ち）</div>
+              {outgoingPending.map((p) => (
+                <Card key={p.id} className="p-3 flex items-center gap-3">
+                  <Avatar><AvatarImage src={p.avatar_url ?? undefined} /><AvatarFallback>{(p.display_name ?? "?").slice(0, 1)}</AvatarFallback></Avatar>
+                  <div className="flex-1"><div className="font-medium">{p.display_name}</div><div className="text-xs text-muted-foreground">@{p.username}</div></div>
+                  <Button size="sm" variant="outline" onClick={() => unfollow(p.id)}>取消</Button>
+                </Card>
+              ))}
+            </>
+          )}
         </TabsContent>
         <TabsContent value="find" className="space-y-2 mt-4">
           <div className="flex gap-2">
