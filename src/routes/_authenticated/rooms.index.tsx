@@ -33,7 +33,8 @@ function RoomsPage() {
     const c = Math.random().toString(36).slice(2, 8).toUpperCase();
     const { data, error } = await supabase.from("group_rooms").insert({ owner_id: user.id, name, code: c }).select().single();
     if (error) return toast.error(error.message);
-    await supabase.from("group_room_members").insert({ room_id: data.id, user_id: user.id });
+    await supabase.from("group_room_members")
+      .upsert({ room_id: data.id, user_id: user.id }, { onConflict: "room_id,user_id" });
     setName(""); load();
     toast.success(`作成しました 招待コード: ${c}`);
   };
@@ -41,7 +42,8 @@ function RoomsPage() {
     if (!user || !code.trim()) return;
     const { data } = await supabase.from("group_rooms").select("id").eq("code", code.toUpperCase().trim()).maybeSingle();
     if (!data) return toast.error("ルームが見つかりません");
-    const { error } = await supabase.from("group_room_members").upsert({ room_id: data.id, user_id: user.id });
+    const { error } = await supabase.from("group_room_members")
+      .upsert({ room_id: data.id, user_id: user.id }, { onConflict: "room_id,user_id" });
     if (error) return toast.error(error.message);
     toast.success("参加しました");
     setCode(""); load();

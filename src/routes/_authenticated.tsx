@@ -41,6 +41,15 @@ function AuthLayout() {
   const content = match
     ? <ServiceGate serviceKey={match[1]}><Outlet /></ServiceGate>
     : <Outlet />;
+  // Makron uses its own full-screen shell, bypass AppShell.
+  const isMakron = path === "/makron" || path.startsWith("/makron/");
+  if (isMakron) {
+    return (
+      <I18nProvider>
+        <TimerProvider>{content}</TimerProvider>
+      </I18nProvider>
+    );
+  }
   return (
     <I18nProvider>
       <TimerProvider>

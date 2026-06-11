@@ -55,6 +55,7 @@ const NAV = [
   { to: "/missions", labelKey: "nav.dashboard" as const, icon: Target, override: "ミッション" },
   { to: "/leaderboard", labelKey: "nav.dashboard" as const, icon: Trophy, override: "ランキング" },
   { to: "/battle", labelKey: "nav.dashboard" as const, icon: Swords, override: "バトル" },
+  { to: "/makron", labelKey: "nav.dashboard" as const, icon: Target, override: "Makron" },
   { to: "/settings", labelKey: "nav.settings" as const, icon: Settings, override: "設定" },
 ] as const;
 
