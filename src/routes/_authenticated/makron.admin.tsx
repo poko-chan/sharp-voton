@@ -208,10 +208,14 @@ function AdminPage() {
                 </div>
                 <div className="space-y-1 max-h-72 overflow-auto">
                   {questions.map((q) => (
-                    <div key={q.id} className="flex items-center gap-1 border rounded p-2 text-sm">
+                    <div key={q.id} className={`flex items-center gap-1 border rounded p-2 text-sm ${q.is_active === false ? "opacity-50 line-through" : ""}`}>
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">{q.type}</span>
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10">{q.points}点</span>
                       <span className="flex-1 min-w-0 truncate">{q.prompt}</span>
+                      <Button size="sm" variant="ghost" title={q.is_active === false ? "有効化" : "停止"} onClick={async () => {
+                        await (supabase as any).from("makron_questions").update({ is_active: q.is_active === false }).eq("id", q.id);
+                        loadQuestions(selUnit!);
+                      }}><Power className={`h-4 w-4 ${q.is_active === false ? "text-muted-foreground" : "text-success"}`} /></Button>
                       <Button size="sm" variant="ghost" onClick={() => setDraft({ ...q, options: q.options ?? [], correct_options: q.correct_options ?? [], accepted_answers: q.accepted_answers ?? [] })}>編集</Button>
                       <Button size="sm" variant="ghost" className="text-destructive" onClick={() => delQuestion(q.id)}><Trash2 className="h-4 w-4" /></Button>
                     </div>
@@ -294,6 +298,14 @@ function AdminPage() {
                       <label className="text-xs">解説（任意）</label>
                       <Textarea rows={2} value={draft.explanation ?? ""} onChange={(e) => setDraft({ ...draft, explanation: e.target.value })} />
                     </div>
+                    <div>
+                      <label className="text-xs">ヒント（任意・コインで生徒に開示）</label>
+                      <Textarea rows={2} placeholder="生徒がヒント券を消費すると表示されます。AIは使わず、ここに作成者が記入。" value={draft.hint_text ?? ""} onChange={(e) => setDraft({ ...draft, hint_text: e.target.value })} />
+                    </div>
+                    <label className="flex items-center gap-2 text-xs">
+                      <Switch checked={draft.is_active !== false} onCheckedChange={(v) => setDraft({ ...draft, is_active: v })} />
+                      この問題を有効にする（オフにすると生徒に表示されません）
+                    </label>
 
                     <div className="flex gap-2">
                       <Button onClick={saveQuestion}><Save className="h-4 w-4 mr-1" />{draft.id ? "更新" : "作成"}</Button>
