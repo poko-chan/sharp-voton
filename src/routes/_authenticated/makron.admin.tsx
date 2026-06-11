@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Trash2, Save, FileText, ChevronRight, FlagOff, Image as ImageIcon } from "lucide-react";
+import { Plus, Trash2, Save, FileText, ChevronRight, FlagOff, Image as ImageIcon, Power, Download, UserCog, BarChart3, KeyRound } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/makron/admin")({ component: AdminPage });
@@ -21,12 +22,17 @@ const TYPES = [
 
 function AdminPage() {
   const { user, isAdmin } = useAuth();
+  const [canCreate, setCanCreate] = useState(false);
   const [units, setUnits] = useState<any[]>([]);
   const [selUnit, setSelUnit] = useState<string | null>(null);
   const [questions, setQuestions] = useState<any[]>([]);
   const [pending, setPending] = useState<any[]>([]);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
+  const [analytics, setAnalytics] = useState<any[]>([]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [userQuery, setUserQuery] = useState("");
+  const [tempList, setTempList] = useState<any[]>([]);
 
   const loadUnits = async () => {
     const { data } = await (supabase as any).from("makron_units").select("*").order("order_idx").order("created_at");
@@ -50,8 +56,36 @@ function AdminPage() {
 
   useEffect(() => { loadUnits(); loadPending(); loadReports(); }, []);
   useEffect(() => { if (selUnit) loadQuestions(selUnit); }, [selUnit]);
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data: tmp } = await (supabase as any).from("temp_question_creators").select("expires_at").eq("user_id", user.id).gt("expires_at", new Date().toISOString()).maybeSingle();
+      setCanCreate(isAdmin || !!tmp);
+    })();
+  }, [user?.id, isAdmin]);
 
-  if (!isAdmin) return <Navigate to="/makron" />;
+  const loadAnalytics = async () => {
+    const { data } = await (supabase as any).rpc("admin_makron_analytics");
+    setAnalytics(data ?? []);
+  };
+  const loadUsersAndTemp = async () => {
+    const [{ data: u }, { data: t }] = await Promise.all([
+      supabase.from("profiles").select("id, username, display_name, avatar_url").limit(200),
+      (supabase as any).from("temp_question_creators").select("*, profile:profiles!temp_question_creators_user_id_fkey(username, display_name)").gt("expires_at", new Date().toISOString()),
+    ]);
+    setAllUsers(u ?? []);
+    setTempList(t ?? []);
+  };
+
+  if (!canCreate) {
+    return (
+      <MakronShell back="/makron" title="管理者画面">
+        <div className="p-10 text-center text-sm text-muted-foreground">
+          この画面は管理者または問題作成権限を持つユーザーのみ利用できます。
+        </div>
+      </MakronShell>
+    );
+  }
 
   // Create unit
   const [uTitle, setUTitle] = useState(""); const [uSubj, setUSubj] = useState(""); const [uField, setUField] = useState(""); const [uUnit, setUUnit] = useState(""); const [uDesc, setUDesc] = useState("");
@@ -77,7 +111,7 @@ function AdminPage() {
   const blank = () => ({
     unit_id: selUnit, prompt: "", image_url: "", type: "single",
     options: ["", "", "", ""], correct_options: [], accepted_answers: [],
-    model_answer: "", explanation: "", points: 10, grading: "auto", order_idx: 100,
+    model_answer: "", explanation: "", hint_text: "", is_active: true, points: 10, grading: "auto", order_idx: 100,
   });
   const [draft, setDraft] = useState<any | null>(null);
 
@@ -129,11 +163,13 @@ function AdminPage() {
   return (
     <MakronShell back="/makron" title="管理者画面">
       <div className="max-w-6xl mx-auto p-6">
-        <Tabs defaultValue="units">
+        <Tabs defaultValue="units" onValueChange={(v) => { if (v === "analytics") loadAnalytics(); if (v === "users") loadUsersAndTemp(); }}>
           <TabsList>
             <TabsTrigger value="units">単元・問題</TabsTrigger>
             <TabsTrigger value="grading">手動採点 ({pending.length})</TabsTrigger>
             <TabsTrigger value="reports">報告 ({reports.filter(r => r.status === "open").length})</TabsTrigger>
+            {isAdmin && <TabsTrigger value="users"><UserCog className="h-3 w-3 mr-1" />ユーザー</TabsTrigger>}
+            {isAdmin && <TabsTrigger value="analytics"><BarChart3 className="h-3 w-3 mr-1" />分析</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="units" className="space-y-4">
