@@ -948,6 +948,276 @@ export type Database = {
         }
         Relationships: []
       }
+      makron_answers: {
+        Row: {
+          answer: Json | null
+          auto_correct: boolean | null
+          awarded_points: number | null
+          created_at: string
+          file_url: string | null
+          id: string
+          manual_comment: string | null
+          manual_score: number | null
+          question_id: string
+          session_id: string
+          updated_at: string
+        }
+        Insert: {
+          answer?: Json | null
+          auto_correct?: boolean | null
+          awarded_points?: number | null
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          manual_comment?: string | null
+          manual_score?: number | null
+          question_id: string
+          session_id: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: Json | null
+          auto_correct?: boolean | null
+          awarded_points?: number | null
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          manual_comment?: string | null
+          manual_score?: number | null
+          question_id?: string
+          session_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "makron_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "makron_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "makron_answers_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "makron_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      makron_questions: {
+        Row: {
+          accepted_answers: Json
+          correct_options: Json
+          created_at: string
+          explanation: string | null
+          grading: string
+          id: string
+          image_url: string | null
+          model_answer: string | null
+          options: Json
+          order_idx: number
+          points: number
+          prompt: string
+          type: string
+          unit_id: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_answers?: Json
+          correct_options?: Json
+          created_at?: string
+          explanation?: string | null
+          grading?: string
+          id?: string
+          image_url?: string | null
+          model_answer?: string | null
+          options?: Json
+          order_idx?: number
+          points?: number
+          prompt: string
+          type: string
+          unit_id: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_answers?: Json
+          correct_options?: Json
+          created_at?: string
+          explanation?: string | null
+          grading?: string
+          id?: string
+          image_url?: string | null
+          model_answer?: string | null
+          options?: Json
+          order_idx?: number
+          points?: number
+          prompt?: string
+          type?: string
+          unit_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "makron_questions_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "makron_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      makron_reports: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          note: string | null
+          question_id: string | null
+          status: string
+          suggested_answer: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          question_id?: string | null
+          status?: string
+          suggested_answer?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          question_id?: string | null
+          status?: string
+          suggested_answer?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "makron_reports_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "makron_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      makron_sessions: {
+        Row: {
+          coins_awarded: number
+          created_at: string
+          finished_at: string | null
+          id: string
+          scratchpad: string | null
+          started_at: string
+          total_points: number | null
+          total_score: number | null
+          unit_id: string
+          user_id: string
+          xp_awarded: number
+        }
+        Insert: {
+          coins_awarded?: number
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          scratchpad?: string | null
+          started_at?: string
+          total_points?: number | null
+          total_score?: number | null
+          unit_id: string
+          user_id: string
+          xp_awarded?: number
+        }
+        Update: {
+          coins_awarded?: number
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          scratchpad?: string | null
+          started_at?: string
+          total_points?: number | null
+          total_score?: number | null
+          unit_id?: string
+          user_id?: string
+          xp_awarded?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "makron_sessions_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "makron_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      makron_units: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          field: string | null
+          id: string
+          order_idx: number
+          subject: string | null
+          title: string
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          field?: string | null
+          id?: string
+          order_idx?: number
+          subject?: string | null
+          title: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          field?: string | null
+          id?: string
+          order_idx?: number
+          subject?: string | null
+          title?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      makron_xp: {
+        Row: {
+          level: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          level?: number
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          level?: number
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
@@ -1206,10 +1476,13 @@ export type Database = {
           challenger_id: string
           challenger_score: number
           created_at: string
+          genre: string | null
           id: string
+          num_questions: number
           opponent_id: string
           opponent_score: number
           status: string
+          time_taken: number | null
           updated_at: string
           winner_id: string | null
         }
@@ -1217,10 +1490,13 @@ export type Database = {
           challenger_id: string
           challenger_score?: number
           created_at?: string
+          genre?: string | null
           id?: string
+          num_questions?: number
           opponent_id: string
           opponent_score?: number
           status?: string
+          time_taken?: number | null
           updated_at?: string
           winner_id?: string | null
         }
@@ -1228,10 +1504,13 @@ export type Database = {
           challenger_id?: string
           challenger_score?: number
           created_at?: string
+          genre?: string | null
           id?: string
+          num_questions?: number
           opponent_id?: string
           opponent_score?: number
           status?: string
+          time_taken?: number | null
           updated_at?: string
           winner_id?: string | null
         }
@@ -2091,6 +2370,15 @@ export type Database = {
         Args: { _assignment_id: string; _user_id: string }
         Returns: boolean
       }
+      finalize_makron_session: {
+        Args: { _session_id: string }
+        Returns: {
+          coins_awarded: number
+          total_points: number
+          total_score: number
+          xp_awarded: number
+        }[]
+      }
       get_leaderboard: {
         Args: { _limit?: number }
         Returns: {
@@ -2099,6 +2387,26 @@ export type Database = {
           streak_days: number
           total_minutes: number
           user_id: string
+        }[]
+      }
+      get_makron_leaderboard: {
+        Args: { _limit?: number }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          level: number
+          rank: number
+          user_id: string
+          xp: number
+        }[]
+      }
+      get_my_makron_rank: {
+        Args: never
+        Returns: {
+          level: number
+          rank: number
+          total_users: number
+          xp: number
         }[]
       }
       get_user_study_stats: {
