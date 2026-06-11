@@ -15,9 +15,11 @@ export const REPORT_CATEGORIES = [
   "古い情報","著作権の懸念","その他",
 ] as const;
 
-export function ReportDialog({ questionId, questionLabel }: { questionId: string; questionLabel?: string }) {
+export function ReportDialog({ questionId, questionLabel, open: openProp, onOpenChange, hideTrigger }: { questionId: string; questionLabel?: string; open?: boolean; onOpenChange?: (v: boolean) => void; hideTrigger?: boolean }) {
   const { user } = useAuth();
-  const [open, setOpen] = useState(false);
+  const [openInner, setOpenInner] = useState(false);
+  const open = openProp ?? openInner;
+  const setOpen = (v: boolean) => { onOpenChange ? onOpenChange(v) : setOpenInner(v); };
   const [category, setCategory] = useState<string>(REPORT_CATEGORIES[0]);
   const [suggested, setSuggested] = useState("");
   const [note, setNote] = useState("");
@@ -38,9 +40,9 @@ export function ReportDialog({ questionId, questionLabel }: { questionId: string
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      {!hideTrigger && <DialogTrigger asChild>
         <Button size="sm" variant="outline"><Flag className="h-4 w-4 mr-1" />問題を報告</Button>
-      </DialogTrigger>
+      </DialogTrigger>}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>問題を報告</DialogTitle>

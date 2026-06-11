@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
@@ -15,7 +15,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Plus, GraduationCap, Crown, Trash2, BookOpen, ClipboardCheck, Users, Copy, Megaphone, Paperclip, Lock, MessageSquare, FileText, ListChecks, X, FolderOpen, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Plus, GraduationCap, Crown, Trash2, BookOpen, ClipboardCheck, Users, Copy, Megaphone, Paperclip, Lock, MessageSquare, FileText, ListChecks, X, FolderOpen, ShieldCheck, Send } from "lucide-react";
 import { toast } from "sonner";
 import { ClassFilesPanel } from "@/components/ClassFilesPanel";
 import { ClassPermissionsPanel, useMyClassPermissions } from "@/components/ClassPermissionsPanel";
@@ -89,6 +89,7 @@ function ClassDetail() {
           <TabsTrigger value="stream"><Megaphone className="h-3 w-3 mr-1" />ストリーム</TabsTrigger>
           <TabsTrigger value="assignments"><BookOpen className="h-3 w-3 mr-1" />課題</TabsTrigger>
           <TabsTrigger value="files"><FolderOpen className="h-3 w-3 mr-1" />共有フォルダー</TabsTrigger>
+          <TabsTrigger value="chat"><MessageSquare className="h-3 w-3 mr-1" />チャット</TabsTrigger>
           <TabsTrigger value="members"><Users className="h-3 w-3 mr-1" />メンバー ({members.length})</TabsTrigger>
           {isTeacher && <TabsTrigger value="logs"><ClipboardCheck className="h-3 w-3 mr-1" />生徒の学習記録</TabsTrigger>}
           {isTeacher && <TabsTrigger value="permissions"><ShieldCheck className="h-3 w-3 mr-1" />権限</TabsTrigger>}
@@ -124,8 +125,9 @@ function ClassDetail() {
           <FilesTab classId={classId} isTeacher={isTeacher} userId={user?.id} />
         </TabsContent>
 
-
-
+        <TabsContent value="chat" className="mt-4">
+          <ClassChatTab classId={classId} userId={user?.id} />
+        </TabsContent>
         <TabsContent value="members" className="mt-4">
           <Card className="p-0 overflow-hidden">
             <table className="w-full text-sm">
@@ -810,4 +812,61 @@ function StudentLogs({ members }: { members: any[] }) {
 function FilesTab({ classId, isTeacher, userId }: { classId: string; isTeacher: boolean; userId: string | undefined }) {
   const perm = useMyClassPermissions(classId, userId, isTeacher);
   return <ClassFilesPanel classId={classId} isTeacher={isTeacher} canUpload={isTeacher || perm.can_upload_files} />;
+}
+
+function ClassChatTab({ classId, userId }: { classId: string; userId?: string }) {
+  const [msgs, setMsgs] = useState<any[]>([]);
+  const [profiles, setProfiles] = useState<Record<string, any>>({});
+  const [text, setText] = useState("");
+  const endRef = useRef<HTMLDivElement>(null);
+
+  const load = async () => {
+    const { data } = await supabase.from("class_chat_messages").select("*").eq("class_id", classId).order("created_at").limit(200);
+    const rows = data ?? [];
+    setMsgs(rows);
+    const ids = Array.from(new Set(rows.map((m: any) => m.sender_id)));
+    if (ids.length) {
+      const { data: profs } = await supabase.from("profiles").select("id, display_name, username, avatar_url").in("id", ids);
+      setProfiles(Object.fromEntries((profs ?? []).map((p: any) => [p.id, p])));
+    }
+  };
+  useEffect(() => { load(); }, [classId]);
+  useEffect(() => {
+    const ch = supabase.channel(`cc-${classId}`).on("postgres_changes", { event: "*", schema: "public", table: "class_chat_messages", filter: `class_id=eq.${classId}` }, load).subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [classId]);
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs.length]);
+
+  const send = async () => {
+    if (!text.trim() || !userId) return;
+    const { error } = await supabase.from("class_chat_messages").insert({ class_id: classId, sender_id: userId, body: text.trim() });
+    if (error) return toast.error(error.message);
+    setText("");
+  };
+
+  return (
+    <Card className="flex flex-col h-[60vh]">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+        {msgs.filter((m) => !m.deleted_at).map((m) => {
+          const p = profiles[m.sender_id];
+          const mine = m.sender_id === userId;
+          return (
+            <div key={m.id} className={`flex gap-2 ${mine ? "flex-row-reverse" : ""}`}>
+              <div className={`max-w-[70%] rounded-lg px-3 py-2 text-sm ${mine ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                {!mine && <div className="text-[10px] opacity-70 mb-0.5">{p?.display_name ?? p?.username ?? "?"}</div>}
+                <div className="whitespace-pre-wrap break-words">{m.body}</div>
+                <div className="text-[9px] opacity-60 mt-0.5">{new Date(m.created_at).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}</div>
+              </div>
+            </div>
+          );
+        })}
+        {msgs.length === 0 && <div className="text-center text-sm text-muted-foreground py-8">まだメッセージはありません</div>}
+        <div ref={endRef} />
+      </div>
+      <div className="border-t p-2 flex gap-2">
+        <Textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="メッセージを入力..." rows={2} className="flex-1 resize-none" onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }} />
+        <Button onClick={send} disabled={!text.trim()}><Send className="h-4 w-4" /></Button>
+      </div>
+    </Card>
+  );
 }

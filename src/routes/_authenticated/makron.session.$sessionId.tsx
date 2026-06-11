@@ -11,8 +11,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { ScratchPad } from "@/components/makron/ScratchPad";
-import { ChevronLeft, ChevronRight, Flag, NotebookPen, Upload } from "lucide-react";
+import { ChevronLeft, ChevronRight, Flag, NotebookPen, Upload, Bookmark, ThumbsUp, Lightbulb, Flag as FlagIcon } from "lucide-react";
 import { toast } from "sonner";
+import { ReportDialog } from "@/components/makron/ReportDialog";
 
 export const Route = createFileRoute("/_authenticated/makron/session/$sessionId")({ component: SessionPage });
 
@@ -20,6 +21,7 @@ type Q = {
   id: string; prompt: string; image_url: string | null; type: "single"|"multi"|"text"|"written"|"file";
   options: string[]; correct_options: string[]; accepted_answers: string[];
   model_answer: string | null; explanation: string | null; points: number; grading: "auto"|"manual";
+  hint_text: string | null;
 };
 
 function SessionPage() {
@@ -33,6 +35,11 @@ function SessionPage() {
   const [idx, setIdx] = useState(0);
   const [showPad, setShowPad] = useState(false);
   const padInit = useRef<string | null>(null);
+  const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
+  const [likes, setLikes] = useState<Set<string>>(new Set());
+  const [hintShown, setHintShown] = useState<Set<string>>(new Set());
+  const [hintTickets, setHintTickets] = useState(0);
+  const [reportOpen, setReportOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -49,11 +56,51 @@ function SessionPage() {
         if (r.file_url) f[r.question_id] = r.file_url;
       }
       setAnswers(a); setFiles(f);
+      if (user) {
+        const [{ data: bm }, { data: lk }, { data: inv }] = await Promise.all([
+          (supabase as any).from("makron_bookmarks").select("question_id").eq("user_id", user.id),
+          (supabase as any).from("makron_question_likes").select("question_id, liked").eq("user_id", user.id),
+          (supabase as any).from("user_inventory").select("quantity").eq("user_id", user.id).eq("item_code", "hint_ticket").maybeSingle(),
+        ]);
+        setBookmarks(new Set((bm ?? []).map((r: any) => r.question_id)));
+        setLikes(new Set((lk ?? []).filter((r: any) => r.liked).map((r: any) => r.question_id)));
+        setHintTickets(inv?.quantity ?? 0);
+      }
     })();
-  }, [sessionId]);
+  }, [sessionId, user?.id]);
 
   const q = questions[idx];
   const setAns = (val: any) => setAnswers((p) => ({ ...p, [q.id]: val }));
+
+  const toggleBookmark = async () => {
+    if (!user || !q) return;
+    if (bookmarks.has(q.id)) {
+      await (supabase as any).from("makron_bookmarks").delete().eq("user_id", user.id).eq("question_id", q.id);
+      setBookmarks((s) => { const n = new Set(s); n.delete(q.id); return n; });
+    } else {
+      await (supabase as any).from("makron_bookmarks").insert({ user_id: user.id, question_id: q.id });
+      setBookmarks((s) => new Set(s).add(q.id));
+      toast.success("ブックマークしました");
+    }
+  };
+
+  const toggleLike = async () => {
+    if (!user || !q) return;
+    const liked = !likes.has(q.id);
+    await (supabase as any).from("makron_question_likes").upsert({ user_id: user.id, question_id: q.id, liked }, { onConflict: "user_id,question_id" });
+    setLikes((s) => { const n = new Set(s); liked ? n.add(q.id) : n.delete(q.id); return n; });
+  };
+
+  const useHint = async () => {
+    if (!user || !q) return;
+    if (!q.hint_text) return toast.info("この問題にはヒントが用意されていません");
+    if (hintShown.has(q.id)) return;
+    if (hintTickets <= 0) return toast.error("ヒント券がありません（ショップで購入できます）");
+    const { error } = await (supabase as any).from("user_inventory").update({ quantity: hintTickets - 1 }).eq("user_id", user.id).eq("item_code", "hint_ticket");
+    if (error) return toast.error(error.message);
+    setHintTickets((n) => n - 1);
+    setHintShown((s) => new Set(s).add(q.id));
+  };
 
   const saveCurrent = async () => {
     if (!q) return;
@@ -107,12 +154,36 @@ function SessionPage() {
       back="/makron"
       title={`問題 ${idx + 1} / ${questions.length}`}
       subtitle={`配点: ${q.points} 点`}
-      right={<Button size="sm" variant={showPad ? "default" : "outline"} onClick={() => setShowPad((v) => !v)}><NotebookPen className="h-4 w-4 mr-1" />計算用紙</Button>}
+      right={
+        <div className="flex gap-1">
+          <Button size="sm" variant="ghost" onClick={toggleBookmark} title="ブックマーク">
+            <Bookmark className={`h-4 w-4 ${bookmarks.has(q.id) ? "fill-primary text-primary" : ""}`} />
+          </Button>
+          <Button size="sm" variant="ghost" onClick={toggleLike} title="いいね">
+            <ThumbsUp className={`h-4 w-4 ${likes.has(q.id) ? "fill-primary text-primary" : ""}`} />
+          </Button>
+          <Button size="sm" variant="ghost" onClick={useHint} disabled={!q.hint_text || hintShown.has(q.id)} title={`ヒント (${hintTickets}券)`}>
+            <Lightbulb className="h-4 w-4" />
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setReportOpen(true)} title="報告">
+            <FlagIcon className="h-4 w-4" />
+          </Button>
+          <Button size="sm" variant={showPad ? "default" : "outline"} onClick={() => setShowPad((v) => !v)}>
+            <NotebookPen className="h-4 w-4 mr-1" />計算用紙
+          </Button>
+        </div>
+      }
     >
       <div className="max-w-5xl mx-auto p-6 space-y-4">
         <Card className="p-5 space-y-4">
           <div className="text-lg whitespace-pre-wrap">{q.prompt}</div>
           {q.image_url && <img src={q.image_url} alt="" className="max-h-80 rounded border" />}
+          {hintShown.has(q.id) && q.hint_text && (
+            <div className="rounded border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+              <div className="font-bold text-amber-700 dark:text-amber-300 mb-1 flex items-center gap-1"><Lightbulb className="h-4 w-4" />ヒント</div>
+              <div className="whitespace-pre-wrap">{q.hint_text}</div>
+            </div>
+          )}
 
           {q.type === "single" && (
             <RadioGroup value={answers[q.id] ?? ""} onValueChange={setAns} className="grid gap-2">
@@ -174,6 +245,7 @@ function SessionPage() {
           ))}
         </div>
       </div>
+      <ReportDialog open={reportOpen} onOpenChange={setReportOpen} questionId={q.id} />
     </MakronShell>
   );
 }
