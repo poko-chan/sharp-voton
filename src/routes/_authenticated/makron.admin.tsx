@@ -366,8 +366,131 @@ function AdminPage() {
               </Card>
             ))}
           </TabsContent>
+
+          {isAdmin && (
+            <TabsContent value="users" className="space-y-3">
+              <Card className="p-4 space-y-2">
+                <div className="font-bold flex items-center gap-1"><KeyRound className="h-4 w-4" />一時的な問題作成権限</div>
+                <div className="text-xs text-muted-foreground">管理者以外のユーザーに、期限付きで問題作成を許可します（既存の有効な権限のみ表示）。</div>
+                <div className="space-y-1 mt-2">
+                  {tempList.map((t: any) => (
+                    <div key={t.id} className="flex items-center gap-2 border rounded p-2 text-sm">
+                      <div className="flex-1">{t.profile?.display_name ?? t.profile?.username ?? t.user_id.slice(0, 8)}</div>
+                      <span className="text-xs text-muted-foreground">〜{new Date(t.expires_at).toLocaleString("ja-JP")}</span>
+                      <Button size="sm" variant="ghost" className="text-destructive" onClick={async () => {
+                        await (supabase as any).from("temp_question_creators").delete().eq("id", t.id); loadUsersAndTemp();
+                      }}><Trash2 className="h-3 w-3" /></Button>
+                    </div>
+                  ))}
+                  {tempList.length === 0 && <div className="text-xs text-muted-foreground">付与中の権限はありません</div>}
+                </div>
+              </Card>
+              <Card className="p-4 space-y-2">
+                <div className="font-bold flex items-center gap-1"><UserCog className="h-4 w-4" />ユーザー検索 / XP・コイン編集</div>
+                <Input placeholder="ユーザー名や表示名で検索" value={userQuery} onChange={(e) => setUserQuery(e.target.value)} />
+                <div className="max-h-96 overflow-auto divide-y border rounded">
+                  {allUsers.filter((u) => !userQuery || (u.username ?? "").includes(userQuery) || (u.display_name ?? "").includes(userQuery)).slice(0, 50).map((u) => (
+                    <UserAdminRow key={u.id} user={u} onChange={loadUsersAndTemp} />
+                  ))}
+                </div>
+              </Card>
+              <Card className="p-4">
+                <div className="font-bold flex items-center gap-1 mb-2"><FileText className="h-4 w-4" />解答スコア上書き</div>
+                <div className="text-xs text-muted-foreground">採点タブから個別解答を選んで採点 / 上書きできます。「採点」ボタンで詳細を確認してください。</div>
+              </Card>
+            </TabsContent>
+          )}
+
+          {isAdmin && (
+            <TabsContent value="analytics" className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">問題別の挑戦数・正答率・いいね・平均難易度。CSV出力可能。</div>
+                <Button size="sm" variant="outline" onClick={() => {
+                  const header = ["問題ID","問題文","挑戦数","正解数","正答率%","いいね","平均難易度"];
+                  const rows = analytics.map((r) => [r.question_id, (r.prompt ?? "").replace(/\n/g, " "), r.attempts, r.correct, r.accuracy, r.likes, r.avg_difficulty]);
+                  const csv = [header, ...rows].map((r) => r.map((c) => `"${String(c ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+                  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+                  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `makron-analytics-${Date.now()}.csv`; a.click();
+                }}><Download className="h-3 w-3 mr-1" />CSV出力</Button>
+              </div>
+              <Card className="divide-y max-h-[60vh] overflow-auto">
+                {analytics.length === 0 && <div className="p-6 text-center text-sm text-muted-foreground">データがありません</div>}
+                {analytics.map((r: any) => (
+                  <div key={r.question_id} className="p-3 text-sm">
+                    <div className="font-medium truncate">{r.prompt}</div>
+                    <div className="text-xs text-muted-foreground flex gap-3 mt-1">
+                      <span>挑戦 {r.attempts}</span>
+                      <span>正解 {r.correct}</span>
+                      <span className={Number(r.accuracy) < 30 ? "text-destructive font-bold" : ""}>正答率 {r.accuracy}%</span>
+                      <span>👍 {r.likes}</span>
+                      <span>難度 {Number(r.avg_difficulty).toFixed(1)}/5</span>
+                    </div>
+                  </div>
+                ))}
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </MakronShell>
+  );
+}
+
+function UserAdminRow({ user, onChange }: { user: any; onChange: () => void }) {
+  const [xp, setXp] = useState<number>(0);
+  const [coins, setCoins] = useState<number>(0);
+  const [days, setDays] = useState<number>(1);
+  const [loaded, setLoaded] = useState(false);
+
+  const loadStats = async () => {
+    const [{ data: x }, { data: c }] = await Promise.all([
+      (supabase as any).from("makron_xp").select("xp").eq("user_id", user.id).maybeSingle(),
+      supabase.from("user_coins").select("balance").eq("user_id", user.id).maybeSingle(),
+    ]);
+    setXp(x?.xp ?? 0); setCoins(c?.balance ?? 0); setLoaded(true);
+  };
+
+  return (
+    <div className="p-2 flex items-center gap-2 text-sm flex-wrap">
+      <div className="flex-1 min-w-[150px]">
+        <div className="font-medium">{user.display_name ?? user.username ?? user.id.slice(0, 8)}</div>
+        <div className="text-[10px] text-muted-foreground">@{user.username ?? "-"}</div>
+      </div>
+      {!loaded ? (
+        <Button size="sm" variant="outline" onClick={loadStats}>編集</Button>
+      ) : (
+        <>
+          <div className="flex items-center gap-1">
+            <label className="text-[10px]">XP</label>
+            <Input type="number" value={xp} onChange={(e) => setXp(Number(e.target.value) || 0)} className="w-20 h-8" />
+            <Button size="sm" onClick={async () => {
+              const { error } = await (supabase as any).rpc("admin_set_user_xp", { _user_id: user.id, _xp: xp });
+              if (error) return toast.error(error.message);
+              toast.success("XPを更新");
+            }}>保存</Button>
+          </div>
+          <div className="flex items-center gap-1">
+            <label className="text-[10px]">コイン</label>
+            <Input type="number" value={coins} onChange={(e) => setCoins(Number(e.target.value) || 0)} className="w-20 h-8" />
+            <Button size="sm" onClick={async () => {
+              const { error } = await (supabase as any).rpc("admin_set_user_coins", { _user_id: user.id, _balance: coins });
+              if (error) return toast.error(error.message);
+              toast.success("コインを更新");
+            }}>保存</Button>
+          </div>
+          <div className="flex items-center gap-1">
+            <label className="text-[10px]">作成権限</label>
+            <Input type="number" value={days} onChange={(e) => setDays(Number(e.target.value) || 1)} className="w-16 h-8" />
+            <span className="text-[10px]">日</span>
+            <Button size="sm" variant="outline" onClick={async () => {
+              const exp = new Date(Date.now() + days * 86400000).toISOString();
+              const { error } = await (supabase as any).from("temp_question_creators").insert({ user_id: user.id, expires_at: exp });
+              if (error) return toast.error(error.message);
+              toast.success("権限を付与"); onChange();
+            }}>付与</Button>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
