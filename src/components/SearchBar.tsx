@@ -11,7 +11,7 @@ const ROUTES: Array<{ q: string; to: string; label: string }> = [
   { q: "ocr ノート", to: "/ocr", label: "ノートOCR" },
   { q: "友達 friends フォロー", to: "/friends", label: "フレンド" },
   { q: "グループ ルーム", to: "/rooms", label: "勉強ルーム" },
-  { q: "投票 アンケート polls", to: "/polls", label: "投票" },
+  { q: "ショップ コイン shop", to: "/shop", label: "コインショップ" },
   { q: "通知", to: "/notifications", label: "通知" },
   { q: "設定 settings", to: "/settings", label: "設定" },
   { q: "ヘルプ help", to: "/help", label: "ヘルプ" },
