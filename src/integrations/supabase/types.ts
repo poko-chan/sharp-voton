@@ -458,6 +458,176 @@ export type Database = {
         }
         Relationships: []
       }
+      coin_gifts: {
+        Row: {
+          amount: number
+          created_at: string
+          from_user: string
+          id: string
+          message: string | null
+          to_user: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          from_user: string
+          id?: string
+          message?: string | null
+          to_user: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          from_user?: string
+          id?: string
+          message?: string | null
+          to_user?: string
+        }
+        Relationships: []
+      }
+      coin_purchases: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          payload: Json
+          price_paid: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          payload?: Json
+          price_paid: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          payload?: Json
+          price_paid?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coin_purchases_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "coin_shop_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coin_shop_items: {
+        Row: {
+          category: string
+          code: string
+          consumable: boolean
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          payload: Json
+          price: number
+          sort_order: number
+        }
+        Insert: {
+          category: string
+          code: string
+          consumable?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          payload?: Json
+          price: number
+          sort_order?: number
+        }
+        Update: {
+          category?: string
+          code?: string
+          consumable?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          payload?: Json
+          price?: number
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      coin_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          meta: Json
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          meta?: Json
+          reason: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          meta?: Json
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_mission_templates: {
+        Row: {
+          category: string
+          code: string
+          description: string | null
+          id: string
+          is_active: boolean
+          reward_coins: number
+          reward_xp: number
+          sort_order: number
+          target: number
+          title: string
+        }
+        Insert: {
+          category: string
+          code: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          reward_coins?: number
+          reward_xp?: number
+          sort_order?: number
+          target: number
+          title: string
+        }
+        Update: {
+          category?: string
+          code?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          reward_coins?: number
+          reward_xp?: number
+          sort_order?: number
+          target?: number
+          title?: string
+        }
+        Relationships: []
+      }
       daily_missions: {
         Row: {
           completed: boolean
@@ -950,6 +1120,8 @@ export type Database = {
       }
       makron_answers: {
         Row: {
+          admin_override_note: string | null
+          admin_override_score: number | null
           answer: Json | null
           auto_correct: boolean | null
           awarded_points: number | null
@@ -963,6 +1135,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          admin_override_note?: string | null
+          admin_override_score?: number | null
           answer?: Json | null
           auto_correct?: boolean | null
           awarded_points?: number | null
@@ -976,6 +1150,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          admin_override_note?: string | null
+          admin_override_score?: number | null
           answer?: Json | null
           auto_correct?: boolean | null
           awarded_points?: number | null
@@ -1005,6 +1181,118 @@ export type Database = {
           },
         ]
       }
+      makron_assignments: {
+        Row: {
+          assigned_by: string
+          class_id: string
+          created_at: string
+          description: string | null
+          due_at: string | null
+          id: string
+          title: string
+          unit_id: string
+        }
+        Insert: {
+          assigned_by: string
+          class_id: string
+          created_at?: string
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          title: string
+          unit_id: string
+        }
+        Update: {
+          assigned_by?: string
+          class_id?: string
+          created_at?: string
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          title?: string
+          unit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "makron_assignments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "makron_assignments_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "makron_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      makron_bookmarks: {
+        Row: {
+          created_at: string
+          id: string
+          question_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          question_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          question_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "makron_bookmarks_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "makron_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      makron_question_likes: {
+        Row: {
+          created_at: string
+          difficulty_vote: number | null
+          id: string
+          liked: boolean | null
+          question_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          difficulty_vote?: number | null
+          id?: string
+          liked?: boolean | null
+          question_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          difficulty_vote?: number | null
+          id?: string
+          liked?: boolean | null
+          question_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "makron_question_likes_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "makron_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       makron_questions: {
         Row: {
           accepted_answers: Json
@@ -1012,8 +1300,10 @@ export type Database = {
           created_at: string
           explanation: string | null
           grading: string
+          hint_text: string | null
           id: string
           image_url: string | null
+          is_active: boolean
           model_answer: string | null
           options: Json
           order_idx: number
@@ -1029,8 +1319,10 @@ export type Database = {
           created_at?: string
           explanation?: string | null
           grading?: string
+          hint_text?: string | null
           id?: string
           image_url?: string | null
+          is_active?: boolean
           model_answer?: string | null
           options?: Json
           order_idx?: number
@@ -1046,8 +1338,10 @@ export type Database = {
           created_at?: string
           explanation?: string | null
           grading?: string
+          hint_text?: string | null
           id?: string
           image_url?: string | null
+          is_active?: boolean
           model_answer?: string | null
           options?: Json
           order_idx?: number
@@ -1369,6 +1663,9 @@ export type Database = {
       profiles: {
         Row: {
           account_kind: string
+          active_frame: string | null
+          active_theme: string | null
+          active_title: string | null
           avatar_url: string | null
           created_at: string
           deletion_code: string | null
@@ -1389,6 +1686,9 @@ export type Database = {
         }
         Insert: {
           account_kind?: string
+          active_frame?: string | null
+          active_theme?: string | null
+          active_title?: string | null
           avatar_url?: string | null
           created_at?: string
           deletion_code?: string | null
@@ -1409,6 +1709,9 @@ export type Database = {
         }
         Update: {
           account_kind?: string
+          active_frame?: string | null
+          active_theme?: string | null
+          active_title?: string | null
           avatar_url?: string | null
           created_at?: string
           deletion_code?: string | null
@@ -1549,6 +1852,30 @@ export type Database = {
           subject_id?: string | null
           user_id?: string
           weekday?: number
+        }
+        Relationships: []
+      }
+      season_xp: {
+        Row: {
+          id: string
+          season_key: string
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          id?: string
+          season_key: string
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          id?: string
+          season_key?: string
+          updated_at?: string
+          user_id?: string
+          xp?: number
         }
         Relationships: []
       }
@@ -1818,6 +2145,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      temp_question_creators: {
+        Row: {
+          created_at: string
+          expires_at: string
+          granted_by: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          granted_by?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          granted_by?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       time_category_settings: {
         Row: {
@@ -2219,6 +2570,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_badges: {
+        Row: {
+          badge_code: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_code: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_code?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_coins: {
         Row: {
           balance: number
@@ -2236,6 +2608,36 @@ export type Database = {
           balance?: number
           total_earned?: number
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_inventory: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          item_code: string
+          payload: Json
+          quantity: number
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          item_code: string
+          payload?: Json
+          quantity?: number
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          item_code?: string
+          payload?: Json
+          quantity?: number
           user_id?: string
         }
         Relationships: []
@@ -2360,12 +2762,58 @@ export type Database = {
         }
         Relationships: []
       }
+      user_titles: {
+        Row: {
+          earned_at: string
+          id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          earned_at?: string
+          id?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          earned_at?: string
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      admin_makron_analytics: {
+        Args: never
+        Returns: {
+          accuracy: number
+          attempts: number
+          avg_difficulty: number
+          correct: number
+          likes: number
+          prompt: string
+          question_id: string
+        }[]
+      }
+      admin_override_answer_score: {
+        Args: { _answer_id: string; _note: string; _score: number }
+        Returns: undefined
+      }
+      admin_set_user_coins: {
+        Args: { _balance: number; _user_id: string }
+        Returns: undefined
+      }
+      admin_set_user_xp: {
+        Args: { _user_id: string; _xp: number }
+        Returns: undefined
+      }
       are_mutual_friends: { Args: { _a: string; _b: string }; Returns: boolean }
+      can_create_questions: { Args: { _user_id: string }; Returns: boolean }
       can_view_submission: {
         Args: { _assignment_id: string; _user_id: string }
         Returns: boolean
@@ -2437,6 +2885,11 @@ export type Database = {
         Returns: boolean
       }
       join_class_by_code: { Args: { _code: string }; Returns: string }
+      purchase_shop_item: { Args: { _item_id: string }; Returns: Json }
+      send_coin_gift: {
+        Args: { _amount: number; _message: string; _to: string }
+        Returns: number
+      }
       share_study_summary: {
         Args: { _token: string }
         Returns: {
@@ -2445,6 +2898,10 @@ export type Database = {
           minutes: number
           subject_name: string
         }[]
+      }
+      spend_coins: {
+        Args: { _amount: number; _meta?: Json; _reason: string }
+        Returns: number
       }
     }
     Enums: {
