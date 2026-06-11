@@ -22,7 +22,7 @@ function UnitPage() {
     (async () => {
       const { data: u } = await (supabase as any).from("makron_units").select("*").eq("id", unitId).maybeSingle();
       setUnit(u);
-      const { data: qs } = await (supabase as any).from("makron_questions").select("id, prompt, type, points").eq("unit_id", unitId).order("order_idx").order("created_at");
+      const { data: qs } = await (supabase as any).from("makron_questions").select("id, prompt, type, points").eq("unit_id", unitId).neq("is_active", false).order("order_idx").order("created_at");
       setQuestions(qs ?? []);
     })();
   }, [unitId]);
