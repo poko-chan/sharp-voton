@@ -15,7 +15,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Plus, GraduationCap, Crown, Trash2, BookOpen, ClipboardCheck, Users, Copy, Megaphone, Paperclip, Lock, MessageSquare, FileText, ListChecks, X, FolderOpen, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Plus, GraduationCap, Crown, Trash2, BookOpen, ClipboardCheck, Users, Copy, Megaphone, Paperclip, Lock, MessageSquare, FileText, ListChecks, X, FolderOpen, ShieldCheck, Send } from "lucide-react";
 import { toast } from "sonner";
 import { ClassFilesPanel } from "@/components/ClassFilesPanel";
 import { ClassPermissionsPanel, useMyClassPermissions } from "@/components/ClassPermissionsPanel";
@@ -89,6 +89,7 @@ function ClassDetail() {
           <TabsTrigger value="stream"><Megaphone className="h-3 w-3 mr-1" />ストリーム</TabsTrigger>
           <TabsTrigger value="assignments"><BookOpen className="h-3 w-3 mr-1" />課題</TabsTrigger>
           <TabsTrigger value="files"><FolderOpen className="h-3 w-3 mr-1" />共有フォルダー</TabsTrigger>
+          <TabsTrigger value="chat"><MessageSquare className="h-3 w-3 mr-1" />チャット</TabsTrigger>
           <TabsTrigger value="members"><Users className="h-3 w-3 mr-1" />メンバー ({members.length})</TabsTrigger>
           {isTeacher && <TabsTrigger value="logs"><ClipboardCheck className="h-3 w-3 mr-1" />生徒の学習記録</TabsTrigger>}
           {isTeacher && <TabsTrigger value="permissions"><ShieldCheck className="h-3 w-3 mr-1" />権限</TabsTrigger>}
@@ -124,9 +125,13 @@ function ClassDetail() {
           <FilesTab classId={classId} isTeacher={isTeacher} userId={user?.id} />
         </TabsContent>
 
-
-
         <TabsContent value="members" className="mt-4">
+          {null}
+        </TabsContent>
+        <TabsContent value="chat" className="mt-4">
+          <ClassChatTab classId={classId} userId={user?.id} />
+        </TabsContent>
+        <TabsContent value="members_real" className="mt-4">
           <Card className="p-0 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-muted"><tr className="text-left"><th className="p-3">ユーザー</th><th className="p-3">役割</th><th className="p-3">参加日</th>{isTeacher && <th className="p-3">操作</th>}</tr></thead>
