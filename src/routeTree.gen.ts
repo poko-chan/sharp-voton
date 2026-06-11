@@ -30,7 +30,6 @@ import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedRankRouteImport } from './routes/_authenticated/rank'
 import { Route as AuthenticatedQuestionsRouteImport } from './routes/_authenticated/questions'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
-import { Route as AuthenticatedPollsRouteImport } from './routes/_authenticated/polls'
 import { Route as AuthenticatedParentRouteImport } from './routes/_authenticated/parent'
 import { Route as AuthenticatedOcrRouteImport } from './routes/_authenticated/ocr'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -167,11 +166,6 @@ const AuthenticatedQuestionsRoute = AuthenticatedQuestionsRouteImport.update({
 const AuthenticatedPracticeRoute = AuthenticatedPracticeRouteImport.update({
   id: '/practice',
   path: '/practice',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedPollsRoute = AuthenticatedPollsRouteImport.update({
-  id: '/polls',
-  path: '/polls',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedParentRoute = AuthenticatedParentRouteImport.update({
@@ -383,7 +377,6 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/ocr': typeof AuthenticatedOcrRoute
   '/parent': typeof AuthenticatedParentRoute
-  '/polls': typeof AuthenticatedPollsRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
   '/rank': typeof AuthenticatedRankRoute
@@ -438,7 +431,6 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/ocr': typeof AuthenticatedOcrRoute
   '/parent': typeof AuthenticatedParentRoute
-  '/polls': typeof AuthenticatedPollsRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
   '/rank': typeof AuthenticatedRankRoute
@@ -495,7 +487,6 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/ocr': typeof AuthenticatedOcrRoute
   '/_authenticated/parent': typeof AuthenticatedParentRoute
-  '/_authenticated/polls': typeof AuthenticatedPollsRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
   '/_authenticated/rank': typeof AuthenticatedRankRoute
@@ -553,7 +544,6 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/ocr'
     | '/parent'
-    | '/polls'
     | '/practice'
     | '/questions'
     | '/rank'
@@ -608,7 +598,6 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/ocr'
     | '/parent'
-    | '/polls'
     | '/practice'
     | '/questions'
     | '/rank'
@@ -664,7 +653,6 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/ocr'
     | '/_authenticated/parent'
-    | '/_authenticated/polls'
     | '/_authenticated/practice'
     | '/_authenticated/questions'
     | '/_authenticated/rank'
@@ -850,13 +838,6 @@ declare module '@tanstack/react-router' {
       path: '/practice'
       fullPath: '/practice'
       preLoaderRoute: typeof AuthenticatedPracticeRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/polls': {
-      id: '/_authenticated/polls'
-      path: '/polls'
-      fullPath: '/polls'
-      preLoaderRoute: typeof AuthenticatedPollsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/parent': {
@@ -1153,7 +1134,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOcrRoute: typeof AuthenticatedOcrRoute
   AuthenticatedParentRoute: typeof AuthenticatedParentRoute
-  AuthenticatedPollsRoute: typeof AuthenticatedPollsRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedQuestionsRoute: typeof AuthenticatedQuestionsRoute
   AuthenticatedRankRoute: typeof AuthenticatedRankRoute
@@ -1193,7 +1173,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOcrRoute: AuthenticatedOcrRoute,
   AuthenticatedParentRoute: AuthenticatedParentRoute,
-  AuthenticatedPollsRoute: AuthenticatedPollsRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedQuestionsRoute: AuthenticatedQuestionsRoute,
   AuthenticatedRankRoute: AuthenticatedRankRoute,
@@ -1228,3 +1207,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

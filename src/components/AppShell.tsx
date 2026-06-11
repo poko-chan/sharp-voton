@@ -4,8 +4,8 @@ import {
   MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy,
   Megaphone, GraduationCap, Zap, Headphones, Menu, X, MoreHorizontal,
   StickyNote, Users, Ban, HelpCircle,
-  CalendarClock, Stamp, Activity, Share2, ScanLine, Vote, Flame,
-  Swords, Home,
+  CalendarClock, Stamp, Activity, Share2, ScanLine, Flame,
+  Swords, ShoppingBag,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useAdminNavConfig } from "@/lib/admin-nav";
 
 const NAV = [
-  { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: Home, override: "ホーム" },
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
   { to: "/today", labelKey: "nav.today" as const, icon: CalendarClock },
   { to: "/study", labelKey: "nav.study" as const, icon: BookOpen },
@@ -40,7 +39,6 @@ const NAV = [
   { to: "/ocr", labelKey: "nav.ocr" as const, icon: ScanLine },
   { to: "/friends", labelKey: "nav.friends" as const, icon: Users },
   { to: "/rooms", labelKey: "nav.rooms" as const, icon: Users },
-  { to: "/polls", labelKey: "nav.polls" as const, icon: Vote },
   { to: "/questions", labelKey: "nav.questions" as const, icon: Brain },
   { to: "/practice", labelKey: "nav.practice" as const, icon: Target },
   { to: "/tutor", labelKey: "nav.tutor" as const, icon: Sparkles },
@@ -49,13 +47,12 @@ const NAV = [
   { to: "/listen", labelKey: "nav.listen" as const, icon: Headphones },
   { to: "/classroom", labelKey: "nav.classroom" as const, icon: GraduationCap },
   { to: "/chat", labelKey: "nav.chat" as const, icon: MessagesSquare },
-  { to: "/classchat", labelKey: "nav.classchat" as const, icon: Users },
   { to: "/notes", labelKey: "nav.notes" as const, icon: StickyNote },
   { to: "/announcements", labelKey: "nav.announcements" as const, icon: Megaphone },
   { to: "/missions", labelKey: "nav.dashboard" as const, icon: Target, override: "ミッション" },
-  { to: "/leaderboard", labelKey: "nav.dashboard" as const, icon: Trophy, override: "ランキング" },
   { to: "/battle", labelKey: "nav.dashboard" as const, icon: Swords, override: "バトル" },
   { to: "/makron", labelKey: "nav.dashboard" as const, icon: Target, override: "Makron" },
+  { to: "/shop", labelKey: "nav.dashboard" as const, icon: ShoppingBag, override: "コインショップ" },
   { to: "/settings", labelKey: "nav.settings" as const, icon: Settings, override: "設定" },
 ] as const;
 
