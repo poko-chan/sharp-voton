@@ -43,9 +43,17 @@ function RoomPage() {
   const toggle = async () => {
     if (!user) return;
     if (me?.status === "studying") {
-      await supabase.from("group_room_members").update({ status: "idle", started_at: null }).eq("room_id", roomId).eq("user_id", user.id);
+      const { error } = await supabase.from("group_room_members")
+        .update({ status: "idle", started_at: null })
+        .eq("room_id", roomId).eq("user_id", user.id);
+      if (error) console.error(error);
     } else {
-      await supabase.from("group_room_members").upsert({ room_id: roomId, user_id: user.id, status: "studying", started_at: new Date().toISOString() });
+      const { error } = await supabase.from("group_room_members")
+        .upsert(
+          { room_id: roomId, user_id: user.id, status: "studying", started_at: new Date().toISOString() },
+          { onConflict: "room_id,user_id" },
+        );
+      if (error) console.error(error);
     }
     load();
   };

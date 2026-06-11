@@ -1,83 +1,130 @@
-# 実装計画
+# Makron 問題演習ツール — 実装計画
 
-要望が大量なので、3ターンに分けて実装します。各ターン終了時に動作確認できます。
+巨大な機能群なので、構成を明確に整理してから一気に実装します。
 
-## ターン1: 基盤・認証まわり（軽め・即着手）
+---
 
-1. **フィードバック機能**
-   - `feedback` テーブル新規（user_id nullable, email, category, body, route, user_agent, status, created_at, admin_reply）
-   - ログイン画面・ログイン後の右下に共通フローティングボタン `<FeedbackWidget />`
-   - 管理者画面に閲覧・返信タブ追加
+## 1. Makron 全体像
 
-2. **ログイン画面のお知らせ**
-   - 既存 `announcements` テーブルに `show_on_login boolean` 追加
-   - 管理画面で投稿時にチェック可
-   - login.tsx 上部に最新3件カード表示
+専用ルート `/makron/*` を作り、`_authenticated` 配下に置きつつ **AppShellを使わない独自レイアウト**（フルスクリーン + 上部専用バー）にします。AIは絶対に使いません（lovable gatewayの）
 
-3. **プライバシーポリシー / 利用規約**
-   - `/privacy` `/terms` ルート新規（私が日本語で起草、最終更新日を表示）
-   - login と footer からリンク
-   - 中身は `src/content/legal/*.tsx` に分離し、サイト更新時に私が追記
+- `/makron` … ダッシュボード（単元一覧、ランキング、自分のXP/レベル）
+- `/makron/admin` … 管理者専用：単元作成、問題作成・編集
+- `/makron/unit/$unitId` … 単元詳細（問題開始）
+- `/makron/session/$sessionId` … 問題演習画面（1問ずつ進む、計算用紙付き）
+- `/makron/result/$sessionId` … 採点ダッシュボード（点数・プロンプト生成・報告）
+- `/makron/history` … 過去の受験履歴
 
-4. **新規登録に表示名**
-   - signup フォームに display_name 入力追加
-   - `signUp` の `options.data.display_name` に渡す（既存 trigger が拾う）
+上部バー：左にMakronロゴ＆メニュー（戻る）、中央に単元/進捗、右に「管理者」ボタン（非管理者は disabled）。
 
-5. **MCJP_ ユーザー権限固定**
-   - email or username が `mcjp_` で始まるユーザーは `user_roles` の変更を拒否
-   - admin 画面のセレクトを disabled に
-   - DB trigger でも保護（INSERT/UPDATE/DELETE on user_roles を block）
+---
 
-6. **超厳格アカウント削除**
-   - 設定 → アカウント削除フロー：
-     1. パスワード再入力
-     2. メール宛 6桁コード送信→入力
-     3. 「DELETE 自分のメール」を完全一致で入力
-     4. 削除理由テキスト必須(20文字以上)
-     5. 30日猶予（`profiles.deletion_scheduled_at` に日時記録、ログインのたびに「取り消す」案内）
-     6. 30日経過後にバックグラウンドで物理削除（cron 用 server route）
+## 2. データベース設計（新規テーブル）
 
-## ターン2: 町を 3D 化＋ロジック刷新
+```text
+makron_units             単元
+  id, title, subject, field, unit, description, created_by, order_idx
+makron_questions         問題
+  id, unit_id, order_idx, prompt, image_url, type(single|multi|text|written|file),
+  options (jsonb), correct_options (jsonb), accepted_answers (jsonb 文字列配列),
+  model_answer (text), explanation, points (int), grading (auto|manual)
+makron_sessions          受験セッション
+  id, user_id, unit_id, started_at, finished_at, scratchpad (jsonb)
+makron_answers           各回答
+  id, session_id, question_id, answer (jsonb), file_url, auto_correct (bool|null),
+  manual_score (int|null), manual_comment,feedback_prompt, awarded_points
+makron_xp                XP / レベル
+  user_id pk, xp int, level int, coins_earned int
+makron_reports           報告（不正確等）
+  id, user_id, question_id, category (12種以上), suggested_answer, note, status
+```
 
-7. **3D 町（react-three-fiber）**
-   - `bun add three @react-three/fiber @react-three/drei`
-   - `Town3D.tsx` 新規：見下ろし固定カメラ、回転のみ可、移動なし
-   - ステージに応じて建物の高さ・密度・電車線路・公園・川などを手続き的に生成
-   - 既存 `Town.tsx` の2D版は削除
+XPはトリガではなくサーバーfn内で加算（合否確定時のみ）。コインも同様にこのfn内で `user_coins` 加算。
 
-8. **町ロジック刷新（AI送信廃止、勉強量比例）**
-   - 「目標をAIに送って判定」は廃止
-   - 新ルール（server fn `recomputeTown`）：
-     - 過去7日の学習分(min) → スコア化
-     - 平均比で stage を +1/-1/維持
-     - 7日全く勉強なし → -2、3日連続0 → -1
-     - 1日400分超の異常値は捨てる
-     - max_stage_reached を超えたら新しい町を作るUI誘導
-   - 自動再計算は学習ログ追加時 & ダッシュボード初回ロード時
+---
 
-## ターン3: 学習しない人向け＋UI
+## 3. 演習フロー
 
-9. **マイクロ学習・受動学習・AIコーチ（全部）**
-   - 新ルート `/micro`: AI 生成の1問1分クイズ
-   - 新ルート `/listen`: 教科要約をAIで作って音声(Web Speech API)で再生
-   - ダッシュボードに「AIコーチ」カード：未学習日数を見て声かけメッセージ
-   - 連続未学習3日以上で町から通知
+- セッション開始 → 順番に問題表示。回答を保存しながら次へ進める。前にも戻れる。
+- 各問題横に「計算用紙」（canvas落書き）。`session.scratchpad` に保存。「ダウンロード」(.png)も可能。
+- 自動採点可能タイプ（single/multi/text）はサブミット時に判定。manualは pending。
+- 完了 → `/makron/result/:sessionId` で採点ダッシュボード。
+  - トップ：合計点 / 満点（manual未採点は分母から除外して「-」表示）
+  - 各問：合否バッジ、配点、自分の答え、模範解答（複数列挙）、解説
+  - 下部：「このセッションについてAIに質問」プロンプを生成。ただし、lovableのgatewayのAIは使わない。あくまで別のAIに送るためのプロンプトを生成するだけ
+  - さらに下：「問題を報告」ボタン → 12種カテゴリのダイアログ（問題が不正確/誤字/画像不明/答えが間違い/解説不足/重複/カテゴリ違い/難易度違い/不適切/古い情報/著作権懸念/その他）
 
-10. **新サイドバーボタン（その他＋カスタマイズ）**
-    - サイドバーの全ナビ項目を `localStorage` で表示順・表示有無カスタマイズ
-    - 設定 → 「サイドバー設定」UI
-    - 非表示項目は「その他」ボタン展開で表示
-    - プロフィール画像をサイドバー上部・ヘッダーに常時表示
+---
 
-11. **ダッシュボード反映遅延の修正**
-    - React Query 化、`staleTime: 0`, ログ追加時に `invalidateQueries`
-    - skeleton から実データ表示までの遷移を保証
-    - 失敗時はリトライUI
+## 4. XP / ランキング / コイン
 
-## 技術メモ
-- 3D は client-only。SSR 回避のため `ClientOnly` ラッパー使用
-- 削除 30日 cron は `/api/public/cron/purge-accounts` + ヘッダ署名検証
-- フィードバックは未ログイン挿入可にするため RLS で `user_id IS NULL` を許可
+- 合否 1問正解 = +10 XP、誤答 = +2 XP（参加賞）
+- Level = floor(sqrt(xp/50)) + 1
+- `/makron` ダッシュボード上部に「自分の順位＋XP＋Level」。
+- ランキングは XP上位20位。自分が圏外なら「圏外」と表示。
+- コインは合格1問につき +2、誤答 0。既存の `user_coins` に加算。
 
-## 進め方
-ターン1から順に実装し、各ターン終了で確認をもらいます。次は **ターン1** から着手してよいですか？
+RPC `get_makron_leaderboard()` を作成。
+
+---
+
+## 5. バグ修正：勉強ルーム
+
+`rooms.$roomId.tsx` で `upsert` する際 `joined_at` が無いとRLSやNOT NULLで失敗する可能性。`group_room_members` の構造を確認し、メンバー登録なしでも開始できるよう「参加→開始」を一発に。 `onConflict: 'room_id,user_id'` を明示。
+
+また `rooms.index.tsx` で作成後の遷移不具合があれば修正。
+
+---
+
+## 6. バトル拡張
+
+`battle.tsx` を以下に強化：
+
+- ジャンル選択（教科）、問題数 5/10/20、制限時間（10s/問）
+- リアルタイム同期：相手の進捗バー、絵文字スタンプ（事前定義の8種）
+- 終了後：両者スコア、勝敗、獲得XP、リマッチボタン
+- ベストスコア記録テーブル `quiz_battles` に追加カラム（time_taken, genre）
+
+---
+
+## 7. ファイル構成
+
+```text
+src/routes/_authenticated/makron.tsx                (layout: 専用シェル)
+src/routes/_authenticated/makron.index.tsx          (ダッシュボード)
+src/routes/_authenticated/makron.admin.tsx
+src/routes/_authenticated/makron.unit.$unitId.tsx
+src/routes/_authenticated/makron.session.$sessionId.tsx
+src/routes/_authenticated/makron.result.$sessionId.tsx
+src/routes/_authenticated/makron.history.tsx
+src/components/makron/MakronShell.tsx
+src/components/makron/ScratchPad.tsx
+src/components/makron/ReportDialog.tsx
+src/components/makron/AskAIPanel.tsx
+src/lib/makron.functions.ts                         (createServerFn群)
+supabase/migrations/<ts>_makron.sql
+```
+
+加えて：
+
+- AppShellの左バーに「Makron」を追加（admin_nav_config 対応）
+- `src/routes/_authenticated/rooms.$roomId.tsx` 修正
+- `src/routes/_authenticated/battle.tsx` 拡張
+
+---
+
+## 8. テクニカルメモ
+
+- 専用バー用に、`_authenticated/makron.tsx` で AppShell を経由せず `<Outlet />` を直接返す。AppShellは親 `_authenticated.tsx` で適用されているので、makron.tsx で「shell解除」のため `Outlet` のみ返してCSSで `position: fixed; inset: 0; z-index` で全画面表示。
+- 画像添付は storage バケット `makron-files`（新規・public）。
+- 手動採点（記述・writtenのmanual補助）は将来拡張。今回は manualは管理者画面で手動採点UI。手動採点にAIは使わない。
+- 自動採点 text タイプは accepted_answers 配列の trim/小文字比較で判定。
+
+---
+
+## 範囲外（できたら行う）
+
+- 管理者採点自動化（manualは手動UIのみ）
+- リアルタイム多人数同時受験
+
+今回はすべてを実装。範囲外も。すべて。クレジットは考えずに

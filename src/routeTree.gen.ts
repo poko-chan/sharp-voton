@@ -37,6 +37,7 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedMissionsRouteImport } from './routes/_authenticated/missions'
 import { Route as AuthenticatedMicroRouteImport } from './routes/_authenticated/micro'
+import { Route as AuthenticatedMakronRouteImport } from './routes/_authenticated/makron'
 import { Route as AuthenticatedListenRouteImport } from './routes/_authenticated/listen'
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
 import { Route as AuthenticatedHeatmapRouteImport } from './routes/_authenticated/heatmap'
@@ -54,9 +55,15 @@ import { Route as AuthenticatedBattleRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedRoomsIndexRouteImport } from './routes/_authenticated/rooms.index'
+import { Route as AuthenticatedMakronIndexRouteImport } from './routes/_authenticated/makron.index'
 import { Route as AuthenticatedClassroomIndexRouteImport } from './routes/_authenticated/classroom.index'
 import { Route as AuthenticatedRoomsRoomIdRouteImport } from './routes/_authenticated/rooms.$roomId'
+import { Route as AuthenticatedMakronHistoryRouteImport } from './routes/_authenticated/makron.history'
+import { Route as AuthenticatedMakronAdminRouteImport } from './routes/_authenticated/makron.admin'
 import { Route as AuthenticatedClassroomClassIdRouteImport } from './routes/_authenticated/classroom.$classId'
+import { Route as AuthenticatedMakronUnitUnitIdRouteImport } from './routes/_authenticated/makron.unit.$unitId'
+import { Route as AuthenticatedMakronSessionSessionIdRouteImport } from './routes/_authenticated/makron.session.$sessionId'
+import { Route as AuthenticatedMakronResultSessionIdRouteImport } from './routes/_authenticated/makron.result.$sessionId'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -198,6 +205,11 @@ const AuthenticatedMicroRoute = AuthenticatedMicroRouteImport.update({
   path: '/micro',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedMakronRoute = AuthenticatedMakronRouteImport.update({
+  id: '/makron',
+  path: '/makron',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedListenRoute = AuthenticatedListenRouteImport.update({
   id: '/listen',
   path: '/listen',
@@ -285,6 +297,12 @@ const AuthenticatedRoomsIndexRoute = AuthenticatedRoomsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRoomsRoute,
 } as any)
+const AuthenticatedMakronIndexRoute =
+  AuthenticatedMakronIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedMakronRoute,
+  } as any)
 const AuthenticatedClassroomIndexRoute =
   AuthenticatedClassroomIndexRouteImport.update({
     id: '/classroom/',
@@ -297,11 +315,41 @@ const AuthenticatedRoomsRoomIdRoute =
     path: '/$roomId',
     getParentRoute: () => AuthenticatedRoomsRoute,
   } as any)
+const AuthenticatedMakronHistoryRoute =
+  AuthenticatedMakronHistoryRouteImport.update({
+    id: '/history',
+    path: '/history',
+    getParentRoute: () => AuthenticatedMakronRoute,
+  } as any)
+const AuthenticatedMakronAdminRoute =
+  AuthenticatedMakronAdminRouteImport.update({
+    id: '/admin',
+    path: '/admin',
+    getParentRoute: () => AuthenticatedMakronRoute,
+  } as any)
 const AuthenticatedClassroomClassIdRoute =
   AuthenticatedClassroomClassIdRouteImport.update({
     id: '/classroom/$classId',
     path: '/classroom/$classId',
     getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMakronUnitUnitIdRoute =
+  AuthenticatedMakronUnitUnitIdRouteImport.update({
+    id: '/unit/$unitId',
+    path: '/unit/$unitId',
+    getParentRoute: () => AuthenticatedMakronRoute,
+  } as any)
+const AuthenticatedMakronSessionSessionIdRoute =
+  AuthenticatedMakronSessionSessionIdRouteImport.update({
+    id: '/session/$sessionId',
+    path: '/session/$sessionId',
+    getParentRoute: () => AuthenticatedMakronRoute,
+  } as any)
+const AuthenticatedMakronResultSessionIdRoute =
+  AuthenticatedMakronResultSessionIdRouteImport.update({
+    id: '/result/$sessionId',
+    path: '/result/$sessionId',
+    getParentRoute: () => AuthenticatedMakronRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -328,6 +376,7 @@ export interface FileRoutesByFullPath {
   '/heatmap': typeof AuthenticatedHeatmapRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/listen': typeof AuthenticatedListenRoute
+  '/makron': typeof AuthenticatedMakronRouteWithChildren
   '/micro': typeof AuthenticatedMicroRoute
   '/missions': typeof AuthenticatedMissionsRoute
   '/notes': typeof AuthenticatedNotesRoute
@@ -349,9 +398,15 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/share/$token': typeof ShareTokenRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
+  '/makron/admin': typeof AuthenticatedMakronAdminRoute
+  '/makron/history': typeof AuthenticatedMakronHistoryRoute
   '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom/': typeof AuthenticatedClassroomIndexRoute
+  '/makron/': typeof AuthenticatedMakronIndexRoute
   '/rooms/': typeof AuthenticatedRoomsIndexRoute
+  '/makron/result/$sessionId': typeof AuthenticatedMakronResultSessionIdRoute
+  '/makron/session/$sessionId': typeof AuthenticatedMakronSessionSessionIdRoute
+  '/makron/unit/$unitId': typeof AuthenticatedMakronUnitUnitIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -397,9 +452,15 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/share/$token': typeof ShareTokenRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
+  '/makron/admin': typeof AuthenticatedMakronAdminRoute
+  '/makron/history': typeof AuthenticatedMakronHistoryRoute
   '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom': typeof AuthenticatedClassroomIndexRoute
+  '/makron': typeof AuthenticatedMakronIndexRoute
   '/rooms': typeof AuthenticatedRoomsIndexRoute
+  '/makron/result/$sessionId': typeof AuthenticatedMakronResultSessionIdRoute
+  '/makron/session/$sessionId': typeof AuthenticatedMakronSessionSessionIdRoute
+  '/makron/unit/$unitId': typeof AuthenticatedMakronUnitUnitIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -427,6 +488,7 @@ export interface FileRoutesById {
   '/_authenticated/heatmap': typeof AuthenticatedHeatmapRoute
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/listen': typeof AuthenticatedListenRoute
+  '/_authenticated/makron': typeof AuthenticatedMakronRouteWithChildren
   '/_authenticated/micro': typeof AuthenticatedMicroRoute
   '/_authenticated/missions': typeof AuthenticatedMissionsRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
@@ -448,9 +510,15 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/share/$token': typeof ShareTokenRoute
   '/_authenticated/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
+  '/_authenticated/makron/admin': typeof AuthenticatedMakronAdminRoute
+  '/_authenticated/makron/history': typeof AuthenticatedMakronHistoryRoute
   '/_authenticated/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/_authenticated/classroom/': typeof AuthenticatedClassroomIndexRoute
+  '/_authenticated/makron/': typeof AuthenticatedMakronIndexRoute
   '/_authenticated/rooms/': typeof AuthenticatedRoomsIndexRoute
+  '/_authenticated/makron/result/$sessionId': typeof AuthenticatedMakronResultSessionIdRoute
+  '/_authenticated/makron/session/$sessionId': typeof AuthenticatedMakronSessionSessionIdRoute
+  '/_authenticated/makron/unit/$unitId': typeof AuthenticatedMakronUnitUnitIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -478,6 +546,7 @@ export interface FileRouteTypes {
     | '/heatmap'
     | '/leaderboard'
     | '/listen'
+    | '/makron'
     | '/micro'
     | '/missions'
     | '/notes'
@@ -499,9 +568,15 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/share/$token'
     | '/classroom/$classId'
+    | '/makron/admin'
+    | '/makron/history'
     | '/rooms/$roomId'
     | '/classroom/'
+    | '/makron/'
     | '/rooms/'
+    | '/makron/result/$sessionId'
+    | '/makron/session/$sessionId'
+    | '/makron/unit/$unitId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -547,9 +622,15 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/share/$token'
     | '/classroom/$classId'
+    | '/makron/admin'
+    | '/makron/history'
     | '/rooms/$roomId'
     | '/classroom'
+    | '/makron'
     | '/rooms'
+    | '/makron/result/$sessionId'
+    | '/makron/session/$sessionId'
+    | '/makron/unit/$unitId'
   id:
     | '__root__'
     | '/'
@@ -576,6 +657,7 @@ export interface FileRouteTypes {
     | '/_authenticated/heatmap'
     | '/_authenticated/leaderboard'
     | '/_authenticated/listen'
+    | '/_authenticated/makron'
     | '/_authenticated/micro'
     | '/_authenticated/missions'
     | '/_authenticated/notes'
@@ -597,9 +679,15 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/share/$token'
     | '/_authenticated/classroom/$classId'
+    | '/_authenticated/makron/admin'
+    | '/_authenticated/makron/history'
     | '/_authenticated/rooms/$roomId'
     | '/_authenticated/classroom/'
+    | '/_authenticated/makron/'
     | '/_authenticated/rooms/'
+    | '/_authenticated/makron/result/$sessionId'
+    | '/_authenticated/makron/session/$sessionId'
+    | '/_authenticated/makron/unit/$unitId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -813,6 +901,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMicroRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/makron': {
+      id: '/_authenticated/makron'
+      path: '/makron'
+      fullPath: '/makron'
+      preLoaderRoute: typeof AuthenticatedMakronRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/listen': {
       id: '/_authenticated/listen'
       path: '/listen'
@@ -932,6 +1027,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRoomsIndexRouteImport
       parentRoute: typeof AuthenticatedRoomsRoute
     }
+    '/_authenticated/makron/': {
+      id: '/_authenticated/makron/'
+      path: '/'
+      fullPath: '/makron/'
+      preLoaderRoute: typeof AuthenticatedMakronIndexRouteImport
+      parentRoute: typeof AuthenticatedMakronRoute
+    }
     '/_authenticated/classroom/': {
       id: '/_authenticated/classroom/'
       path: '/classroom'
@@ -946,6 +1048,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRoomsRoomIdRouteImport
       parentRoute: typeof AuthenticatedRoomsRoute
     }
+    '/_authenticated/makron/history': {
+      id: '/_authenticated/makron/history'
+      path: '/history'
+      fullPath: '/makron/history'
+      preLoaderRoute: typeof AuthenticatedMakronHistoryRouteImport
+      parentRoute: typeof AuthenticatedMakronRoute
+    }
+    '/_authenticated/makron/admin': {
+      id: '/_authenticated/makron/admin'
+      path: '/admin'
+      fullPath: '/makron/admin'
+      preLoaderRoute: typeof AuthenticatedMakronAdminRouteImport
+      parentRoute: typeof AuthenticatedMakronRoute
+    }
     '/_authenticated/classroom/$classId': {
       id: '/_authenticated/classroom/$classId'
       path: '/classroom/$classId'
@@ -953,8 +1069,52 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClassroomClassIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/makron/unit/$unitId': {
+      id: '/_authenticated/makron/unit/$unitId'
+      path: '/unit/$unitId'
+      fullPath: '/makron/unit/$unitId'
+      preLoaderRoute: typeof AuthenticatedMakronUnitUnitIdRouteImport
+      parentRoute: typeof AuthenticatedMakronRoute
+    }
+    '/_authenticated/makron/session/$sessionId': {
+      id: '/_authenticated/makron/session/$sessionId'
+      path: '/session/$sessionId'
+      fullPath: '/makron/session/$sessionId'
+      preLoaderRoute: typeof AuthenticatedMakronSessionSessionIdRouteImport
+      parentRoute: typeof AuthenticatedMakronRoute
+    }
+    '/_authenticated/makron/result/$sessionId': {
+      id: '/_authenticated/makron/result/$sessionId'
+      path: '/result/$sessionId'
+      fullPath: '/makron/result/$sessionId'
+      preLoaderRoute: typeof AuthenticatedMakronResultSessionIdRouteImport
+      parentRoute: typeof AuthenticatedMakronRoute
+    }
   }
 }
+
+interface AuthenticatedMakronRouteChildren {
+  AuthenticatedMakronAdminRoute: typeof AuthenticatedMakronAdminRoute
+  AuthenticatedMakronHistoryRoute: typeof AuthenticatedMakronHistoryRoute
+  AuthenticatedMakronIndexRoute: typeof AuthenticatedMakronIndexRoute
+  AuthenticatedMakronResultSessionIdRoute: typeof AuthenticatedMakronResultSessionIdRoute
+  AuthenticatedMakronSessionSessionIdRoute: typeof AuthenticatedMakronSessionSessionIdRoute
+  AuthenticatedMakronUnitUnitIdRoute: typeof AuthenticatedMakronUnitUnitIdRoute
+}
+
+const AuthenticatedMakronRouteChildren: AuthenticatedMakronRouteChildren = {
+  AuthenticatedMakronAdminRoute: AuthenticatedMakronAdminRoute,
+  AuthenticatedMakronHistoryRoute: AuthenticatedMakronHistoryRoute,
+  AuthenticatedMakronIndexRoute: AuthenticatedMakronIndexRoute,
+  AuthenticatedMakronResultSessionIdRoute:
+    AuthenticatedMakronResultSessionIdRoute,
+  AuthenticatedMakronSessionSessionIdRoute:
+    AuthenticatedMakronSessionSessionIdRoute,
+  AuthenticatedMakronUnitUnitIdRoute: AuthenticatedMakronUnitUnitIdRoute,
+}
+
+const AuthenticatedMakronRouteWithChildren =
+  AuthenticatedMakronRoute._addFileChildren(AuthenticatedMakronRouteChildren)
 
 interface AuthenticatedRoomsRouteChildren {
   AuthenticatedRoomsRoomIdRoute: typeof AuthenticatedRoomsRoomIdRoute
@@ -986,6 +1146,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedHeatmapRoute: typeof AuthenticatedHeatmapRoute
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
   AuthenticatedListenRoute: typeof AuthenticatedListenRoute
+  AuthenticatedMakronRoute: typeof AuthenticatedMakronRouteWithChildren
   AuthenticatedMicroRoute: typeof AuthenticatedMicroRoute
   AuthenticatedMissionsRoute: typeof AuthenticatedMissionsRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
@@ -1025,6 +1186,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedHeatmapRoute: AuthenticatedHeatmapRoute,
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
   AuthenticatedListenRoute: AuthenticatedListenRoute,
+  AuthenticatedMakronRoute: AuthenticatedMakronRouteWithChildren,
   AuthenticatedMicroRoute: AuthenticatedMicroRoute,
   AuthenticatedMissionsRoute: AuthenticatedMissionsRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
@@ -1066,13 +1228,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
