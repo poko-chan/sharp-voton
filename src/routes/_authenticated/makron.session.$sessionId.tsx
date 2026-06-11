@@ -40,7 +40,7 @@ function SessionPage() {
       if (!s) return;
       setSession(s);
       padInit.current = s.scratchpad ?? null;
-      const { data: qs } = await (supabase as any).from("makron_questions").select("*").eq("unit_id", s.unit_id).order("order_idx").order("created_at");
+      const { data: qs } = await (supabase as any).from("makron_questions").select("*").eq("unit_id", s.unit_id).neq("is_active", false).order("order_idx").order("created_at");
       setQuestions((qs ?? []) as Q[]);
       const { data: aRows } = await (supabase as any).from("makron_answers").select("*").eq("session_id", sessionId);
       const a: Record<string, any> = {}, f: Record<string, string> = {};
