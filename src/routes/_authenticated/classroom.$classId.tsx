@@ -125,13 +125,10 @@ function ClassDetail() {
           <FilesTab classId={classId} isTeacher={isTeacher} userId={user?.id} />
         </TabsContent>
 
-        <TabsContent value="members" className="mt-4">
-          {null}
-        </TabsContent>
         <TabsContent value="chat" className="mt-4">
           <ClassChatTab classId={classId} userId={user?.id} />
         </TabsContent>
-        <TabsContent value="members_real" className="mt-4">
+        <TabsContent value="members" className="mt-4">
           <Card className="p-0 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-muted"><tr className="text-left"><th className="p-3">ユーザー</th><th className="p-3">役割</th><th className="p-3">参加日</th>{isTeacher && <th className="p-3">操作</th>}</tr></thead>
