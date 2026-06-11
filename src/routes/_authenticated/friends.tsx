@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Users, UserPlus, Trophy, UserMinus } from "lucide-react";
+import { Users, UserPlus, Trophy, UserMinus, Coins, Gift } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/friends")({ component: FriendsPage });
@@ -23,6 +24,17 @@ function FriendsPage() {
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<Profile[]>([]);
   const [board, setBoard] = useState<Array<Profile & { minutes: number }>>([]);
+  const [giftTarget, setGiftTarget] = useState<Profile | null>(null);
+  const [giftAmount, setGiftAmount] = useState(10);
+  const [giftMsg, setGiftMsg] = useState("");
+
+  const sendGift = async () => {
+    if (!giftTarget) return;
+    const { error } = await (supabase as any).rpc("send_coin_gift", { _to: giftTarget.id, _amount: giftAmount, _message: giftMsg });
+    if (error) return toast.error(error.message);
+    toast.success(`${giftAmount}コインを送りました`);
+    setGiftTarget(null); setGiftMsg("");
+  };
 
   const load = async () => {
     if (!user) return;
@@ -167,6 +179,7 @@ function FriendsPage() {
             <Card key={p.id} className="p-3 flex items-center gap-3">
               <Avatar><AvatarImage src={p.avatar_url ?? undefined} /><AvatarFallback>{(p.display_name ?? "?").slice(0, 1)}</AvatarFallback></Avatar>
               <div className="flex-1"><div className="font-medium">{p.display_name}</div><div className="text-xs text-muted-foreground">@{p.username}</div></div>
+              <Button size="sm" variant="outline" onClick={() => setGiftTarget(p)}><Gift className="h-4 w-4 mr-1" />コイン</Button>
               <Button size="sm" variant="outline" onClick={() => unfollow(p.id)}>解除</Button>
             </Card>
           ))}
@@ -180,6 +193,26 @@ function FriendsPage() {
           ))}
         </TabsContent>
       </Tabs>
+      <Dialog open={!!giftTarget} onOpenChange={(v) => !v && setGiftTarget(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{giftTarget?.display_name} にコインを贈る</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs">金額</label>
+              <Input type="number" min={1} max={1000} value={giftAmount} onChange={(e) => setGiftAmount(Math.max(1, Number(e.target.value) || 1))} />
+            </div>
+            <div>
+              <label className="text-xs">メッセージ (任意)</label>
+              <Input value={giftMsg} onChange={(e) => setGiftMsg(e.target.value)} placeholder="ありがとう！" />
+            </div>
+            <div className="text-[11px] text-muted-foreground">※ 相互フォローのみ送付可能です</div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setGiftTarget(null)}>キャンセル</Button>
+            <Button onClick={sendGift}><Coins className="h-4 w-4 mr-1" />送る</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
