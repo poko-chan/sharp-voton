@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { Swords, Trophy, Clock, Zap, RefreshCw, Smile } from "lucide-react";
+import { Swords, Trophy, Clock, Zap, RefreshCw, Smile, Flag } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/battle")({ component: BattlePage });
@@ -53,9 +53,11 @@ const POOL: Record<string, { q: string; a: string; opts: string[] }[]> = {
     { q: "ASEANの加盟国はおよそ?", a: "10", opts: ["5","10","15","20"] },
   ],
 };
-function buildQuiz(genre: string, n: number) {
-  const src = genre === "総合" ? Object.values(POOL).flat() : (POOL[genre] ?? []);
-  return [...src].sort(() => Math.random() - 0.5).slice(0, n);
+function buildPool(genre: string) {
+  return genre === "総合" ? Object.values(POOL).flat() : (POOL[genre] ?? []);
+}
+function pickQ(pool: { q: string; a: string; opts: string[] }[]) {
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 function BattlePage() {
@@ -63,7 +65,6 @@ function BattlePage() {
   const [battles, setBattles] = useState<any[]>([]);
   const [opponent, setOpponent] = useState("");
   const [genre, setGenre] = useState<string>("総合");
-  const [numQ, setNumQ] = useState(10);
   const [active, setActive] = useState<any | null>(null);
 
   const load = async () => {
@@ -79,7 +80,7 @@ function BattlePage() {
     if (!user || !opponent) return;
     const { data: p } = await supabase.from("profiles").select("id").eq("username", opponent).maybeSingle();
     if (!p) return toast.error("ユーザーが見つかりません");
-    await (supabase as any).from("quiz_battles").insert({ challenger_id: user.id, opponent_id: p.id, genre, num_questions: numQ });
+    await (supabase as any).from("quiz_battles").insert({ challenger_id: user.id, opponent_id: p.id, genre, num_questions: 0 });
     toast.success("対戦を申し込みました");
     setOpponent(""); load();
   };
@@ -105,20 +106,16 @@ function BattlePage() {
       <Card className="p-4 mb-4 bg-muted/40 text-sm space-y-1">
         <div className="font-semibold">遊び方</div>
         <ol className="list-decimal pl-5 space-y-0.5 text-muted-foreground">
-          <li>ジャンルと問題数を選び、相手のユーザー名を入力して「挑戦」</li>
-          <li>挑戦中のバトルで「プレイ」を押すと、4択クイズが10秒/問で出題</li>
-          <li>両者がプレイ済みで勝敗が確定。タイムも記録</li>
-          <li>正解1問につき +1点、所要時間が短いほど良し</li>
+          <li>ジャンルを選び、相手のユーザー名を入力して「挑戦」</li>
+          <li>「プレイ」で4択エンドレスバトル開始。10秒/問。間違えるか中断するまで続く</li>
+          <li>連続正解でコンボ倍率UP（最大×5）。タイムも記録</li>
+          <li>両者がプレイ済みで勝敗が確定 — スコアが高い方の勝利</li>
         </ol>
       </Card>
-      <Card className="p-4 mb-6 grid sm:grid-cols-4 gap-2">
+      <Card className="p-4 mb-6 grid sm:grid-cols-3 gap-2">
         <Select value={genre} onValueChange={setGenre}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>{GENRES.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent>
-        </Select>
-        <Select value={String(numQ)} onValueChange={(v) => setNumQ(Number(v))}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>{[5,10,20].map((n) => <SelectItem key={n} value={String(n)}>{n} 問</SelectItem>)}</SelectContent>
         </Select>
         <Input placeholder="相手のユーザー名" value={opponent} onChange={(e) => setOpponent(e.target.value)} className="sm:col-span-1" />
         <Button onClick={challenge}>挑戦</Button>
@@ -135,7 +132,7 @@ function BattlePage() {
                 <div className="text-sm flex items-center gap-2">
                   {isChallenger ? "→ 挑戦中" : "← 受け入れ"}
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">{b.genre ?? "総合"}</span>
-                  <span className="text-[10px] text-muted-foreground">{b.num_questions ?? 10}問</span>
+                  <span className="text-[10px] text-muted-foreground">エンドレス</span>
                 </div>
                 <div className="text-xs text-muted-foreground">あなた {myScore} vs 相手 {oppScore}{b.time_taken ? ` · ${b.time_taken}s` : ""}</div>
               </div>
@@ -143,7 +140,7 @@ function BattlePage() {
                 <div className="flex items-center gap-2">
                   <div className="text-sm font-bold">{b.winner_id === user?.id ? <span className="text-green-600 flex items-center gap-1"><Trophy className="w-4 h-4" />勝ち</span> : b.winner_id ? "負け" : "引き分け"}</div>
                   <Button size="sm" variant="outline" onClick={async () => {
-                    const { data } = await (supabase as any).from("quiz_battles").insert({ challenger_id: user!.id, opponent_id: isChallenger ? b.opponent_id : b.challenger_id, genre: b.genre, num_questions: b.num_questions }).select().single();
+                    const { data } = await (supabase as any).from("quiz_battles").insert({ challenger_id: user!.id, opponent_id: isChallenger ? b.opponent_id : b.challenger_id, genre: b.genre, num_questions: 0 }).select().single();
                     if (data) { toast.success("リマッチを申し込みました"); load(); }
                   }}><RefreshCw className="h-3 w-3 mr-1" />リマッチ</Button>
                 </div>
