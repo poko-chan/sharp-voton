@@ -37,6 +37,7 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedMissionsRouteImport } from './routes/_authenticated/missions'
 import { Route as AuthenticatedMicroRouteImport } from './routes/_authenticated/micro'
+import { Route as AuthenticatedMakronRouteImport } from './routes/_authenticated/makron'
 import { Route as AuthenticatedListenRouteImport } from './routes/_authenticated/listen'
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
 import { Route as AuthenticatedHeatmapRouteImport } from './routes/_authenticated/heatmap'
@@ -54,6 +55,7 @@ import { Route as AuthenticatedBattleRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedRoomsIndexRouteImport } from './routes/_authenticated/rooms.index'
+import { Route as AuthenticatedMakronIndexRouteImport } from './routes/_authenticated/makron.index'
 import { Route as AuthenticatedClassroomIndexRouteImport } from './routes/_authenticated/classroom.index'
 import { Route as AuthenticatedRoomsRoomIdRouteImport } from './routes/_authenticated/rooms.$roomId'
 import { Route as AuthenticatedClassroomClassIdRouteImport } from './routes/_authenticated/classroom.$classId'
@@ -198,6 +200,11 @@ const AuthenticatedMicroRoute = AuthenticatedMicroRouteImport.update({
   path: '/micro',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedMakronRoute = AuthenticatedMakronRouteImport.update({
+  id: '/makron',
+  path: '/makron',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedListenRoute = AuthenticatedListenRouteImport.update({
   id: '/listen',
   path: '/listen',
@@ -285,6 +292,12 @@ const AuthenticatedRoomsIndexRoute = AuthenticatedRoomsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRoomsRoute,
 } as any)
+const AuthenticatedMakronIndexRoute =
+  AuthenticatedMakronIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedMakronRoute,
+  } as any)
 const AuthenticatedClassroomIndexRoute =
   AuthenticatedClassroomIndexRouteImport.update({
     id: '/classroom/',
@@ -328,6 +341,7 @@ export interface FileRoutesByFullPath {
   '/heatmap': typeof AuthenticatedHeatmapRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/listen': typeof AuthenticatedListenRoute
+  '/makron': typeof AuthenticatedMakronRouteWithChildren
   '/micro': typeof AuthenticatedMicroRoute
   '/missions': typeof AuthenticatedMissionsRoute
   '/notes': typeof AuthenticatedNotesRoute
@@ -351,6 +365,7 @@ export interface FileRoutesByFullPath {
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom/': typeof AuthenticatedClassroomIndexRoute
+  '/makron/': typeof AuthenticatedMakronIndexRoute
   '/rooms/': typeof AuthenticatedRoomsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -399,6 +414,7 @@ export interface FileRoutesByTo {
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom': typeof AuthenticatedClassroomIndexRoute
+  '/makron': typeof AuthenticatedMakronIndexRoute
   '/rooms': typeof AuthenticatedRoomsIndexRoute
 }
 export interface FileRoutesById {
@@ -427,6 +443,7 @@ export interface FileRoutesById {
   '/_authenticated/heatmap': typeof AuthenticatedHeatmapRoute
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/listen': typeof AuthenticatedListenRoute
+  '/_authenticated/makron': typeof AuthenticatedMakronRouteWithChildren
   '/_authenticated/micro': typeof AuthenticatedMicroRoute
   '/_authenticated/missions': typeof AuthenticatedMissionsRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
@@ -450,6 +467,7 @@ export interface FileRoutesById {
   '/_authenticated/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/_authenticated/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/_authenticated/classroom/': typeof AuthenticatedClassroomIndexRoute
+  '/_authenticated/makron/': typeof AuthenticatedMakronIndexRoute
   '/_authenticated/rooms/': typeof AuthenticatedRoomsIndexRoute
 }
 export interface FileRouteTypes {
@@ -478,6 +496,7 @@ export interface FileRouteTypes {
     | '/heatmap'
     | '/leaderboard'
     | '/listen'
+    | '/makron'
     | '/micro'
     | '/missions'
     | '/notes'
@@ -501,6 +520,7 @@ export interface FileRouteTypes {
     | '/classroom/$classId'
     | '/rooms/$roomId'
     | '/classroom/'
+    | '/makron/'
     | '/rooms/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -549,6 +569,7 @@ export interface FileRouteTypes {
     | '/classroom/$classId'
     | '/rooms/$roomId'
     | '/classroom'
+    | '/makron'
     | '/rooms'
   id:
     | '__root__'
@@ -576,6 +597,7 @@ export interface FileRouteTypes {
     | '/_authenticated/heatmap'
     | '/_authenticated/leaderboard'
     | '/_authenticated/listen'
+    | '/_authenticated/makron'
     | '/_authenticated/micro'
     | '/_authenticated/missions'
     | '/_authenticated/notes'
@@ -599,6 +621,7 @@ export interface FileRouteTypes {
     | '/_authenticated/classroom/$classId'
     | '/_authenticated/rooms/$roomId'
     | '/_authenticated/classroom/'
+    | '/_authenticated/makron/'
     | '/_authenticated/rooms/'
   fileRoutesById: FileRoutesById
 }
@@ -813,6 +836,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMicroRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/makron': {
+      id: '/_authenticated/makron'
+      path: '/makron'
+      fullPath: '/makron'
+      preLoaderRoute: typeof AuthenticatedMakronRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/listen': {
       id: '/_authenticated/listen'
       path: '/listen'
@@ -932,6 +962,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRoomsIndexRouteImport
       parentRoute: typeof AuthenticatedRoomsRoute
     }
+    '/_authenticated/makron/': {
+      id: '/_authenticated/makron/'
+      path: '/'
+      fullPath: '/makron/'
+      preLoaderRoute: typeof AuthenticatedMakronIndexRouteImport
+      parentRoute: typeof AuthenticatedMakronRoute
+    }
     '/_authenticated/classroom/': {
       id: '/_authenticated/classroom/'
       path: '/classroom'
@@ -955,6 +992,17 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthenticatedMakronRouteChildren {
+  AuthenticatedMakronIndexRoute: typeof AuthenticatedMakronIndexRoute
+}
+
+const AuthenticatedMakronRouteChildren: AuthenticatedMakronRouteChildren = {
+  AuthenticatedMakronIndexRoute: AuthenticatedMakronIndexRoute,
+}
+
+const AuthenticatedMakronRouteWithChildren =
+  AuthenticatedMakronRoute._addFileChildren(AuthenticatedMakronRouteChildren)
 
 interface AuthenticatedRoomsRouteChildren {
   AuthenticatedRoomsRoomIdRoute: typeof AuthenticatedRoomsRoomIdRoute
@@ -986,6 +1034,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedHeatmapRoute: typeof AuthenticatedHeatmapRoute
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
   AuthenticatedListenRoute: typeof AuthenticatedListenRoute
+  AuthenticatedMakronRoute: typeof AuthenticatedMakronRouteWithChildren
   AuthenticatedMicroRoute: typeof AuthenticatedMicroRoute
   AuthenticatedMissionsRoute: typeof AuthenticatedMissionsRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
@@ -1025,6 +1074,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedHeatmapRoute: AuthenticatedHeatmapRoute,
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
   AuthenticatedListenRoute: AuthenticatedListenRoute,
+  AuthenticatedMakronRoute: AuthenticatedMakronRouteWithChildren,
   AuthenticatedMicroRoute: AuthenticatedMicroRoute,
   AuthenticatedMissionsRoute: AuthenticatedMissionsRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
