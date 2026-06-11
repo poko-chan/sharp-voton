@@ -5,8 +5,10 @@ import { useAuth } from "@/lib/auth-context";
 import { MakronShell, MakronBadge } from "@/components/makron/MakronShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { BookOpen, Trophy, Zap, History, Plus } from "lucide-react";
+import { BookOpen, Trophy, Zap, History, Plus, Filter, ShoppingBag } from "lucide-react";
+import { Link as RLink } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/makron/")({ component: MakronHome });
 
@@ -19,6 +21,10 @@ function MakronHome() {
   const [units, setUnits] = useState<Unit[]>([]);
   const [board, setBoard] = useState<Row[]>([]);
   const [me, setMe] = useState<Me | null>(null);
+  const [fSubj, setFSubj] = useState<string>("__all");
+  const [fField, setFField] = useState<string>("__all");
+  const [fUnit, setFUnit] = useState<string>("__all");
+  const [canCreate, setCanCreate] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -28,8 +34,22 @@ function MakronHome() {
       setBoard((lb ?? []) as Row[]);
       const { data: meRow } = await (supabase as any).rpc("get_my_makron_rank");
       if (meRow && meRow[0]) setMe(meRow[0] as Me);
+      if (user) {
+        const { data: tmp } = await (supabase as any).from("temp_question_creators").select("expires_at").eq("user_id", user.id).gt("expires_at", new Date().toISOString()).maybeSingle();
+        setCanCreate(isAdmin || !!tmp);
+      }
     })();
-  }, [user?.id]);
+  }, [user?.id, isAdmin]);
+
+  const subjects = Array.from(new Set(units.map((u) => u.subject).filter(Boolean))) as string[];
+  const fields = Array.from(new Set(units.filter((u) => fSubj === "__all" || u.subject === fSubj).map((u) => u.field).filter(Boolean))) as string[];
+  const unitNames = Array.from(new Set(units
+    .filter((u) => (fSubj === "__all" || u.subject === fSubj) && (fField === "__all" || u.field === fField))
+    .map((u) => u.unit).filter(Boolean))) as string[];
+  const filtered = units.filter((u) =>
+    (fSubj === "__all" || u.subject === fSubj) &&
+    (fField === "__all" || u.field === fField) &&
+    (fUnit === "__all" || u.unit === fUnit));
 
   const inTop20 = me && board.some((b) => b.user_id === user?.id);
 
@@ -41,21 +61,45 @@ function MakronHome() {
           <MakronBadge icon={Trophy} label="レベル" value={`Lv${me?.level ?? 1}`} />
           <MakronBadge icon={Trophy} label="順位" value={me && me.rank > 0 ? `${me.rank}位 / ${me.total_users}人` : "未参加"} />
           <div className="ml-auto flex gap-2">
+            <RLink to="/shop"><Button variant="outline" size="sm"><ShoppingBag className="h-4 w-4 mr-1" />ショップ</Button></RLink>
             <Link to="/makron/history"><Button variant="outline" size="sm"><History className="h-4 w-4 mr-1" />履歴</Button></Link>
-            {isAdmin && <Link to="/makron/admin"><Button size="sm"><Plus className="h-4 w-4 mr-1" />問題管理</Button></Link>}
+            {canCreate && <Link to="/makron/admin"><Button size="sm"><Plus className="h-4 w-4 mr-1" />{isAdmin ? "管理者画面" : "問題作成"}</Button></Link>}
           </div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2 space-y-3">
-            <h2 className="text-lg font-bold flex items-center gap-2"><BookOpen className="h-5 w-5 text-primary" />単元一覧</h2>
+            <h2 className="text-lg font-bold flex items-center gap-2"><BookOpen className="h-5 w-5 text-primary" />単元一覧 ({filtered.length}/{units.length})</h2>
+            <Card className="p-3 grid grid-cols-3 gap-2 bg-muted/30">
+              <Select value={fSubj} onValueChange={(v) => { setFSubj(v); setFField("__all"); setFUnit("__all"); }}>
+                <SelectTrigger><Filter className="h-3 w-3 mr-1" /><SelectValue placeholder="教科" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all">すべての教科</SelectItem>
+                  {subjects.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={fField} onValueChange={(v) => { setFField(v); setFUnit("__all"); }} disabled={fSubj === "__all"}>
+                <SelectTrigger><SelectValue placeholder="分野" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all">すべての分野</SelectItem>
+                  {fields.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={fUnit} onValueChange={setFUnit} disabled={fField === "__all"}>
+                <SelectTrigger><SelectValue placeholder="ユニット" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all">すべて</SelectItem>
+                  {unitNames.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </Card>
             {units.length === 0 && (
               <Card className="p-8 text-center text-muted-foreground text-sm">
-                単元はまだありません{isAdmin && "（管理者画面から追加）"}
+                単元はまだありません{canCreate && "（管理者画面から追加）"}
               </Card>
             )}
             <div className="grid sm:grid-cols-2 gap-3">
-              {units.map((u) => (
+              {filtered.map((u) => (
                 <Link key={u.id} to="/makron/unit/$unitId" params={{ unitId: u.id }}>
                   <Card className="p-4 hover:border-primary transition cursor-pointer h-full">
                     <div className="font-bold">{u.title}</div>

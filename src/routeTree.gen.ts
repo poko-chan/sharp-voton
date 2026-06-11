@@ -24,13 +24,13 @@ import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
 import { Route as AuthenticatedStudyRouteImport } from './routes/_authenticated/study'
 import { Route as AuthenticatedStreakRouteImport } from './routes/_authenticated/streak'
+import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
 import { Route as AuthenticatedShareRouteImport } from './routes/_authenticated/share'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
 import { Route as AuthenticatedRankRouteImport } from './routes/_authenticated/rank'
 import { Route as AuthenticatedQuestionsRouteImport } from './routes/_authenticated/questions'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
-import { Route as AuthenticatedPollsRouteImport } from './routes/_authenticated/polls'
 import { Route as AuthenticatedParentRouteImport } from './routes/_authenticated/parent'
 import { Route as AuthenticatedOcrRouteImport } from './routes/_authenticated/ocr'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -139,6 +139,11 @@ const AuthenticatedStreakRoute = AuthenticatedStreakRouteImport.update({
   path: '/streak',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedShopRoute = AuthenticatedShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedShareRoute = AuthenticatedShareRouteImport.update({
   id: '/share',
   path: '/share',
@@ -167,11 +172,6 @@ const AuthenticatedQuestionsRoute = AuthenticatedQuestionsRouteImport.update({
 const AuthenticatedPracticeRoute = AuthenticatedPracticeRouteImport.update({
   id: '/practice',
   path: '/practice',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedPollsRoute = AuthenticatedPollsRouteImport.update({
-  id: '/polls',
-  path: '/polls',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedParentRoute = AuthenticatedParentRouteImport.update({
@@ -383,13 +383,13 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/ocr': typeof AuthenticatedOcrRoute
   '/parent': typeof AuthenticatedParentRoute
-  '/polls': typeof AuthenticatedPollsRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
   '/rank': typeof AuthenticatedRankRoute
   '/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
+  '/shop': typeof AuthenticatedShopRoute
   '/streak': typeof AuthenticatedStreakRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
@@ -438,12 +438,12 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/ocr': typeof AuthenticatedOcrRoute
   '/parent': typeof AuthenticatedParentRoute
-  '/polls': typeof AuthenticatedPollsRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
   '/rank': typeof AuthenticatedRankRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
+  '/shop': typeof AuthenticatedShopRoute
   '/streak': typeof AuthenticatedStreakRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
@@ -495,13 +495,13 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/ocr': typeof AuthenticatedOcrRoute
   '/_authenticated/parent': typeof AuthenticatedParentRoute
-  '/_authenticated/polls': typeof AuthenticatedPollsRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
   '/_authenticated/rank': typeof AuthenticatedRankRoute
   '/_authenticated/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/share': typeof AuthenticatedShareRoute
+  '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/streak': typeof AuthenticatedStreakRoute
   '/_authenticated/study': typeof AuthenticatedStudyRoute
   '/_authenticated/timer': typeof AuthenticatedTimerRoute
@@ -553,13 +553,13 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/ocr'
     | '/parent'
-    | '/polls'
     | '/practice'
     | '/questions'
     | '/rank'
     | '/rooms'
     | '/settings'
     | '/share'
+    | '/shop'
     | '/streak'
     | '/study'
     | '/timer'
@@ -608,12 +608,12 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/ocr'
     | '/parent'
-    | '/polls'
     | '/practice'
     | '/questions'
     | '/rank'
     | '/settings'
     | '/share'
+    | '/shop'
     | '/streak'
     | '/study'
     | '/timer'
@@ -664,13 +664,13 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/ocr'
     | '/_authenticated/parent'
-    | '/_authenticated/polls'
     | '/_authenticated/practice'
     | '/_authenticated/questions'
     | '/_authenticated/rank'
     | '/_authenticated/rooms'
     | '/_authenticated/settings'
     | '/_authenticated/share'
+    | '/_authenticated/shop'
     | '/_authenticated/streak'
     | '/_authenticated/study'
     | '/_authenticated/timer'
@@ -810,6 +810,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStreakRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/shop': {
+      id: '/_authenticated/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof AuthenticatedShopRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/share': {
       id: '/_authenticated/share'
       path: '/share'
@@ -850,13 +857,6 @@ declare module '@tanstack/react-router' {
       path: '/practice'
       fullPath: '/practice'
       preLoaderRoute: typeof AuthenticatedPracticeRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/polls': {
-      id: '/_authenticated/polls'
-      path: '/polls'
-      fullPath: '/polls'
-      preLoaderRoute: typeof AuthenticatedPollsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/parent': {
@@ -1153,13 +1153,13 @@ interface AuthenticatedRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOcrRoute: typeof AuthenticatedOcrRoute
   AuthenticatedParentRoute: typeof AuthenticatedParentRoute
-  AuthenticatedPollsRoute: typeof AuthenticatedPollsRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedQuestionsRoute: typeof AuthenticatedQuestionsRoute
   AuthenticatedRankRoute: typeof AuthenticatedRankRoute
   AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedShareRoute: typeof AuthenticatedShareRoute
+  AuthenticatedShopRoute: typeof AuthenticatedShopRoute
   AuthenticatedStreakRoute: typeof AuthenticatedStreakRoute
   AuthenticatedStudyRoute: typeof AuthenticatedStudyRoute
   AuthenticatedTimerRoute: typeof AuthenticatedTimerRoute
@@ -1193,13 +1193,13 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOcrRoute: AuthenticatedOcrRoute,
   AuthenticatedParentRoute: AuthenticatedParentRoute,
-  AuthenticatedPollsRoute: AuthenticatedPollsRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedQuestionsRoute: AuthenticatedQuestionsRoute,
   AuthenticatedRankRoute: AuthenticatedRankRoute,
   AuthenticatedRoomsRoute: AuthenticatedRoomsRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedShareRoute: AuthenticatedShareRoute,
+  AuthenticatedShopRoute: AuthenticatedShopRoute,
   AuthenticatedStreakRoute: AuthenticatedStreakRoute,
   AuthenticatedStudyRoute: AuthenticatedStudyRoute,
   AuthenticatedTimerRoute: AuthenticatedTimerRoute,
