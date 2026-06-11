@@ -22,6 +22,8 @@ import { buildReport } from "@/lib/report-pdf";
 import { FileDown } from "lucide-react";
 import { TodayBreakdownChart } from "@/components/TodayBreakdownChart";
 import { WeeklySubjectDiff } from "@/components/WeeklySubjectDiff";
+import { Trophy } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
