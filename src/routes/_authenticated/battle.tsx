@@ -157,9 +157,12 @@ function BattlePage() {
 }
 
 function BattlePlay({ battle, onDone, onQuit }: { battle: any; onDone: (score: number, timeSec: number) => void; onQuit: () => void }) {
-  const quiz = useMemo(() => buildQuiz(battle.genre ?? "総合", battle.num_questions ?? 10), [battle.id]);
+  const pool = useMemo(() => buildPool(battle.genre ?? "総合"), [battle.id]);
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
+  const [combo, setCombo] = useState(0);
+  const [q, setQ] = useState<{ q: string; a: string; opts: string[] }>(() => pickQ(pool));
+  const [over, setOver] = useState(false);
   const [picked, setPicked] = useState<string | null>(null);
   const [time, setTime] = useState(10);
   const start = useRef(Date.now());
@@ -180,34 +183,44 @@ function BattlePlay({ battle, onDone, onQuit }: { battle: any; onDone: (score: n
   const advance = (sel: string | null) => {
     if (tick.current) clearInterval(tick.current);
     setPicked(sel);
-    const correct = sel === quiz[idx]?.a;
-    if (correct) setScore((s) => s + 1);
+    const correct = sel === q.a;
+    if (correct) {
+      const mult = Math.min(combo + 1, 5);
+      setScore((s) => s + mult);
+      setCombo((c) => c + 1);
+    } else {
+      setCombo(0);
+    }
     setTimeout(() => {
-      if (idx + 1 >= quiz.length) {
+      if (!correct) {
         const t = Math.round((Date.now() - start.current) / 1000);
-        onDone(score + (correct ? 1 : 0), t);
-      } else setIdx((i) => i + 1);
+        setOver(true);
+        onDone(score, t);
+        return;
+      }
+      setQ(pickQ(pool));
+      setIdx((i) => i + 1);
     }, 800);
   };
 
-  const q = quiz[idx];
-  if (!q) return null;
+  if (over) return null;
   return (
     <div className="container mx-auto p-6 max-w-2xl space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold flex items-center gap-2"><Swords /> バトル中</h1>
-        <Button variant="ghost" size="sm" onClick={onQuit}>中断</Button>
+        <h1 className="text-2xl font-bold flex items-center gap-2"><Swords /> エンドレスバトル</h1>
+        <Button variant="ghost" size="sm" onClick={() => { const t = Math.round((Date.now() - start.current) / 1000); onDone(score, t); }}><Flag className="h-3 w-3 mr-1" />終了</Button>
       </div>
       <Card className="p-2 flex items-center gap-3">
-        <div className="text-xs">問 {idx+1}/{quiz.length}</div>
+        <div className="text-xs">問 {idx+1}</div>
         <Progress value={(time / 10) * 100} className="flex-1 h-2" />
         <div className="text-xs flex items-center gap-1"><Clock className="h-3 w-3" />{time}s</div>
         <div className="text-xs flex items-center gap-1"><Zap className="h-3 w-3 text-amber-500" />{score}</div>
+        {combo > 1 && <div className="text-xs font-bold text-orange-500">×{Math.min(combo, 5)} COMBO</div>}
       </Card>
       <Card className="p-6 space-y-3">
         <div className="text-xl font-medium">{q.q}</div>
         <div className="grid sm:grid-cols-2 gap-2">
-          {q.opts.map((o) => {
+          {q.opts.map((o: string) => {
             const isCorrect = o === q.a;
             const isPicked = picked === o;
             return (
