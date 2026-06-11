@@ -25,6 +25,51 @@ import { WeeklySubjectDiff } from "@/components/WeeklySubjectDiff";
 import { Trophy } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
+function DashboardRanking() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [mk, setMk] = useState<any[]>([]);
+  useEffect(() => {
+    (async () => {
+      const { data: lb } = await (supabase as any).rpc("get_leaderboard", { _limit: 10 });
+      setRows(lb ?? []);
+      const { data: mlb } = await (supabase as any).rpc("get_makron_leaderboard", { _limit: 10 });
+      setMk(mlb ?? []);
+    })();
+  }, []);
+  return (
+    <Card className="p-4 grid md:grid-cols-2 gap-4">
+      <div>
+        <div className="font-bold flex items-center gap-2 mb-2"><Trophy className="h-4 w-4 text-amber-500" />学習時間ランキング Top10</div>
+        <div className="divide-y">
+          {rows.length === 0 && <div className="text-xs text-muted-foreground p-2">データなし</div>}
+          {rows.map((r: any, i: number) => (
+            <div key={r.user_id} className="flex items-center gap-2 py-1.5">
+              <div className="w-6 text-center text-sm font-bold tabular-nums">{i + 1}</div>
+              <Avatar className="h-6 w-6"><AvatarImage src={r.avatar_url ?? undefined} /><AvatarFallback>{(r.display_name ?? "?").slice(0,1)}</AvatarFallback></Avatar>
+              <div className="flex-1 text-sm truncate">{r.display_name ?? "?"}</div>
+              <div className="text-xs tabular-nums">{r.total_minutes}分</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="font-bold flex items-center gap-2 mb-2"><Trophy className="h-4 w-4 text-primary" />Makron XP Top10</div>
+        <div className="divide-y">
+          {mk.length === 0 && <div className="text-xs text-muted-foreground p-2">データなし</div>}
+          {mk.map((r: any) => (
+            <div key={r.user_id} className="flex items-center gap-2 py-1.5">
+              <div className="w-6 text-center text-sm font-bold tabular-nums">{r.rank}</div>
+              <Avatar className="h-6 w-6"><AvatarImage src={r.avatar_url ?? undefined} /><AvatarFallback>{(r.display_name ?? "?").slice(0,1)}</AvatarFallback></Avatar>
+              <div className="flex-1 text-sm truncate">{r.display_name ?? "?"}</div>
+              <div className="text-xs tabular-nums">{r.xp} XP / Lv{r.level}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
