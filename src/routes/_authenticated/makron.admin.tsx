@@ -544,3 +544,49 @@ function UserAdminRow({ user, onChange }: { user: any; onChange: () => void }) {
     </div>
   );
 }
+
+function ApplyCreator({ userId }: { userId?: string }) {
+  const [existing, setExisting] = useState<any>(null);
+  const [reason, setReason] = useState("");
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    if (!userId) return;
+    (async () => {
+      const { data } = await (supabase as any).from("question_creator_applications")
+        .select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      setExisting(data);
+    })();
+  }, [userId]);
+  const apply = async () => {
+    if (reason.trim().length < 10) return toast.error("理由を10文字以上で入力してください");
+    setLoading(true);
+    const { error } = await (supabase as any).from("question_creator_applications").insert({ user_id: userId, reason });
+    setLoading(false);
+    if (error) return toast.error(error.message);
+    toast.success("申請しました。管理者の承認をお待ちください");
+    setReason("");
+    const { data } = await (supabase as any).from("question_creator_applications")
+      .select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    setExisting(data);
+  };
+  return (
+    <div className="max-w-xl mx-auto p-8 space-y-4">
+      <h2 className="text-2xl font-bold">問題作成権限の申請</h2>
+      <p className="text-sm text-muted-foreground">この画面は管理者または問題作成権限を持つユーザーのみ利用できます。下のフォームから権限申請を送信できます。</p>
+      {existing && (
+        <Card className="p-3 text-sm">
+          直近の申請: <span className={`font-bold ${existing.status==='approved'?'text-success':existing.status==='rejected'?'text-destructive':'text-amber-600'}`}>{existing.status}</span>
+          <div className="text-xs text-muted-foreground mt-1">{new Date(existing.created_at).toLocaleString("ja-JP")}</div>
+          <div className="text-xs whitespace-pre-wrap mt-1">{existing.reason}</div>
+        </Card>
+      )}
+      {(!existing || existing.status !== 'pending') && (
+        <Card className="p-4 space-y-2">
+          <label className="text-sm font-bold">申請理由</label>
+          <Textarea rows={4} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="どんな問題を作りたいか、教科や経験などを書いてください" />
+          <Button onClick={apply} disabled={loading}>申請を送信</Button>
+        </Card>
+      )}
+    </div>
+  );
+}
