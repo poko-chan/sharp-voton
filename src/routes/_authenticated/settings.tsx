@@ -239,7 +239,6 @@ function CustomizationPanel() {
     { to: "/missions", label: "デイリーミッション" },
     { to: "/leaderboard", label: "ランキング" },
     { to: "/rank", label: "段位・称号" },
-    { to: "/battle", label: "学習バトル" },
     { to: "/export", label: "データ出力" },
   ];
   const hidden = new Set(prefs.sidebar_hidden ?? []);
