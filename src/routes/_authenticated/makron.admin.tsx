@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Trash2, Save, FileText, ChevronRight, FlagOff, Image as ImageIcon, Power, Download, UserCog, BarChart3, KeyRound } from "lucide-react";
+import { Plus, Trash2, Save, FileText, ChevronRight, FlagOff, Image as ImageIcon, Power, Download, UserCog, BarChart3, KeyRound, Coins, Check, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
@@ -125,14 +125,15 @@ function AdminPage() {
 
   const saveQuestion = async () => {
     if (!draft || !draft.prompt.trim()) return toast.error("問題文を入力してください");
+    const { id, created_at, updated_at, ...rest } = draft;
     const payload = {
-      ...draft,
-      options: (draft.options ?? []).filter((o: string) => o && o.trim()),
-      correct_options: draft.correct_options ?? [],
-      accepted_answers: (draft.accepted_answers ?? []).filter((s: string) => s && s.trim()),
+      ...rest,
+      options: (rest.options ?? []).filter((o: string) => o && o.trim()),
+      correct_options: rest.correct_options ?? [],
+      accepted_answers: (rest.accepted_answers ?? []).filter((s: string) => s && s.trim()),
     };
-    const { error } = draft.id
-      ? await (supabase as any).from("makron_questions").update(payload).eq("id", draft.id)
+    const { error } = id
+      ? await (supabase as any).from("makron_questions").update(payload).eq("id", id)
       : await (supabase as any).from("makron_questions").insert(payload);
     if (error) return toast.error(error.message);
     setDraft(null); loadQuestions(selUnit!); toast.success("保存しました");
