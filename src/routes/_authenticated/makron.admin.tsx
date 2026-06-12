@@ -33,6 +33,13 @@ function AdminPage() {
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [userQuery, setUserQuery] = useState("");
   const [tempList, setTempList] = useState<any[]>([]);
+  const [apps, setApps] = useState<any[]>([]);
+  const loadApps = async () => {
+    const { data } = await (supabase as any).from("question_creator_applications")
+      .select("*, profile:profiles!question_creator_applications_user_id_fkey(username, display_name)")
+      .order("created_at", { ascending: false });
+    setApps(data ?? []);
+  };
 
   const loadUnits = async () => {
     const { data } = await (supabase as any).from("makron_units").select("*").order("order_idx").order("created_at");
@@ -164,12 +171,13 @@ function AdminPage() {
   return (
     <MakronShell back="/makron" title="管理者画面">
       <div className="max-w-6xl mx-auto p-6">
-        <Tabs defaultValue="units" onValueChange={(v) => { if (v === "analytics") loadAnalytics(); if (v === "users") loadUsersAndTemp(); }}>
+        <Tabs defaultValue="units" onValueChange={(v) => { if (v === "analytics") loadAnalytics(); if (v === "users") loadUsersAndTemp(); if (v === "apps") loadApps(); }}>
           <TabsList>
             <TabsTrigger value="units">単元・問題</TabsTrigger>
             <TabsTrigger value="grading">手動採点 ({pending.length})</TabsTrigger>
             <TabsTrigger value="reports">報告 ({reports.filter(r => r.status === "open").length})</TabsTrigger>
             {isAdmin && <TabsTrigger value="users"><UserCog className="h-3 w-3 mr-1" />ユーザー</TabsTrigger>}
+            {isAdmin && <TabsTrigger value="apps">作成申請</TabsTrigger>}
             {isAdmin && <TabsTrigger value="analytics"><BarChart3 className="h-3 w-3 mr-1" />分析</TabsTrigger>}
           </TabsList>
 
