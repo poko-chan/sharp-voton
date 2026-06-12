@@ -480,6 +480,8 @@ function UserAdminRow({ user, onChange }: { user: any; onChange: () => void }) {
   const [xp, setXp] = useState<number>(0);
   const [coins, setCoins] = useState<number>(0);
   const [days, setDays] = useState<number>(1);
+  const [grantAmt, setGrantAmt] = useState<number>(100);
+  const [grantMsg, setGrantMsg] = useState<string>("");
   const [loaded, setLoaded] = useState(false);
 
   const loadStats = async () => {
@@ -528,6 +530,16 @@ function UserAdminRow({ user, onChange }: { user: any; onChange: () => void }) {
               if (error) return toast.error(error.message);
               toast.success("権限を付与"); onChange();
             }}>付与</Button>
+          </div>
+          <div className="flex items-center gap-1 w-full mt-1 pt-1 border-t">
+            <Coins className="h-3 w-3 text-amber-500" />
+            <Input type="number" value={grantAmt} onChange={(e) => setGrantAmt(Number(e.target.value) || 0)} className="w-20 h-8" placeholder="金額" />
+            <Input value={grantMsg} onChange={(e) => setGrantMsg(e.target.value)} className="flex-1 h-8" placeholder="メッセージ" />
+            <Button size="sm" onClick={async () => {
+              const { error } = await (supabase as any).rpc("admin_grant_coins", { _user_id: user.id, _amount: grantAmt, _message: grantMsg });
+              if (error) return toast.error(error.message);
+              toast.success("コインを付与しました"); setGrantMsg(""); setCoins(coins + grantAmt);
+            }}>送付</Button>
           </div>
         </>
       )}
