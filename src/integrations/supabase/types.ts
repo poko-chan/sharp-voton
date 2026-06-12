@@ -2886,10 +2886,6 @@ export type Database = {
       }
       join_class_by_code: { Args: { _code: string }; Returns: string }
       purchase_shop_item: { Args: { _item_id: string }; Returns: Json }
-      send_coin_gift: {
-        Args: { _amount: number; _message: string; _to: string }
-        Returns: number
-      }
       share_study_summary: {
         Args: { _token: string }
         Returns: {

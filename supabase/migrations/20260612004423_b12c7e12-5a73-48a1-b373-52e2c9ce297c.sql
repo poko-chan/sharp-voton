@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.send_coin_gift(uuid, integer, text);
