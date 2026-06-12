@@ -439,6 +439,36 @@ function AdminPage() {
               </Card>
             </TabsContent>
           )}
+
+          {isAdmin && (
+            <TabsContent value="apps" className="space-y-2">
+              {apps.length === 0 && <Card className="p-6 text-center text-sm text-muted-foreground">申請はありません</Card>}
+              {apps.map((a: any) => (
+                <Card key={a.id} className="p-3 space-y-1">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="font-bold">{a.profile?.display_name ?? a.profile?.username ?? a.user_id.slice(0,8)}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${a.status==='pending'?'bg-amber-500/15 text-amber-600':a.status==='approved'?'bg-success/15 text-success':'bg-destructive/15 text-destructive'}`}>{a.status}</span>
+                    <span className="text-[10px] text-muted-foreground ml-auto">{new Date(a.created_at).toLocaleString("ja-JP")}</span>
+                  </div>
+                  <div className="text-xs whitespace-pre-wrap">{a.reason}</div>
+                  {a.status === 'pending' && (
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={async () => {
+                        const { error } = await (supabase as any).rpc("admin_review_creator_application", { _app_id: a.id, _approve: true, _days: 7 });
+                        if (error) return toast.error(error.message);
+                        toast.success("承認"); loadApps();
+                      }}><Check className="h-3 w-3 mr-1" />7日間 承認</Button>
+                      <Button size="sm" variant="outline" onClick={async () => {
+                        const { error } = await (supabase as any).rpc("admin_review_creator_application", { _app_id: a.id, _approve: false, _days: 0 });
+                        if (error) return toast.error(error.message);
+                        toast.success("却下"); loadApps();
+                      }}><X className="h-3 w-3 mr-1" />却下</Button>
+                    </div>
+                  )}
+                </Card>
+              ))}
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </MakronShell>
