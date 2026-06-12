@@ -51,7 +51,6 @@ import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedClasschatRouteImport } from './routes/_authenticated/classchat'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
-import { Route as AuthenticatedBattleRouteImport } from './routes/_authenticated/battle'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedRoomsIndexRouteImport } from './routes/_authenticated/rooms.index'
@@ -276,11 +275,6 @@ const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedBattleRoute = AuthenticatedBattleRouteImport.update({
-  id: '/battle',
-  path: '/battle',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedAnnouncementsRoute =
   AuthenticatedAnnouncementsRouteImport.update({
     id: '/announcements',
@@ -362,7 +356,6 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
-  '/battle': typeof AuthenticatedBattleRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/chat': typeof AuthenticatedChatRoute
   '/classchat': typeof AuthenticatedClasschatRoute
@@ -418,7 +411,6 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
-  '/battle': typeof AuthenticatedBattleRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/chat': typeof AuthenticatedChatRoute
   '/classchat': typeof AuthenticatedClasschatRoute
@@ -474,7 +466,6 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
-  '/_authenticated/battle': typeof AuthenticatedBattleRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/_authenticated/classchat': typeof AuthenticatedClasschatRoute
@@ -532,7 +523,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin'
     | '/announcements'
-    | '/battle'
     | '/calendar'
     | '/chat'
     | '/classchat'
@@ -588,7 +578,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin'
     | '/announcements'
-    | '/battle'
     | '/calendar'
     | '/chat'
     | '/classchat'
@@ -643,7 +632,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/admin'
     | '/_authenticated/announcements'
-    | '/_authenticated/battle'
     | '/_authenticated/calendar'
     | '/_authenticated/chat'
     | '/_authenticated/classchat'
@@ -999,13 +987,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCalendarRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/battle': {
-      id: '/_authenticated/battle'
-      path: '/battle'
-      fullPath: '/battle'
-      preLoaderRoute: typeof AuthenticatedBattleRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/announcements': {
       id: '/_authenticated/announcements'
       path: '/announcements'
@@ -1132,7 +1113,6 @@ const AuthenticatedRoomsRouteWithChildren =
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
-  AuthenticatedBattleRoute: typeof AuthenticatedBattleRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
   AuthenticatedClasschatRoute: typeof AuthenticatedClasschatRoute
@@ -1172,7 +1152,6 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
-  AuthenticatedBattleRoute: AuthenticatedBattleRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedChatRoute: AuthenticatedChatRoute,
   AuthenticatedClasschatRoute: AuthenticatedClasschatRoute,
@@ -1228,3 +1207,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
