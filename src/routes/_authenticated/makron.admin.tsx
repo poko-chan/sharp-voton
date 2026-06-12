@@ -445,6 +445,10 @@ function AdminPage() {
   );
 }
 
+function AppsTabContent({ apps, reload }: { apps: any[]; reload: () => void }) {
+  return null;
+}
+
 function UserAdminRow({ user, onChange }: { user: any; onChange: () => void }) {
   const [xp, setXp] = useState<number>(0);
   const [coins, setCoins] = useState<number>(0);
