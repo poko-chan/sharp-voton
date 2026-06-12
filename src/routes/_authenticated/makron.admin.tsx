@@ -87,9 +87,7 @@ function AdminPage() {
   if (!canCreate) {
     return (
       <MakronShell back="/makron" title="管理者画面">
-        <div className="p-10 text-center text-sm text-muted-foreground">
-          この画面は管理者または問題作成権限を持つユーザーのみ利用できます。
-        </div>
+        <ApplyCreator userId={user?.id} />
       </MakronShell>
     );
   }
