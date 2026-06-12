@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Trash2, Save, FileText, ChevronRight, FlagOff, Image as ImageIcon, Power, Download, UserCog, BarChart3, KeyRound } from "lucide-react";
+import { Plus, Trash2, Save, FileText, ChevronRight, FlagOff, Image as ImageIcon, Power, Download, UserCog, BarChart3, KeyRound, Coins, Check, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
@@ -33,6 +33,13 @@ function AdminPage() {
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [userQuery, setUserQuery] = useState("");
   const [tempList, setTempList] = useState<any[]>([]);
+  const [apps, setApps] = useState<any[]>([]);
+  const loadApps = async () => {
+    const { data } = await (supabase as any).from("question_creator_applications")
+      .select("*, profile:profiles!question_creator_applications_user_id_fkey(username, display_name)")
+      .order("created_at", { ascending: false });
+    setApps(data ?? []);
+  };
 
   const loadUnits = async () => {
     const { data } = await (supabase as any).from("makron_units").select("*").order("order_idx").order("created_at");
@@ -80,9 +87,7 @@ function AdminPage() {
   if (!canCreate) {
     return (
       <MakronShell back="/makron" title="管理者画面">
-        <div className="p-10 text-center text-sm text-muted-foreground">
-          この画面は管理者または問題作成権限を持つユーザーのみ利用できます。
-        </div>
+        <ApplyCreator userId={user?.id} />
       </MakronShell>
     );
   }
@@ -125,14 +130,15 @@ function AdminPage() {
 
   const saveQuestion = async () => {
     if (!draft || !draft.prompt.trim()) return toast.error("問題文を入力してください");
+    const { id, created_at, updated_at, ...rest } = draft;
     const payload = {
-      ...draft,
-      options: (draft.options ?? []).filter((o: string) => o && o.trim()),
-      correct_options: draft.correct_options ?? [],
-      accepted_answers: (draft.accepted_answers ?? []).filter((s: string) => s && s.trim()),
+      ...rest,
+      options: (rest.options ?? []).filter((o: string) => o && o.trim()),
+      correct_options: rest.correct_options ?? [],
+      accepted_answers: (rest.accepted_answers ?? []).filter((s: string) => s && s.trim()),
     };
-    const { error } = draft.id
-      ? await (supabase as any).from("makron_questions").update(payload).eq("id", draft.id)
+    const { error } = id
+      ? await (supabase as any).from("makron_questions").update(payload).eq("id", id)
       : await (supabase as any).from("makron_questions").insert(payload);
     if (error) return toast.error(error.message);
     setDraft(null); loadQuestions(selUnit!); toast.success("保存しました");
@@ -163,12 +169,13 @@ function AdminPage() {
   return (
     <MakronShell back="/makron" title="管理者画面">
       <div className="max-w-6xl mx-auto p-6">
-        <Tabs defaultValue="units" onValueChange={(v) => { if (v === "analytics") loadAnalytics(); if (v === "users") loadUsersAndTemp(); }}>
+        <Tabs defaultValue="units" onValueChange={(v) => { if (v === "analytics") loadAnalytics(); if (v === "users") loadUsersAndTemp(); if (v === "apps") loadApps(); }}>
           <TabsList>
             <TabsTrigger value="units">単元・問題</TabsTrigger>
             <TabsTrigger value="grading">手動採点 ({pending.length})</TabsTrigger>
             <TabsTrigger value="reports">報告 ({reports.filter(r => r.status === "open").length})</TabsTrigger>
             {isAdmin && <TabsTrigger value="users"><UserCog className="h-3 w-3 mr-1" />ユーザー</TabsTrigger>}
+            {isAdmin && <TabsTrigger value="apps">作成申請</TabsTrigger>}
             {isAdmin && <TabsTrigger value="analytics"><BarChart3 className="h-3 w-3 mr-1" />分析</TabsTrigger>}
           </TabsList>
 
@@ -430,16 +437,49 @@ function AdminPage() {
               </Card>
             </TabsContent>
           )}
+
+          {isAdmin && (
+            <TabsContent value="apps" className="space-y-2">
+              {apps.length === 0 && <Card className="p-6 text-center text-sm text-muted-foreground">申請はありません</Card>}
+              {apps.map((a: any) => (
+                <Card key={a.id} className="p-3 space-y-1">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="font-bold">{a.profile?.display_name ?? a.profile?.username ?? a.user_id.slice(0,8)}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${a.status==='pending'?'bg-amber-500/15 text-amber-600':a.status==='approved'?'bg-success/15 text-success':'bg-destructive/15 text-destructive'}`}>{a.status}</span>
+                    <span className="text-[10px] text-muted-foreground ml-auto">{new Date(a.created_at).toLocaleString("ja-JP")}</span>
+                  </div>
+                  <div className="text-xs whitespace-pre-wrap">{a.reason}</div>
+                  {a.status === 'pending' && (
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={async () => {
+                        const { error } = await (supabase as any).rpc("admin_review_creator_application", { _app_id: a.id, _approve: true, _days: 7 });
+                        if (error) return toast.error(error.message);
+                        toast.success("承認"); loadApps();
+                      }}><Check className="h-3 w-3 mr-1" />7日間 承認</Button>
+                      <Button size="sm" variant="outline" onClick={async () => {
+                        const { error } = await (supabase as any).rpc("admin_review_creator_application", { _app_id: a.id, _approve: false, _days: 0 });
+                        if (error) return toast.error(error.message);
+                        toast.success("却下"); loadApps();
+                      }}><X className="h-3 w-3 mr-1" />却下</Button>
+                    </div>
+                  )}
+                </Card>
+              ))}
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </MakronShell>
   );
 }
 
+
 function UserAdminRow({ user, onChange }: { user: any; onChange: () => void }) {
   const [xp, setXp] = useState<number>(0);
   const [coins, setCoins] = useState<number>(0);
   const [days, setDays] = useState<number>(1);
+  const [grantAmt, setGrantAmt] = useState<number>(100);
+  const [grantMsg, setGrantMsg] = useState<string>("");
   const [loaded, setLoaded] = useState(false);
 
   const loadStats = async () => {
@@ -489,7 +529,63 @@ function UserAdminRow({ user, onChange }: { user: any; onChange: () => void }) {
               toast.success("権限を付与"); onChange();
             }}>付与</Button>
           </div>
+          <div className="flex items-center gap-1 w-full mt-1 pt-1 border-t">
+            <Coins className="h-3 w-3 text-amber-500" />
+            <Input type="number" value={grantAmt} onChange={(e) => setGrantAmt(Number(e.target.value) || 0)} className="w-20 h-8" placeholder="金額" />
+            <Input value={grantMsg} onChange={(e) => setGrantMsg(e.target.value)} className="flex-1 h-8" placeholder="メッセージ" />
+            <Button size="sm" onClick={async () => {
+              const { error } = await (supabase as any).rpc("admin_grant_coins", { _user_id: user.id, _amount: grantAmt, _message: grantMsg });
+              if (error) return toast.error(error.message);
+              toast.success("コインを付与しました"); setGrantMsg(""); setCoins(coins + grantAmt);
+            }}>送付</Button>
+          </div>
         </>
+      )}
+    </div>
+  );
+}
+
+function ApplyCreator({ userId }: { userId?: string }) {
+  const [existing, setExisting] = useState<any>(null);
+  const [reason, setReason] = useState("");
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    if (!userId) return;
+    (async () => {
+      const { data } = await (supabase as any).from("question_creator_applications")
+        .select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      setExisting(data);
+    })();
+  }, [userId]);
+  const apply = async () => {
+    if (reason.trim().length < 10) return toast.error("理由を10文字以上で入力してください");
+    setLoading(true);
+    const { error } = await (supabase as any).from("question_creator_applications").insert({ user_id: userId, reason });
+    setLoading(false);
+    if (error) return toast.error(error.message);
+    toast.success("申請しました。管理者の承認をお待ちください");
+    setReason("");
+    const { data } = await (supabase as any).from("question_creator_applications")
+      .select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    setExisting(data);
+  };
+  return (
+    <div className="max-w-xl mx-auto p-8 space-y-4">
+      <h2 className="text-2xl font-bold">問題作成権限の申請</h2>
+      <p className="text-sm text-muted-foreground">この画面は管理者または問題作成権限を持つユーザーのみ利用できます。下のフォームから権限申請を送信できます。</p>
+      {existing && (
+        <Card className="p-3 text-sm">
+          直近の申請: <span className={`font-bold ${existing.status==='approved'?'text-success':existing.status==='rejected'?'text-destructive':'text-amber-600'}`}>{existing.status}</span>
+          <div className="text-xs text-muted-foreground mt-1">{new Date(existing.created_at).toLocaleString("ja-JP")}</div>
+          <div className="text-xs whitespace-pre-wrap mt-1">{existing.reason}</div>
+        </Card>
+      )}
+      {(!existing || existing.status !== 'pending') && (
+        <Card className="p-4 space-y-2">
+          <label className="text-sm font-bold">申請理由</label>
+          <Textarea rows={4} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="どんな問題を作りたいか、教科や経験などを書いてください" />
+          <Button onClick={apply} disabled={loading}>申請を送信</Button>
+        </Card>
       )}
     </div>
   );

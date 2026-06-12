@@ -5,7 +5,8 @@ import { useAuth } from "@/lib/auth-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Coins, ShoppingBag, Gift, Check, Sparkles } from "lucide-react";
+import { Coins, ShoppingBag, Gift, Check, Sparkles, Search, Flame } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/shop")({ component: ShopPage });
@@ -22,7 +23,6 @@ const CATEGORIES: { key: string; label: string }[] = [
   { key: "boost", label: "ブースト" },
   { key: "scratch", label: "計算用紙" },
   { key: "emoji", label: "絵文字" },
-  { key: "privilege", label: "権限" },
 ];
 
 function ShopPage() {
@@ -31,21 +31,28 @@ function ShopPage() {
   const [owned, setOwned] = useState<Set<string>>(new Set());
   const [balance, setBalance] = useState(0);
   const [tab, setTab] = useState("all");
+  const [sort, setSort] = useState<"default" | "new" | "price_low" | "price_high" | "popular">("default");
+  const [query, setQuery] = useState("");
+  const [popMap, setPopMap] = useState<Record<string, number>>({});
   const [history, setHistory] = useState<any[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
 
   const load = async () => {
     if (!user) return;
-    const [{ data: it }, { data: inv }, { data: c }, { data: tx }] = await Promise.all([
+    const [{ data: it }, { data: inv }, { data: c }, { data: tx }, { data: pur }] = await Promise.all([
       (supabase as any).from("coin_shop_items").select("*").eq("is_active", true).order("sort_order"),
       (supabase as any).from("user_inventory").select("item_code").eq("user_id", user.id),
       supabase.from("user_coins").select("balance").eq("user_id", user.id).maybeSingle(),
       (supabase as any).from("coin_transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(30),
+      (supabase as any).from("coin_purchases").select("item_id"),
     ]);
     setItems(it ?? []);
     setOwned(new Set((inv ?? []).map((r: any) => r.item_code)));
     setBalance(c?.balance ?? 0);
     setHistory(tx ?? []);
+    const m: Record<string, number> = {};
+    (pur ?? []).forEach((p: any) => { m[p.item_id] = (m[p.item_id] ?? 0) + 1; });
+    setPopMap(m);
   };
   useEffect(() => { load(); }, [user?.id]);
 
@@ -73,7 +80,19 @@ function ShopPage() {
     toast.success("装備しました");
   };
 
-  const filtered = tab === "all" ? items : items.filter((i) => i.category === tab);
+  let filtered = tab === "all" ? items : items.filter((i) => i.category === tab);
+  if (query.trim()) {
+    const q = query.toLowerCase();
+    filtered = filtered.filter((i) => (i.name ?? "").toLowerCase().includes(q) || (i.description ?? "").toLowerCase().includes(q) || (i.code ?? "").toLowerCase().includes(q));
+  }
+  filtered = [...filtered].sort((a, b) => {
+    if (sort === "new") return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    if (sort === "price_low") return a.price - b.price;
+    if (sort === "price_high") return b.price - a.price;
+    if (sort === "popular") return (popMap[b.id] ?? 0) - (popMap[a.id] ?? 0);
+    return (a.sort_order ?? 0) - (b.sort_order ?? 0);
+  });
+  const isNew = (d: string) => Date.now() - new Date(d).getTime() < 7 * 86400 * 1000;
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">
@@ -84,6 +103,20 @@ function ShopPage() {
           <span className="font-bold text-lg tabular-nums">{balance}</span>
           <span className="text-xs text-muted-foreground">コイン</span>
         </Card>
+      </div>
+
+      <div className="flex gap-2 mb-3 flex-wrap items-center">
+        <div className="relative flex-1 min-w-[180px]">
+          <Search className="h-4 w-4 absolute left-2 top-2.5 text-muted-foreground" />
+          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="アイテムを検索…" className="pl-8" />
+        </div>
+        <div className="flex gap-1 flex-wrap">
+          {(["default","new","popular","price_low","price_high"] as const).map((s) => (
+            <Button key={s} size="sm" variant={sort === s ? "default" : "outline"} onClick={() => setSort(s)}>
+              {s === "default" ? "標準" : s === "new" ? "新着" : s === "popular" ? "人気" : s === "price_low" ? "安い順" : "高い順"}
+            </Button>
+          ))}
+        </div>
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
@@ -101,9 +134,11 @@ function ShopPage() {
                     <div className="flex items-center gap-2">
                       <Sparkles className="h-4 w-4 text-primary" />
                       <div className="font-bold flex-1">{it.name}</div>
+                      {isNew(it.created_at) && <span className="text-[9px] px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-600 flex items-center gap-0.5"><Flame className="h-3 w-3" />NEW</span>}
                       {isOwned && <span className="text-[10px] px-1.5 py-0.5 rounded bg-success/15 text-success flex items-center gap-1"><Check className="h-3 w-3" />所有済</span>}
                     </div>
                     {it.description && <div className="text-xs text-muted-foreground">{it.description}</div>}
+                    <div className="text-[10px] text-muted-foreground">追加日: {new Date(it.created_at).toLocaleDateString("ja-JP")} ・ 購入数 {popMap[it.id] ?? 0}</div>
                     <div className="flex items-center justify-between mt-auto pt-2">
                       <div className="flex items-center gap-1 text-amber-600 font-bold"><Coins className="h-4 w-4" />{it.price}</div>
                       <div className="flex gap-1">

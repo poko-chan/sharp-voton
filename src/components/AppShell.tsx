@@ -5,7 +5,7 @@ import {
   Megaphone, GraduationCap, Zap, Headphones, Menu, X, MoreHorizontal,
   StickyNote, Users, Ban, HelpCircle,
   CalendarClock, Stamp, Activity, Share2, ScanLine, Flame,
-  Swords, ShoppingBag,
+  ShoppingBag,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -50,7 +50,6 @@ const NAV = [
   { to: "/notes", labelKey: "nav.notes" as const, icon: StickyNote },
   { to: "/announcements", labelKey: "nav.announcements" as const, icon: Megaphone },
   { to: "/missions", labelKey: "nav.dashboard" as const, icon: Target, override: "ミッション" },
-  { to: "/battle", labelKey: "nav.dashboard" as const, icon: Swords, override: "バトル" },
   { to: "/makron", labelKey: "nav.dashboard" as const, icon: Target, override: "Makron" },
   { to: "/shop", labelKey: "nav.dashboard" as const, icon: ShoppingBag, override: "コインショップ" },
   { to: "/settings", labelKey: "nav.settings" as const, icon: Settings, override: "設定" },
