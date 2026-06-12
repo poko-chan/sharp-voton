@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string
+          details: Json | null
+          id: string
+          target_user: string | null
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_user?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_user?: string | null
+        }
+        Relationships: []
+      }
       admin_nav_config: {
         Row: {
           icon_url: string | null
@@ -111,6 +138,8 @@ export type Database = {
           maintenance_message: string | null
           maintenance_mode: boolean
           maintenance_until: string | null
+          makron_coin_per_correct: number
+          makron_xp_per_correct: number
           updated_at: string
         }
         Insert: {
@@ -119,6 +148,8 @@ export type Database = {
           maintenance_message?: string | null
           maintenance_mode?: boolean
           maintenance_until?: string | null
+          makron_coin_per_correct?: number
+          makron_xp_per_correct?: number
           updated_at?: string
         }
         Update: {
@@ -127,6 +158,8 @@ export type Database = {
           maintenance_message?: string | null
           maintenance_mode?: boolean
           maintenance_until?: string | null
+          makron_coin_per_correct?: number
+          makron_xp_per_correct?: number
           updated_at?: string
         }
         Relationships: []
@@ -455,6 +488,27 @@ export type Database = {
           name?: string
           owner_id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      coin_gift_limits: {
+        Row: {
+          date: string
+          gift_count: number
+          total_sent: number
+          user_id: string
+        }
+        Insert: {
+          date?: string
+          gift_count?: number
+          total_sent?: number
+          user_id: string
+        }
+        Update: {
+          date?: string
+          gift_count?: number
+          total_sent?: number
+          user_id?: string
         }
         Relationships: []
       }
@@ -1732,6 +1786,39 @@ export type Database = {
         }
         Relationships: []
       }
+      question_creator_applications: {
+        Row: {
+          created_at: string
+          duration_days: number
+          id: string
+          reason: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_days?: number
+          id?: string
+          reason: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_days?: number
+          id?: string
+          reason?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       questions: {
         Row: {
           answer: string
@@ -2594,18 +2681,24 @@ export type Database = {
       user_coins: {
         Row: {
           balance: number
+          daily_earned: number
+          daily_earned_date: string | null
           total_earned: number
           updated_at: string
           user_id: string
         }
         Insert: {
           balance?: number
+          daily_earned?: number
+          daily_earned_date?: string | null
           total_earned?: number
           updated_at?: string
           user_id: string
         }
         Update: {
           balance?: number
+          daily_earned?: number
+          daily_earned_date?: string | null
           total_earned?: number
           updated_at?: string
           user_id?: string
@@ -2788,6 +2881,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_grant_coins: {
+        Args: { _amount: number; _message: string; _user_id: string }
+        Returns: undefined
+      }
       admin_makron_analytics: {
         Args: never
         Returns: {
@@ -2804,6 +2901,10 @@ export type Database = {
         Args: { _answer_id: string; _note: string; _score: number }
         Returns: undefined
       }
+      admin_review_creator_application: {
+        Args: { _app_id: string; _approve: boolean; _days?: number }
+        Returns: undefined
+      }
       admin_set_user_coins: {
         Args: { _balance: number; _user_id: string }
         Returns: undefined
@@ -2817,6 +2918,10 @@ export type Database = {
       can_view_submission: {
         Args: { _assignment_id: string; _user_id: string }
         Returns: boolean
+      }
+      consume_inventory: {
+        Args: { _item_code: string; _qty?: number }
+        Returns: number
       }
       finalize_makron_session: {
         Args: { _session_id: string }
@@ -2886,6 +2991,10 @@ export type Database = {
       }
       join_class_by_code: { Args: { _code: string }; Returns: string }
       purchase_shop_item: { Args: { _item_id: string }; Returns: Json }
+      send_coin_gift: {
+        Args: { _amount: number; _message: string; _to: string }
+        Returns: Json
+      }
       share_study_summary: {
         Args: { _token: string }
         Returns: {
