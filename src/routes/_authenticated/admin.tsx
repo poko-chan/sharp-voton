@@ -99,7 +99,6 @@ const NAV_KEYS: Array<{ key: string; defaultLabel: string }> = [
   { key: "/announcements", defaultLabel: "お知らせ" },
   { key: "/missions", defaultLabel: "ミッション" },
   { key: "/leaderboard", defaultLabel: "ランキング" },
-  { key: "/battle", defaultLabel: "バトル" },
   { key: "/settings", defaultLabel: "設定" },
 ];
 
