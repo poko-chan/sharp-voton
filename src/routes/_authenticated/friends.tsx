@@ -198,14 +198,19 @@ function FriendsPage() {
           <DialogHeader><DialogTitle>{giftTarget?.display_name} にコインを贈る</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-xs">金額</label>
-              <Input type="number" min={1} max={1000} value={giftAmount} onChange={(e) => setGiftAmount(Math.max(1, Number(e.target.value) || 1))} />
+              <label className="text-xs">金額 (最低10コイン)</label>
+              <Input type="number" min={10} max={500} value={giftAmount} onChange={(e) => setGiftAmount(Math.max(10, Number(e.target.value) || 10))} />
+              <div className="text-[11px] text-amber-600 mt-1">
+                税 (10%): <b>{Math.ceil(giftAmount * 0.1)}</b> コイン ／ 相手が受け取る: <b>{giftAmount - Math.ceil(giftAmount * 0.1)}</b> コイン
+              </div>
             </div>
             <div>
               <label className="text-xs">メッセージ (任意)</label>
               <Input value={giftMsg} onChange={(e) => setGiftMsg(e.target.value)} placeholder="ありがとう！" />
             </div>
-            <div className="text-[11px] text-muted-foreground">※ 相互フォローのみ送付可能です</div>
+            <div className="text-[11px] text-muted-foreground">
+              ※ 相互フォローのみ送付可能 ／ 1日最大3回・合計500コインまで ／ アカウント作成から24h以降に解放
+            </div>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setGiftTarget(null)}>キャンセル</Button>
