@@ -195,7 +195,9 @@ function TodayPage() {
         <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-44 ml-auto" />
         <Button variant="outline" onClick={() => setSchoolOpen(true)}><School className="h-4 w-4 mr-1" />学校テンプレ</Button>
         <Button variant="outline" onClick={() => setActOpen(true)}><Sparkles className="h-4 w-4 mr-1" />習い事登録</Button>
-        <Button variant="outline" onClick={doReflect} disabled={reflecting}><Brain className="h-4 w-4 mr-1" />{reflecting ? "AI考え中..." : "AI振り返り"}</Button>
+        <Button variant="outline" onClick={doReflect} disabled={reflecting} title="今日の学習ログ・タイムラインを元に、AIが『今日できたこと/次の一手』を要約します">
+          <Brain className="h-4 w-4 mr-1" />{reflecting ? "AI考え中..." : "今日の振り返り (AI)"}
+        </Button>
         <Button onClick={() => setAddOpen(true)}><Plus className="h-4 w-4 mr-1" />追加</Button>
       </div>
 
