@@ -11,10 +11,14 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/_authenticated/missions")({ component: MissionsPage });
 
 // Templates come from DB (daily_mission_templates). Progress is computed live per category.
+// バトル/チャット/OCR系は廃止
+const HIDDEN_CATEGORIES = new Set(["battle", "ocr"]);
+const HIDDEN_CODES = new Set(["chat_send_1", "chat_send_10"]);
 const CATEGORY_LABELS: Record<string, string> = {
-  all: "すべて", study: "学習", makron: "Makron", battle: "バトル", social: "ソーシャル",
-  reflect: "ふりかえり", flash: "フラッシュ", focus: "集中", habit: "習慣", ocr: "OCR",
+  all: "すべて", study: "学習", makron: "Makron", social: "ソーシャル",
+  reflect: "ふりかえり", flash: "フラッシュ", focus: "集中", habit: "習慣",
   plan: "計画", goal: "目標", class: "クラス", meta: "ログイン", time: "時間帯",
+  streak: "ストリーク", coin: "コイン", night: "夜活", morning: "朝活",
 };
 
 function MissionsPage() {
