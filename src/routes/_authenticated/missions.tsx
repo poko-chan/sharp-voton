@@ -11,10 +11,14 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/_authenticated/missions")({ component: MissionsPage });
 
 // Templates come from DB (daily_mission_templates). Progress is computed live per category.
+// バトル/チャット/OCR系は廃止
+const HIDDEN_CATEGORIES = new Set(["battle", "ocr"]);
+const HIDDEN_CODES = new Set(["chat_send_1", "chat_send_10"]);
 const CATEGORY_LABELS: Record<string, string> = {
-  all: "すべて", study: "学習", makron: "Makron", battle: "バトル", social: "ソーシャル",
-  reflect: "ふりかえり", flash: "フラッシュ", focus: "集中", habit: "習慣", ocr: "OCR",
+  all: "すべて", study: "学習", makron: "Makron", social: "ソーシャル",
+  reflect: "ふりかえり", flash: "フラッシュ", focus: "集中", habit: "習慣",
   plan: "計画", goal: "目標", class: "クラス", meta: "ログイン", time: "時間帯",
+  streak: "ストリーク", coin: "コイン", night: "夜活", morning: "朝活",
 };
 
 function MissionsPage() {
@@ -61,7 +65,7 @@ function MissionsPage() {
       (supabase as any).from("daily_mission_templates").select("*").eq("is_active", true).order("sort_order"),
       supabase.from("daily_missions").select("kind").eq("user_id", user.id).eq("date", today).eq("completed", true),
     ]);
-    setTemplates(tpl ?? []);
+    setTemplates((tpl ?? []).filter((t: any) => !HIDDEN_CATEGORIES.has(t.category) && !HIDDEN_CODES.has(t.code)));
     setClaimed(new Set((claims ?? []).map((c: any) => c.kind)));
     setProgress(await computeProgress(user.id));
   };
@@ -90,7 +94,10 @@ function MissionsPage() {
   return (
     <div className="container mx-auto p-6 max-w-4xl">
       <h1 className="text-3xl font-bold mb-2 flex items-center gap-2"><Target /> デイリーミッション</h1>
-      <p className="text-sm text-muted-foreground mb-4">毎日0時にリセット。{templates.length}個のミッションから自由に挑戦！</p>
+      <p className="text-sm text-muted-foreground mb-4">
+        毎日0時にリセット。{templates.length}個のミッションから自由に挑戦！<br />
+        <span className="text-xs">※「学習計画」=「学習」ページで作る今日のToDo / 「ふりかえり」=「Today」画面で今日の学習を一言まとめる機能です。</span>
+      </p>
       <div className="flex gap-1 flex-wrap mb-4">
         <Filter className="h-4 w-4 self-center text-muted-foreground" />
         {cats.map((c) => (

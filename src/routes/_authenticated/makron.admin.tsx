@@ -34,6 +34,17 @@ function AdminPage() {
   const [userQuery, setUserQuery] = useState("");
   const [tempList, setTempList] = useState<any[]>([]);
   const [apps, setApps] = useState<any[]>([]);
+  // NOTE: ALL hooks must be declared BEFORE any early return to keep hook order
+  // stable across renders (React error #310 otherwise).
+  const [uTitle, setUTitle] = useState("");
+  const [uSubj, setUSubj] = useState("");
+  const [uField, setUField] = useState("");
+  const [uUnit, setUUnit] = useState("");
+  const [uDesc, setUDesc] = useState("");
+  const [draft, setDraft] = useState<any | null>(null);
+  const [gradeFor, setGradeFor] = useState<any | null>(null);
+  const [gradeScore, setGradeScore] = useState<number>(0);
+  const [gradeComment, setGradeComment] = useState("");
   const loadApps = async () => {
     const { data } = await (supabase as any).from("question_creator_applications")
       .select("*, profile:profiles!question_creator_applications_user_id_fkey(username, display_name)")
@@ -93,7 +104,6 @@ function AdminPage() {
   }
 
   // Create unit
-  const [uTitle, setUTitle] = useState(""); const [uSubj, setUSubj] = useState(""); const [uField, setUField] = useState(""); const [uUnit, setUUnit] = useState(""); const [uDesc, setUDesc] = useState("");
   const createUnit = async () => {
     if (!uTitle.trim()) return;
     const { error } = await (supabase as any).from("makron_units").insert({
@@ -118,7 +128,6 @@ function AdminPage() {
     options: ["", "", "", ""], correct_options: [], accepted_answers: [],
     model_answer: "", explanation: "", hint_text: "", is_active: true, points: 10, grading: "auto", order_idx: 100,
   });
-  const [draft, setDraft] = useState<any | null>(null);
 
   const uploadImage = async (file: File) => {
     const path = `admin/${Date.now()}-${file.name}`;
@@ -150,9 +159,6 @@ function AdminPage() {
   };
 
   // Manual grading
-  const [gradeFor, setGradeFor] = useState<any | null>(null);
-  const [gradeScore, setGradeScore] = useState<number>(0);
-  const [gradeComment, setGradeComment] = useState("");
   const loadSubmissionSession = async (sessionId: string) => {
     const { data } = await (supabase as any).from("makron_answers")
       .select("*, question:makron_questions(prompt, points, grading, model_answer)").eq("session_id", sessionId);
