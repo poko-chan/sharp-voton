@@ -9,6 +9,7 @@ export type UserPrefs = {
   sidebar_hidden: string[];
   act_as_admin: boolean;
   theme_color?: string;
+  font_family?: string;
   notif_settings?: Record<string, boolean>;
 };
 const DEFAULT: UserPrefs = {
@@ -19,6 +20,7 @@ const DEFAULT: UserPrefs = {
   sidebar_hidden: [],
   act_as_admin: false,
   theme_color: "#3B82F6",
+  font_family: "system",
   notif_settings: {},
 };
 
@@ -37,6 +39,7 @@ export function useUserPrefs() {
         sidebar_hidden: ((data as any).sidebar_hidden as string[]) ?? DEFAULT.sidebar_hidden,
         act_as_admin: !!(data as any).act_as_admin,
         theme_color: (data as any).theme_color ?? DEFAULT.theme_color,
+        font_family: (data as any).font_family ?? DEFAULT.font_family,
         notif_settings: ((data as any).notif_settings as any) ?? {},
       });
     })();
@@ -46,7 +49,8 @@ export function useUserPrefs() {
     document.documentElement.style.fontSize = `${prefs.font_scale * 16}px`;
     document.documentElement.classList.toggle("high-contrast", prefs.high_contrast);
     if (prefs.theme_color) document.documentElement.style.setProperty("--primary", prefs.theme_color);
-  }, [prefs.font_scale, prefs.high_contrast, prefs.theme_color]);
+    applyFontFamily(prefs.font_family);
+  }, [prefs.font_scale, prefs.high_contrast, prefs.theme_color, prefs.font_family]);
   const save = async (patch: Partial<UserPrefs>) => {
     const next = { ...prefs, ...patch };
     setPrefs(next);
