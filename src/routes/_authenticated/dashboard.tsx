@@ -522,6 +522,7 @@ function Dashboard() {
       )}
       <TodayBreakdownChart />
       <WeeklySubjectDiff />
+      <DashboardRanking />
     </div>
   );
 }
