@@ -94,7 +94,10 @@ function MissionsPage() {
   return (
     <div className="container mx-auto p-6 max-w-4xl">
       <h1 className="text-3xl font-bold mb-2 flex items-center gap-2"><Target /> デイリーミッション</h1>
-      <p className="text-sm text-muted-foreground mb-4">毎日0時にリセット。{templates.length}個のミッションから自由に挑戦！</p>
+      <p className="text-sm text-muted-foreground mb-4">
+        毎日0時にリセット。{templates.length}個のミッションから自由に挑戦！<br />
+        <span className="text-xs">※「学習計画」=「学習」ページで作る今日のToDo / 「ふりかえり」=「Today」画面で今日の学習を一言まとめる機能です。</span>
+      </p>
       <div className="flex gap-1 flex-wrap mb-4">
         <Filter className="h-4 w-4 self-center text-muted-foreground" />
         {cats.map((c) => (
