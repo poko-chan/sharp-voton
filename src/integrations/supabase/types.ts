@@ -2738,6 +2738,7 @@ export type Database = {
       user_prefs: {
         Row: {
           act_as_admin: boolean
+          font_family: string | null
           font_scale: number
           high_contrast: boolean
           notif_settings: Json | null
@@ -2750,6 +2751,7 @@ export type Database = {
         }
         Insert: {
           act_as_admin?: boolean
+          font_family?: string | null
           font_scale?: number
           high_contrast?: boolean
           notif_settings?: Json | null
@@ -2762,6 +2764,7 @@ export type Database = {
         }
         Update: {
           act_as_admin?: boolean
+          font_family?: string | null
           font_scale?: number
           high_contrast?: boolean
           notif_settings?: Json | null
