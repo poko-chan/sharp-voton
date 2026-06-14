@@ -85,7 +85,7 @@ export function useUserPrefs() {
     setPrefs(next);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    await supabase.from("user_prefs").upsert({ user_id: user.id, ...next });
+    await (supabase as any).from("user_prefs").upsert({ user_id: user.id, ...next });
   };
   return { prefs, save };
 }
