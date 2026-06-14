@@ -275,8 +275,7 @@ function Dashboard() {
           <p className="text-muted-foreground">学習の積み重ねを見える化</p>
         </div>
       </div>
-      <DashboardRanking />
-      <div className="flex items-start justify-between gap-3 -mt-2">
+      <div className="flex items-start justify-between gap-3">
         <div className="hidden" />
         <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" onClick={() => window.print()} className="no-print">
