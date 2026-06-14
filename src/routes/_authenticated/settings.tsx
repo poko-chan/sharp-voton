@@ -21,7 +21,7 @@ import { useI18n } from "@/lib/i18n";
 import { AccessibilityPanel } from "@/components/AccessibilityPanel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { THEMES, saveUserTheme, type ThemeName } from "@/lib/theme";
-import { useUserPrefs } from "@/lib/user-prefs";
+import { useUserPrefs, FONT_OPTIONS } from "@/lib/user-prefs";
 
 function UserSettingsPage() {
   const { user } = useAuth();
@@ -256,6 +256,20 @@ function CustomizationPanel() {
   return (
     <Card className="p-6 space-y-4">
       <div className="font-semibold">画面カスタマイズ</div>
+      <div className="space-y-2">
+        <Label>フォント（Google Fonts）</Label>
+        <Select value={prefs.font_family ?? "system"} onValueChange={(v) => save({ font_family: v })}>
+          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {FONT_OPTIONS.map((f) => (
+              <SelectItem key={f.value} value={f.value}>
+                <span style={{ fontFamily: f.css }}>{f.label}（あア亜Aa）</span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-[11px] text-muted-foreground">アプリ全体のフォントを変更します。選択時に Google Fonts から動的に読み込みます。</p>
+      </div>
       <div className="space-y-2">
         <Label>テーマカラー</Label>
         <div className="flex items-center gap-3">
