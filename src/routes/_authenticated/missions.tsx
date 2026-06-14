@@ -65,7 +65,7 @@ function MissionsPage() {
       (supabase as any).from("daily_mission_templates").select("*").eq("is_active", true).order("sort_order"),
       supabase.from("daily_missions").select("kind").eq("user_id", user.id).eq("date", today).eq("completed", true),
     ]);
-    setTemplates(tpl ?? []);
+    setTemplates((tpl ?? []).filter((t: any) => !HIDDEN_CATEGORIES.has(t.category) && !HIDDEN_CODES.has(t.code)));
     setClaimed(new Set((claims ?? []).map((c: any) => c.kind)));
     setProgress(await computeProgress(user.id));
   };
