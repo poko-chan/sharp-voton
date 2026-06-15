@@ -352,8 +352,6 @@ function AdminPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="grading" className="space-y-3">
-          </TabsContent>
           {isAdmin && (
           <TabsContent value="approve" className="space-y-3">
             {pendingQs.length === 0 && <Card className="p-6 text-center text-muted-foreground text-sm">承認待ちの問題はありません</Card>}
@@ -379,12 +377,12 @@ function AdminPage() {
                   <Button size="sm" onClick={async () => {
                     const { error } = await (supabase as any).rpc("admin_review_question", { _question_id: q.id, _approve: true });
                     if (error) return toast.error(error.message);
-                    toast.success("公式承認しました"); loadPendingQs(); if (selUnit === q.unit_id) loadQuestions(selUnit);
+                    toast.success("公式承認しました"); loadPendingQs(); if (selUnit && selUnit === q.unit_id) loadQuestions(selUnit);
                   }}><Check className="h-3 w-3 mr-1" />承認</Button>
                   <Button size="sm" variant="outline" onClick={async () => {
                     const { error } = await (supabase as any).rpc("admin_review_question", { _question_id: q.id, _approve: false });
                     if (error) return toast.error(error.message);
-                    toast.success("却下しました"); loadPendingQs(); if (selUnit === q.unit_id) loadQuestions(selUnit);
+                    toast.success("却下しました"); loadPendingQs(); if (selUnit && selUnit === q.unit_id) loadQuestions(selUnit);
                   }}><X className="h-3 w-3 mr-1" />却下</Button>
                 </div>
               </Card>
@@ -392,7 +390,7 @@ function AdminPage() {
           </TabsContent>
           )}
 
-          <TabsContent value="grading_disabled_marker" className="space-y-3">
+          <TabsContent value="grading" className="space-y-3">
             {pending.length === 0 && <Card className="p-6 text-center text-muted-foreground text-sm">採点待ちはありません</Card>}
             {pending.map((p) => (
               <Card key={p.id} className="p-3 flex items-center gap-3">
