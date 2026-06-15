@@ -353,6 +353,46 @@ function AdminPage() {
           </TabsContent>
 
           <TabsContent value="grading" className="space-y-3">
+          </TabsContent>
+          {isAdmin && (
+          <TabsContent value="approve" className="space-y-3">
+            {pendingQs.length === 0 && <Card className="p-6 text-center text-muted-foreground text-sm">承認待ちの問題はありません</Card>}
+            {pendingQs.map((q: any) => (
+              <Card key={q.id} className="p-3 space-y-2">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600">申請中</span>
+                  <span className="text-muted-foreground">単元: {q.unit?.title}</span>
+                  <span className="text-muted-foreground">作成者: {q.profile?.display_name ?? q.profile?.username ?? q.created_by?.slice(0,8)}</span>
+                  <span className="text-muted-foreground ml-auto">{q.submitted_at ? new Date(q.submitted_at).toLocaleString("ja-JP") : ""}</span>
+                </div>
+                <div className="text-sm whitespace-pre-wrap">{q.prompt}</div>
+                {q.image_url && <img src={q.image_url} alt="" className="max-h-32 border rounded" />}
+                {(q.options ?? []).length > 0 && (
+                  <ul className="text-xs pl-4 list-disc">
+                    {q.options.map((o: string, i: number) => (
+                      <li key={i} className={q.correct_options?.includes(o) ? "text-success font-bold" : ""}>{o}{q.correct_options?.includes(o) && " ✓"}</li>
+                    ))}
+                  </ul>
+                )}
+                {q.explanation && <div className="text-xs text-muted-foreground">解説: {q.explanation}</div>}
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={async () => {
+                    const { error } = await (supabase as any).rpc("admin_review_question", { _question_id: q.id, _approve: true });
+                    if (error) return toast.error(error.message);
+                    toast.success("公式承認しました"); loadPendingQs(); if (selUnit === q.unit_id) loadQuestions(selUnit);
+                  }}><Check className="h-3 w-3 mr-1" />承認</Button>
+                  <Button size="sm" variant="outline" onClick={async () => {
+                    const { error } = await (supabase as any).rpc("admin_review_question", { _question_id: q.id, _approve: false });
+                    if (error) return toast.error(error.message);
+                    toast.success("却下しました"); loadPendingQs(); if (selUnit === q.unit_id) loadQuestions(selUnit);
+                  }}><X className="h-3 w-3 mr-1" />却下</Button>
+                </div>
+              </Card>
+            ))}
+          </TabsContent>
+          )}
+
+          <TabsContent value="grading_disabled_marker" className="space-y-3">
             {pending.length === 0 && <Card className="p-6 text-center text-muted-foreground text-sm">採点待ちはありません</Card>}
             {pending.map((p) => (
               <Card key={p.id} className="p-3 flex items-center gap-3">
