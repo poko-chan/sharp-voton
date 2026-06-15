@@ -34,6 +34,8 @@ function AdminPage() {
   const [userQuery, setUserQuery] = useState("");
   const [tempList, setTempList] = useState<any[]>([]);
   const [apps, setApps] = useState<any[]>([]);
+  const [pendingQs, setPendingQs] = useState<any[]>([]);
+  const [showPendingInList, setShowPendingInList] = useState(true);
   // NOTE: ALL hooks must be declared BEFORE any early return to keep hook order
   // stable across renders (React error #310 otherwise).
   const [uTitle, setUTitle] = useState("");
@@ -60,6 +62,12 @@ function AdminPage() {
     const { data } = await (supabase as any).from("makron_questions").select("*").eq("unit_id", unitId).order("order_idx").order("created_at");
     setQuestions(data ?? []);
   };
+  const loadPendingQs = async () => {
+    const { data } = await (supabase as any).from("makron_questions")
+      .select("*, unit:makron_units(title, subject, field, unit), profile:profiles!makron_questions_created_by_fkey(username, display_name)")
+      .eq("status", "pending").order("submitted_at", { ascending: false });
+    setPendingQs(data ?? []);
+  };
   const loadPending = async () => {
     const { data } = await (supabase as any).from("makron_answers")
       .select("*, question:makron_questions(prompt, points, grading), session:makron_sessions(user_id, started_at)")
@@ -72,7 +80,7 @@ function AdminPage() {
     setReports(data ?? []);
   };
 
-  useEffect(() => { loadUnits(); loadPending(); loadReports(); }, []);
+  useEffect(() => { loadUnits(); loadPending(); loadReports(); loadPendingQs(); }, []);
   useEffect(() => { if (selUnit) loadQuestions(selUnit); }, [selUnit]);
   useEffect(() => {
     if (!user) return;
@@ -103,8 +111,9 @@ function AdminPage() {
     );
   }
 
-  // Create unit
+  // Create unit (admin only)
   const createUnit = async () => {
+    if (!isAdmin) return toast.error("単元の作成は管理者のみ可能です");
     if (!uTitle.trim()) return;
     const { error } = await (supabase as any).from("makron_units").insert({
       title: uTitle, subject: uSubj || null, field: uField || null, unit: uUnit || null,
@@ -115,6 +124,7 @@ function AdminPage() {
     toast.success("単元を作成しました"); loadUnits();
   };
   const deleteUnit = async (id: string) => {
+    if (!isAdmin) return toast.error("単元の削除は管理者のみ可能です");
     if (!confirm("この単元と中の問題をすべて削除しますか？")) return;
     const { error } = await (supabase as any).from("makron_units").delete().eq("id", id);
     if (error) return toast.error(error.message);
@@ -139,7 +149,7 @@ function AdminPage() {
 
   const saveQuestion = async () => {
     if (!draft || !draft.prompt.trim()) return toast.error("問題文を入力してください");
-    const { id, created_at, updated_at, ...rest } = draft;
+    const { id, created_at, updated_at, status, created_by, submitted_at, reviewed_at, reviewed_by, unit, profile, ...rest } = draft;
     const payload = {
       ...rest,
       options: (rest.options ?? []).filter((o: string) => o && o.trim()),
@@ -150,7 +160,8 @@ function AdminPage() {
       ? await (supabase as any).from("makron_questions").update(payload).eq("id", id)
       : await (supabase as any).from("makron_questions").insert(payload);
     if (error) return toast.error(error.message);
-    setDraft(null); loadQuestions(selUnit!); toast.success("保存しました");
+    setDraft(null); loadQuestions(selUnit!); loadPendingQs();
+    toast.success(isAdmin ? "保存しました（公式）" : "申請しました。管理者の承認をお待ちください");
   };
   const delQuestion = async (id: string) => {
     if (!confirm("削除しますか？")) return;
