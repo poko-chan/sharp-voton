@@ -131,6 +131,33 @@ export type Database = {
         }
         Relationships: []
       }
+      anonymous_reflections: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          likes_count: number
+          mood: string | null
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          likes_count?: number
+          mood?: string | null
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          likes_count?: number
+          mood?: string | null
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           app_version: string
@@ -226,6 +253,36 @@ export type Database = {
           },
         ]
       }
+      badges: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          rarity: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          rarity?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          rarity?: string | null
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           content: string
@@ -286,6 +343,36 @@ export type Database = {
           edited_at?: string | null
           id?: string
           sender_id?: string
+        }
+        Relationships: []
+      }
+      class_events: {
+        Row: {
+          class_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          event_date: string
+          id: string
+          title: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          event_date: string
+          id?: string
+          title: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          event_date?: string
+          id?: string
+          title?: string
         }
         Relationships: []
       }
@@ -356,6 +443,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      class_mini_test_attempts: {
+        Row: {
+          created_at: string
+          finished_at: string | null
+          id: string
+          score: number | null
+          test_id: string
+          total: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          score?: number | null
+          test_id: string
+          total?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          score?: number | null
+          test_id?: string
+          total?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      class_mini_tests: {
+        Row: {
+          class_id: string
+          created_at: string
+          created_by: string
+          id: string
+          question_ids: string[]
+          title: string
+          unit_id: string | null
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          question_ids?: string[]
+          title: string
+          unit_id?: string | null
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          question_ids?: string[]
+          title?: string
+          unit_id?: string | null
+        }
+        Relationships: []
       }
       class_post_comments: {
         Row: {
@@ -689,6 +836,7 @@ export type Database = {
           date: string
           id: string
           kind: string
+          pinned: boolean
           progress: number
           reward_coins: number
           target_value: number
@@ -700,6 +848,7 @@ export type Database = {
           date?: string
           id?: string
           kind: string
+          pinned?: boolean
           progress?: number
           reward_coins?: number
           target_value?: number
@@ -711,6 +860,7 @@ export type Database = {
           date?: string
           id?: string
           kind?: string
+          pinned?: boolean
           progress?: number
           reward_coins?: number
           target_value?: number
@@ -739,6 +889,81 @@ export type Database = {
           id?: string
           summary?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      daily_summary_subscriptions: {
+        Row: {
+          channel: string
+          enabled: boolean
+          send_hour: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel?: string
+          enabled?: boolean
+          send_hour?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          enabled?: boolean
+          send_hour?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_three: {
+        Row: {
+          created_at: string
+          for_date: string
+          id: string
+          question_id: string
+          slot: number
+        }
+        Insert: {
+          created_at?: string
+          for_date: string
+          id?: string
+          question_id: string
+          slot: number
+        }
+        Update: {
+          created_at?: string
+          for_date?: string
+          id?: string
+          question_id?: string
+          slot?: number
+        }
+        Relationships: []
+      }
+      difficulty_adjustments: {
+        Row: {
+          admin_id: string
+          created_at: string
+          difficulty_score: number
+          id: string
+          note: string | null
+          question_id: string
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string
+          difficulty_score: number
+          id?: string
+          note?: string | null
+          question_id: string
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string
+          difficulty_score?: number
+          id?: string
+          note?: string | null
+          question_id?: string
         }
         Relationships: []
       }
@@ -1566,6 +1791,54 @@ export type Database = {
         }
         Relationships: []
       }
+      notebook_photos: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          subject_id: string | null
+          taken_on: string | null
+          title: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          subject_id?: string | null
+          taken_on?: string | null
+          title?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          subject_id?: string | null
+          taken_on?: string | null
+          title?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notification_categories: {
+        Row: {
+          prefs: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          prefs?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          prefs?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
@@ -1641,6 +1914,66 @@ export type Database = {
           created_at?: string
           id?: string
           parent_id?: string
+        }
+        Relationships: []
+      }
+      parent_invite_codes: {
+        Row: {
+          child_id: string
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          child_id: string
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          child_id?: string
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
+      plan_template_marketplace: {
+        Row: {
+          author_id: string
+          created_at: string
+          description: string | null
+          downloads: number
+          id: string
+          payload: Json
+          title: string
+        }
+        Insert: {
+          author_id: string
+          created_at?: string
+          description?: string | null
+          downloads?: number
+          id?: string
+          payload?: Json
+          title: string
+        }
+        Update: {
+          author_id?: string
+          created_at?: string
+          description?: string | null
+          downloads?: number
+          id?: string
+          payload?: Json
+          title?: string
         }
         Relationships: []
       }
@@ -1906,6 +2239,27 @@ export type Database = {
         }
         Relationships: []
       }
+      rivals: {
+        Row: {
+          created_at: string
+          id: string
+          rival_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          rival_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          rival_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       school_timetable: {
         Row: {
           created_at: string
@@ -1939,6 +2293,36 @@ export type Database = {
           subject_id?: string | null
           user_id?: string
           weekday?: number
+        }
+        Relationships: []
+      }
+      school_timetable_templates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_public: boolean
+          name: string
+          payload: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          name: string
+          payload?: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          name?: string
+          payload?: Json
         }
         Relationships: []
       }
@@ -2014,6 +2398,42 @@ export type Database = {
         }
         Relationships: []
       }
+      srs_reviews: {
+        Row: {
+          created_at: string
+          ease: number
+          flashcard_id: string
+          id: string
+          interval_days: number
+          last_rating: number | null
+          next_review_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          ease?: number
+          flashcard_id: string
+          id?: string
+          interval_days?: number
+          last_rating?: number | null
+          next_review_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          ease?: number
+          flashcard_id?: string
+          id?: string
+          interval_days?: number
+          last_rating?: number | null
+          next_review_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       sticky_notes: {
         Row: {
           color: string
@@ -2064,6 +2484,27 @@ export type Database = {
           date?: string
           id?: string
           used_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      streak_insurance_uses: {
+        Row: {
+          created_at: string
+          id: string
+          used_for_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          used_for_date: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          used_for_date?: string
           user_id?: string
         }
         Relationships: []
@@ -2155,6 +2596,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      study_room_sessions: {
+        Row: {
+          duration_minutes: number | null
+          ended_at: string | null
+          id: string
+          room_id: string
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          room_id: string
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          room_id?: string
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       subjects: {
         Row: {
@@ -2253,6 +2721,36 @@ export type Database = {
           expires_at?: string
           granted_by?: string | null
           id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      test_countdowns: {
+        Row: {
+          created_at: string
+          id: string
+          plan_text: string | null
+          subject: string | null
+          test_date: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          plan_text?: string | null
+          subject?: string | null
+          test_date: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          plan_text?: string | null
+          subject?: string | null
+          test_date?: string
+          title?: string
           user_id?: string
         }
         Relationships: []
@@ -2657,6 +3155,54 @@ export type Database = {
         }
         Relationships: []
       }
+      unit_roadmap: {
+        Row: {
+          created_at: string
+          id: string
+          parent_unit_id: string | null
+          sort_order: number
+          unit_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          parent_unit_id?: string | null
+          sort_order?: number
+          unit_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          parent_unit_id?: string | null
+          sort_order?: number
+          unit_id?: string
+        }
+        Relationships: []
+      }
+      user_badge_progress: {
+        Row: {
+          badge_code: string
+          id: string
+          progress: number
+          unlocked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          badge_code: string
+          id?: string
+          progress?: number
+          unlocked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          badge_code?: string
+          id?: string
+          progress?: number
+          unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_code: string
@@ -2879,9 +3425,42 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_parent_reports: {
+        Row: {
+          child_id: string
+          created_at: string
+          id: string
+          summary: Json
+          week_start: string
+        }
+        Insert: {
+          child_id: string
+          created_at?: string
+          id?: string
+          summary?: Json
+          week_start: string
+        }
+        Update: {
+          child_id?: string
+          created_at?: string
+          id?: string
+          summary?: Json
+          week_start?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      weekly_coin_leaderboard: {
+        Row: {
+          avatar_url: string | null
+          coins_earned: number | null
+          display_name: string | null
+          user_id: string | null
+          week_start: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       admin_grant_coins: {
