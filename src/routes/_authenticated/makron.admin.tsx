@@ -186,9 +186,10 @@ function AdminPage() {
   return (
     <MakronShell back="/makron" title="管理者画面">
       <div className="max-w-6xl mx-auto p-6">
-        <Tabs defaultValue="units" onValueChange={(v) => { if (v === "analytics") loadAnalytics(); if (v === "users") loadUsersAndTemp(); if (v === "apps") loadApps(); }}>
+        <Tabs defaultValue="units" onValueChange={(v) => { if (v === "analytics") loadAnalytics(); if (v === "users") loadUsersAndTemp(); if (v === "apps") loadApps(); if (v === "approve") loadPendingQs(); }}>
           <TabsList>
             <TabsTrigger value="units">単元・問題</TabsTrigger>
+            {isAdmin && <TabsTrigger value="approve">問題承認 ({pendingQs.length})</TabsTrigger>}
             <TabsTrigger value="grading">手動採点 ({pending.length})</TabsTrigger>
             <TabsTrigger value="reports">報告 ({reports.filter(r => r.status === "open").length})</TabsTrigger>
             {isAdmin && <TabsTrigger value="users"><UserCog className="h-3 w-3 mr-1" />ユーザー</TabsTrigger>}
@@ -198,17 +199,24 @@ function AdminPage() {
 
           <TabsContent value="units" className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
-              <Card className="p-4 space-y-2">
-                <div className="font-bold flex items-center gap-1"><Plus className="h-4 w-4" />新しい単元</div>
-                <Input placeholder="タイトル" value={uTitle} onChange={(e) => setUTitle(e.target.value)} />
-                <div className="grid grid-cols-3 gap-1">
-                  <Input placeholder="教科" value={uSubj} onChange={(e) => setUSubj(e.target.value)} />
-                  <Input placeholder="分野" value={uField} onChange={(e) => setUField(e.target.value)} />
-                  <Input placeholder="ユニット" value={uUnit} onChange={(e) => setUUnit(e.target.value)} />
-                </div>
-                <Textarea rows={2} placeholder="説明（任意）" value={uDesc} onChange={(e) => setUDesc(e.target.value)} />
-                <Button onClick={createUnit} className="w-full">作成</Button>
-              </Card>
+              {isAdmin ? (
+                <Card className="p-4 space-y-2">
+                  <div className="font-bold flex items-center gap-1"><Plus className="h-4 w-4" />新しい単元 <span className="text-[10px] text-muted-foreground">(管理者のみ)</span></div>
+                  <Input placeholder="タイトル" value={uTitle} onChange={(e) => setUTitle(e.target.value)} />
+                  <div className="grid grid-cols-3 gap-1">
+                    <Input placeholder="教科" value={uSubj} onChange={(e) => setUSubj(e.target.value)} />
+                    <Input placeholder="分野" value={uField} onChange={(e) => setUField(e.target.value)} />
+                    <Input placeholder="ユニット" value={uUnit} onChange={(e) => setUUnit(e.target.value)} />
+                  </div>
+                  <Textarea rows={2} placeholder="説明（任意）" value={uDesc} onChange={(e) => setUDesc(e.target.value)} />
+                  <Button onClick={createUnit} className="w-full">作成</Button>
+                </Card>
+              ) : (
+                <Card className="p-4 text-sm text-muted-foreground bg-muted/30">
+                  <div className="font-bold text-foreground mb-1">単元の追加・編集は管理者のみ</div>
+                  作成したい単元が無い場合は管理者へリクエストしてください。問題は既存の単元を選んで作成 → 管理者の承認で公式になります。
+                </Card>
+              )}
               <Card className="p-4 space-y-2 max-h-96 overflow-auto">
                 <div className="font-bold">単元一覧</div>
                 {units.map((u) => (
@@ -217,7 +225,7 @@ function AdminPage() {
                       <div className="font-medium truncate flex items-center gap-1">{u.title} <ChevronRight className="h-3 w-3" /></div>
                       <div className="text-[10px] text-muted-foreground">{[u.subject, u.field, u.unit].filter(Boolean).join(" / ")}</div>
                     </button>
-                    <Button size="sm" variant="ghost" onClick={() => deleteUnit(u.id)} className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                    {isAdmin && <Button size="sm" variant="ghost" onClick={() => deleteUnit(u.id)} className="text-destructive"><Trash2 className="h-4 w-4" /></Button>}
                   </div>
                 ))}
                 {units.length === 0 && <div className="text-xs text-muted-foreground">まだ単元がありません</div>}
@@ -235,6 +243,9 @@ function AdminPage() {
                     <div key={q.id} className={`flex items-center gap-1 border rounded p-2 text-sm ${q.is_active === false ? "opacity-50 line-through" : ""}`}>
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">{q.type}</span>
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10">{q.points}点</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${q.status === 'approved' ? 'bg-success/15 text-success' : q.status === 'rejected' ? 'bg-destructive/15 text-destructive' : 'bg-amber-500/15 text-amber-600'}`}>
+                        {q.status === 'approved' ? '公式' : q.status === 'rejected' ? '却下' : '申請中'}
+                      </span>
                       <span className="flex-1 min-w-0 truncate">{q.prompt}</span>
                       <Button size="sm" variant="ghost" title={q.is_active === false ? "有効化" : "停止"} onClick={async () => {
                         await (supabase as any).from("makron_questions").update({ is_active: q.is_active === false }).eq("id", q.id);
