@@ -1577,6 +1577,7 @@ export type Database = {
           accepted_answers: Json
           correct_options: Json
           created_at: string
+          created_by: string | null
           explanation: string | null
           grading: string
           hint_text: string | null
@@ -1588,6 +1589,10 @@ export type Database = {
           order_idx: number
           points: number
           prompt: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_at: string | null
           type: string
           unit_id: string
           updated_at: string
@@ -1596,6 +1601,7 @@ export type Database = {
           accepted_answers?: Json
           correct_options?: Json
           created_at?: string
+          created_by?: string | null
           explanation?: string | null
           grading?: string
           hint_text?: string | null
@@ -1607,6 +1613,10 @@ export type Database = {
           order_idx?: number
           points?: number
           prompt: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string | null
           type: string
           unit_id: string
           updated_at?: string
@@ -1615,6 +1625,7 @@ export type Database = {
           accepted_answers?: Json
           correct_options?: Json
           created_at?: string
+          created_by?: string | null
           explanation?: string | null
           grading?: string
           hint_text?: string | null
@@ -1626,6 +1637,10 @@ export type Database = {
           order_idx?: number
           points?: number
           prompt?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string | null
           type?: string
           unit_id?: string
           updated_at?: string
@@ -3485,6 +3500,10 @@ export type Database = {
       }
       admin_review_creator_application: {
         Args: { _app_id: string; _approve: boolean; _days?: number }
+        Returns: undefined
+      }
+      admin_review_question: {
+        Args: { _approve: boolean; _question_id: string }
         Returns: undefined
       }
       admin_set_user_coins: {

@@ -34,6 +34,8 @@ function AdminPage() {
   const [userQuery, setUserQuery] = useState("");
   const [tempList, setTempList] = useState<any[]>([]);
   const [apps, setApps] = useState<any[]>([]);
+  const [pendingQs, setPendingQs] = useState<any[]>([]);
+  const [showPendingInList, setShowPendingInList] = useState(true);
   // NOTE: ALL hooks must be declared BEFORE any early return to keep hook order
   // stable across renders (React error #310 otherwise).
   const [uTitle, setUTitle] = useState("");
@@ -60,6 +62,12 @@ function AdminPage() {
     const { data } = await (supabase as any).from("makron_questions").select("*").eq("unit_id", unitId).order("order_idx").order("created_at");
     setQuestions(data ?? []);
   };
+  const loadPendingQs = async () => {
+    const { data } = await (supabase as any).from("makron_questions")
+      .select("*, unit:makron_units(title, subject, field, unit), profile:profiles!makron_questions_created_by_fkey(username, display_name)")
+      .eq("status", "pending").order("submitted_at", { ascending: false });
+    setPendingQs(data ?? []);
+  };
   const loadPending = async () => {
     const { data } = await (supabase as any).from("makron_answers")
       .select("*, question:makron_questions(prompt, points, grading), session:makron_sessions(user_id, started_at)")
@@ -72,7 +80,7 @@ function AdminPage() {
     setReports(data ?? []);
   };
 
-  useEffect(() => { loadUnits(); loadPending(); loadReports(); }, []);
+  useEffect(() => { loadUnits(); loadPending(); loadReports(); loadPendingQs(); }, []);
   useEffect(() => { if (selUnit) loadQuestions(selUnit); }, [selUnit]);
   useEffect(() => {
     if (!user) return;
@@ -103,8 +111,9 @@ function AdminPage() {
     );
   }
 
-  // Create unit
+  // Create unit (admin only)
   const createUnit = async () => {
+    if (!isAdmin) return toast.error("単元の作成は管理者のみ可能です");
     if (!uTitle.trim()) return;
     const { error } = await (supabase as any).from("makron_units").insert({
       title: uTitle, subject: uSubj || null, field: uField || null, unit: uUnit || null,
@@ -115,6 +124,7 @@ function AdminPage() {
     toast.success("単元を作成しました"); loadUnits();
   };
   const deleteUnit = async (id: string) => {
+    if (!isAdmin) return toast.error("単元の削除は管理者のみ可能です");
     if (!confirm("この単元と中の問題をすべて削除しますか？")) return;
     const { error } = await (supabase as any).from("makron_units").delete().eq("id", id);
     if (error) return toast.error(error.message);
@@ -139,7 +149,7 @@ function AdminPage() {
 
   const saveQuestion = async () => {
     if (!draft || !draft.prompt.trim()) return toast.error("問題文を入力してください");
-    const { id, created_at, updated_at, ...rest } = draft;
+    const { id, created_at, updated_at, status, created_by, submitted_at, reviewed_at, reviewed_by, unit, profile, ...rest } = draft;
     const payload = {
       ...rest,
       options: (rest.options ?? []).filter((o: string) => o && o.trim()),
@@ -150,7 +160,8 @@ function AdminPage() {
       ? await (supabase as any).from("makron_questions").update(payload).eq("id", id)
       : await (supabase as any).from("makron_questions").insert(payload);
     if (error) return toast.error(error.message);
-    setDraft(null); loadQuestions(selUnit!); toast.success("保存しました");
+    setDraft(null); loadQuestions(selUnit!); loadPendingQs();
+    toast.success(isAdmin ? "保存しました（公式）" : "申請しました。管理者の承認をお待ちください");
   };
   const delQuestion = async (id: string) => {
     if (!confirm("削除しますか？")) return;
@@ -175,9 +186,10 @@ function AdminPage() {
   return (
     <MakronShell back="/makron" title="管理者画面">
       <div className="max-w-6xl mx-auto p-6">
-        <Tabs defaultValue="units" onValueChange={(v) => { if (v === "analytics") loadAnalytics(); if (v === "users") loadUsersAndTemp(); if (v === "apps") loadApps(); }}>
+        <Tabs defaultValue="units" onValueChange={(v) => { if (v === "analytics") loadAnalytics(); if (v === "users") loadUsersAndTemp(); if (v === "apps") loadApps(); if (v === "approve") loadPendingQs(); }}>
           <TabsList>
             <TabsTrigger value="units">単元・問題</TabsTrigger>
+            {isAdmin && <TabsTrigger value="approve">問題承認 ({pendingQs.length})</TabsTrigger>}
             <TabsTrigger value="grading">手動採点 ({pending.length})</TabsTrigger>
             <TabsTrigger value="reports">報告 ({reports.filter(r => r.status === "open").length})</TabsTrigger>
             {isAdmin && <TabsTrigger value="users"><UserCog className="h-3 w-3 mr-1" />ユーザー</TabsTrigger>}
@@ -187,17 +199,24 @@ function AdminPage() {
 
           <TabsContent value="units" className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
-              <Card className="p-4 space-y-2">
-                <div className="font-bold flex items-center gap-1"><Plus className="h-4 w-4" />新しい単元</div>
-                <Input placeholder="タイトル" value={uTitle} onChange={(e) => setUTitle(e.target.value)} />
-                <div className="grid grid-cols-3 gap-1">
-                  <Input placeholder="教科" value={uSubj} onChange={(e) => setUSubj(e.target.value)} />
-                  <Input placeholder="分野" value={uField} onChange={(e) => setUField(e.target.value)} />
-                  <Input placeholder="ユニット" value={uUnit} onChange={(e) => setUUnit(e.target.value)} />
-                </div>
-                <Textarea rows={2} placeholder="説明（任意）" value={uDesc} onChange={(e) => setUDesc(e.target.value)} />
-                <Button onClick={createUnit} className="w-full">作成</Button>
-              </Card>
+              {isAdmin ? (
+                <Card className="p-4 space-y-2">
+                  <div className="font-bold flex items-center gap-1"><Plus className="h-4 w-4" />新しい単元 <span className="text-[10px] text-muted-foreground">(管理者のみ)</span></div>
+                  <Input placeholder="タイトル" value={uTitle} onChange={(e) => setUTitle(e.target.value)} />
+                  <div className="grid grid-cols-3 gap-1">
+                    <Input placeholder="教科" value={uSubj} onChange={(e) => setUSubj(e.target.value)} />
+                    <Input placeholder="分野" value={uField} onChange={(e) => setUField(e.target.value)} />
+                    <Input placeholder="ユニット" value={uUnit} onChange={(e) => setUUnit(e.target.value)} />
+                  </div>
+                  <Textarea rows={2} placeholder="説明（任意）" value={uDesc} onChange={(e) => setUDesc(e.target.value)} />
+                  <Button onClick={createUnit} className="w-full">作成</Button>
+                </Card>
+              ) : (
+                <Card className="p-4 text-sm text-muted-foreground bg-muted/30">
+                  <div className="font-bold text-foreground mb-1">単元の追加・編集は管理者のみ</div>
+                  作成したい単元が無い場合は管理者へリクエストしてください。問題は既存の単元を選んで作成 → 管理者の承認で公式になります。
+                </Card>
+              )}
               <Card className="p-4 space-y-2 max-h-96 overflow-auto">
                 <div className="font-bold">単元一覧</div>
                 {units.map((u) => (
@@ -206,7 +225,7 @@ function AdminPage() {
                       <div className="font-medium truncate flex items-center gap-1">{u.title} <ChevronRight className="h-3 w-3" /></div>
                       <div className="text-[10px] text-muted-foreground">{[u.subject, u.field, u.unit].filter(Boolean).join(" / ")}</div>
                     </button>
-                    <Button size="sm" variant="ghost" onClick={() => deleteUnit(u.id)} className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                    {isAdmin && <Button size="sm" variant="ghost" onClick={() => deleteUnit(u.id)} className="text-destructive"><Trash2 className="h-4 w-4" /></Button>}
                   </div>
                 ))}
                 {units.length === 0 && <div className="text-xs text-muted-foreground">まだ単元がありません</div>}
@@ -224,6 +243,9 @@ function AdminPage() {
                     <div key={q.id} className={`flex items-center gap-1 border rounded p-2 text-sm ${q.is_active === false ? "opacity-50 line-through" : ""}`}>
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">{q.type}</span>
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10">{q.points}点</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${q.status === 'approved' ? 'bg-success/15 text-success' : q.status === 'rejected' ? 'bg-destructive/15 text-destructive' : 'bg-amber-500/15 text-amber-600'}`}>
+                        {q.status === 'approved' ? '公式' : q.status === 'rejected' ? '却下' : '申請中'}
+                      </span>
                       <span className="flex-1 min-w-0 truncate">{q.prompt}</span>
                       <Button size="sm" variant="ghost" title={q.is_active === false ? "有効化" : "停止"} onClick={async () => {
                         await (supabase as any).from("makron_questions").update({ is_active: q.is_active === false }).eq("id", q.id);
@@ -329,6 +351,44 @@ function AdminPage() {
               </Card>
             )}
           </TabsContent>
+
+          {isAdmin && (
+          <TabsContent value="approve" className="space-y-3">
+            {pendingQs.length === 0 && <Card className="p-6 text-center text-muted-foreground text-sm">承認待ちの問題はありません</Card>}
+            {pendingQs.map((q: any) => (
+              <Card key={q.id} className="p-3 space-y-2">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600">申請中</span>
+                  <span className="text-muted-foreground">単元: {q.unit?.title}</span>
+                  <span className="text-muted-foreground">作成者: {q.profile?.display_name ?? q.profile?.username ?? q.created_by?.slice(0,8)}</span>
+                  <span className="text-muted-foreground ml-auto">{q.submitted_at ? new Date(q.submitted_at).toLocaleString("ja-JP") : ""}</span>
+                </div>
+                <div className="text-sm whitespace-pre-wrap">{q.prompt}</div>
+                {q.image_url && <img src={q.image_url} alt="" className="max-h-32 border rounded" />}
+                {(q.options ?? []).length > 0 && (
+                  <ul className="text-xs pl-4 list-disc">
+                    {q.options.map((o: string, i: number) => (
+                      <li key={i} className={q.correct_options?.includes(o) ? "text-success font-bold" : ""}>{o}{q.correct_options?.includes(o) && " ✓"}</li>
+                    ))}
+                  </ul>
+                )}
+                {q.explanation && <div className="text-xs text-muted-foreground">解説: {q.explanation}</div>}
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={async () => {
+                    const { error } = await (supabase as any).rpc("admin_review_question", { _question_id: q.id, _approve: true });
+                    if (error) return toast.error(error.message);
+                    toast.success("公式承認しました"); loadPendingQs(); if (selUnit && selUnit === q.unit_id) loadQuestions(selUnit);
+                  }}><Check className="h-3 w-3 mr-1" />承認</Button>
+                  <Button size="sm" variant="outline" onClick={async () => {
+                    const { error } = await (supabase as any).rpc("admin_review_question", { _question_id: q.id, _approve: false });
+                    if (error) return toast.error(error.message);
+                    toast.success("却下しました"); loadPendingQs(); if (selUnit && selUnit === q.unit_id) loadQuestions(selUnit);
+                  }}><X className="h-3 w-3 mr-1" />却下</Button>
+                </div>
+              </Card>
+            ))}
+          </TabsContent>
+          )}
 
           <TabsContent value="grading" className="space-y-3">
             {pending.length === 0 && <Card className="p-6 text-center text-muted-foreground text-sm">採点待ちはありません</Card>}
