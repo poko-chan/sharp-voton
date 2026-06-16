@@ -103,12 +103,9 @@ function AdminPage() {
     setTempList(t ?? []);
   };
 
-  if (!canCreate) {
-    return (
-      <MakronShell back="/makron" title="管理者画面">
-        <ApplyCreator userId={user?.id} />
-      </MakronShell>
-    );
+  // 問題作成は誰でも可能。未ログインのみ拒否。
+  if (!user) {
+    return <MakronShell back="/makron" title="問題作成"><div className="p-6 text-sm">ログインしてください</div></MakronShell>;
   }
 
   // Create unit (admin only)
