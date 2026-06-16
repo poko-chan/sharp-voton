@@ -61,6 +61,7 @@ function MakronHome() {
           <div className="ml-auto flex gap-2">
             <RLink to="/shop"><Button variant="outline" size="sm"><ShoppingBag className="h-4 w-4 mr-1" />ショップ</Button></RLink>
             <Link to="/makron/history"><Button variant="outline" size="sm"><History className="h-4 w-4 mr-1" />履歴</Button></Link>
+            {isAdmin && <Link to="/makron/labels"><Button variant="outline" size="sm">ラベル管理</Button></Link>}
             {canCreate && <Link to="/makron/admin"><Button size="sm"><Plus className="h-4 w-4 mr-1" />{isAdmin ? "管理者画面" : "問題作成"}</Button></Link>}
           </div>
         </div>
