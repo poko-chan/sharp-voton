@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_links: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          label: string | null
+          linked_user_id: string
+          owner_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: string
+          label?: string | null
+          linked_user_id: string
+          owner_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          label?: string | null
+          linked_user_id?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
       admin_audit_log: {
         Row: {
           action: string
@@ -1537,6 +1564,44 @@ export type Database = {
           },
         ]
       }
+      makron_fields: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          order_idx: number
+          subject_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          order_idx?: number
+          subject_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          order_idx?: number
+          subject_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "makron_fields_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "makron_subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       makron_question_likes: {
         Row: {
           created_at: string
@@ -1746,15 +1811,51 @@ export type Database = {
           },
         ]
       }
+      makron_subjects: {
+        Row: {
+          color: string | null
+          created_at: string
+          created_by: string | null
+          icon: string | null
+          id: string
+          name: string
+          order_idx: number
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          order_idx?: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          order_idx?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       makron_units: {
         Row: {
           created_at: string
           created_by: string | null
           description: string | null
           field: string | null
+          field_id: string | null
           id: string
           order_idx: number
+          organization_id: string | null
           subject: string | null
+          subject_id: string | null
           title: string
           unit: string | null
           updated_at: string
@@ -1764,9 +1865,12 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           field?: string | null
+          field_id?: string | null
           id?: string
           order_idx?: number
+          organization_id?: string | null
           subject?: string | null
+          subject_id?: string | null
           title: string
           unit?: string | null
           updated_at?: string
@@ -1776,14 +1880,32 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           field?: string | null
+          field_id?: string | null
           id?: string
           order_idx?: number
+          organization_id?: string | null
           subject?: string | null
+          subject_id?: string | null
           title?: string
           unit?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "makron_units_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "makron_fields"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "makron_units_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "makron_subjects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       makron_xp: {
         Row: {
@@ -1908,6 +2030,162 @@ export type Database = {
           text?: string
           title?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      organization_join_requests: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          organization_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["org_status"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          organization_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["org_status"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          organization_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["org_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_join_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_members: {
+        Row: {
+          id: string
+          joined_at: string
+          organization_id: string
+          role: Database["public"]["Enums"]["org_role"]
+          suspended: boolean
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          organization_id: string
+          role?: Database["public"]["Enums"]["org_role"]
+          suspended?: boolean
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          organization_id?: string
+          role?: Database["public"]["Enums"]["org_role"]
+          suspended?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_service_restrictions: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          organization_id: string
+          service_key: string
+          until: string | null
+          variant: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          organization_id: string
+          service_key: string
+          until?: string | null
+          variant?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          organization_id?: string
+          service_key?: string
+          until?: string | null
+          variant?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_service_restrictions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          settings: Json
+          slug: string | null
+          status: Database["public"]["Enums"]["org_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          settings?: Json
+          slug?: string | null
+          status?: Database["public"]["Enums"]["org_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          settings?: Json
+          slug?: string | null
+          status?: Database["public"]["Enums"]["org_status"]
+          updated_at?: string
         }
         Relationships: []
       }
@@ -3502,6 +3780,10 @@ export type Database = {
         Args: { _app_id: string; _approve: boolean; _days?: number }
         Returns: undefined
       }
+      admin_review_organization: {
+        Args: { _approve: boolean; _org_id: string }
+        Returns: undefined
+      }
       admin_review_question: {
         Args: { _approve: boolean; _question_id: string }
         Returns: undefined
@@ -3586,11 +3868,22 @@ export type Database = {
         Args: { _class_id: string; _user_id: string }
         Returns: boolean
       }
+      is_org_admin: { Args: { _org: string; _user: string }; Returns: boolean }
+      is_org_member: { Args: { _org: string; _user: string }; Returns: boolean }
       is_parent_of: {
         Args: { _child: string; _parent: string }
         Returns: boolean
       }
       join_class_by_code: { Args: { _code: string }; Returns: string }
+      my_org_ids: { Args: never; Returns: string[] }
+      org_review_join_request: {
+        Args: {
+          _approve: boolean
+          _req_id: string
+          _role?: Database["public"]["Enums"]["org_role"]
+        }
+        Returns: undefined
+      }
       purchase_shop_item: { Args: { _item_id: string }; Returns: Json }
       send_coin_gift: {
         Args: { _amount: number; _message: string; _to: string }
@@ -3612,6 +3905,8 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      org_role: "owner" | "admin" | "teacher" | "member"
+      org_status: "pending" | "approved" | "rejected" | "suspended"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3740,6 +4035,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      org_role: ["owner", "admin", "teacher", "member"],
+      org_status: ["pending", "approved", "rejected", "suspended"],
     },
   },
 } as const
