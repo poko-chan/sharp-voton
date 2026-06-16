@@ -58,6 +58,7 @@ import { Route as AuthenticatedRoomsIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedMakronIndexRouteImport } from './routes/_authenticated/makron.index'
 import { Route as AuthenticatedClassroomIndexRouteImport } from './routes/_authenticated/classroom.index'
 import { Route as AuthenticatedRoomsRoomIdRouteImport } from './routes/_authenticated/rooms.$roomId'
+import { Route as AuthenticatedOrganizationsOrgIdRouteImport } from './routes/_authenticated/organizations.$orgId'
 import { Route as AuthenticatedMakronHistoryRouteImport } from './routes/_authenticated/makron.history'
 import { Route as AuthenticatedMakronAdminRouteImport } from './routes/_authenticated/makron.admin'
 import { Route as AuthenticatedClassroomClassIdRouteImport } from './routes/_authenticated/classroom.$classId'
@@ -316,6 +317,12 @@ const AuthenticatedRoomsRoomIdRoute =
     path: '/$roomId',
     getParentRoute: () => AuthenticatedRoomsRoute,
   } as any)
+const AuthenticatedOrganizationsOrgIdRoute =
+  AuthenticatedOrganizationsOrgIdRouteImport.update({
+    id: '/$orgId',
+    path: '/$orgId',
+    getParentRoute: () => AuthenticatedOrganizationsRoute,
+  } as any)
 const AuthenticatedMakronHistoryRoute =
   AuthenticatedMakronHistoryRouteImport.update({
     id: '/history',
@@ -382,7 +389,7 @@ export interface FileRoutesByFullPath {
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/ocr': typeof AuthenticatedOcrRoute
-  '/organizations': typeof AuthenticatedOrganizationsRoute
+  '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/parent': typeof AuthenticatedParentRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
@@ -401,6 +408,7 @@ export interface FileRoutesByFullPath {
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/makron/admin': typeof AuthenticatedMakronAdminRoute
   '/makron/history': typeof AuthenticatedMakronHistoryRoute
+  '/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdRoute
   '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom/': typeof AuthenticatedClassroomIndexRoute
   '/makron/': typeof AuthenticatedMakronIndexRoute
@@ -437,7 +445,7 @@ export interface FileRoutesByTo {
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/ocr': typeof AuthenticatedOcrRoute
-  '/organizations': typeof AuthenticatedOrganizationsRoute
+  '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/parent': typeof AuthenticatedParentRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
@@ -455,6 +463,7 @@ export interface FileRoutesByTo {
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/makron/admin': typeof AuthenticatedMakronAdminRoute
   '/makron/history': typeof AuthenticatedMakronHistoryRoute
+  '/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdRoute
   '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom': typeof AuthenticatedClassroomIndexRoute
   '/makron': typeof AuthenticatedMakronIndexRoute
@@ -494,7 +503,7 @@ export interface FileRoutesById {
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/ocr': typeof AuthenticatedOcrRoute
-  '/_authenticated/organizations': typeof AuthenticatedOrganizationsRoute
+  '/_authenticated/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/_authenticated/parent': typeof AuthenticatedParentRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
@@ -513,6 +522,7 @@ export interface FileRoutesById {
   '/_authenticated/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/_authenticated/makron/admin': typeof AuthenticatedMakronAdminRoute
   '/_authenticated/makron/history': typeof AuthenticatedMakronHistoryRoute
+  '/_authenticated/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdRoute
   '/_authenticated/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/_authenticated/classroom/': typeof AuthenticatedClassroomIndexRoute
   '/_authenticated/makron/': typeof AuthenticatedMakronIndexRoute
@@ -571,6 +581,7 @@ export interface FileRouteTypes {
     | '/classroom/$classId'
     | '/makron/admin'
     | '/makron/history'
+    | '/organizations/$orgId'
     | '/rooms/$roomId'
     | '/classroom/'
     | '/makron/'
@@ -625,6 +636,7 @@ export interface FileRouteTypes {
     | '/classroom/$classId'
     | '/makron/admin'
     | '/makron/history'
+    | '/organizations/$orgId'
     | '/rooms/$roomId'
     | '/classroom'
     | '/makron'
@@ -682,6 +694,7 @@ export interface FileRouteTypes {
     | '/_authenticated/classroom/$classId'
     | '/_authenticated/makron/admin'
     | '/_authenticated/makron/history'
+    | '/_authenticated/organizations/$orgId'
     | '/_authenticated/rooms/$roomId'
     | '/_authenticated/classroom/'
     | '/_authenticated/makron/'
@@ -1049,6 +1062,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRoomsRoomIdRouteImport
       parentRoute: typeof AuthenticatedRoomsRoute
     }
+    '/_authenticated/organizations/$orgId': {
+      id: '/_authenticated/organizations/$orgId'
+      path: '/$orgId'
+      fullPath: '/organizations/$orgId'
+      preLoaderRoute: typeof AuthenticatedOrganizationsOrgIdRouteImport
+      parentRoute: typeof AuthenticatedOrganizationsRoute
+    }
     '/_authenticated/makron/history': {
       id: '/_authenticated/makron/history'
       path: '/history'
@@ -1117,6 +1137,20 @@ const AuthenticatedMakronRouteChildren: AuthenticatedMakronRouteChildren = {
 const AuthenticatedMakronRouteWithChildren =
   AuthenticatedMakronRoute._addFileChildren(AuthenticatedMakronRouteChildren)
 
+interface AuthenticatedOrganizationsRouteChildren {
+  AuthenticatedOrganizationsOrgIdRoute: typeof AuthenticatedOrganizationsOrgIdRoute
+}
+
+const AuthenticatedOrganizationsRouteChildren: AuthenticatedOrganizationsRouteChildren =
+  {
+    AuthenticatedOrganizationsOrgIdRoute: AuthenticatedOrganizationsOrgIdRoute,
+  }
+
+const AuthenticatedOrganizationsRouteWithChildren =
+  AuthenticatedOrganizationsRoute._addFileChildren(
+    AuthenticatedOrganizationsRouteChildren,
+  )
+
 interface AuthenticatedRoomsRouteChildren {
   AuthenticatedRoomsRoomIdRoute: typeof AuthenticatedRoomsRoomIdRoute
   AuthenticatedRoomsIndexRoute: typeof AuthenticatedRoomsIndexRoute
@@ -1152,7 +1186,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOcrRoute: typeof AuthenticatedOcrRoute
-  AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRoute
+  AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRouteWithChildren
   AuthenticatedParentRoute: typeof AuthenticatedParentRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedQuestionsRoute: typeof AuthenticatedQuestionsRoute
@@ -1192,7 +1226,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOcrRoute: AuthenticatedOcrRoute,
-  AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRoute,
+  AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRouteWithChildren,
   AuthenticatedParentRoute: AuthenticatedParentRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedQuestionsRoute: AuthenticatedQuestionsRoute,
