@@ -25,6 +25,7 @@ import { useUserPrefs } from "@/lib/user-prefs";
 import { useRestriction } from "@/lib/restriction-context";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAdminNavConfig } from "@/lib/admin-nav";
+import { AccountSwitcher } from "@/components/AccountSwitcher";
 
 const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
@@ -51,6 +52,7 @@ const NAV = [
   { to: "/announcements", labelKey: "nav.announcements" as const, icon: Megaphone },
   { to: "/missions", labelKey: "nav.dashboard" as const, icon: Target, override: "ミッション" },
   { to: "/makron", labelKey: "nav.dashboard" as const, icon: Target, override: "Makron" },
+  { to: "/organizations", labelKey: "nav.dashboard" as const, icon: Users, override: "組織" },
   { to: "/shop", labelKey: "nav.dashboard" as const, icon: ShoppingBag, override: "コインショップ" },
   { to: "/settings", labelKey: "nav.settings" as const, icon: Settings, override: "設定" },
 ] as const;
@@ -285,6 +287,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <main className="flex-1 overflow-auto min-w-0">
         <TimerIndicator />
+        {/* Account switcher top bar */}
+        <div className="flex justify-end items-center px-3 py-1 border-b border-border/40 bg-background/40">
+          <AccountSwitcher />
+        </div>
 
         {/* Mobile top bar (hamburger + clock) */}
         {isMobile && (
