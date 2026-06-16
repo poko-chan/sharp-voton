@@ -34,10 +34,8 @@ function MakronHome() {
       setBoard((lb ?? []) as Row[]);
       const { data: meRow } = await (supabase as any).rpc("get_my_makron_rank");
       if (meRow && meRow[0]) setMe(meRow[0] as Me);
-      if (user) {
-        const { data: tmp } = await (supabase as any).from("temp_question_creators").select("expires_at").eq("user_id", user.id).gt("expires_at", new Date().toISOString()).maybeSingle();
-        setCanCreate(isAdmin || !!tmp);
-      }
+      // 問題作成は誰でも可能（一般ユーザーの投稿は pending として扱われる）
+      if (user) setCanCreate(true);
     })();
   }, [user?.id, isAdmin]);
 
