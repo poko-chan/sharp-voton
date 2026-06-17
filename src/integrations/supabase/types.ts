@@ -748,8 +748,62 @@ export type Database = {
           },
         ]
       }
+      coin_redemption_requests: {
+        Row: {
+          admin_note: string | null
+          created_at: string
+          fulfilled_at: string | null
+          fulfilled_by: string | null
+          id: string
+          item_code: string | null
+          item_id: string
+          item_name: string | null
+          payload: Json | null
+          price_paid: number
+          status: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          created_at?: string
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          id?: string
+          item_code?: string | null
+          item_id: string
+          item_name?: string | null
+          payload?: Json | null
+          price_paid: number
+          status?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          created_at?: string
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          id?: string
+          item_code?: string | null
+          item_id?: string
+          item_name?: string | null
+          payload?: Json | null
+          price_paid?: number
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coin_redemption_requests_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "coin_shop_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coin_shop_items: {
         Row: {
+          auto_grant: boolean
           category: string
           code: string
           consumable: boolean
@@ -757,12 +811,14 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean
+          is_custom: boolean
           name: string
           payload: Json
           price: number
           sort_order: number
         }
         Insert: {
+          auto_grant?: boolean
           category: string
           code: string
           consumable?: boolean
@@ -770,12 +826,14 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          is_custom?: boolean
           name: string
           payload?: Json
           price: number
           sort_order?: number
         }
         Update: {
+          auto_grant?: boolean
           category?: string
           code?: string
           consumable?: boolean
@@ -783,6 +841,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          is_custom?: boolean
           name?: string
           payload?: Json
           price?: number
@@ -2032,6 +2091,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      organization_invitations: {
+        Row: {
+          created_at: string
+          id: string
+          invited_by: string
+          invitee_id: string
+          message: string | null
+          organization_id: string
+          responded_at: string | null
+          role: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invited_by: string
+          invitee_id: string
+          message?: string | null
+          organization_id: string
+          responded_at?: string | null
+          role?: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invited_by?: string
+          invitee_id?: string
+          message?: string | null
+          organization_id?: string
+          responded_at?: string | null
+          role?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       organization_join_requests: {
         Row: {
@@ -3756,6 +3859,10 @@ export type Database = {
       }
     }
     Functions: {
+      admin_fulfill_redemption: {
+        Args: { _approve: boolean; _note: string; _req_id: string }
+        Returns: undefined
+      }
       admin_grant_coins: {
         Args: { _amount: number; _message: string; _user_id: string }
         Returns: undefined
@@ -3795,6 +3902,22 @@ export type Database = {
       admin_set_user_xp: {
         Args: { _user_id: string; _xp: number }
         Returns: undefined
+      }
+      admin_upsert_shop_item: {
+        Args: {
+          _auto_grant: boolean
+          _category: string
+          _code: string
+          _consumable: boolean
+          _description: string
+          _id: string
+          _is_active: boolean
+          _name: string
+          _payload: Json
+          _price: number
+          _sort_order: number
+        }
+        Returns: string
       }
       are_mutual_friends: { Args: { _a: string; _b: string }; Returns: boolean }
       can_create_questions: { Args: { _user_id: string }; Returns: boolean }
@@ -3876,6 +3999,14 @@ export type Database = {
       }
       join_class_by_code: { Args: { _code: string }; Returns: string }
       my_org_ids: { Args: never; Returns: string[] }
+      org_invite_member: {
+        Args: { _message?: string; _org: string; _role?: string; _user: string }
+        Returns: string
+      }
+      org_respond_invitation: {
+        Args: { _accept: boolean; _invite_id: string }
+        Returns: undefined
+      }
       org_review_join_request: {
         Args: {
           _approve: boolean
