@@ -421,42 +421,7 @@ function AdminPage() {
             ))}
           </TabsContent>
 
-          {isAdmin && (
-            <TabsContent value="users" className="space-y-3">
-              <Card className="p-4 space-y-2">
-                <div className="font-bold flex items-center gap-1"><KeyRound className="h-4 w-4" />一時的な問題作成権限</div>
-                <div className="text-xs text-muted-foreground">管理者以外のユーザーに、期限付きで問題作成を許可します（既存の有効な権限のみ表示）。</div>
-                <div className="space-y-1 mt-2">
-                  {tempList.map((t: any) => (
-                    <div key={t.id} className="flex items-center gap-2 border rounded p-2 text-sm">
-                      <div className="flex-1">{t.profile?.display_name ?? t.profile?.username ?? t.user_id.slice(0, 8)}</div>
-                      <span className="text-xs text-muted-foreground">〜{new Date(t.expires_at).toLocaleString("ja-JP")}</span>
-                      <Button size="sm" variant="ghost" className="text-destructive" onClick={async () => {
-                        await (supabase as any).from("temp_question_creators").delete().eq("id", t.id); loadUsersAndTemp();
-                      }}><Trash2 className="h-3 w-3" /></Button>
-                    </div>
-                  ))}
-                  {tempList.length === 0 && <div className="text-xs text-muted-foreground">付与中の権限はありません</div>}
-                </div>
-              </Card>
-              <Card className="p-4 space-y-2">
-                <div className="font-bold flex items-center gap-1"><UserCog className="h-4 w-4" />ユーザー検索 / XP・コイン編集</div>
-                <Input placeholder="ユーザー名や表示名で検索" value={userQuery} onChange={(e) => setUserQuery(e.target.value)} />
-                <div className="max-h-96 overflow-auto divide-y border rounded">
-                  {allUsers.filter((u) => !userQuery || (u.username ?? "").includes(userQuery) || (u.display_name ?? "").includes(userQuery)).slice(0, 50).map((u) => (
-                    <UserAdminRow key={u.id} user={u} onChange={loadUsersAndTemp} />
-                  ))}
-                </div>
-              </Card>
-              <Card className="p-4">
-                <div className="font-bold flex items-center gap-1 mb-2"><FileText className="h-4 w-4" />解答スコア上書き</div>
-                <div className="text-xs text-muted-foreground">採点タブから個別解答を選んで採点 / 上書きできます。「採点」ボタンで詳細を確認してください。</div>
-              </Card>
-            </TabsContent>
-          )}
-
-          {isAdmin && (
-            <TabsContent value="analytics" className="space-y-3">
+          <TabsContent value="analytics" className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">問題別の挑戦数・正答率・いいね・平均難易度。CSV出力可能。</div>
                 <Button size="sm" variant="outline" onClick={() => {
@@ -482,60 +447,13 @@ function AdminPage() {
                   </div>
                 ))}
               </Card>
-            </TabsContent>
-          )}
-
-          {isAdmin && (
-            <TabsContent value="apps" className="space-y-2">
-              {apps.length === 0 && <Card className="p-6 text-center text-sm text-muted-foreground">申請はありません</Card>}
-              {apps.map((a: any) => (
-                <Card key={a.id} className="p-3 space-y-1">
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="font-bold">{a.profile?.display_name ?? a.profile?.username ?? a.user_id.slice(0,8)}</span>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${a.status==='pending'?'bg-amber-500/15 text-amber-600':a.status==='approved'?'bg-success/15 text-success':'bg-destructive/15 text-destructive'}`}>{a.status}</span>
-                    <span className="text-[10px] text-muted-foreground ml-auto">{new Date(a.created_at).toLocaleString("ja-JP")}</span>
-                  </div>
-                  <div className="text-xs whitespace-pre-wrap">{a.reason}</div>
-                  {a.status === 'pending' && (
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={async () => {
-                        const { error } = await (supabase as any).rpc("admin_review_creator_application", { _app_id: a.id, _approve: true, _days: 7 });
-                        if (error) return toast.error(error.message);
-                        toast.success("承認"); loadApps();
-                      }}><Check className="h-3 w-3 mr-1" />7日間 承認</Button>
-                      <Button size="sm" variant="outline" onClick={async () => {
-                        const { error } = await (supabase as any).rpc("admin_review_creator_application", { _app_id: a.id, _approve: false, _days: 0 });
-                        if (error) return toast.error(error.message);
-                        toast.success("却下"); loadApps();
-                      }}><X className="h-3 w-3 mr-1" />却下</Button>
-                    </div>
-                  )}
-                </Card>
-              ))}
-            </TabsContent>
-          )}
+          </TabsContent>
         </Tabs>
       </div>
     </MakronShell>
   );
 }
 
-
-function UserAdminRow({ user, onChange }: { user: any; onChange: () => void }) {
-  const [xp, setXp] = useState<number>(0);
-  const [coins, setCoins] = useState<number>(0);
-  const [days, setDays] = useState<number>(1);
-  const [grantAmt, setGrantAmt] = useState<number>(100);
-  const [grantMsg, setGrantMsg] = useState<string>("");
-  const [loaded, setLoaded] = useState(false);
-
-  const loadStats = async () => {
-    const [{ data: x }, { data: c }] = await Promise.all([
-      (supabase as any).from("makron_xp").select("xp").eq("user_id", user.id).maybeSingle(),
-      supabase.from("user_coins").select("balance").eq("user_id", user.id).maybeSingle(),
-    ]);
-    setXp(x?.xp ?? 0); setCoins(c?.balance ?? 0); setLoaded(true);
-  };
 
   return (
     <div className="p-2 flex items-center gap-2 text-sm flex-wrap">
