@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Coins, ShoppingBag, Gift, Check, Sparkles, Search, Flame } from "lucide-react";
+import { Coins, ShoppingBag, Gift, Check, Sparkles, Search, Flame, Ticket } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
@@ -58,12 +58,12 @@ function ShopPage() {
 
   const buy = async (item: any) => {
     if (balance < item.price) return toast.error("コインが足りません");
-    if (!item.consumable && owned.has(item.code)) return toast.error("既に所有しています");
+    if (item.auto_grant !== false && !item.consumable && owned.has(item.code)) return toast.error("既に所有しています");
     setBusy(item.id);
     const { data, error } = await (supabase as any).rpc("purchase_shop_item", { _item_id: item.id });
     setBusy(null);
     if (error) return toast.error(error.message);
-    toast.success(`「${item.name}」を購入しました！`);
+    toast.success(data?.redemption ? `「${item.name}」を引き換え申請しました。管理者の対応をお待ちください` : `「${item.name}」を購入しました！`);
     await load();
     if (data?.balance != null) setBalance(data.balance);
   };
@@ -128,12 +128,14 @@ function ShopPage() {
           <TabsContent key={c.key} value={c.key}>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
               {filtered.map((it) => {
-                const isOwned = !it.consumable && owned.has(it.code);
+                const isRedeem = it.auto_grant === false;
+                const isOwned = !isRedeem && !it.consumable && owned.has(it.code);
                 return (
                   <Card key={it.id} className="p-4 flex flex-col gap-2">
                     <div className="flex items-center gap-2">
                       <Sparkles className="h-4 w-4 text-primary" />
                       <div className="font-bold flex-1">{it.name}</div>
+                      {isRedeem && <span className="text-[9px] px-1.5 py-0.5 rounded bg-violet-500/15 text-violet-600 flex items-center gap-0.5"><Ticket className="h-3 w-3" />引換</span>}
                       {isNew(it.created_at) && <span className="text-[9px] px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-600 flex items-center gap-0.5"><Flame className="h-3 w-3" />NEW</span>}
                       {isOwned && <span className="text-[10px] px-1.5 py-0.5 rounded bg-success/15 text-success flex items-center gap-1"><Check className="h-3 w-3" />所有済</span>}
                     </div>

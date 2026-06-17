@@ -26,7 +26,7 @@ const TAGS = [
   { value: "other", label: "その他", className: "bg-muted text-muted-foreground border-border" },
 ];
 const tagMeta = (v: string) => TAGS.find((t) => t.value === v) ?? TAGS[3];
-import { Shield, Trash2, Pencil, LogIn, Plus, Wrench, Megaphone, Send } from "lucide-react";
+import { Shield, Trash2, Pencil, LogIn, Plus, Wrench, Megaphone, Send, ShoppingBag, Building2, Ticket, Coins, Save } from "lucide-react";
 import { Ban, AlertOctagon, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -53,6 +53,9 @@ function AdminPage() {
           <TabsTrigger value="users">ユーザー管理</TabsTrigger>
           <TabsTrigger value="maintenance">メンテナンス</TabsTrigger>
           <TabsTrigger value="restrictions" className="data-[state=active]:bg-red-500/10 data-[state=active]:text-red-600">利用停止</TabsTrigger>
+          <TabsTrigger value="shop"><ShoppingBag className="h-3 w-3 mr-1" />ショップ</TabsTrigger>
+          <TabsTrigger value="redemptions"><Ticket className="h-3 w-3 mr-1" />引換</TabsTrigger>
+          <TabsTrigger value="orgs"><Building2 className="h-3 w-3 mr-1" />組織</TabsTrigger>
           <TabsTrigger value="faq" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600">FAQ</TabsTrigger>
           <TabsTrigger value="nav">サイドバー設定</TabsTrigger>
           <TabsTrigger value="version">バージョン</TabsTrigger>
@@ -62,6 +65,9 @@ function AdminPage() {
         <TabsContent value="users"><UsersTab /></TabsContent>
         <TabsContent value="maintenance"><MaintenanceTab /></TabsContent>
         <TabsContent value="restrictions"><RestrictionsHub /></TabsContent>
+        <TabsContent value="shop"><ShopAdminTab /></TabsContent>
+        <TabsContent value="redemptions"><RedemptionsTab /></TabsContent>
+        <TabsContent value="orgs"><OrgsAdminTab /></TabsContent>
         <TabsContent value="faq"><FaqTab /></TabsContent>
         <TabsContent value="nav"><NavConfigTab /></TabsContent>
         <TabsContent value="version"><VersionTab /></TabsContent>
@@ -349,6 +355,7 @@ function UserRow({ user, onChange, update, del, setRole, doImpersonate }: any) {
           <>
             <Button size="sm" variant="outline" onClick={() => setEdit(true)}><Pencil className="h-3.5 w-3.5" /></Button>
             <Button size="sm" variant="outline" onClick={() => doImpersonate(user.id)}><LogIn className="h-3.5 w-3.5" /></Button>
+            <UserCoinXpPopover userId={user.id} />
             <Button size="sm" variant="destructive" onClick={remove}><Trash2 className="h-3.5 w-3.5" /></Button>
           </>
         )}
@@ -946,6 +953,254 @@ function FaqTab() {
             {items.length === 0 && <tr><td colSpan={4} className="p-6 text-center text-muted-foreground text-sm">まだ FAQ がありません</td></tr>}
           </tbody>
         </table>
+      </Card>
+    </div>
+  );
+}
+
+// ========== XP/Coin grant popover for user row ==========
+function UserCoinXpPopover({ userId }: { userId: string }) {
+  const [open, setOpen] = useState(false);
+  const [xp, setXp] = useState<number>(0);
+  const [coins, setCoins] = useState<number>(0);
+  const [grantAmt, setGrantAmt] = useState<number>(100);
+  const [grantMsg, setGrantMsg] = useState<string>("");
+
+  const load = async () => {
+    const [{ data: x }, { data: c }] = await Promise.all([
+      (supabase as any).from("makron_xp").select("xp").eq("user_id", userId).maybeSingle(),
+      supabase.from("user_coins").select("balance").eq("user_id", userId).maybeSingle(),
+    ]);
+    setXp(x?.xp ?? 0); setCoins(c?.balance ?? 0);
+  };
+  return (
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) load(); }}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" title="XP / コイン編集"><Coins className="h-3.5 w-3.5" /></Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle>XP / コイン編集</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label>XP (絶対値で上書き)</Label>
+            <div className="flex gap-2">
+              <Input type="number" value={xp} onChange={(e) => setXp(Number(e.target.value) || 0)} />
+              <Button onClick={async () => {
+                const { error } = await (supabase as any).rpc("admin_set_user_xp", { _user_id: userId, _xp: xp });
+                if (error) return toast.error(error.message);
+                toast.success("XPを更新しました");
+              }}><Save className="h-4 w-4" /></Button>
+            </div>
+          </div>
+          <div>
+            <Label>コイン残高 (絶対値で上書き)</Label>
+            <div className="flex gap-2">
+              <Input type="number" value={coins} onChange={(e) => setCoins(Number(e.target.value) || 0)} />
+              <Button onClick={async () => {
+                const { error } = await (supabase as any).rpc("admin_set_user_coins", { _user_id: userId, _balance: coins });
+                if (error) return toast.error(error.message);
+                toast.success("コインを更新しました");
+              }}><Save className="h-4 w-4" /></Button>
+            </div>
+          </div>
+          <div className="border-t pt-3 space-y-2">
+            <Label>コインを贈呈 (加算 / メッセージ付き通知)</Label>
+            <Input type="number" placeholder="金額" value={grantAmt} onChange={(e) => setGrantAmt(Number(e.target.value) || 0)} />
+            <Input placeholder="メッセージ" value={grantMsg} onChange={(e) => setGrantMsg(e.target.value)} />
+            <Button className="w-full" onClick={async () => {
+              const { error } = await (supabase as any).rpc("admin_grant_coins", { _user_id: userId, _amount: grantAmt, _message: grantMsg });
+              if (error) return toast.error(error.message);
+              toast.success("コインを贈呈しました"); load(); setGrantMsg("");
+            }}><Coins className="h-4 w-4 mr-1" />贈呈</Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ========== Shop admin ==========
+function ShopAdminTab() {
+  const [items, setItems] = useState<any[]>([]);
+  const [editing, setEditing] = useState<any | null>(null);
+  const blank = () => ({ id: null, code: "", name: "", description: "", price: 100, category: "decor", payload: {}, is_active: true, consumable: false, auto_grant: true, sort_order: 100 });
+  const load = async () => {
+    const { data } = await (supabase as any).from("coin_shop_items").select("*").order("sort_order").order("created_at");
+    setItems(data ?? []);
+  };
+  useEffect(() => { load(); }, []);
+  const save = async () => {
+    if (!editing.code.trim() || !editing.name.trim()) return toast.error("コードと名前は必須");
+    const { error } = await (supabase as any).rpc("admin_upsert_shop_item", {
+      _id: editing.id, _code: editing.code, _name: editing.name, _description: editing.description || null,
+      _price: Number(editing.price) || 0, _category: editing.category, _payload: editing.payload ?? {},
+      _is_active: editing.is_active, _consumable: editing.consumable, _auto_grant: editing.auto_grant,
+      _sort_order: Number(editing.sort_order) || 100,
+    });
+    if (error) return toast.error(error.message);
+    toast.success("保存しました"); setEditing(null); load();
+  };
+  const del = async (id: string) => {
+    if (!confirm("削除しますか？")) return;
+    const { error } = await (supabase as any).from("coin_shop_items").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    load();
+  };
+  return (
+    <div className="space-y-3 mt-4">
+      <div className="flex justify-between items-center">
+        <p className="text-sm text-muted-foreground">アイテムの金額編集・非表示・カスタム商品（LINEポイント交換など）の追加ができます。</p>
+        <Button onClick={() => setEditing(blank())}><Plus className="h-4 w-4 mr-1" />新規アイテム</Button>
+      </div>
+      {editing && (
+        <Card className="p-4 space-y-2 border-primary/40">
+          <div className="font-bold">{editing.id ? "編集" : "新規追加"}</div>
+          <div className="grid md:grid-cols-2 gap-2">
+            <div><Label>コード (一意・英数)</Label><Input value={editing.code} onChange={(e) => setEditing({ ...editing, code: e.target.value })} /></div>
+            <div><Label>名前</Label><Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} /></div>
+            <div className="md:col-span-2"><Label>説明</Label><Textarea rows={2} value={editing.description ?? ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} /></div>
+            <div><Label>金額 (コイン)</Label><Input type="number" value={editing.price} onChange={(e) => setEditing({ ...editing, price: Number(e.target.value) })} /></div>
+            <div><Label>カテゴリ</Label>
+              <Select value={editing.category} onValueChange={(v) => setEditing({ ...editing, category: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {["frame","theme","title","decor","hint","revive","chest","boost","scratch","emoji","redeem","other"].map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>並び順</Label><Input type="number" value={editing.sort_order} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })} /></div>
+            <label className="flex items-center gap-2"><Switch checked={editing.is_active} onCheckedChange={(v) => setEditing({ ...editing, is_active: v })} />表示する</label>
+            <label className="flex items-center gap-2"><Switch checked={editing.consumable} onCheckedChange={(v) => setEditing({ ...editing, consumable: v })} />消耗品（複数購入可）</label>
+            <label className="flex items-center gap-2 md:col-span-2"><Switch checked={editing.auto_grant} onCheckedChange={(v) => setEditing({ ...editing, auto_grant: v })} />自動付与（OFF = 引き換え式：購入時に管理者へ通知。LINEポイント等の手動対応用）</label>
+          </div>
+          <div className="flex gap-2"><Button onClick={save}><Save className="h-4 w-4 mr-1" />保存</Button><Button variant="ghost" onClick={() => setEditing(null)}>キャンセル</Button></div>
+        </Card>
+      )}
+      <Card className="divide-y">
+        {items.map((it) => (
+          <div key={it.id} className="p-3 flex items-center gap-2 text-sm">
+            <div className="flex-1 min-w-0">
+              <div className="font-medium flex items-center gap-2">{it.name}
+                {!it.is_active && <span className="text-[10px] px-1.5 rounded bg-muted">非表示</span>}
+                {!it.auto_grant && <span className="text-[10px] px-1.5 rounded bg-violet-500/15 text-violet-600">引換</span>}
+                {it.is_custom && <span className="text-[10px] px-1.5 rounded bg-amber-500/15 text-amber-600">カスタム</span>}
+              </div>
+              <div className="text-xs text-muted-foreground">{it.code} ・ {it.category} ・ {it.price}コイン</div>
+            </div>
+            <Button size="sm" variant="outline" onClick={() => setEditing(it)}><Pencil className="h-3.5 w-3.5" /></Button>
+            <Button size="sm" variant="ghost" className="text-destructive" onClick={() => del(it.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+          </div>
+        ))}
+        {items.length === 0 && <div className="p-6 text-sm text-center text-muted-foreground">アイテムはありません</div>}
+      </Card>
+    </div>
+  );
+}
+
+// ========== Redemption requests ==========
+function RedemptionsTab() {
+  const [list, setList] = useState<any[]>([]);
+  const [note, setNote] = useState<Record<string, string>>({});
+  const load = async () => {
+    const { data } = await (supabase as any).from("coin_redemption_requests")
+      .select("*, profile:profiles!coin_redemption_requests_user_id_fkey(username, display_name)")
+      .order("created_at", { ascending: false }).limit(100);
+    setList(data ?? []);
+  };
+  useEffect(() => { load(); }, []);
+  const act = async (id: string, approve: boolean) => {
+    const { error } = await (supabase as any).rpc("admin_fulfill_redemption", { _req_id: id, _approve: approve, _note: note[id] ?? null });
+    if (error) return toast.error(error.message);
+    toast.success(approve ? "完了処理しました" : "却下＆返金しました"); load();
+  };
+  return (
+    <div className="space-y-3 mt-4">
+      <p className="text-sm text-muted-foreground">引き換え式アイテムの購入リクエスト。LINEポイントの送付などを行ったら「完了」、対応不可なら「却下＆返金」。</p>
+      {list.length === 0 && <Card className="p-6 text-center text-sm text-muted-foreground">リクエストはありません</Card>}
+      {list.map((r: any) => (
+        <Card key={r.id} className="p-3 space-y-2">
+          <div className="flex items-center gap-2 text-sm">
+            <span className={`text-[10px] px-2 py-0.5 rounded ${r.status==='pending'?'bg-amber-500/15 text-amber-600':r.status==='fulfilled'?'bg-success/15 text-success':'bg-destructive/15 text-destructive'}`}>{r.status}</span>
+            <span className="font-bold">{r.item_name}</span>
+            <span className="text-xs text-muted-foreground">{r.price_paid}コイン</span>
+            <span className="text-xs text-muted-foreground ml-auto">{new Date(r.created_at).toLocaleString("ja-JP")}</span>
+          </div>
+          <div className="text-xs">購入者: {r.profile?.display_name ?? r.profile?.username ?? r.user_id.slice(0,8)}</div>
+          {r.payload && Object.keys(r.payload).length > 0 && <div className="text-[10px] text-muted-foreground bg-muted p-2 rounded">{JSON.stringify(r.payload)}</div>}
+          {r.status === 'pending' && (
+            <div className="flex gap-2 items-center">
+              <Input placeholder="管理者メモ（任意）" value={note[r.id] ?? ""} onChange={(e) => setNote({ ...note, [r.id]: e.target.value })} className="flex-1" />
+              <Button size="sm" onClick={() => act(r.id, true)}>完了</Button>
+              <Button size="sm" variant="outline" onClick={() => act(r.id, false)}>却下&返金</Button>
+            </div>
+          )}
+          {r.admin_note && <div className="text-[10px] text-muted-foreground">メモ: {r.admin_note}</div>}
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+// ========== Organizations admin ==========
+function OrgsAdminTab() {
+  const [pending, setPending] = useState<any[]>([]);
+  const [orgs, setOrgs] = useState<any[]>([]);
+  const [name, setName] = useState("");
+  const [desc, setDesc] = useState("");
+  const load = async () => {
+    const { data: p } = await (supabase as any).from("organizations")
+      .select("*, profile:profiles!organizations_created_by_fkey(username, display_name)")
+      .eq("status", "pending").order("created_at", { ascending: false });
+    setPending(p ?? []);
+    const { data: a } = await (supabase as any).from("organizations").select("*").order("created_at", { ascending: false }).limit(50);
+    setOrgs(a ?? []);
+  };
+  useEffect(() => { load(); }, []);
+  const create = async () => {
+    if (!name.trim()) return;
+    const { error } = await (supabase as any).from("organizations").insert({ name, description: desc || null, status: "approved" });
+    if (error) return toast.error(error.message);
+    setName(""); setDesc(""); toast.success("組織を作成しました"); load();
+  };
+  const review = async (id: string, approve: boolean) => {
+    const { error } = await (supabase as any).rpc("admin_review_organization", { _org_id: id, _approve: approve });
+    if (error) return toast.error(error.message);
+    toast.success(approve ? "承認しました" : "却下しました"); load();
+  };
+  return (
+    <div className="space-y-4 mt-4">
+      <Card className="p-4 space-y-2">
+        <div className="font-bold flex items-center gap-1"><Plus className="h-4 w-4" />新規組織を作成（管理者のみ）</div>
+        <Input placeholder="組織名" value={name} onChange={(e) => setName(e.target.value)} />
+        <Textarea rows={2} placeholder="説明" value={desc} onChange={(e) => setDesc(e.target.value)} />
+        <Button onClick={create}>作成</Button>
+      </Card>
+      {pending.length > 0 && (
+        <Card className="p-3 space-y-2">
+          <div className="font-bold">審査待ち ({pending.length})</div>
+          {pending.map((o: any) => (
+            <div key={o.id} className="flex items-center gap-2 border rounded p-2 text-sm">
+              <div className="flex-1">
+                <div className="font-medium">{o.name}</div>
+                <div className="text-xs text-muted-foreground">{o.description} ・ 申請者 {o.profile?.display_name ?? o.profile?.username}</div>
+              </div>
+              <Button size="sm" onClick={() => review(o.id, true)}>承認</Button>
+              <Button size="sm" variant="outline" onClick={() => review(o.id, false)}>却下</Button>
+            </div>
+          ))}
+        </Card>
+      )}
+      <Card className="p-3 space-y-2">
+        <div className="font-bold">既存組織</div>
+        {orgs.map((o: any) => (
+          <div key={o.id} className="flex items-center gap-2 border rounded p-2 text-sm">
+            <div className="flex-1">
+              <div className="font-medium">{o.name} <span className="text-[10px] px-1.5 rounded bg-muted ml-1">{o.status}</span></div>
+              <div className="text-xs text-muted-foreground">{o.description}</div>
+            </div>
+            <a href={`/organizations/${o.id}`} className="text-sm underline">管理 →</a>
+          </div>
+        ))}
       </Card>
     </div>
   );
