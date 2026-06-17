@@ -26,7 +26,7 @@ const TAGS = [
   { value: "other", label: "その他", className: "bg-muted text-muted-foreground border-border" },
 ];
 const tagMeta = (v: string) => TAGS.find((t) => t.value === v) ?? TAGS[3];
-import { Shield, Trash2, Pencil, LogIn, Plus, Wrench, Megaphone, Send } from "lucide-react";
+import { Shield, Trash2, Pencil, LogIn, Plus, Wrench, Megaphone, Send, ShoppingBag, Building2, Ticket, Coins, Save } from "lucide-react";
 import { Ban, AlertOctagon, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -53,6 +53,9 @@ function AdminPage() {
           <TabsTrigger value="users">ユーザー管理</TabsTrigger>
           <TabsTrigger value="maintenance">メンテナンス</TabsTrigger>
           <TabsTrigger value="restrictions" className="data-[state=active]:bg-red-500/10 data-[state=active]:text-red-600">利用停止</TabsTrigger>
+          <TabsTrigger value="shop"><ShoppingBag className="h-3 w-3 mr-1" />ショップ</TabsTrigger>
+          <TabsTrigger value="redemptions"><Ticket className="h-3 w-3 mr-1" />引換</TabsTrigger>
+          <TabsTrigger value="orgs"><Building2 className="h-3 w-3 mr-1" />組織</TabsTrigger>
           <TabsTrigger value="faq" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600">FAQ</TabsTrigger>
           <TabsTrigger value="nav">サイドバー設定</TabsTrigger>
           <TabsTrigger value="version">バージョン</TabsTrigger>
@@ -62,6 +65,9 @@ function AdminPage() {
         <TabsContent value="users"><UsersTab /></TabsContent>
         <TabsContent value="maintenance"><MaintenanceTab /></TabsContent>
         <TabsContent value="restrictions"><RestrictionsHub /></TabsContent>
+        <TabsContent value="shop"><ShopAdminTab /></TabsContent>
+        <TabsContent value="redemptions"><RedemptionsTab /></TabsContent>
+        <TabsContent value="orgs"><OrgsAdminTab /></TabsContent>
         <TabsContent value="faq"><FaqTab /></TabsContent>
         <TabsContent value="nav"><NavConfigTab /></TabsContent>
         <TabsContent value="version"><VersionTab /></TabsContent>
