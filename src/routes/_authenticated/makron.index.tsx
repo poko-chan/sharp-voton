@@ -35,7 +35,8 @@ function MakronHome() {
       const { data: meRow } = await (supabase as any).rpc("get_my_makron_rank");
       if (meRow && meRow[0]) setMe(meRow[0] as Me);
       // 問題作成は誰でも可能（一般ユーザーの投稿は pending として扱われる）
-      if (user) setCanCreate(true);
+      // 問題作成は管理者のみ
+      setCanCreate(!!isAdmin);
     })();
   }, [user?.id, isAdmin]);
 
@@ -62,7 +63,7 @@ function MakronHome() {
             <RLink to="/shop"><Button variant="outline" size="sm"><ShoppingBag className="h-4 w-4 mr-1" />ショップ</Button></RLink>
             <Link to="/makron/history"><Button variant="outline" size="sm"><History className="h-4 w-4 mr-1" />履歴</Button></Link>
             {isAdmin && <Link to="/makron/labels"><Button variant="outline" size="sm">ラベル管理</Button></Link>}
-            {canCreate && <Link to="/makron/admin"><Button size="sm"><Plus className="h-4 w-4 mr-1" />{isAdmin ? "管理者画面" : "問題作成"}</Button></Link>}
+            {isAdmin && <Link to="/makron/admin"><Button size="sm"><Plus className="h-4 w-4 mr-1" />管理者画面</Button></Link>}
           </div>
         </div>
 
