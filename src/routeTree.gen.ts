@@ -32,7 +32,6 @@ import { Route as AuthenticatedRankRouteImport } from './routes/_authenticated/r
 import { Route as AuthenticatedQuestionsRouteImport } from './routes/_authenticated/questions'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
 import { Route as AuthenticatedParentRouteImport } from './routes/_authenticated/parent'
-import { Route as AuthenticatedOrganizationsRouteImport } from './routes/_authenticated/organizations'
 import { Route as AuthenticatedOcrRouteImport } from './routes/_authenticated/ocr'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
@@ -181,12 +180,6 @@ const AuthenticatedParentRoute = AuthenticatedParentRouteImport.update({
   path: '/parent',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedOrganizationsRoute =
-  AuthenticatedOrganizationsRouteImport.update({
-    id: '/organizations',
-    path: '/organizations',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedOcrRoute = AuthenticatedOcrRouteImport.update({
   id: '/ocr',
   path: '/ocr',
@@ -320,9 +313,9 @@ const AuthenticatedRoomsRoomIdRoute =
   } as any)
 const AuthenticatedOrganizationsOrgIdRoute =
   AuthenticatedOrganizationsOrgIdRouteImport.update({
-    id: '/$orgId',
-    path: '/$orgId',
-    getParentRoute: () => AuthenticatedOrganizationsRoute,
+    id: '/organizations/$orgId',
+    path: '/organizations/$orgId',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedMakronLabelsRoute =
   AuthenticatedMakronLabelsRouteImport.update({
@@ -396,7 +389,6 @@ export interface FileRoutesByFullPath {
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/ocr': typeof AuthenticatedOcrRoute
-  '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/parent': typeof AuthenticatedParentRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
@@ -453,7 +445,6 @@ export interface FileRoutesByTo {
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/ocr': typeof AuthenticatedOcrRoute
-  '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/parent': typeof AuthenticatedParentRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
@@ -512,7 +503,6 @@ export interface FileRoutesById {
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/ocr': typeof AuthenticatedOcrRoute
-  '/_authenticated/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/_authenticated/parent': typeof AuthenticatedParentRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
@@ -572,7 +562,6 @@ export interface FileRouteTypes {
     | '/notes'
     | '/notifications'
     | '/ocr'
-    | '/organizations'
     | '/parent'
     | '/practice'
     | '/questions'
@@ -629,7 +618,6 @@ export interface FileRouteTypes {
     | '/notes'
     | '/notifications'
     | '/ocr'
-    | '/organizations'
     | '/parent'
     | '/practice'
     | '/questions'
@@ -687,7 +675,6 @@ export interface FileRouteTypes {
     | '/_authenticated/notes'
     | '/_authenticated/notifications'
     | '/_authenticated/ocr'
-    | '/_authenticated/organizations'
     | '/_authenticated/parent'
     | '/_authenticated/practice'
     | '/_authenticated/questions'
@@ -893,13 +880,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedParentRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/organizations': {
-      id: '/_authenticated/organizations'
-      path: '/organizations'
-      fullPath: '/organizations'
-      preLoaderRoute: typeof AuthenticatedOrganizationsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/ocr': {
       id: '/_authenticated/ocr'
       path: '/ocr'
@@ -1077,10 +1057,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/organizations/$orgId': {
       id: '/_authenticated/organizations/$orgId'
-      path: '/$orgId'
+      path: '/organizations/$orgId'
       fullPath: '/organizations/$orgId'
       preLoaderRoute: typeof AuthenticatedOrganizationsOrgIdRouteImport
-      parentRoute: typeof AuthenticatedOrganizationsRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/makron/labels': {
       id: '/_authenticated/makron/labels'
@@ -1159,20 +1139,6 @@ const AuthenticatedMakronRouteChildren: AuthenticatedMakronRouteChildren = {
 const AuthenticatedMakronRouteWithChildren =
   AuthenticatedMakronRoute._addFileChildren(AuthenticatedMakronRouteChildren)
 
-interface AuthenticatedOrganizationsRouteChildren {
-  AuthenticatedOrganizationsOrgIdRoute: typeof AuthenticatedOrganizationsOrgIdRoute
-}
-
-const AuthenticatedOrganizationsRouteChildren: AuthenticatedOrganizationsRouteChildren =
-  {
-    AuthenticatedOrganizationsOrgIdRoute: AuthenticatedOrganizationsOrgIdRoute,
-  }
-
-const AuthenticatedOrganizationsRouteWithChildren =
-  AuthenticatedOrganizationsRoute._addFileChildren(
-    AuthenticatedOrganizationsRouteChildren,
-  )
-
 interface AuthenticatedRoomsRouteChildren {
   AuthenticatedRoomsRoomIdRoute: typeof AuthenticatedRoomsRoomIdRoute
   AuthenticatedRoomsIndexRoute: typeof AuthenticatedRoomsIndexRoute
@@ -1208,7 +1174,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOcrRoute: typeof AuthenticatedOcrRoute
-  AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRouteWithChildren
   AuthenticatedParentRoute: typeof AuthenticatedParentRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedQuestionsRoute: typeof AuthenticatedQuestionsRoute
@@ -1223,6 +1188,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
   AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
   AuthenticatedClassroomClassIdRoute: typeof AuthenticatedClassroomClassIdRoute
+  AuthenticatedOrganizationsOrgIdRoute: typeof AuthenticatedOrganizationsOrgIdRoute
   AuthenticatedClassroomIndexRoute: typeof AuthenticatedClassroomIndexRoute
 }
 
@@ -1248,7 +1214,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOcrRoute: AuthenticatedOcrRoute,
-  AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRouteWithChildren,
   AuthenticatedParentRoute: AuthenticatedParentRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedQuestionsRoute: AuthenticatedQuestionsRoute,
@@ -1263,6 +1228,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTodayRoute: AuthenticatedTodayRoute,
   AuthenticatedTutorRoute: AuthenticatedTutorRoute,
   AuthenticatedClassroomClassIdRoute: AuthenticatedClassroomClassIdRoute,
+  AuthenticatedOrganizationsOrgIdRoute: AuthenticatedOrganizationsOrgIdRoute,
   AuthenticatedClassroomIndexRoute: AuthenticatedClassroomIndexRoute,
 }
 
