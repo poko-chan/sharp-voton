@@ -355,6 +355,7 @@ function UserRow({ user, onChange, update, del, setRole, doImpersonate }: any) {
           <>
             <Button size="sm" variant="outline" onClick={() => setEdit(true)}><Pencil className="h-3.5 w-3.5" /></Button>
             <Button size="sm" variant="outline" onClick={() => doImpersonate(user.id)}><LogIn className="h-3.5 w-3.5" /></Button>
+            <UserCoinXpPopover userId={user.id} />
             <Button size="sm" variant="destructive" onClick={remove}><Trash2 className="h-3.5 w-3.5" /></Button>
           </>
         )}
