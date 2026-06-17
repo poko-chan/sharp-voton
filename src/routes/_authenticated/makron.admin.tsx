@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Trash2, Save, FileText, ChevronRight, FlagOff, Image as ImageIcon, Power, Download, UserCog, BarChart3, KeyRound, Coins, Check, X } from "lucide-react";
+import { Plus, Trash2, Save, FileText, ChevronRight, FlagOff, Image as ImageIcon, Power, Download, BarChart3, Check, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
@@ -22,41 +22,34 @@ const TYPES = [
 
 function AdminPage() {
   const { user, isAdmin } = useAuth();
-  const [canCreate, setCanCreate] = useState(false);
   const [units, setUnits] = useState<any[]>([]);
+  const [subjects, setSubjects] = useState<any[]>([]);
+  const [fields, setFields] = useState<any[]>([]);
   const [selUnit, setSelUnit] = useState<string | null>(null);
   const [questions, setQuestions] = useState<any[]>([]);
   const [pending, setPending] = useState<any[]>([]);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
   const [analytics, setAnalytics] = useState<any[]>([]);
-  const [allUsers, setAllUsers] = useState<any[]>([]);
-  const [userQuery, setUserQuery] = useState("");
-  const [tempList, setTempList] = useState<any[]>([]);
-  const [apps, setApps] = useState<any[]>([]);
   const [pendingQs, setPendingQs] = useState<any[]>([]);
-  const [showPendingInList, setShowPendingInList] = useState(true);
   // NOTE: ALL hooks must be declared BEFORE any early return to keep hook order
   // stable across renders (React error #310 otherwise).
   const [uTitle, setUTitle] = useState("");
-  const [uSubj, setUSubj] = useState("");
-  const [uField, setUField] = useState("");
-  const [uUnit, setUUnit] = useState("");
+  const [uSubjectId, setUSubjectId] = useState<string>("");
+  const [uFieldId, setUFieldId] = useState<string>("");
   const [uDesc, setUDesc] = useState("");
   const [draft, setDraft] = useState<any | null>(null);
   const [gradeFor, setGradeFor] = useState<any | null>(null);
   const [gradeScore, setGradeScore] = useState<number>(0);
   const [gradeComment, setGradeComment] = useState("");
-  const loadApps = async () => {
-    const { data } = await (supabase as any).from("question_creator_applications")
-      .select("*, profile:profiles!question_creator_applications_user_id_fkey(username, display_name)")
-      .order("created_at", { ascending: false });
-    setApps(data ?? []);
-  };
 
   const loadUnits = async () => {
     const { data } = await (supabase as any).from("makron_units").select("*").order("order_idx").order("created_at");
     setUnits(data ?? []);
+    const { data: s } = await (supabase as any).from("makron_subjects").select("*").order("order_idx").order("name");
+    setSubjects(s ?? []);
+    const { data: f } = await (supabase as any).from("makron_fields").select("*").order("order_idx").order("name");
+    setFields(f ?? []);
   };
   const loadQuestions = async (unitId: string) => {
     const { data } = await (supabase as any).from("makron_questions").select("*").eq("unit_id", unitId).order("order_idx").order("created_at");
@@ -82,46 +75,40 @@ function AdminPage() {
 
   useEffect(() => { loadUnits(); loadPending(); loadReports(); loadPendingQs(); }, []);
   useEffect(() => { if (selUnit) loadQuestions(selUnit); }, [selUnit]);
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const { data: tmp } = await (supabase as any).from("temp_question_creators").select("expires_at").eq("user_id", user.id).gt("expires_at", new Date().toISOString()).maybeSingle();
-      setCanCreate(isAdmin || !!tmp);
-    })();
-  }, [user?.id, isAdmin]);
 
   const loadAnalytics = async () => {
     const { data } = await (supabase as any).rpc("admin_makron_analytics");
     setAnalytics(data ?? []);
   };
-  const loadUsersAndTemp = async () => {
-    const [{ data: u }, { data: t }] = await Promise.all([
-      supabase.from("profiles").select("id, username, display_name, avatar_url").limit(200),
-      (supabase as any).from("temp_question_creators").select("*, profile:profiles!temp_question_creators_user_id_fkey(username, display_name)").gt("expires_at", new Date().toISOString()),
-    ]);
-    setAllUsers(u ?? []);
-    setTempList(t ?? []);
-  };
 
-  // 問題作成は誰でも可能。未ログインのみ拒否。
+  // 問題作成・編集は管理者のみ
   if (!user) {
-    return <MakronShell back="/makron" title="問題作成"><div className="p-6 text-sm">ログインしてください</div></MakronShell>;
+    return <MakronShell back="/makron" title="管理者画面"><div className="p-6 text-sm">ログインしてください</div></MakronShell>;
+  }
+  if (!isAdmin) {
+    return <MakronShell back="/makron" title="管理者画面"><div className="p-6 text-sm text-muted-foreground">この画面は管理者のみ利用できます。</div></MakronShell>;
   }
 
   // Create unit (admin only)
   const createUnit = async () => {
-    if (!isAdmin) return toast.error("単元の作成は管理者のみ可能です");
     if (!uTitle.trim()) return;
+    const sub = subjects.find((s) => s.id === uSubjectId);
+    const fld = fields.find((f) => f.id === uFieldId);
     const { error } = await (supabase as any).from("makron_units").insert({
-      title: uTitle, subject: uSubj || null, field: uField || null, unit: uUnit || null,
-      description: uDesc || null, created_by: user!.id,
+      title: uTitle,
+      subject_id: uSubjectId || null,
+      field_id: uFieldId || null,
+      subject: sub?.name ?? null,
+      field: fld?.name ?? null,
+      unit: uTitle,
+      description: uDesc || null,
+      created_by: user!.id,
     });
     if (error) return toast.error(error.message);
-    setUTitle(""); setUSubj(""); setUField(""); setUUnit(""); setUDesc("");
+    setUTitle(""); setUSubjectId(""); setUFieldId(""); setUDesc("");
     toast.success("単元を作成しました"); loadUnits();
   };
   const deleteUnit = async (id: string) => {
-    if (!isAdmin) return toast.error("単元の削除は管理者のみ可能です");
     if (!confirm("この単元と中の問題をすべて削除しますか？")) return;
     const { error } = await (supabase as any).from("makron_units").delete().eq("id", id);
     if (error) return toast.error(error.message);
@@ -183,37 +170,34 @@ function AdminPage() {
   return (
     <MakronShell back="/makron" title="管理者画面">
       <div className="max-w-6xl mx-auto p-6">
-        <Tabs defaultValue="units" onValueChange={(v) => { if (v === "analytics") loadAnalytics(); if (v === "users") loadUsersAndTemp(); if (v === "apps") loadApps(); if (v === "approve") loadPendingQs(); }}>
+        <Tabs defaultValue="units" onValueChange={(v) => { if (v === "analytics") loadAnalytics(); if (v === "approve") loadPendingQs(); }}>
           <TabsList>
             <TabsTrigger value="units">単元・問題</TabsTrigger>
-            {isAdmin && <TabsTrigger value="approve">問題承認 ({pendingQs.length})</TabsTrigger>}
+            <TabsTrigger value="approve">問題承認 ({pendingQs.length})</TabsTrigger>
             <TabsTrigger value="grading">手動採点 ({pending.length})</TabsTrigger>
             <TabsTrigger value="reports">報告 ({reports.filter(r => r.status === "open").length})</TabsTrigger>
-            {isAdmin && <TabsTrigger value="users"><UserCog className="h-3 w-3 mr-1" />ユーザー</TabsTrigger>}
-            {isAdmin && <TabsTrigger value="apps">作成申請</TabsTrigger>}
-            {isAdmin && <TabsTrigger value="analytics"><BarChart3 className="h-3 w-3 mr-1" />分析</TabsTrigger>}
+            <TabsTrigger value="analytics"><BarChart3 className="h-3 w-3 mr-1" />分析</TabsTrigger>
           </TabsList>
 
           <TabsContent value="units" className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
-              {isAdmin ? (
-                <Card className="p-4 space-y-2">
-                  <div className="font-bold flex items-center gap-1"><Plus className="h-4 w-4" />新しい単元 <span className="text-[10px] text-muted-foreground">(管理者のみ)</span></div>
-                  <Input placeholder="タイトル" value={uTitle} onChange={(e) => setUTitle(e.target.value)} />
-                  <div className="grid grid-cols-3 gap-1">
-                    <Input placeholder="教科" value={uSubj} onChange={(e) => setUSubj(e.target.value)} />
-                    <Input placeholder="分野" value={uField} onChange={(e) => setUField(e.target.value)} />
-                    <Input placeholder="ユニット" value={uUnit} onChange={(e) => setUUnit(e.target.value)} />
-                  </div>
-                  <Textarea rows={2} placeholder="説明（任意）" value={uDesc} onChange={(e) => setUDesc(e.target.value)} />
-                  <Button onClick={createUnit} className="w-full">作成</Button>
-                </Card>
-              ) : (
-                <Card className="p-4 text-sm text-muted-foreground bg-muted/30">
-                  <div className="font-bold text-foreground mb-1">単元の追加・編集は管理者のみ</div>
-                  作成したい単元が無い場合は管理者へリクエストしてください。問題は既存の単元を選んで作成 → 管理者の承認で公式になります。
-                </Card>
-              )}
+              <Card className="p-4 space-y-2">
+                <div className="font-bold flex items-center gap-1"><Plus className="h-4 w-4" />新しい単元</div>
+                <Input placeholder="タイトル（ユニット名）" value={uTitle} onChange={(e) => setUTitle(e.target.value)} />
+                <div className="grid grid-cols-2 gap-1">
+                  <Select value={uSubjectId} onValueChange={(v) => { setUSubjectId(v); setUFieldId(""); }}>
+                    <SelectTrigger><SelectValue placeholder="教科を選択" /></SelectTrigger>
+                    <SelectContent>{subjects.map((s: any) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <Select value={uFieldId} onValueChange={setUFieldId} disabled={!uSubjectId}>
+                    <SelectTrigger><SelectValue placeholder="分野を選択" /></SelectTrigger>
+                    <SelectContent>{fields.filter((f: any) => f.subject_id === uSubjectId).map((f: any) => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="text-[10px] text-muted-foreground">教科・分野ラベルは <a href="/makron/labels" className="underline">ラベル管理</a> から追加してください。</div>
+                <Textarea rows={2} placeholder="説明（任意）" value={uDesc} onChange={(e) => setUDesc(e.target.value)} />
+                <Button onClick={createUnit} className="w-full" disabled={!uTitle.trim()}>作成</Button>
+              </Card>
               <Card className="p-4 space-y-2 max-h-96 overflow-auto">
                 <div className="font-bold">単元一覧</div>
                 {units.map((u) => (
@@ -222,7 +206,7 @@ function AdminPage() {
                       <div className="font-medium truncate flex items-center gap-1">{u.title} <ChevronRight className="h-3 w-3" /></div>
                       <div className="text-[10px] text-muted-foreground">{[u.subject, u.field, u.unit].filter(Boolean).join(" / ")}</div>
                     </button>
-                    {isAdmin && <Button size="sm" variant="ghost" onClick={() => deleteUnit(u.id)} className="text-destructive"><Trash2 className="h-4 w-4" /></Button>}
+                    <Button size="sm" variant="ghost" onClick={() => deleteUnit(u.id)} className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 ))}
                 {units.length === 0 && <div className="text-xs text-muted-foreground">まだ単元がありません</div>}
