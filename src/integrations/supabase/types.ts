@@ -1661,6 +1661,133 @@ export type Database = {
           },
         ]
       }
+      makron_pack_attempts: {
+        Row: {
+          attempts_count: number
+          coins_earned_total: number
+          created_at: string
+          id: string
+          last_attempt_at: string | null
+          pack_id: string
+          rewards_granted_count: number
+          user_id: string
+          xp_earned_total: number
+        }
+        Insert: {
+          attempts_count?: number
+          coins_earned_total?: number
+          created_at?: string
+          id?: string
+          last_attempt_at?: string | null
+          pack_id: string
+          rewards_granted_count?: number
+          user_id: string
+          xp_earned_total?: number
+        }
+        Update: {
+          attempts_count?: number
+          coins_earned_total?: number
+          created_at?: string
+          id?: string
+          last_attempt_at?: string | null
+          pack_id?: string
+          rewards_granted_count?: number
+          user_id?: string
+          xp_earned_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "makron_pack_attempts_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "makron_packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      makron_packs: {
+        Row: {
+          allow_all_mode: boolean
+          coin_cap_per_user: number | null
+          coin_per_question: number
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          is_official: boolean
+          max_attempts: number | null
+          order_idx: number
+          pass_score: number | null
+          question_limit: number | null
+          reward_attempts_cap: number | null
+          shuffle: boolean
+          skip_preview: boolean
+          status: string
+          title: string
+          unit_id: string
+          updated_at: string
+          xp_cap_per_user: number | null
+          xp_per_question: number
+        }
+        Insert: {
+          allow_all_mode?: boolean
+          coin_cap_per_user?: number | null
+          coin_per_question?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_official?: boolean
+          max_attempts?: number | null
+          order_idx?: number
+          pass_score?: number | null
+          question_limit?: number | null
+          reward_attempts_cap?: number | null
+          shuffle?: boolean
+          skip_preview?: boolean
+          status?: string
+          title: string
+          unit_id: string
+          updated_at?: string
+          xp_cap_per_user?: number | null
+          xp_per_question?: number
+        }
+        Update: {
+          allow_all_mode?: boolean
+          coin_cap_per_user?: number | null
+          coin_per_question?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_official?: boolean
+          max_attempts?: number | null
+          order_idx?: number
+          pass_score?: number | null
+          question_limit?: number | null
+          reward_attempts_cap?: number | null
+          shuffle?: boolean
+          skip_preview?: boolean
+          status?: string
+          title?: string
+          unit_id?: string
+          updated_at?: string
+          xp_cap_per_user?: number | null
+          xp_per_question?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "makron_packs_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "makron_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       makron_question_likes: {
         Row: {
           created_at: string
@@ -1711,6 +1838,7 @@ export type Database = {
           model_answer: string | null
           options: Json
           order_idx: number
+          pack_id: string | null
           points: number
           prompt: string
           reviewed_at: string | null
@@ -1735,6 +1863,7 @@ export type Database = {
           model_answer?: string | null
           options?: Json
           order_idx?: number
+          pack_id?: string | null
           points?: number
           prompt: string
           reviewed_at?: string | null
@@ -1759,6 +1888,7 @@ export type Database = {
           model_answer?: string | null
           options?: Json
           order_idx?: number
+          pack_id?: string | null
           points?: number
           prompt?: string
           reviewed_at?: string | null
@@ -1770,6 +1900,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "makron_questions_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "makron_packs"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "makron_questions_unit_id_fkey"
             columns: ["unit_id"]
@@ -1822,10 +1959,13 @@ export type Database = {
       }
       makron_sessions: {
         Row: {
+          all_mode: boolean
           coins_awarded: number
           created_at: string
           finished_at: string | null
           id: string
+          pack_id: string | null
+          passed: boolean | null
           scratchpad: string | null
           started_at: string
           total_points: number | null
@@ -1835,10 +1975,13 @@ export type Database = {
           xp_awarded: number
         }
         Insert: {
+          all_mode?: boolean
           coins_awarded?: number
           created_at?: string
           finished_at?: string | null
           id?: string
+          pack_id?: string | null
+          passed?: boolean | null
           scratchpad?: string | null
           started_at?: string
           total_points?: number | null
@@ -1848,10 +1991,13 @@ export type Database = {
           xp_awarded?: number
         }
         Update: {
+          all_mode?: boolean
           coins_awarded?: number
           created_at?: string
           finished_at?: string | null
           id?: string
+          pack_id?: string | null
+          passed?: boolean | null
           scratchpad?: string | null
           started_at?: string
           total_points?: number | null
@@ -1861,6 +2007,13 @@ export type Database = {
           xp_awarded?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "makron_sessions_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "makron_packs"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "makron_sessions_unit_id_fkey"
             columns: ["unit_id"]
@@ -3998,6 +4151,35 @@ export type Database = {
         Returns: boolean
       }
       join_class_by_code: { Args: { _code: string }; Returns: string }
+      makron_delete_answer: { Args: { _answer_id: string }; Returns: undefined }
+      makron_pack_attempters: {
+        Args: { _pack_id: string }
+        Returns: {
+          attempts_count: number
+          best_score: number
+          display_name: string
+          last_attempt_at: string
+          user_id: string
+        }[]
+      }
+      makron_pack_reset_attempts: {
+        Args: { _pack_id: string; _user_id?: string }
+        Returns: undefined
+      }
+      makron_pack_stats: { Args: { _pack_id: string }; Returns: Json }
+      makron_update_answer_score: {
+        Args: {
+          _answer_id: string
+          _comment?: string
+          _is_correct: boolean
+          _score: number
+        }
+        Returns: undefined
+      }
+      makron_update_session: {
+        Args: { _passed: boolean; _score: number; _session_id: string }
+        Returns: undefined
+      }
       my_org_ids: { Args: never; Returns: string[] }
       org_invite_member: {
         Args: { _message?: string; _org: string; _role?: string; _user: string }
