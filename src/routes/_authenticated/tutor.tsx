@@ -17,6 +17,8 @@ import {
 import {
   getStudyContext, listTutorThreads, createTutorThread, renameTutorThread, deleteTutorThread,
 } from "@/lib/tutor.functions";
+import { chromeAiStatus, createChromeAiSession } from "@/lib/chrome-ai";
+import { AiUnavailable } from "@/components/AiUnavailable";
 
 type Attachment = { url: string; name: string; type: string };
 type Msg = { id: string; role: string; content: string; attachments: Attachment[]; created_at: string; thread_id: string | null };
@@ -56,6 +58,9 @@ function TutorPage() {
   const [deleteTarget, setDeleteTarget] = useState<Thread | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const [aiStatus, setAiStatus] = useState<string>("checking");
+  useEffect(() => { chromeAiStatus().then(setAiStatus); }, []);
+  const canAi = aiStatus === "available" || aiStatus === "downloadable" || aiStatus === "downloading";
 
   const loadThreads = useCallback(async () => {
     try {
@@ -132,26 +137,15 @@ function TutorPage() {
       try { ctx = await ctxFn(); } catch {}
       const systemPrompt = baseSystem(ctx);
 
-      const apiMessages = nextMsgs.map((m) => {
+      // Chrome 内蔵 AI で生成（テキストのみ。画像は URL を会話に含めて参照させる）
+      const history = nextMsgs.map((m) => {
         const imgs = (m.attachments ?? []).filter((a) => a.type.startsWith("image/"));
-        if (imgs.length > 0 && m.role === "user") {
-          return {
-            role: m.role,
-            content: [
-              { type: "text", text: m.content || "添付された画像について解説してください" },
-              ...imgs.map((a) => ({ type: "image_url", image_url: { url: a.url } })),
-            ],
-          };
-        }
-        return { role: m.role, content: m.content };
-      });
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: apiMessages, system: systemPrompt, raw: true }),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      const text = await res.text();
+        const imgNote = imgs.length ? `\n[添付画像: ${imgs.map((a) => a.name).join(", ")}]` : "";
+        return `${m.role === "user" ? "ユーザー" : "アシスタント"}: ${m.content}${imgNote}`;
+      }).join("\n\n");
+      const session = await createChromeAiSession({ system: systemPrompt });
+      let text = "";
+      try { text = await session.prompt(history + "\n\nアシスタント:"); } finally { session.destroy(); }
       await supabase.from("tutor_messages").insert({
         user_id: user.id, role: "assistant", content: text, attachments: [], thread_id: tid,
       });
@@ -196,6 +190,7 @@ function TutorPage() {
           <p className="text-sm text-muted-foreground">新しいチャットごとに会話が保存されます</p>
         </div>
       </div>
+      {!canAi && aiStatus !== "checking" && <div className="mb-3"><AiUnavailable feature="AI家庭教師" /></div>}
 
       <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-3 h-[calc(100vh-10rem)]">
         {/* スレッドサイドバー */}
