@@ -1,26 +1,31 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useServerFn } from "@tanstack/react-start";
-import { generateListenSummary } from "@/lib/coach.functions";
 import { Loader2, Play, Square, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { chromeAiStatus, chromeAiPrompt } from "@/lib/chrome-ai";
+import { AiUnavailable } from "@/components/AiUnavailable";
 
 export const Route = createFileRoute("/_authenticated/listen")({ component: ListenPage });
 
 function ListenPage() {
-  const gen = useServerFn(generateListenSummary);
   const [topic, setTopic] = useState("");
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [aiStatus, setAiStatus] = useState<string>("checking");
+  useEffect(() => { chromeAiStatus().then(setAiStatus); }, []);
+  const canAi = aiStatus === "available" || aiStatus === "downloadable" || aiStatus === "downloading";
 
   const make = async () => {
     if (!topic.trim()) return toast.error("お題を入力してください");
     setLoading(true);
-    try { setText((await gen({ data: { topic: topic.trim() } })).text); }
+    try {
+      const prompt = `「${topic.trim()}」について、中学生でも理解できる優しい要約を400字程度で。読むだけ／聞き流すだけで頭に入る、会話調で。マークダウン記号は使わない。`;
+      setText(await chromeAiPrompt(prompt));
+    }
     catch (e: any) { toast.error(e.message); }
     finally { setLoading(false); }
   };
@@ -43,8 +48,9 @@ function ListenPage() {
         <p className="text-muted-foreground">AI要約を読むだけ / 聞き流すだけ。</p>
       </div>
       <Card className="p-5 space-y-3">
+        {!canAi && aiStatus !== "checking" && <AiUnavailable feature="耳で学ぶ" />}
         <Input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="お題（例: 三角関数の基本）" maxLength={200} />
-        <Button onClick={make} disabled={loading}>
+        <Button onClick={make} disabled={loading || !canAi}>
           {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
           要約をもらう
         </Button>

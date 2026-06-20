@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Play, ListChecks, Plus, Package, Crown, Settings, BarChart3 } from "lucide-react";
+import { Play, ListChecks, Plus, Package, Crown, Settings, BarChart3, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { AiPackImportDialog } from "@/components/makron/AiPackImportDialog";
 
 export const Route = createFileRoute("/_authenticated/makron/unit/$unitId")({ component: UnitPage });
 
@@ -23,6 +24,7 @@ function UnitPage() {
   const [creating, setCreating] = useState(false);
   const [pTitle, setPTitle] = useState("");
   const [pDesc, setPDesc] = useState("");
+  const [aiOpen, setAiOpen] = useState(false);
 
   const load = async () => {
     const { data: u } = await (supabase as any).from("makron_units").select("*").eq("id", unitId).maybeSingle();
@@ -64,9 +66,14 @@ function UnitPage() {
             <span>申請中パックも表示</span>
           </div>
           <div className="ml-auto">
-            <Button size="sm" onClick={() => setCreating((v) => !v)}>
-              <Plus className="h-4 w-4 mr-1" />問題パックを作成
-            </Button>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => setAiOpen(true)}>
+                <Sparkles className="h-4 w-4 mr-1" />AI で一括作成
+              </Button>
+              <Button size="sm" onClick={() => setCreating((v) => !v)}>
+                <Plus className="h-4 w-4 mr-1" />問題パックを作成
+              </Button>
+            </div>
           </div>
         </Card>
 
@@ -135,6 +142,13 @@ function UnitPage() {
             </Card>
           )}
         </div>
+        <AiPackImportDialog
+          open={aiOpen}
+          onOpenChange={setAiOpen}
+          mode="new"
+          unit={unit ? { id: unitId, title: unit.title, subject: unit.subject, field: unit.field, unit: unit.unit } : null}
+          onDone={load}
+        />
       </div>
     </MakronShell>
   );

@@ -10,8 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Play, Plus, Save, Trash2, Settings, Image as ImageIcon, Power, BarChart3, Crown, ListChecks } from "lucide-react";
+import { Play, Plus, Save, Trash2, Settings, Image as ImageIcon, Power, BarChart3, Crown, ListChecks, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { AiPackImportDialog } from "@/components/makron/AiPackImportDialog";
 
 export const Route = createFileRoute("/_authenticated/makron/pack/$packId")({ component: PackPage });
 
@@ -28,10 +29,16 @@ function PackPage() {
   const [pack, setPack] = useState<any>(null);
   const [questions, setQuestions] = useState<any[]>([]);
   const [draft, setDraft] = useState<any | null>(null);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [unitMeta, setUnitMeta] = useState<any>(null);
 
   const load = async () => {
     const { data: p } = await (supabase as any).from("makron_packs").select("*").eq("id", packId).maybeSingle();
     setPack(p);
+    if (p?.unit_id) {
+      const { data: u } = await (supabase as any).from("makron_units").select("id,title,subject,field,unit").eq("id", p.unit_id).maybeSingle();
+      setUnitMeta(u);
+    }
     const { data: qs } = await (supabase as any).from("makron_questions")
       .select("*").eq("pack_id", packId).order("order_idx").order("created_at");
     setQuestions(qs ?? []);
@@ -127,7 +134,10 @@ function PackPage() {
             <TabsContent value="questions" className="space-y-3 mt-3">
               <div className="flex items-center justify-between">
                 <div className="font-bold">問題一覧 ({questions.length})</div>
-                <Button size="sm" onClick={() => setDraft(blank())}><Plus className="h-4 w-4 mr-1" />問題を追加</Button>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => setAiOpen(true)}><Sparkles className="h-4 w-4 mr-1" />AI で一括追加</Button>
+                  <Button size="sm" onClick={() => setDraft(blank())}><Plus className="h-4 w-4 mr-1" />問題を追加</Button>
+                </div>
               </div>
               <div className="space-y-1 max-h-96 overflow-auto">
                 {questions.map((q) => (
@@ -308,6 +318,14 @@ function PackPage() {
           <Card className="p-6 text-sm text-muted-foreground text-center">問題内容は演習開始から確認できます。</Card>
         )}
       </div>
+      <AiPackImportDialog
+        open={aiOpen}
+        onOpenChange={setAiOpen}
+        mode="add"
+        packId={packId}
+        unit={unitMeta ? { id: unitMeta.id, title: unitMeta.title, subject: unitMeta.subject, field: unitMeta.field, unit: unitMeta.unit } : (pack ? { id: pack.unit_id } : null)}
+        onDone={load}
+      />
     </MakronShell>
   );
 }
