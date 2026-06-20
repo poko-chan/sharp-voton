@@ -66,6 +66,11 @@ const OG_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fd850e55-f
 const DEFAULT_TITLE = "Study+ — 学習をもっと賢く、楽しく続けるためのオールインワン学習アプリ";
 const DEFAULT_DESC = "Study+ は勉強記録・集中タイマー・カレンダー・AI問題生成・AI家庭教師・学習目標管理をひとつにまとめた、毎日の学習を続けやすくするオールインワン学習プラットフォームです。";
 
+// Chrome Built-in AI (Prompt API) Origin Trial token.
+// 環境変数 VITE_CHROME_AI_OT_TOKEN にトークンを入れると <meta http-equiv="origin-trial"> が挿入される。
+// 設定しない場合でも、ブラウザ側でフラグが有効なら動作する。
+const CHROME_AI_OT = (import.meta as any).env?.VITE_CHROME_AI_OT_TOKEN as string | undefined;
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
@@ -74,6 +79,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "theme-color", content: "#10b981" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-title", content: "Study+" },
+      ...(CHROME_AI_OT ? [{ httpEquiv: "origin-trial", content: CHROME_AI_OT } as any] : []),
       { title: DEFAULT_TITLE },
       { name: "description", content: DEFAULT_DESC },
       { property: "og:site_name", content: "Study+" },
