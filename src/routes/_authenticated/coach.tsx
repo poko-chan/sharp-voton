@@ -6,9 +6,9 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Flame, BookOpen, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useServerFn } from "@tanstack/react-start";
-import { generateCoachAdvice } from "@/lib/coach.functions";
 import { localDateStr, addDaysStr } from "@/lib/date";
+import { chromeAiStatus, chromeAiPrompt } from "@/lib/chrome-ai";
+import { AiUnavailable } from "@/components/AiUnavailable";
 
 export const Route = createFileRoute("/_authenticated/coach")({
   component: CoachPage,
@@ -16,10 +16,12 @@ export const Route = createFileRoute("/_authenticated/coach")({
 
 function CoachPage() {
   const { user } = useAuth();
-  const advise = useServerFn(generateCoachAdvice);
   const [advice, setAdvice] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [aiStatus, setAiStatus] = useState<string>("checking");
   const [stats, setStats] = useState<{ streak: number; todayMin: number; weekMin: number; daysSince: number } | null>(null);
+
+  useEffect(() => { chromeAiStatus().then(setAiStatus); }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -51,14 +53,32 @@ function CoachPage() {
   const ask = async () => {
     setLoading(true);
     try {
-      const r = await advise();
-      setAdvice(r.advice);
+      const subjList = "—";
+      const goalList = "—";
+      const s = stats;
+      const prompt = `あなたは優しく現実的なAI学習コーチです。次のユーザーに、今日できる小さな一歩を提案してください。
+
+【最近の学習】
+- 連続日数: ${s?.streak ?? 0} 日
+- 今日: ${s?.todayMin ?? 0} 分 / 今週: ${s?.weekMin ?? 0} 分
+- 最終学習からの経過: ${s?.daysSince ?? "—"} 日
+
+【ルール】
+- 説教はしない。共感→小さな提案の順
+- 「5分だけやる」「1問だけ解く」「教科書を開くだけ」など、最小行動を1〜3個提案
+- 全くやってない場合でも、罪悪感をあおらない
+- 250字以内
+- マークダウン記号 (** や ##) は使わない、ふつうの文`;
+      const out = await chromeAiPrompt(prompt);
+      setAdvice(out);
     } catch (e: any) {
       toast.error(e.message ?? "失敗");
     } finally {
       setLoading(false);
     }
   };
+
+  const canAi = aiStatus === "available" || aiStatus === "downloadable" || aiStatus === "downloading";
 
   return (
     <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
@@ -78,12 +98,13 @@ function CoachPage() {
 
       <Card className="p-6 space-y-4">
         <h2 className="font-semibold">今のあなたへのアドバイス</h2>
+        {!canAi && aiStatus !== "checking" && <AiUnavailable feature="AI コーチ" />}
         {advice ? (
           <p className="whitespace-pre-wrap text-sm leading-7">{advice}</p>
         ) : (
           <p className="text-sm text-muted-foreground">ボタンを押すと、あなたの最近の学習状況をもとに優しい声かけと小さな目標を提案します。</p>
         )}
-        <Button onClick={ask} disabled={loading}>
+        <Button onClick={ask} disabled={loading || !canAi}>
           {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
           コーチに相談する
         </Button>
