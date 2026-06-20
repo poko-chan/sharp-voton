@@ -4167,6 +4167,7 @@ export type Database = {
         Returns: undefined
       }
       makron_pack_stats: { Args: { _pack_id: string }; Returns: Json }
+      makron_start_pack_session: { Args: { _pack_id: string }; Returns: string }
       makron_update_answer_score: {
         Args: {
           _answer_id: string
