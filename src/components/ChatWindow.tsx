@@ -1,10 +1,14 @@
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, type UIMessage } from "ai";
+import type { UIMessage } from "ai";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import ReactMarkdown from "react-markdown";
 import { Send, Loader2 } from "lucide-react";
+import { chromeAiStatus, createChromeAiSession, type ChromeAiSession } from "@/lib/chrome-ai";
+import { AiUnavailable } from "@/components/AiUnavailable";
+import { toast } from "sonner";
+
+type Msg = { id: string; role: "user" | "assistant"; text: string };
 
 export function ChatWindow({
   id,
@@ -18,15 +22,45 @@ export function ChatWindow({
   placeholder?: string;
 }) {
   const [input, setInput] = useState("");
-  const transport = useRef(
-    new DefaultChatTransport({ api: "/api/chat", body: { system } }),
-  ).current;
-  const { messages, sendMessage, status } = useChat({
-    id,
-    messages: initialMessages,
-    transport,
-  });
-  const isLoading = status === "submitted" || status === "streaming";
+  const [messages, setMessages] = useState<Msg[]>(() =>
+    initialMessages.map((m) => ({
+      id: m.id,
+      role: (m.role === "user" ? "user" : "assistant") as "user" | "assistant",
+      text: (m.parts ?? []).map((p: any) => (p.type === "text" ? p.text : "")).join(""),
+    })),
+  );
+  const [isLoading, setIsLoading] = useState(false);
+  const [aiStatus, setAiStatus] = useState<string>("checking");
+  const sessionRef = useRef<ChromeAiSession | null>(null);
+
+  useEffect(() => { chromeAiStatus().then(setAiStatus); }, []);
+  useEffect(() => {
+    return () => { sessionRef.current?.destroy(); sessionRef.current = null; };
+  }, [id]);
+
+  const canAi = aiStatus === "available" || aiStatus === "downloadable" || aiStatus === "downloading";
+
+  const ensureSession = async () => {
+    if (sessionRef.current) return sessionRef.current;
+    sessionRef.current = await createChromeAiSession({ system });
+    return sessionRef.current;
+  };
+
+  const send = async (text: string) => {
+    setIsLoading(true);
+    const userId = `u_${Date.now()}`;
+    setMessages((m) => [...m, { id: userId, role: "user", text }]);
+    try {
+      const s = await ensureSession();
+      const reply = await s.prompt(text);
+      setMessages((m) => [...m, { id: `a_${Date.now()}`, role: "assistant", text: reply }]);
+    } catch (e: any) {
+      toast.error(e.message ?? "AI 応答に失敗");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const endRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -35,16 +69,13 @@ export function ChatWindow({
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto">
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        {!canAi && aiStatus !== "checking" && <AiUnavailable feature="チャット" />}
         {messages.length === 0 && (
           <p className="text-center text-muted-foreground text-sm">
             会話を開始してください
           </p>
         )}
-        {messages.map((m) => {
-          const text = m.parts
-            .map((p) => (p.type === "text" ? p.text : ""))
-            .join("");
-          return (
+        {messages.map((m) => (
             <div
               key={m.id}
               className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
@@ -56,11 +87,10 @@ export function ChatWindow({
                     : "bg-muted"
                 }`}
               >
-                <ReactMarkdown>{text}</ReactMarkdown>
+                <ReactMarkdown>{m.text}</ReactMarkdown>
               </div>
             </div>
-          );
-        })}
+        ))}
         <div ref={endRef} />
       </div>
       <form
@@ -68,8 +98,8 @@ export function ChatWindow({
         onSubmit={(e) => {
           e.preventDefault();
           const t = input.trim();
-          if (!t || isLoading) return;
-          void sendMessage({ text: t });
+          if (!t || isLoading || !canAi) return;
+          void send(t);
           setInput("");
         }}
       >
@@ -77,6 +107,7 @@ export function ChatWindow({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={placeholder}
+          disabled={!canAi}
           className="min-h-[44px] max-h-32 resize-none"
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
@@ -85,7 +116,7 @@ export function ChatWindow({
             }
           }}
         />
-        <Button type="submit" disabled={isLoading || !input.trim()}>
+        <Button type="submit" disabled={isLoading || !input.trim() || !canAi}>
           {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         </Button>
       </form>
