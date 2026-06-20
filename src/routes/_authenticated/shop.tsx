@@ -29,6 +29,7 @@ function ShopPage() {
   const { user } = useAuth();
   const [items, setItems] = useState<any[]>([]);
   const [owned, setOwned] = useState<Set<string>>(new Set());
+  const [invQty, setInvQty] = useState<Record<string, number>>({});
   const [balance, setBalance] = useState(0);
   const [tab, setTab] = useState("all");
   const [sort, setSort] = useState<"default" | "new" | "price_low" | "price_high" | "popular">("default");
@@ -41,13 +42,16 @@ function ShopPage() {
     if (!user) return;
     const [{ data: it }, { data: inv }, { data: c }, { data: tx }, { data: pur }] = await Promise.all([
       (supabase as any).from("coin_shop_items").select("*").eq("is_active", true).order("sort_order"),
-      (supabase as any).from("user_inventory").select("item_code").eq("user_id", user.id),
+      (supabase as any).from("user_inventory").select("item_code, quantity").eq("user_id", user.id),
       supabase.from("user_coins").select("balance").eq("user_id", user.id).maybeSingle(),
       (supabase as any).from("coin_transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(30),
       (supabase as any).from("coin_purchases").select("item_id"),
     ]);
     setItems(it ?? []);
     setOwned(new Set((inv ?? []).map((r: any) => r.item_code)));
+    const qty: Record<string, number> = {};
+    (inv ?? []).forEach((r: any) => { qty[r.item_code] = r.quantity ?? 0; });
+    setInvQty(qty);
     setBalance(c?.balance ?? 0);
     setHistory(tx ?? []);
     const m: Record<string, number> = {};
@@ -59,6 +63,11 @@ function ShopPage() {
   const buy = async (item: any) => {
     if (balance < item.price) return toast.error("コインが足りません");
     if (item.auto_grant !== false && !item.consumable && owned.has(item.code)) return toast.error("既に所有しています");
+    const isRedeem = item.auto_grant === false;
+    const msg = isRedeem
+      ? `「${item.name}」を ${item.price} コインで購入し、引き換えリクエストを送信します。\nコインは購入時に消費され、却下時のみ返金されます。よろしいですか？`
+      : `「${item.name}」を ${item.price} コインで購入しますか？\n（残高: ${balance} → ${balance - item.price}）`;
+    if (!confirm(msg)) return;
     setBusy(item.id);
     const { data, error } = await (supabase as any).rpc("purchase_shop_item", { _item_id: item.id });
     setBusy(null);
@@ -130,6 +139,7 @@ function ShopPage() {
               {filtered.map((it) => {
                 const isRedeem = it.auto_grant === false;
                 const isOwned = !isRedeem && !it.consumable && owned.has(it.code);
+                const qty = invQty[it.code] ?? 0;
                 return (
                   <Card key={it.id} className="p-4 flex flex-col gap-2">
                     <div className="flex items-center gap-2">
@@ -138,6 +148,7 @@ function ShopPage() {
                       {isRedeem && <span className="text-[9px] px-1.5 py-0.5 rounded bg-violet-500/15 text-violet-600 flex items-center gap-0.5"><Ticket className="h-3 w-3" />引換</span>}
                       {isNew(it.created_at) && <span className="text-[9px] px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-600 flex items-center gap-0.5"><Flame className="h-3 w-3" />NEW</span>}
                       {isOwned && <span className="text-[10px] px-1.5 py-0.5 rounded bg-success/15 text-success flex items-center gap-1"><Check className="h-3 w-3" />所有済</span>}
+                      {it.consumable && qty > 0 && <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/15 text-primary">所持 {qty}</span>}
                     </div>
                     {it.description && <div className="text-xs text-muted-foreground">{it.description}</div>}
                     <div className="text-[10px] text-muted-foreground">追加日: {new Date(it.created_at).toLocaleDateString("ja-JP")} ・ 購入数 {popMap[it.id] ?? 0}</div>

@@ -1064,7 +1064,12 @@ function ShopAdminTab() {
               <Select value={editing.category} onValueChange={(v) => setEditing({ ...editing, category: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {["frame","theme","title","decor","hint","revive","chest","boost","scratch","emoji","redeem","other"].map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  {[
+                    { v: "frame", l: "フレーム" }, { v: "theme", l: "テーマ" }, { v: "title", l: "称号" },
+                    { v: "decor", l: "デコ" }, { v: "hint", l: "ヒント券" }, { v: "revive", l: "復活" },
+                    { v: "chest", l: "宝箱" }, { v: "boost", l: "ブースト" }, { v: "scratch", l: "計算用紙" },
+                    { v: "emoji", l: "絵文字" }, { v: "redeem", l: "引換 (LINEポイント等)" }, { v: "other", l: "その他" },
+                  ].map((c) => <SelectItem key={c.v} value={c.v}>{c.l}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

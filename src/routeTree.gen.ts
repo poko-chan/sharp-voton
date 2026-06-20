@@ -66,6 +66,8 @@ import { Route as AuthenticatedClassroomClassIdRouteImport } from './routes/_aut
 import { Route as AuthenticatedMakronUnitUnitIdRouteImport } from './routes/_authenticated/makron.unit.$unitId'
 import { Route as AuthenticatedMakronSessionSessionIdRouteImport } from './routes/_authenticated/makron.session.$sessionId'
 import { Route as AuthenticatedMakronResultSessionIdRouteImport } from './routes/_authenticated/makron.result.$sessionId'
+import { Route as AuthenticatedMakronPackPackIdRouteImport } from './routes/_authenticated/makron.pack.$packId'
+import { Route as AuthenticatedMakronPackPackIdDashboardRouteImport } from './routes/_authenticated/makron.pack.$packId.dashboard'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -366,6 +368,18 @@ const AuthenticatedMakronResultSessionIdRoute =
     path: '/result/$sessionId',
     getParentRoute: () => AuthenticatedMakronRoute,
   } as any)
+const AuthenticatedMakronPackPackIdRoute =
+  AuthenticatedMakronPackPackIdRouteImport.update({
+    id: '/pack/$packId',
+    path: '/pack/$packId',
+    getParentRoute: () => AuthenticatedMakronRoute,
+  } as any)
+const AuthenticatedMakronPackPackIdDashboardRoute =
+  AuthenticatedMakronPackPackIdDashboardRouteImport.update({
+    id: '/dashboard',
+    path: '/dashboard',
+    getParentRoute: () => AuthenticatedMakronPackPackIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -421,9 +435,11 @@ export interface FileRoutesByFullPath {
   '/classroom/': typeof AuthenticatedClassroomIndexRoute
   '/makron/': typeof AuthenticatedMakronIndexRoute
   '/rooms/': typeof AuthenticatedRoomsIndexRoute
+  '/makron/pack/$packId': typeof AuthenticatedMakronPackPackIdRouteWithChildren
   '/makron/result/$sessionId': typeof AuthenticatedMakronResultSessionIdRoute
   '/makron/session/$sessionId': typeof AuthenticatedMakronSessionSessionIdRoute
   '/makron/unit/$unitId': typeof AuthenticatedMakronUnitUnitIdRoute
+  '/makron/pack/$packId/dashboard': typeof AuthenticatedMakronPackPackIdDashboardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -477,9 +493,11 @@ export interface FileRoutesByTo {
   '/classroom': typeof AuthenticatedClassroomIndexRoute
   '/makron': typeof AuthenticatedMakronIndexRoute
   '/rooms': typeof AuthenticatedRoomsIndexRoute
+  '/makron/pack/$packId': typeof AuthenticatedMakronPackPackIdRouteWithChildren
   '/makron/result/$sessionId': typeof AuthenticatedMakronResultSessionIdRoute
   '/makron/session/$sessionId': typeof AuthenticatedMakronSessionSessionIdRoute
   '/makron/unit/$unitId': typeof AuthenticatedMakronUnitUnitIdRoute
+  '/makron/pack/$packId/dashboard': typeof AuthenticatedMakronPackPackIdDashboardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -537,9 +555,11 @@ export interface FileRoutesById {
   '/_authenticated/classroom/': typeof AuthenticatedClassroomIndexRoute
   '/_authenticated/makron/': typeof AuthenticatedMakronIndexRoute
   '/_authenticated/rooms/': typeof AuthenticatedRoomsIndexRoute
+  '/_authenticated/makron/pack/$packId': typeof AuthenticatedMakronPackPackIdRouteWithChildren
   '/_authenticated/makron/result/$sessionId': typeof AuthenticatedMakronResultSessionIdRoute
   '/_authenticated/makron/session/$sessionId': typeof AuthenticatedMakronSessionSessionIdRoute
   '/_authenticated/makron/unit/$unitId': typeof AuthenticatedMakronUnitUnitIdRoute
+  '/_authenticated/makron/pack/$packId/dashboard': typeof AuthenticatedMakronPackPackIdDashboardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -597,9 +617,11 @@ export interface FileRouteTypes {
     | '/classroom/'
     | '/makron/'
     | '/rooms/'
+    | '/makron/pack/$packId'
     | '/makron/result/$sessionId'
     | '/makron/session/$sessionId'
     | '/makron/unit/$unitId'
+    | '/makron/pack/$packId/dashboard'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -653,9 +675,11 @@ export interface FileRouteTypes {
     | '/classroom'
     | '/makron'
     | '/rooms'
+    | '/makron/pack/$packId'
     | '/makron/result/$sessionId'
     | '/makron/session/$sessionId'
     | '/makron/unit/$unitId'
+    | '/makron/pack/$packId/dashboard'
   id:
     | '__root__'
     | '/'
@@ -712,9 +736,11 @@ export interface FileRouteTypes {
     | '/_authenticated/classroom/'
     | '/_authenticated/makron/'
     | '/_authenticated/rooms/'
+    | '/_authenticated/makron/pack/$packId'
     | '/_authenticated/makron/result/$sessionId'
     | '/_authenticated/makron/session/$sessionId'
     | '/_authenticated/makron/unit/$unitId'
+    | '/_authenticated/makron/pack/$packId/dashboard'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1131,14 +1157,44 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMakronResultSessionIdRouteImport
       parentRoute: typeof AuthenticatedMakronRoute
     }
+    '/_authenticated/makron/pack/$packId': {
+      id: '/_authenticated/makron/pack/$packId'
+      path: '/pack/$packId'
+      fullPath: '/makron/pack/$packId'
+      preLoaderRoute: typeof AuthenticatedMakronPackPackIdRouteImport
+      parentRoute: typeof AuthenticatedMakronRoute
+    }
+    '/_authenticated/makron/pack/$packId/dashboard': {
+      id: '/_authenticated/makron/pack/$packId/dashboard'
+      path: '/dashboard'
+      fullPath: '/makron/pack/$packId/dashboard'
+      preLoaderRoute: typeof AuthenticatedMakronPackPackIdDashboardRouteImport
+      parentRoute: typeof AuthenticatedMakronPackPackIdRoute
+    }
   }
 }
+
+interface AuthenticatedMakronPackPackIdRouteChildren {
+  AuthenticatedMakronPackPackIdDashboardRoute: typeof AuthenticatedMakronPackPackIdDashboardRoute
+}
+
+const AuthenticatedMakronPackPackIdRouteChildren: AuthenticatedMakronPackPackIdRouteChildren =
+  {
+    AuthenticatedMakronPackPackIdDashboardRoute:
+      AuthenticatedMakronPackPackIdDashboardRoute,
+  }
+
+const AuthenticatedMakronPackPackIdRouteWithChildren =
+  AuthenticatedMakronPackPackIdRoute._addFileChildren(
+    AuthenticatedMakronPackPackIdRouteChildren,
+  )
 
 interface AuthenticatedMakronRouteChildren {
   AuthenticatedMakronAdminRoute: typeof AuthenticatedMakronAdminRoute
   AuthenticatedMakronHistoryRoute: typeof AuthenticatedMakronHistoryRoute
   AuthenticatedMakronLabelsRoute: typeof AuthenticatedMakronLabelsRoute
   AuthenticatedMakronIndexRoute: typeof AuthenticatedMakronIndexRoute
+  AuthenticatedMakronPackPackIdRoute: typeof AuthenticatedMakronPackPackIdRouteWithChildren
   AuthenticatedMakronResultSessionIdRoute: typeof AuthenticatedMakronResultSessionIdRoute
   AuthenticatedMakronSessionSessionIdRoute: typeof AuthenticatedMakronSessionSessionIdRoute
   AuthenticatedMakronUnitUnitIdRoute: typeof AuthenticatedMakronUnitUnitIdRoute
@@ -1149,6 +1205,8 @@ const AuthenticatedMakronRouteChildren: AuthenticatedMakronRouteChildren = {
   AuthenticatedMakronHistoryRoute: AuthenticatedMakronHistoryRoute,
   AuthenticatedMakronLabelsRoute: AuthenticatedMakronLabelsRoute,
   AuthenticatedMakronIndexRoute: AuthenticatedMakronIndexRoute,
+  AuthenticatedMakronPackPackIdRoute:
+    AuthenticatedMakronPackPackIdRouteWithChildren,
   AuthenticatedMakronResultSessionIdRoute:
     AuthenticatedMakronResultSessionIdRoute,
   AuthenticatedMakronSessionSessionIdRoute:
