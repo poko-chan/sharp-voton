@@ -179,7 +179,24 @@ function ChatPage() {
               <RankBadge level={rankOf(partner.id)} />
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              {messages.data?.map((m) => {
+              {(() => {
+                let lastDay = "";
+                return messages.data?.flatMap((m) => {
+                  const day = jstDateStr(new Date(m.created_at));
+                  const nodes: JSX.Element[] = [];
+                  if (day !== lastDay) {
+                    lastDay = day;
+                    nodes.push(
+                      <div key={`d-${day}-${m.id}`} className="flex justify-center my-2">
+                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground border">
+                          {jstDayLabel(m.created_at)}
+                        </span>
+                      </div>
+                    );
+                  }
+                  return nodes.concat(renderMessage(m));
+                });
+                function renderMessage(m: Msg) {
                 const mine = m.sender_id === user?.id;
                 const isDeleted = !!m.deleted_at;
                 const isEditing = editingId === m.id;
@@ -220,7 +237,8 @@ function ChatPage() {
                     </div>
                   </div>
                 );
-              })}
+                }
+              })()}
               <div ref={endRef} />
             </div>
             <form className="border-t p-3 flex gap-2" onSubmit={(e) => { e.preventDefault(); void send(); }}>
