@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import { levelFromMinutes } from "@/lib/level";
-import { localDateStr } from "@/lib/date";
+import { localDateStr, jstDateStr, jstDayLabel } from "@/lib/date";
 
 type Msg = { id: string; sender_id: string; recipient_id: string; content: string; created_at: string; edited_at: string | null; read_at: string | null; deleted_at: string | null };
 type Profile = { id: string; display_name: string | null; email: string | null };
@@ -24,11 +24,20 @@ function ChatPage() {
   const profiles = useQuery({
     queryKey: ["profiles", "all"],
     queryFn: async () => {
+      // 相互フォロー（フレンド）のみと会話できる
+      const { data: f1, error: e1 } = await supabase
+        .from("follows").select("following_id").eq("follower_id", user!.id).eq("status", "accepted");
+      if (e1) throw e1;
+      const { data: f2, error: e2 } = await supabase
+        .from("follows").select("follower_id").eq("following_id", user!.id).eq("status", "accepted");
+      if (e2) throw e2;
+      const out = (f1 ?? []).map((r: any) => r.following_id);
+      const incSet = new Set((f2 ?? []).map((r: any) => r.follower_id));
+      const friendIds = out.filter((id) => incSet.has(id));
+      if (friendIds.length === 0) return [] as Profile[];
       const { data, error } = await supabase
-        .from("profiles")
-        .select("id, display_name, email")
-        .neq("id", user!.id)
-        .order("display_name");
+        .from("profiles").select("id, display_name, email")
+        .in("id", friendIds).order("display_name");
       if (error) throw error;
       return (data ?? []) as Profile[];
     },
@@ -126,10 +135,9 @@ function ChatPage() {
     const t = text.trim();
     if (!t || !partnerId || !user) return;
     setText("");
-    const { error } = await supabase.from("chat_messages").insert({
-      sender_id: user.id, recipient_id: partnerId, content: t,
-    });
-    if (error) toast.error(error.message);
+    // フレンドのみ送信できる RPC を経由
+    const { error } = await (supabase as any).rpc("send_dm", { _to: partnerId, _content: t });
+    if (error) { toast.error(error.message); setText(t); return; }
     qc.invalidateQueries({ queryKey: ["chat", partnerId] });
   };
 
