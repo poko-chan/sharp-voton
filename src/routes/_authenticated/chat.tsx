@@ -183,7 +183,7 @@ function ChatPage() {
                 let lastDay = "";
                 return messages.data?.flatMap((m) => {
                   const day = jstDateStr(new Date(m.created_at));
-                  const nodes: JSX.Element[] = [];
+                  const nodes: React.ReactNode[] = [];
                   if (day !== lastDay) {
                     lastDay = day;
                     nodes.push(
