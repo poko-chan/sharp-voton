@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import { levelFromMinutes } from "@/lib/level";
-import { localDateStr } from "@/lib/date";
+import { localDateStr, jstDateStr, jstDayLabel } from "@/lib/date";
 
 type Msg = { id: string; sender_id: string; recipient_id: string; content: string; created_at: string; edited_at: string | null; read_at: string | null; deleted_at: string | null };
 type Profile = { id: string; display_name: string | null; email: string | null };
@@ -24,11 +24,20 @@ function ChatPage() {
   const profiles = useQuery({
     queryKey: ["profiles", "all"],
     queryFn: async () => {
+      // 相互フォロー（フレンド）のみと会話できる
+      const { data: f1, error: e1 } = await supabase
+        .from("follows").select("following_id").eq("follower_id", user!.id).eq("status", "accepted");
+      if (e1) throw e1;
+      const { data: f2, error: e2 } = await supabase
+        .from("follows").select("follower_id").eq("following_id", user!.id).eq("status", "accepted");
+      if (e2) throw e2;
+      const out = (f1 ?? []).map((r: any) => r.following_id);
+      const incSet = new Set((f2 ?? []).map((r: any) => r.follower_id));
+      const friendIds = out.filter((id) => incSet.has(id));
+      if (friendIds.length === 0) return [] as Profile[];
       const { data, error } = await supabase
-        .from("profiles")
-        .select("id, display_name, email")
-        .neq("id", user!.id)
-        .order("display_name");
+        .from("profiles").select("id, display_name, email")
+        .in("id", friendIds).order("display_name");
       if (error) throw error;
       return (data ?? []) as Profile[];
     },
@@ -126,10 +135,9 @@ function ChatPage() {
     const t = text.trim();
     if (!t || !partnerId || !user) return;
     setText("");
-    const { error } = await supabase.from("chat_messages").insert({
-      sender_id: user.id, recipient_id: partnerId, content: t,
-    });
-    if (error) toast.error(error.message);
+    // フレンドのみ送信できる RPC を経由
+    const { error } = await (supabase as any).rpc("send_dm", { _to: partnerId, _content: t });
+    if (error) { toast.error(error.message); setText(t); return; }
     qc.invalidateQueries({ queryKey: ["chat", partnerId] });
   };
 
@@ -171,7 +179,24 @@ function ChatPage() {
               <RankBadge level={rankOf(partner.id)} />
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              {messages.data?.map((m) => {
+              {(() => {
+                let lastDay = "";
+                return messages.data?.flatMap((m) => {
+                  const day = jstDateStr(new Date(m.created_at));
+                  const nodes: React.ReactNode[] = [];
+                  if (day !== lastDay) {
+                    lastDay = day;
+                    nodes.push(
+                      <div key={`d-${day}-${m.id}`} className="flex justify-center my-2">
+                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground border">
+                          {jstDayLabel(m.created_at)}
+                        </span>
+                      </div>
+                    );
+                  }
+                  return nodes.concat(renderMessage(m));
+                });
+                function renderMessage(m: Msg) {
                 const mine = m.sender_id === user?.id;
                 const isDeleted = !!m.deleted_at;
                 const isEditing = editingId === m.id;
@@ -212,7 +237,8 @@ function ChatPage() {
                     </div>
                   </div>
                 );
-              })}
+                }
+              })()}
               <div ref={endRef} />
             </div>
             <form className="border-t p-3 flex gap-2" onSubmit={(e) => { e.preventDefault(); void send(); }}>

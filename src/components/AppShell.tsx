@@ -50,6 +50,7 @@ const NAV = [
   { to: "/chat", labelKey: "nav.chat" as const, icon: MessagesSquare },
   { to: "/notes", labelKey: "nav.notes" as const, icon: StickyNote },
   { to: "/announcements", labelKey: "nav.announcements" as const, icon: Megaphone },
+  { to: "/requests", labelKey: "nav.dashboard" as const, icon: MessagesSquare, override: "管理者への要望" },
   { to: "/missions", labelKey: "nav.dashboard" as const, icon: Target, override: "ミッション" },
   { to: "/makron", labelKey: "nav.dashboard" as const, icon: Target, override: "Makron" },
   { to: "/organizations", labelKey: "nav.dashboard" as const, icon: Users, override: "組織" },

@@ -49,6 +49,7 @@ function SessionPage() {
   const padInit = useRef<string | null>(null);
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
   const [likes, setLikes] = useState<Set<string>>(new Set());
+  const [reviewFlags, setReviewFlags] = useState<Set<string>>(new Set());
   const [hintShown, setHintShown] = useState<Set<string>>(new Set());
   const [hintTickets, setHintTickets] = useState(0);
   const [reportOpen, setReportOpen] = useState(false);
@@ -151,6 +152,8 @@ function SessionPage() {
     await (supabase as any).from("makron_answers").upsert({
       session_id: sessionId, question_id: q.id, answer: val ?? null,
       file_url: files[q.id] ?? null, auto_correct: auto, awarded_points: pts,
+      review_flag: reviewFlags.has(q.id),
+      is_correct: auto,
     }, { onConflict: "session_id,question_id" });
   };
 
@@ -252,6 +255,9 @@ function SessionPage() {
       subtitle={`配点: ${q.points} 点${pack && !pack.is_official ? " ・ 報酬なし" : ""}`}
       right={
         <div className="flex gap-1">
+          <Button size="sm" variant="ghost" onClick={() => setReviewFlags((s) => { const n = new Set(s); n.has(q.id) ? n.delete(q.id) : n.add(q.id); return n; })} title="後で見直す">
+            <FlagIcon className={`h-4 w-4 ${reviewFlags.has(q.id) ? "fill-amber-500 text-amber-500" : ""}`} />
+          </Button>
           <Button size="sm" variant="ghost" onClick={toggleBookmark} title="ブックマーク">
             <Bookmark className={`h-4 w-4 ${bookmarks.has(q.id) ? "fill-primary text-primary" : ""}`} />
           </Button>

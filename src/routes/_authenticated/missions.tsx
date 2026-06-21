@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Target, Coins, CheckCircle2, Sparkles, Filter } from "lucide-react";
 import { toast } from "sonner";
+import { jstDateStr } from "@/lib/date";
 
 export const Route = createFileRoute("/_authenticated/missions")({ component: MissionsPage });
 
@@ -27,7 +28,8 @@ function MissionsPage() {
   const [progress, setProgress] = useState<Record<string, number>>({});
   const [claimed, setClaimed] = useState<Set<string>>(new Set());
   const [cat, setCat] = useState("all");
-  const today = new Date().toISOString().slice(0, 10);
+  // 日本時間でリセットされるように JST 基準の日付を使う
+  const today = jstDateStr();
 
   const computeProgress = async (uid: string): Promise<Record<string, number>> => {
     const [{ data: logs }, { data: cards }, { data: stamps }, { data: ans }, { data: subs }, { data: refl }, { data: batt }] = await Promise.all([

@@ -37,7 +37,11 @@ export function FeedbackWidget() {
   const [open, setOpen] = useState(false);
   const unreadFn = useServerFn(myThreadsUnreadCount);
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const visible = path === "/login" || path === "/admin-login" || path === "/settings";
+  // どのページからでも開けるように常時表示。ただし auth 未認証画面 (/login, /admin-login) では
+  // 匿名フィードバックモードで表示される。
+  // 非表示にすべきは share や maintenance のみ。ここでは全ページ表示。
+  const HIDDEN = ["/share"];
+  const visible = !HIDDEN.some((p) => path.startsWith(p));
 
   // Only fetch unread count when logged in
   const { data: unread } = useQuery({
