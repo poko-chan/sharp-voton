@@ -98,6 +98,106 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_request_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      admin_request_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_admin: boolean
+          sender_id: string
+          thread_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          sender_id: string
+          thread_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          sender_id?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_request_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "admin_request_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_request_threads: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          id: string
+          last_message_at: string
+          status: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          status?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          status?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_request_threads_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "admin_request_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_chats: {
         Row: {
           content: string
@@ -1492,10 +1592,14 @@ export type Database = {
           awarded_points: number | null
           created_at: string
           file_url: string | null
+          graded_at: string | null
+          graded_by: string | null
           id: string
+          is_correct: boolean | null
           manual_comment: string | null
           manual_score: number | null
           question_id: string
+          review_flag: boolean
           session_id: string
           updated_at: string
         }
@@ -1507,10 +1611,14 @@ export type Database = {
           awarded_points?: number | null
           created_at?: string
           file_url?: string | null
+          graded_at?: string | null
+          graded_by?: string | null
           id?: string
+          is_correct?: boolean | null
           manual_comment?: string | null
           manual_score?: number | null
           question_id: string
+          review_flag?: boolean
           session_id: string
           updated_at?: string
         }
@@ -1522,10 +1630,14 @@ export type Database = {
           awarded_points?: number | null
           created_at?: string
           file_url?: string | null
+          graded_at?: string | null
+          graded_by?: string | null
           id?: string
+          is_correct?: boolean | null
           manual_comment?: string | null
           manual_score?: number | null
           question_id?: string
+          review_flag?: boolean
           session_id?: string
           updated_at?: string
         }
@@ -4082,6 +4194,7 @@ export type Database = {
         Args: { _item_code: string; _qty?: number }
         Returns: number
       }
+      current_jst_date: { Args: never; Returns: string }
       finalize_makron_session: {
         Args: { _session_id: string }
         Returns: {
@@ -4168,6 +4281,10 @@ export type Database = {
       }
       makron_pack_stats: { Args: { _pack_id: string }; Returns: Json }
       makron_start_pack_session: { Args: { _pack_id: string }; Returns: string }
+      makron_start_weakness_session: {
+        Args: { _limit?: number; _unit_id: string }
+        Returns: string
+      }
       makron_update_answer_score: {
         Args: {
           _answer_id: string
@@ -4180,6 +4297,40 @@ export type Database = {
       makron_update_session: {
         Args: { _passed: boolean; _score: number; _session_id: string }
         Returns: undefined
+      }
+      makron_weakness_questions: {
+        Args: { _limit?: number; _unit_id: string }
+        Returns: {
+          accepted_answers: Json
+          correct_options: Json
+          created_at: string
+          created_by: string | null
+          explanation: string | null
+          grading: string
+          hint_text: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          model_answer: string | null
+          options: Json
+          order_idx: number
+          pack_id: string | null
+          points: number
+          prompt: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_at: string | null
+          type: string
+          unit_id: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "makron_questions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       my_org_ids: { Args: never; Returns: string[] }
       org_invite_member: {
@@ -4203,6 +4354,7 @@ export type Database = {
         Args: { _amount: number; _message: string; _to: string }
         Returns: Json
       }
+      send_dm: { Args: { _content: string; _to: string }; Returns: string }
       share_study_summary: {
         Args: { _token: string }
         Returns: {
