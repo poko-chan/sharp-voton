@@ -350,11 +350,17 @@ function SessionPage() {
         </div>
 
         <div className="flex flex-wrap gap-1 pt-2">
-          {questions.map((_, i) => (
-            <button key={i} onClick={() => goto(i)} className={`h-7 w-7 text-xs rounded border ${i === idx ? "bg-primary text-primary-foreground" : answers[questions[i].id] != null ? "bg-success/20" : ""}`}>
-              {i + 1}
-            </button>
-          ))}
+          {questions.map((_, i) => {
+            const v = answers[questions[i].id];
+            const answered =
+              v !== undefined && v !== null && v !== "" &&
+              !(Array.isArray(v) && v.length === 0);
+            return (
+              <button key={i} onClick={() => goto(i)} className={`h-7 w-7 text-xs rounded border ${i === idx ? "bg-primary text-primary-foreground" : answered ? "bg-success/20" : ""}`}>
+                {i + 1}
+              </button>
+            );
+          })}
         </div>
       </div>
       <ReportDialog open={reportOpen} onOpenChange={setReportOpen} questionId={q.id} />
