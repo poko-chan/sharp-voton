@@ -122,6 +122,24 @@ function PackPage() {
               <Button variant="outline"><BarChart3 className="h-4 w-4 mr-1" />ダッシュボード</Button>
             </Link>
           )}
+          {isOwner && !pack.is_official && pack.status !== "pending" && (
+            <Button variant="outline" onClick={async () => {
+              if (!confirm("このパックを公式パックとして申請しますか？管理者の審査後、報酬付き演習として公開されます。")) return;
+              const { error } = await (supabase as any).rpc("submit_official_request", { _pack_id: packId, _note: null });
+              if (error) return toast.error(error.message);
+              toast.success("公式申請を送信しました");
+              load();
+            }}><Crown className="h-4 w-4 mr-1" />公式申請</Button>
+          )}
+          {isOwner && (
+            <Button variant="ghost" className="text-destructive" onClick={async () => {
+              if (!confirm(`「${pack.title}」を完全に削除します。問題・履歴・回答もすべて消えます。よろしいですか？`)) return;
+              const { error } = await (supabase as any).rpc("delete_makron_pack", { _pack_id: packId });
+              if (error) return toast.error(error.message);
+              toast.success("削除しました");
+              nav({ to: "/makron" });
+            }}><Trash2 className="h-4 w-4 mr-1" />パック削除</Button>
+          )}
         </Card>
 
         {isOwner ? (

@@ -121,6 +121,31 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => { loadProfile(); loadLevel(); }, [loadProfile, loadLevel]);
   useEffect(() => onProfileChange(() => { loadProfile(); loadLevel(); }), [loadProfile, loadLevel]);
 
+  // Realtime notifications -> Desktop notifications + sound
+  useEffect(() => {
+    if (!user) return;
+    // Ask permission once
+    if (typeof Notification !== "undefined" && Notification.permission === "default") {
+      try { Notification.requestPermission().catch(() => {}); } catch { /* noop */ }
+    }
+    const ch = supabase
+      .channel(`notif-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
+        (payload: any) => {
+          const n = payload.new;
+          try {
+            if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+              new Notification(n.title || "通知", { body: n.body || "", icon: "/favicon.ico", tag: n.id });
+            }
+          } catch { /* noop */ }
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user?.id]);
+
   // Close drawer on route change
   useEffect(() => { setMobileOpen(false); }, [path]);
 

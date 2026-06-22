@@ -1599,6 +1599,7 @@ export type Database = {
           manual_comment: string | null
           manual_score: number | null
           question_id: string
+          question_snapshot: Json | null
           review_flag: boolean
           session_id: string
           updated_at: string
@@ -1618,6 +1619,7 @@ export type Database = {
           manual_comment?: string | null
           manual_score?: number | null
           question_id: string
+          question_snapshot?: Json | null
           review_flag?: boolean
           session_id: string
           updated_at?: string
@@ -1637,6 +1639,7 @@ export type Database = {
           manual_comment?: string | null
           manual_score?: number | null
           question_id?: string
+          question_snapshot?: Json | null
           review_flag?: boolean
           session_id?: string
           updated_at?: string
@@ -4132,6 +4135,10 @@ export type Database = {
         Args: { _amount: number; _message: string; _user_id: string }
         Returns: undefined
       }
+      admin_grant_coins_to_all: {
+        Args: { _amount: number; _reason: string }
+        Returns: number
+      }
       admin_makron_analytics: {
         Args: never
         Returns: {
@@ -4154,6 +4161,10 @@ export type Database = {
       }
       admin_review_organization: {
         Args: { _approve: boolean; _org_id: string }
+        Returns: undefined
+      }
+      admin_review_pack: {
+        Args: { _approve: boolean; _pack_id: string }
         Returns: undefined
       }
       admin_review_question: {
@@ -4195,6 +4206,7 @@ export type Database = {
         Returns: number
       }
       current_jst_date: { Args: never; Returns: string }
+      delete_makron_pack: { Args: { _pack_id: string }; Returns: undefined }
       finalize_makron_session: {
         Args: { _session_id: string }
         Returns: {
@@ -4367,6 +4379,10 @@ export type Database = {
       spend_coins: {
         Args: { _amount: number; _meta?: Json; _reason: string }
         Returns: number
+      }
+      submit_official_request: {
+        Args: { _note?: string; _pack_id: string }
+        Returns: undefined
       }
     }
     Enums: {

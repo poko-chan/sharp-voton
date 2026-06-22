@@ -29,6 +29,7 @@ function OrgAdmin() {
   const [inviteRole, setInviteRole] = useState("member");
   const [inviteMsg, setInviteMsg] = useState("");
   const [pendingInvites, setPendingInvites] = useState<any[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
   const load = async () => {
     if (!user) return;
@@ -45,11 +46,19 @@ function OrgAdmin() {
       .select("id, role, message, status, created_at, invitee_id, profile:profiles!organization_invitations_invitee_id_fkey(username, display_name)")
       .eq("organization_id", orgId).eq("status", "pending");
     setPendingInvites(pi ?? []);
+    setLoaded(true);
   };
   useEffect(() => { load(); }, [orgId, user?.id]);
 
   const canAdmin = isAdmin || ["owner","admin"].includes(myRole ?? "");
-  if (!canAdmin) return <div className="p-6 text-sm text-muted-foreground">管理権限がありません <Link to="/organizations" className="underline ml-2">← 戻る</Link></div>;
+  if (!loaded) return <div className="p-6 text-sm text-muted-foreground">読み込み中…</div>;
+  if (!canAdmin) return (
+    <div className="p-6 text-sm text-muted-foreground space-y-2">
+      <div>管理権限がありません（あなたの役割: {myRole ?? "未参加"}）</div>
+      <div className="text-xs">組織の owner/admin のみ管理できます。参加メンバーとして閲覧する場合は組織一覧に戻ってください。</div>
+      <Link to="/organizations" className="underline">← 組織一覧へ戻る</Link>
+    </div>
+  );
 
   const updateMember = async (id: string, patch: any) => {
     await (supabase as any).from("organization_members").update(patch).eq("id", id);

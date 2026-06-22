@@ -1,56 +1,86 @@
+# 一括改修プラン（17項目）
 
-# 一括実装プラン（17項目）
+添付要望＋前回未完了分をまとめて実装します。DB → サーバ関数 → UI の順に進めます。
 
-ご要望リストをカテゴリ別に整理し、DBマイグレーション → サーバ関数/RPC → UI の順で一気に実装します。スコープが大きいので、まず方針を確認させてください。
+## A. 通知の全面整備
+1. **サイト内通知の網羅化**
+   - `notifications` に統一トリガを追加：
+     - クラス投稿/コメント/ファイル追加 → クラスメンバーへ
+     - DM受信、フレンド申請、いいね、Makron承認/却下、ショップ引換結果、組織申請結果、コインギフト、お知らせ追加
+   - DBトリガ（`AFTER INSERT`）で `public.notifications` に行を入れる方式に統一。
+2. **デスクトップ通知（Web Push 風）**
+   - ブラウザの `Notification API` で OS 通知。`user_prefs.notify_desktop` を追加。
+   - 通知作成を Supabase Realtime で購読 → 新規 row 受信時に `new Notification(title, { body, icon })`。
+   - 通知設定ページ `/settings` に「デスクトップ通知を許可」トグル＋カテゴリ別 ON/OFF。
 
-## A. ショップ／インベントリ系
-1. **購入アイテムが使えない問題の改善**
-   - `user_inventory` の各 `item_code` ごとに「どこで使えるか」のヘルプリンク・適用先 UI を `shop.tsx` と新規 `inventory.tsx` に追加。
-   - `payload` に `usage_hint` `applies_to` を持たせ、ショップ詳細でも明示。
-2. **フレームの表示場所**
-   - `profiles.active_frame` カラム追加（既存があれば再利用）。インベントリから「装着」ボタン → アバター枠に適用。Profile / Leaderboard / Town / コメントなど、アバター表示箇所すべてに `<AvatarWithFrame />` コンポーネントを共通化。
+## B. 組織機能
+3. **組織管理が開かない不具合**
+   - `/organizations/$orgId` の権限判定を修正（`organization_members.role IN ('owner','admin')` で `canManage` 判定）。
+   - 管理タブ（メンバー編集／参加申請承認／サービス制限）を実体化。
+   - 「組織が使えない」原因：参加申請 RPC `org_review_join_request` 呼び出し時の引数不一致を修正。
 
-## B. ミッション
-3. **日本時間（JST）でのリセット**
-   - `daily_missions.date` の判定を `Asia/Tokyo` 基準に統一。RPC `current_jst_date()` を作成し、生成・進捗・完了を全て JST 日付で処理。クライアント側もJSTで表示。
+## C. ショップ／コイン
+4. **使えないアイテムを実用化**
+   - 全 `coin_shop_items` に `usage_hint`/`applies_to` を埋め、新規 `/inventory` で「使う」ボタンを実装：
+     - フレーム/テーマ/称号 → `profiles.active_*` に適用
+     - ヒント券/復活/ブースト → Makron セッションで消費可能に
+     - 宝箱 → ランダムコイン付与 RPC
+     - 計算用紙/絵文字 → プロフィールデコ
+5. **invalid amount エラー**
+   - `purchase_shop_item` RPC で `price` が NULL/非整数のアイテムを弾いていた箇所を修正。管理者追加時 `price` を `int` 強制。
+6. **管理者→全ユーザーへコイン一括配布**
+   - 新 RPC `admin_grant_coins_to_all(_amount, _reason)`（admin限定）。管理画面に投与UI。
 
-## C. Makron（学習機能）— 一番ボリューム大
-4. **採点で「演習した問題以外」が出る不具合**
-   - `finalize_makron_session` / 履歴表示で、表示する問題を `makron_answers.session_id = _session_id` に限定。「同単元の他問題」結合を削除。
-5. **手書きOCR回答**
-   - 問題演習画面に「✍️ 手書きで答える」モード。`canvas` → 画像 → 既存 `ocr.functions.ts` (Lovable AI Vision) で文字起こし → そのまま回答欄へ。
-6. **「後で見直す」フラグ**
-   - `makron_answers.review_flag boolean` 追加。演習中に🚩ボタン、結果画面で一覧。
-7. **間違えた問題で苦手演習**
-   - 「苦手モード」セッション起動 RPC `makron_start_weakness_session(_unit_id, _limit)` 追加。直近の不正解問題からランダム抽出。
-8. **演習後もブックマーク**
-   - 結果画面 / 履歴詳細でも `makron_bookmarks` の追加/削除 UI。
-9. **経過時間表示（制限時間なしでも）**
-   - `makron_sessions.elapsed_seconds` を `finished_at - started_at` から導出し結果画面に常時表示。
-10. **AI採点機能**
-    - `type='text'` の問題に対し、Chrome Built-in AI で「模範解答との一致度を 0–100 で採点、コメント付与」。Chrome AI 不可ならローカル類似度フォールバック。
+## D. Makron（学習）
+7. **解答時の問題バージョン固定**
+   - `makron_answers.question_snapshot jsonb` を追加し、回答時に問題本文/選択肢/正答をスナップショット。結果画面はスナップショット優先表示。
+8. **短答で未回答なのに番号が緑になる**
+   - セッション画面のナビ番号判定を `answers[i] !== undefined && answers[i] !== ''` に修正。
+9. **解答形式の拡張**
+   - `makron_questions.type` に `long_text`（長文記述）、`numeric`、`ordering`（並び替え）、`matching`（対応付け）、`fill_blank`（穴埋め）を追加。各UIコンポーネント実装。
+10. **公式申請ができない／自動公式化**
+    - `submit_official_request` RPC を新設。管理者が作成した問題はトリガで `is_official=true`、承認した問題は `approve_question` 内で `is_official=true` をセット。
+11. **パック削除機能**
+    - `/makron/pack/$packId` に「削除」ボタン（作成者 or admin）。RPC `delete_makron_pack` でカスケード削除。
+12. **ダッシュボードが見れない**
+    - `/makron/pack/$packId/dashboard` の権限/データ取得バグ修正（join 順を直して空配列で落ちないように）。
+13. **演習中の上部ボタンに説明**
+    - 各ボタンに `Tooltip` ＋ ラベル文字を併記（🚩後で見直す、📑スクラッチ、⏸一時停止、🚪退出、❓ヒント など）。
+14. **OCR を「手書き→1秒静止で読取→下に表示・編集不可・スペース改行除去」に刷新**
+    - `MakronHandwriteOCR` コンポーネント新設：
+      - 横長キャンバス（フルスクリーン切替、ページ追加）
+      - 最後の stroke から 1000ms 経過で自動 OCR 呼び出し
+      - 結果は `result.replace(/\s+/g,'')` で表示、`readonly`
+      - ページ毎独立、結合時もスペース無し
+    - `ocr.functions.ts` に「単語/一行モード」プロンプトを追加。
 
-## D. チャット
-11. **日付の表示**（user-chat / class-chat）
-    - メッセージ一覧で日付が変わるごとに「2026年6月21日」セパレータを挿入。
-12. **友達のみ DM**
-    - `chat_messages` 送信時、`are_mutual_friends(sender, recipient)` を RPC `send_dm` でチェック。フレンド外は送信不可＆UIで非表示。
+## E. フィードバック
+15. **フィードバック一括 → AI プロンプト送信**
+    - 管理画面に複数選択チェックボックス＋「AI プロンプト用にまとめてコピー」「個別編集」「個別解除（除外）」「Chrome AI で要約」ボタン。
+    - 選択中のフィードバックを 1 つのプロンプト文字列に整形 → クリップボード or Chrome AI へ送信。
 
-## E. 管理者連絡チャネル（フィードバックとは別）
-13. **「管理者への要望チャット」**
-    - 新テーブル `admin_request_categories`（管理者が自由に追加）、`admin_request_threads`、`admin_request_messages`。
-    - ユーザー画面: カテゴリ選択 → スレッド作成 → 1対1チャット。
-    - 管理者側は **`/admin/announcements`（管理者告知ページ）配下** に「ユーザー要望」タブを設置（フィードバックダッシュボードには出さない）。
+## F. Chrome Built-in AI（前回からの継続改善）
+16. **生成されない／リロードしないと反映されない問題**
+    - `src/lib/chrome-ai.ts` を改修：
+      - `availability()` チェック → `downloadable` 時に `create()` で DL 開始 → 進捗トースト
+      - 各呼び出しで `session.destroy()` を確実化（メモリリーク回避）
+      - 結果は React state へ即反映（`startTransition` で UI 更新保証）
+      - 非対応サービス向けに「プロンプトをコピー → 外部AIへ」ボタンを共通コンポーネント化
 
-## F. 共通 UI
-14. **フィードバックボタンを全ページ常設**
-    - `AppShell` のヘッダ右上に常設。AccountSwitcher の右隣にコンパクトな縦バー風（hover で展開）。既存 `FeedbackWidget` をその場所に統一移動。
+## G. 残タスク（前回未完了）
+17. **AvatarWithFrame / inventory ヒント / weakness モード UI / AI 採点 UI** を完成。
 
 ---
 
-## 確認したいこと
-1. **スコープ**: 17項目すべてを「一気に」実装します（部分省略なし）。**この内容で進めて OK ですか？**
-2. **フレームの適用範囲**: アバター表示の全箇所に枠を出す方針（Profile/ランキング/タウン/コメント等）で良いですか？特定の場所だけにする？
-3. **管理者要望チャット**: 「ユーザー1人 ↔ 管理者全体」の1対1スレッド型で OK？（複数管理者が同じスレッドに返信できる形）
+## 技術メモ
+- DB マイグレーション 1 本（A1, B3, C4-6, D7,9,10,11, E15 用テーブル/RPC/トリガ追加）
+- 主要追加ファイル：
+  - `src/components/NotificationBell.tsx`（Realtime + Desktop Notification）
+  - `src/components/AvatarWithFrame.tsx`
+  - `src/components/makron/MakronHandwriteOCR.tsx`
+  - `src/routes/_authenticated/inventory.tsx`
+  - `src/lib/notifications-realtime.ts`
+- 影響範囲が大きいので、ビルドは段階的に確認（マイグレーション後に types 再生成 → UI 実装）。
 
-「OK、進めて」と返信いただければ DB マイグレーション → コードの順で着手します。
+## 確認
+全 17 項目をこのスコープで一気に実装します。**「OK」で着手します。**追加・除外したい項目があれば番号でお知らせください。

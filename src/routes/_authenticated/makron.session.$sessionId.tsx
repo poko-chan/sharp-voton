@@ -255,23 +255,29 @@ function SessionPage() {
       subtitle={`配点: ${q.points} 点${pack && !pack.is_official ? " ・ 報酬なし" : ""}`}
       right={
         <div className="flex gap-1">
-          <Button size="sm" variant="ghost" onClick={() => setReviewFlags((s) => { const n = new Set(s); n.has(q.id) ? n.delete(q.id) : n.add(q.id); return n; })} title="後で見直す">
-            <FlagIcon className={`h-4 w-4 ${reviewFlags.has(q.id) ? "fill-amber-500 text-amber-500" : ""}`} />
+          <Button size="sm" variant="ghost" onClick={() => setReviewFlags((s) => { const n = new Set(s); n.has(q.id) ? n.delete(q.id) : n.add(q.id); return n; })} title="後で見直すフラグを付ける">
+            <FlagIcon className={`h-4 w-4 mr-1 ${reviewFlags.has(q.id) ? "fill-amber-500 text-amber-500" : ""}`} />
+            <span className="hidden sm:inline text-xs">後で</span>
           </Button>
-          <Button size="sm" variant="ghost" onClick={toggleBookmark} title="ブックマーク">
-            <Bookmark className={`h-4 w-4 ${bookmarks.has(q.id) ? "fill-primary text-primary" : ""}`} />
+          <Button size="sm" variant="ghost" onClick={toggleBookmark} title="ブックマークに追加">
+            <Bookmark className={`h-4 w-4 mr-1 ${bookmarks.has(q.id) ? "fill-primary text-primary" : ""}`} />
+            <span className="hidden sm:inline text-xs">保存</span>
           </Button>
-          <Button size="sm" variant="ghost" onClick={toggleLike} title="いいね">
-            <ThumbsUp className={`h-4 w-4 ${likes.has(q.id) ? "fill-primary text-primary" : ""}`} />
+          <Button size="sm" variant="ghost" onClick={toggleLike} title="この問題にいいね">
+            <ThumbsUp className={`h-4 w-4 mr-1 ${likes.has(q.id) ? "fill-primary text-primary" : ""}`} />
+            <span className="hidden sm:inline text-xs">いいね</span>
           </Button>
-          <Button size="sm" variant="ghost" onClick={useHint} disabled={!q.hint_text || hintShown.has(q.id)} title={`ヒント (${hintTickets}券)`}>
-            <Lightbulb className="h-4 w-4" />
+          <Button size="sm" variant="ghost" onClick={useHint} disabled={!q.hint_text || hintShown.has(q.id)} title={`ヒント券で答えのヒントを見る（残り${hintTickets}枚）`}>
+            <Lightbulb className="h-4 w-4 mr-1" />
+            <span className="hidden sm:inline text-xs">ヒント({hintTickets})</span>
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => setReportOpen(true)} title="報告">
-            <FlagIcon className="h-4 w-4" />
+          <Button size="sm" variant="ghost" onClick={() => setReportOpen(true)} title="この問題の誤りや不適切な内容を運営に報告">
+            <FlagIcon className="h-4 w-4 mr-1" />
+            <span className="hidden sm:inline text-xs">報告</span>
           </Button>
-          <Button size="sm" variant={showPad ? "default" : "outline"} onClick={() => setShowPad((v) => !v)}>
-            <NotebookPen className="h-4 w-4 mr-1" />計算用紙
+          <Button size="sm" variant={showPad ? "default" : "outline"} onClick={() => setShowPad((v) => !v)} title="計算用紙の表示／非表示">
+            <NotebookPen className="h-4 w-4 mr-1" />
+            <span className="text-xs">計算用紙</span>
           </Button>
         </div>
       }
@@ -350,11 +356,17 @@ function SessionPage() {
         </div>
 
         <div className="flex flex-wrap gap-1 pt-2">
-          {questions.map((_, i) => (
-            <button key={i} onClick={() => goto(i)} className={`h-7 w-7 text-xs rounded border ${i === idx ? "bg-primary text-primary-foreground" : answers[questions[i].id] != null ? "bg-success/20" : ""}`}>
-              {i + 1}
-            </button>
-          ))}
+          {questions.map((_, i) => {
+            const v = answers[questions[i].id];
+            const answered =
+              v !== undefined && v !== null && v !== "" &&
+              !(Array.isArray(v) && v.length === 0);
+            return (
+              <button key={i} onClick={() => goto(i)} className={`h-7 w-7 text-xs rounded border ${i === idx ? "bg-primary text-primary-foreground" : answered ? "bg-success/20" : ""}`}>
+                {i + 1}
+              </button>
+            );
+          })}
         </div>
       </div>
       <ReportDialog open={reportOpen} onOpenChange={setReportOpen} questionId={q.id} />
