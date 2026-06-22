@@ -61,6 +61,7 @@ function AdminPage() {
           <TabsTrigger value="version">バージョン</TabsTrigger>
           <TabsTrigger value="announcements">お知らせ</TabsTrigger>
           <TabsTrigger value="feedback">フィードバック</TabsTrigger>
+          <TabsTrigger value="coingrant"><Coins className="h-3 w-3 mr-1" />コイン一括配布</TabsTrigger>
         </TabsList>
         <TabsContent value="users"><UsersTab /></TabsContent>
         <TabsContent value="maintenance"><MaintenanceTab /></TabsContent>
@@ -73,6 +74,7 @@ function AdminPage() {
         <TabsContent value="version"><VersionTab /></TabsContent>
         <TabsContent value="announcements"><AnnouncementsTab /></TabsContent>
         <TabsContent value="feedback"><FeedbackTab /></TabsContent>
+        <TabsContent value="coingrant"><CoinGrantAllTab /></TabsContent>
       </Tabs>
     </div>
   );
