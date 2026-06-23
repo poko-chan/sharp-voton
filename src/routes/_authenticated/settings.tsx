@@ -166,8 +166,58 @@ function UserSettingsPage() {
 
       <ExportPanel />
 
+      <PlanPanel />
+      <InvitePanel />
+
       <DangerZone />
     </div>
+  );
+}
+
+function PlanPanel() {
+  const { user } = useAuth();
+  const [plan, setPlan] = useState<string>("free");
+  useEffect(() => {
+    if (!user) return;
+    (supabase as any).from("profiles").select("current_plan").eq("id", user.id).maybeSingle()
+      .then(({ data }: any) => setPlan(data?.current_plan ?? "free"));
+  }, [user?.id]);
+  return (
+    <Card className="p-6 space-y-3">
+      <div className="font-semibold">現在のプラン</div>
+      <div className="flex items-center gap-3">
+        <span className="text-2xl font-bold">{plan === "free" ? "無料プラン" : plan}</span>
+        <span className="text-xs px-2 py-0.5 rounded bg-muted">{plan.toUpperCase()}</span>
+      </div>
+      <p className="text-sm text-muted-foreground">有料プランは現在準備中です。すべての機能を無料でご利用いただけます。</p>
+    </Card>
+  );
+}
+
+function InvitePanel() {
+  const { user } = useAuth();
+  const [code, setCode] = useState<string>("");
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await (supabase as any).from("profiles").select("referral_code").eq("id", user.id).maybeSingle();
+      setCode(data?.referral_code ?? "");
+      const { count: c } = await (supabase as any).from("user_referrals").select("*", { count: "exact", head: true }).eq("referrer_id", user.id);
+      setCount(c ?? 0);
+    })();
+  }, [user?.id]);
+  const link = typeof window !== "undefined" ? `${window.location.origin}/r/${code}` : `/r/${code}`;
+  return (
+    <Card className="p-6 space-y-3">
+      <div className="font-semibold">友達を招待 (+10コイン)</div>
+      <p className="text-sm text-muted-foreground">招待リンクから登録された方とあなたの両方に 10 コインがプレゼントされます。</p>
+      <div className="flex gap-2">
+        <Input value={link} readOnly onClick={(e) => (e.target as HTMLInputElement).select()} />
+        <Button onClick={() => { navigator.clipboard.writeText(link); toast.success("コピーしました"); }}>コピー</Button>
+      </div>
+      <div className="text-xs text-muted-foreground">これまでに {count} 人を招待しました</div>
+    </Card>
   );
 }
 
