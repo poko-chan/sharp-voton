@@ -43,6 +43,7 @@ import { Route as AuthenticatedMicroRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedMakronRouteImport } from './routes/_authenticated/makron'
 import { Route as AuthenticatedListenRouteImport } from './routes/_authenticated/listen'
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
+import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedHeatmapRouteImport } from './routes/_authenticated/heatmap'
 import { Route as AuthenticatedHabitsRouteImport } from './routes/_authenticated/habits'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
@@ -243,6 +244,11 @@ const AuthenticatedLeaderboardRoute =
     path: '/leaderboard',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedInventoryRoute = AuthenticatedInventoryRouteImport.update({
+  id: '/inventory',
+  path: '/inventory',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedHeatmapRoute = AuthenticatedHeatmapRouteImport.update({
   id: '/heatmap',
   path: '/heatmap',
@@ -414,6 +420,7 @@ export interface FileRoutesByFullPath {
   '/goals': typeof AuthenticatedGoalsRoute
   '/habits': typeof AuthenticatedHabitsRoute
   '/heatmap': typeof AuthenticatedHeatmapRoute
+  '/inventory': typeof AuthenticatedInventoryRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/listen': typeof AuthenticatedListenRoute
   '/makron': typeof AuthenticatedMakronRouteWithChildren
@@ -476,6 +483,7 @@ export interface FileRoutesByTo {
   '/goals': typeof AuthenticatedGoalsRoute
   '/habits': typeof AuthenticatedHabitsRoute
   '/heatmap': typeof AuthenticatedHeatmapRoute
+  '/inventory': typeof AuthenticatedInventoryRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/listen': typeof AuthenticatedListenRoute
   '/micro': typeof AuthenticatedMicroRoute
@@ -538,6 +546,7 @@ export interface FileRoutesById {
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/habits': typeof AuthenticatedHabitsRoute
   '/_authenticated/heatmap': typeof AuthenticatedHeatmapRoute
+  '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/listen': typeof AuthenticatedListenRoute
   '/_authenticated/makron': typeof AuthenticatedMakronRouteWithChildren
@@ -602,6 +611,7 @@ export interface FileRouteTypes {
     | '/goals'
     | '/habits'
     | '/heatmap'
+    | '/inventory'
     | '/leaderboard'
     | '/listen'
     | '/makron'
@@ -664,6 +674,7 @@ export interface FileRouteTypes {
     | '/goals'
     | '/habits'
     | '/heatmap'
+    | '/inventory'
     | '/leaderboard'
     | '/listen'
     | '/micro'
@@ -725,6 +736,7 @@ export interface FileRouteTypes {
     | '/_authenticated/goals'
     | '/_authenticated/habits'
     | '/_authenticated/heatmap'
+    | '/_authenticated/inventory'
     | '/_authenticated/leaderboard'
     | '/_authenticated/listen'
     | '/_authenticated/makron'
@@ -1021,6 +1033,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeaderboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/inventory': {
+      id: '/_authenticated/inventory'
+      path: '/inventory'
+      fullPath: '/inventory'
+      preLoaderRoute: typeof AuthenticatedInventoryRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/heatmap': {
       id: '/_authenticated/heatmap'
       path: '/heatmap'
@@ -1297,6 +1316,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedHabitsRoute: typeof AuthenticatedHabitsRoute
   AuthenticatedHeatmapRoute: typeof AuthenticatedHeatmapRoute
+  AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
   AuthenticatedListenRoute: typeof AuthenticatedListenRoute
   AuthenticatedMakronRoute: typeof AuthenticatedMakronRouteWithChildren
@@ -1338,6 +1358,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedHabitsRoute: AuthenticatedHabitsRoute,
   AuthenticatedHeatmapRoute: AuthenticatedHeatmapRoute,
+  AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
   AuthenticatedListenRoute: AuthenticatedListenRoute,
   AuthenticatedMakronRoute: AuthenticatedMakronRouteWithChildren,
