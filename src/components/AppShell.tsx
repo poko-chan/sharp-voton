@@ -121,6 +121,21 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => { loadProfile(); loadLevel(); }, [loadProfile, loadLevel]);
   useEffect(() => onProfileChange(() => { loadProfile(); loadLevel(); }), [loadProfile, loadLevel]);
 
+  // Pending referral code claim (set on /r/$code when user wasn't signed in)
+  useEffect(() => {
+    if (!user) return;
+    let code: string | null = null;
+    try { code = localStorage.getItem("pending_referral_code"); } catch { /* noop */ }
+    if (!code) return;
+    (supabase as any).rpc("claim_referral", { _code: code }).then(({ error }: any) => {
+      try { localStorage.removeItem("pending_referral_code"); } catch { /* noop */ }
+      if (!error) {
+        // best-effort UX feedback
+        try { (window as any).__lovableToast?.("招待ボーナス +10コイン"); } catch { /* noop */ }
+      }
+    });
+  }, [user]);
+
   // Realtime notifications -> Desktop notifications + sound
   useEffect(() => {
     if (!user) return;
