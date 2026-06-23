@@ -2309,6 +2309,7 @@ export type Database = {
           created_at: string
           id: string
           link: string | null
+          meta: Json
           read_at: string | null
           title: string
           type: string
@@ -2319,6 +2320,7 @@ export type Database = {
           created_at?: string
           id?: string
           link?: string | null
+          meta?: Json
           read_at?: string | null
           title: string
           type?: string
@@ -2329,6 +2331,7 @@ export type Database = {
           created_at?: string
           id?: string
           link?: string | null
+          meta?: Json
           read_at?: string | null
           title?: string
           type?: string
@@ -2719,6 +2722,7 @@ export type Database = {
           active_title: string | null
           avatar_url: string | null
           created_at: string
+          current_plan: string
           deletion_code: string | null
           deletion_code_expires_at: string | null
           deletion_scheduled_at: string | null
@@ -2730,6 +2734,7 @@ export type Database = {
           notify_daily_reminder: boolean
           notify_email: boolean
           notify_streak_break: boolean
+          referral_code: string | null
           reminder_time: string
           theme: string
           updated_at: string
@@ -2742,6 +2747,7 @@ export type Database = {
           active_title?: string | null
           avatar_url?: string | null
           created_at?: string
+          current_plan?: string
           deletion_code?: string | null
           deletion_code_expires_at?: string | null
           deletion_scheduled_at?: string | null
@@ -2753,6 +2759,7 @@ export type Database = {
           notify_daily_reminder?: boolean
           notify_email?: boolean
           notify_streak_break?: boolean
+          referral_code?: string | null
           reminder_time?: string
           theme?: string
           updated_at?: string
@@ -2765,6 +2772,7 @@ export type Database = {
           active_title?: string | null
           avatar_url?: string | null
           created_at?: string
+          current_plan?: string
           deletion_code?: string | null
           deletion_code_expires_at?: string | null
           deletion_scheduled_at?: string | null
@@ -2776,6 +2784,7 @@ export type Database = {
           notify_daily_reminder?: boolean
           notify_email?: boolean
           notify_streak_break?: boolean
+          referral_code?: string | null
           reminder_time?: string
           theme?: string
           updated_at?: string
@@ -3923,6 +3932,7 @@ export type Database = {
           item_code: string
           payload: Json
           quantity: number
+          updated_at: string
           user_id: string
         }
         Insert: {
@@ -3932,6 +3942,7 @@ export type Database = {
           item_code: string
           payload?: Json
           quantity?: number
+          updated_at?: string
           user_id: string
         }
         Update: {
@@ -3941,6 +3952,7 @@ export type Database = {
           item_code?: string
           payload?: Json
           quantity?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -3984,6 +3996,30 @@ export type Database = {
           updated_at?: string
           user_id?: string
           widgets?: Json
+        }
+        Relationships: []
+      }
+      user_referrals: {
+        Row: {
+          created_at: string
+          id: string
+          referred_id: string
+          referrer_id: string
+          reward_granted: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referred_id: string
+          referrer_id: string
+          reward_granted?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referred_id?: string
+          referrer_id?: string
+          reward_granted?: boolean
         }
         Relationships: []
       }
@@ -4201,6 +4237,7 @@ export type Database = {
         Args: { _assignment_id: string; _user_id: string }
         Returns: boolean
       }
+      claim_referral: { Args: { _code: string }; Returns: Json }
       consume_inventory: {
         Args: { _item_code: string; _qty?: number }
         Returns: number
@@ -4246,6 +4283,16 @@ export type Database = {
           xp: number
         }[]
       }
+      get_referral_leaderboard: {
+        Args: { _limit?: number }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          invite_count: number
+          rank: number
+          user_id: string
+        }[]
+      }
       get_user_study_stats: {
         Args: { _user_ids: string[] }
         Returns: {
@@ -4253,6 +4300,15 @@ export type Database = {
           total_minutes: number
           user_id: string
         }[]
+      }
+      gift_inventory_item: {
+        Args: {
+          _item_code: string
+          _message?: string
+          _qty?: number
+          _to: string
+        }
+        Returns: undefined
       }
       has_role: {
         Args: {
@@ -4362,6 +4418,10 @@ export type Database = {
         Returns: undefined
       }
       purchase_shop_item: { Args: { _item_id: string }; Returns: Json }
+      sell_inventory_item: {
+        Args: { _item_code: string; _qty?: number }
+        Returns: Json
+      }
       send_coin_gift: {
         Args: { _amount: number; _message: string; _to: string }
         Returns: Json
@@ -4384,6 +4444,7 @@ export type Database = {
         Args: { _note?: string; _pack_id: string }
         Returns: undefined
       }
+      use_inventory_item: { Args: { _item_code: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "user"
