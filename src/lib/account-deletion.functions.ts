@@ -13,12 +13,6 @@ export const requestDeletionCode = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { data: prof } = await supabaseAdmin
       .from("profiles").select("username, email").eq("id", context.userId).maybeSingle();
-    if (prof?.username?.toLowerCase().startsWith("mcjp_")) {
-      throw new Error("MCJP_ ユーザーのアカウント削除は管理者にお問い合わせください");
-    }
-    if (prof?.username === "pokochan") {
-      throw new Error("システム管理者は削除できません");
-    }
     const code = gen6();
     const expires = new Date(Date.now() + 15 * 60 * 1000).toISOString();
     const { error } = await supabaseAdmin
@@ -46,8 +40,6 @@ export const scheduleDeletion = createServerFn({ method: "POST" })
       .eq("id", context.userId)
       .maybeSingle();
     if (!prof) throw new Error("プロフィールが見つかりません");
-    if (prof.username?.toLowerCase().startsWith("mcjp_")) throw new Error("MCJP_ ユーザーは削除できません");
-    if (prof.username === "pokochan") throw new Error("システム管理者は削除できません");
     if (!prof.deletion_code || !prof.deletion_code_expires_at) throw new Error("先にコード発行してください");
     if (new Date(prof.deletion_code_expires_at).getTime() < Date.now()) {
       throw new Error("コードの有効期限が切れています。やり直してください");
@@ -108,8 +100,6 @@ export const executePendingDeletion = createServerFn({ method: "POST" })
       .from("profiles").select("deletion_scheduled_at, username").eq("id", context.userId).maybeSingle();
     if (!prof?.deletion_scheduled_at) return { deleted: false };
     if (new Date(prof.deletion_scheduled_at).getTime() > Date.now()) return { deleted: false };
-    if (prof.username === "pokochan") return { deleted: false };
-    if (prof.username?.toLowerCase().startsWith("mcjp_")) return { deleted: false };
     const { error } = await supabaseAdmin.auth.admin.deleteUser(context.userId);
     if (error) throw new Error(error.message);
     return { deleted: true };
