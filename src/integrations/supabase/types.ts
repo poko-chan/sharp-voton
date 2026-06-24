@@ -2255,6 +2255,199 @@ export type Database = {
         }
         Relationships: []
       }
+      material_edits: {
+        Row: {
+          created_at: string
+          id: string
+          material_id: string
+          note: string | null
+          patch: Json
+          proposer: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          material_id: string
+          note?: string | null
+          patch: Json
+          proposer?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          material_id?: string
+          note?: string | null
+          patch?: Json
+          proposer?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_edits_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      material_reports: {
+        Row: {
+          created_at: string
+          detail: string | null
+          id: string
+          material_id: string
+          reason: string
+          reporter: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          id?: string
+          material_id: string
+          reason: string
+          reporter?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          id?: string
+          material_id?: string
+          reason?: string
+          reporter?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_reports_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      materials: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          author: string | null
+          barcode: string | null
+          category: string | null
+          cover_url: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          difficulty: number | null
+          edition: string | null
+          format: string | null
+          id: string
+          isbn: string | null
+          language: string | null
+          level: string | null
+          pages: number | null
+          price: number | null
+          publisher: string | null
+          recommend_for: string | null
+          series: string | null
+          status: string
+          sub_subject: string | null
+          subject: string | null
+          subtitle: string | null
+          table_of_contents: string | null
+          tags: string[] | null
+          target_exam: string | null
+          target_grade: string | null
+          title: string
+          updated_at: string
+          url: string | null
+          volume: string | null
+          year: number | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          author?: string | null
+          barcode?: string | null
+          category?: string | null
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          difficulty?: number | null
+          edition?: string | null
+          format?: string | null
+          id?: string
+          isbn?: string | null
+          language?: string | null
+          level?: string | null
+          pages?: number | null
+          price?: number | null
+          publisher?: string | null
+          recommend_for?: string | null
+          series?: string | null
+          status?: string
+          sub_subject?: string | null
+          subject?: string | null
+          subtitle?: string | null
+          table_of_contents?: string | null
+          tags?: string[] | null
+          target_exam?: string | null
+          target_grade?: string | null
+          title: string
+          updated_at?: string
+          url?: string | null
+          volume?: string | null
+          year?: number | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          author?: string | null
+          barcode?: string | null
+          category?: string | null
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          difficulty?: number | null
+          edition?: string | null
+          format?: string | null
+          id?: string
+          isbn?: string | null
+          language?: string | null
+          level?: string | null
+          pages?: number | null
+          price?: number | null
+          publisher?: string | null
+          recommend_for?: string | null
+          series?: string | null
+          status?: string
+          sub_subject?: string | null
+          subject?: string | null
+          subtitle?: string | null
+          table_of_contents?: string | null
+          tags?: string[] | null
+          target_exam?: string | null
+          target_grade?: string | null
+          title?: string
+          updated_at?: string
+          url?: string | null
+          volume?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
       notebook_photos: {
         Row: {
           created_at: string
@@ -3189,6 +3382,7 @@ export type Database = {
           date: string
           duration_minutes: number
           id: string
+          material_id: string | null
           start_time: string | null
           subject_id: string | null
           tag: string | null
@@ -3200,6 +3394,7 @@ export type Database = {
           date?: string
           duration_minutes?: number
           id?: string
+          material_id?: string | null
           start_time?: string | null
           subject_id?: string | null
           tag?: string | null
@@ -3211,12 +3406,20 @@ export type Database = {
           date?: string
           duration_minutes?: number
           id?: string
+          material_id?: string | null
           start_time?: string | null
           subject_id?: string | null
           tag?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "study_logs_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "study_logs_subject_id_fkey"
             columns: ["subject_id"]
@@ -4418,6 +4621,10 @@ export type Database = {
         Returns: undefined
       }
       purchase_shop_item: { Args: { _item_id: string }; Returns: Json }
+      review_material_edit: {
+        Args: { _approve: boolean; _edit_id: string; _note?: string }
+        Returns: Json
+      }
       sell_inventory_item: {
         Args: { _item_code: string; _qty?: number }
         Returns: Json
@@ -4436,6 +4643,8 @@ export type Database = {
           subject_name: string
         }[]
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       spend_coins: {
         Args: { _amount: number; _meta?: Json; _reason: string }
         Returns: number

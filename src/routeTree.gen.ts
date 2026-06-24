@@ -40,6 +40,7 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedMissionsRouteImport } from './routes/_authenticated/missions'
 import { Route as AuthenticatedMicroRouteImport } from './routes/_authenticated/micro'
+import { Route as AuthenticatedMaterialsRouteImport } from './routes/_authenticated/materials'
 import { Route as AuthenticatedMakronRouteImport } from './routes/_authenticated/makron'
 import { Route as AuthenticatedListenRouteImport } from './routes/_authenticated/listen'
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
@@ -62,6 +63,7 @@ import { Route as AuthenticatedMakronIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedClassroomIndexRouteImport } from './routes/_authenticated/classroom.index'
 import { Route as AuthenticatedRoomsRoomIdRouteImport } from './routes/_authenticated/rooms.$roomId'
 import { Route as AuthenticatedOrganizationsOrgIdRouteImport } from './routes/_authenticated/organizations.$orgId'
+import { Route as AuthenticatedMaterialsIdRouteImport } from './routes/_authenticated/materials.$id'
 import { Route as AuthenticatedMakronLabelsRouteImport } from './routes/_authenticated/makron.labels'
 import { Route as AuthenticatedMakronHistoryRouteImport } from './routes/_authenticated/makron.history'
 import { Route as AuthenticatedMakronAdminRouteImport } from './routes/_authenticated/makron.admin'
@@ -228,6 +230,11 @@ const AuthenticatedMicroRoute = AuthenticatedMicroRouteImport.update({
   path: '/micro',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedMaterialsRoute = AuthenticatedMaterialsRouteImport.update({
+  id: '/materials',
+  path: '/materials',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedMakronRoute = AuthenticatedMakronRouteImport.update({
   id: '/makron',
   path: '/makron',
@@ -344,6 +351,12 @@ const AuthenticatedOrganizationsOrgIdRoute =
     path: '/$orgId',
     getParentRoute: () => AuthenticatedOrganizationsRoute,
   } as any)
+const AuthenticatedMaterialsIdRoute =
+  AuthenticatedMaterialsIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedMaterialsRoute,
+  } as any)
 const AuthenticatedMakronLabelsRoute =
   AuthenticatedMakronLabelsRouteImport.update({
     id: '/labels',
@@ -424,6 +437,7 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/listen': typeof AuthenticatedListenRoute
   '/makron': typeof AuthenticatedMakronRouteWithChildren
+  '/materials': typeof AuthenticatedMaterialsRouteWithChildren
   '/micro': typeof AuthenticatedMicroRoute
   '/missions': typeof AuthenticatedMissionsRoute
   '/notes': typeof AuthenticatedNotesRoute
@@ -451,6 +465,7 @@ export interface FileRoutesByFullPath {
   '/makron/admin': typeof AuthenticatedMakronAdminRoute
   '/makron/history': typeof AuthenticatedMakronHistoryRoute
   '/makron/labels': typeof AuthenticatedMakronLabelsRoute
+  '/materials/$id': typeof AuthenticatedMaterialsIdRoute
   '/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdRoute
   '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom/': typeof AuthenticatedClassroomIndexRoute
@@ -486,6 +501,7 @@ export interface FileRoutesByTo {
   '/inventory': typeof AuthenticatedInventoryRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/listen': typeof AuthenticatedListenRoute
+  '/materials': typeof AuthenticatedMaterialsRouteWithChildren
   '/micro': typeof AuthenticatedMicroRoute
   '/missions': typeof AuthenticatedMissionsRoute
   '/notes': typeof AuthenticatedNotesRoute
@@ -512,6 +528,7 @@ export interface FileRoutesByTo {
   '/makron/admin': typeof AuthenticatedMakronAdminRoute
   '/makron/history': typeof AuthenticatedMakronHistoryRoute
   '/makron/labels': typeof AuthenticatedMakronLabelsRoute
+  '/materials/$id': typeof AuthenticatedMaterialsIdRoute
   '/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdRoute
   '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom': typeof AuthenticatedClassroomIndexRoute
@@ -550,6 +567,7 @@ export interface FileRoutesById {
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/listen': typeof AuthenticatedListenRoute
   '/_authenticated/makron': typeof AuthenticatedMakronRouteWithChildren
+  '/_authenticated/materials': typeof AuthenticatedMaterialsRouteWithChildren
   '/_authenticated/micro': typeof AuthenticatedMicroRoute
   '/_authenticated/missions': typeof AuthenticatedMissionsRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
@@ -577,6 +595,7 @@ export interface FileRoutesById {
   '/_authenticated/makron/admin': typeof AuthenticatedMakronAdminRoute
   '/_authenticated/makron/history': typeof AuthenticatedMakronHistoryRoute
   '/_authenticated/makron/labels': typeof AuthenticatedMakronLabelsRoute
+  '/_authenticated/materials/$id': typeof AuthenticatedMaterialsIdRoute
   '/_authenticated/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdRoute
   '/_authenticated/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/_authenticated/classroom/': typeof AuthenticatedClassroomIndexRoute
@@ -615,6 +634,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/listen'
     | '/makron'
+    | '/materials'
     | '/micro'
     | '/missions'
     | '/notes'
@@ -642,6 +662,7 @@ export interface FileRouteTypes {
     | '/makron/admin'
     | '/makron/history'
     | '/makron/labels'
+    | '/materials/$id'
     | '/organizations/$orgId'
     | '/rooms/$roomId'
     | '/classroom/'
@@ -677,6 +698,7 @@ export interface FileRouteTypes {
     | '/inventory'
     | '/leaderboard'
     | '/listen'
+    | '/materials'
     | '/micro'
     | '/missions'
     | '/notes'
@@ -703,6 +725,7 @@ export interface FileRouteTypes {
     | '/makron/admin'
     | '/makron/history'
     | '/makron/labels'
+    | '/materials/$id'
     | '/organizations/$orgId'
     | '/rooms/$roomId'
     | '/classroom'
@@ -740,6 +763,7 @@ export interface FileRouteTypes {
     | '/_authenticated/leaderboard'
     | '/_authenticated/listen'
     | '/_authenticated/makron'
+    | '/_authenticated/materials'
     | '/_authenticated/micro'
     | '/_authenticated/missions'
     | '/_authenticated/notes'
@@ -767,6 +791,7 @@ export interface FileRouteTypes {
     | '/_authenticated/makron/admin'
     | '/_authenticated/makron/history'
     | '/_authenticated/makron/labels'
+    | '/_authenticated/materials/$id'
     | '/_authenticated/organizations/$orgId'
     | '/_authenticated/rooms/$roomId'
     | '/_authenticated/classroom/'
@@ -1012,6 +1037,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMicroRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/materials': {
+      id: '/_authenticated/materials'
+      path: '/materials'
+      fullPath: '/materials'
+      preLoaderRoute: typeof AuthenticatedMaterialsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/makron': {
       id: '/_authenticated/makron'
       path: '/makron'
@@ -1166,6 +1198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrganizationsOrgIdRouteImport
       parentRoute: typeof AuthenticatedOrganizationsRoute
     }
+    '/_authenticated/materials/$id': {
+      id: '/_authenticated/materials/$id'
+      path: '/$id'
+      fullPath: '/materials/$id'
+      preLoaderRoute: typeof AuthenticatedMaterialsIdRouteImport
+      parentRoute: typeof AuthenticatedMaterialsRoute
+    }
     '/_authenticated/makron/labels': {
       id: '/_authenticated/makron/labels'
       path: '/labels'
@@ -1275,6 +1314,20 @@ const AuthenticatedMakronRouteChildren: AuthenticatedMakronRouteChildren = {
 const AuthenticatedMakronRouteWithChildren =
   AuthenticatedMakronRoute._addFileChildren(AuthenticatedMakronRouteChildren)
 
+interface AuthenticatedMaterialsRouteChildren {
+  AuthenticatedMaterialsIdRoute: typeof AuthenticatedMaterialsIdRoute
+}
+
+const AuthenticatedMaterialsRouteChildren: AuthenticatedMaterialsRouteChildren =
+  {
+    AuthenticatedMaterialsIdRoute: AuthenticatedMaterialsIdRoute,
+  }
+
+const AuthenticatedMaterialsRouteWithChildren =
+  AuthenticatedMaterialsRoute._addFileChildren(
+    AuthenticatedMaterialsRouteChildren,
+  )
+
 interface AuthenticatedOrganizationsRouteChildren {
   AuthenticatedOrganizationsOrgIdRoute: typeof AuthenticatedOrganizationsOrgIdRoute
 }
@@ -1320,6 +1373,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
   AuthenticatedListenRoute: typeof AuthenticatedListenRoute
   AuthenticatedMakronRoute: typeof AuthenticatedMakronRouteWithChildren
+  AuthenticatedMaterialsRoute: typeof AuthenticatedMaterialsRouteWithChildren
   AuthenticatedMicroRoute: typeof AuthenticatedMicroRoute
   AuthenticatedMissionsRoute: typeof AuthenticatedMissionsRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
@@ -1362,6 +1416,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
   AuthenticatedListenRoute: AuthenticatedListenRoute,
   AuthenticatedMakronRoute: AuthenticatedMakronRouteWithChildren,
+  AuthenticatedMaterialsRoute: AuthenticatedMaterialsRouteWithChildren,
   AuthenticatedMicroRoute: AuthenticatedMicroRoute,
   AuthenticatedMissionsRoute: AuthenticatedMissionsRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
