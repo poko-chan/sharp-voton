@@ -18,7 +18,8 @@ import { ReportDialog } from "@/components/makron/ReportDialog";
 export const Route = createFileRoute("/_authenticated/makron/session/$sessionId")({ component: SessionPage });
 
 type Q = {
-  id: string; prompt: string; image_url: string | null; type: "single"|"multi"|"text"|"written"|"file"|"ocr";
+  id: string; prompt: string; image_url: string | null;
+  type: "single"|"multi"|"text"|"written"|"file"|"ocr"|"numeric"|"long_text"|"fill_blank"|"ordering"|"matching";
   options: string[]; correct_options: string[]; accepted_answers: string[];
   model_answer: string | null; explanation: string | null; points: number; grading: "auto"|"manual";
   hint_text: string | null;
@@ -146,6 +147,28 @@ function SessionPage() {
       } else if (q.type === "text" || q.type === "ocr") {
         const s = String(val ?? "").trim().toLowerCase();
         auto = (q.accepted_answers ?? []).some((a) => a.trim().toLowerCase() === s);
+      } else if (q.type === "numeric") {
+        const n = Number(val);
+        auto = !isNaN(n) && (q.accepted_answers ?? []).some((a) => Number(a) === n);
+      } else if (q.type === "fill_blank") {
+        const arr = Array.isArray(val) ? val : [];
+        const correct = q.accepted_answers ?? [];
+        auto = arr.length === correct.length &&
+          arr.every((v, i) => String(v ?? "").trim().toLowerCase() === String(correct[i] ?? "").trim().toLowerCase());
+      } else if (q.type === "ordering") {
+        const arr = Array.isArray(val) ? val : [];
+        const correct = q.correct_options ?? [];
+        auto = arr.length === correct.length && arr.every((v, i) => v === correct[i]);
+      } else if (q.type === "matching") {
+        const obj = (val && typeof val === "object") ? val : {};
+        // accepted_answers として "left=>right" 形式を期待
+        const map: Record<string, string> = {};
+        (q.accepted_answers ?? []).forEach((p) => {
+          const [k, v] = p.split("=>");
+          if (k && v) map[k.trim()] = v.trim();
+        });
+        const keys = Object.keys(map);
+        auto = keys.length > 0 && keys.every((k) => String(obj[k] ?? "").trim() === map[k]);
       }
     }
     const pts = auto === true ? q.points : (auto === false ? 0 : null);
