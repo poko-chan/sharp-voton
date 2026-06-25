@@ -1738,6 +1738,59 @@ export type Database = {
           },
         ]
       }
+      makron_daily_completions: {
+        Row: {
+          completed_at: string
+          date: string
+          score: number
+          session_id: string | null
+          total: number
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          date: string
+          score?: number
+          session_id?: string | null
+          total?: number
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          date?: string
+          score?: number
+          session_id?: string | null
+          total?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "makron_daily_completions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "makron_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      makron_daily_sets: {
+        Row: {
+          created_at: string
+          date: string
+          question_ids: string[]
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          question_ids: string[]
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          question_ids?: string[]
+        }
+        Relationships: []
+      }
       makron_fields: {
         Row: {
           created_at: string
@@ -2077,10 +2130,13 @@ export type Database = {
           all_mode: boolean
           coins_awarded: number
           created_at: string
+          daily_date: string | null
           finished_at: string | null
           id: string
+          kind: string
           pack_id: string | null
           passed: boolean | null
+          question_ids: string[] | null
           scratchpad: string | null
           started_at: string
           total_points: number | null
@@ -2093,10 +2149,13 @@ export type Database = {
           all_mode?: boolean
           coins_awarded?: number
           created_at?: string
+          daily_date?: string | null
           finished_at?: string | null
           id?: string
+          kind?: string
           pack_id?: string | null
           passed?: boolean | null
+          question_ids?: string[] | null
           scratchpad?: string | null
           started_at?: string
           total_points?: number | null
@@ -2109,10 +2168,13 @@ export type Database = {
           all_mode?: boolean
           coins_awarded?: number
           created_at?: string
+          daily_date?: string | null
           finished_at?: string | null
           id?: string
+          kind?: string
           pack_id?: string | null
           passed?: boolean | null
+          question_ids?: string[] | null
           scratchpad?: string | null
           started_at?: string
           total_points?: number | null
@@ -4535,7 +4597,36 @@ export type Database = {
         Returns: boolean
       }
       join_class_by_code: { Args: { _code: string }; Returns: string }
+      jst_today: { Args: never; Returns: string }
+      makron_daily_status: {
+        Args: never
+        Returns: {
+          completed: boolean
+          date: string
+          streak: number
+          total_questions: number
+        }[]
+      }
       makron_delete_answer: { Args: { _answer_id: string }; Returns: undefined }
+      makron_finalize_daily: {
+        Args: { _session_id: string }
+        Returns: {
+          bonus_coins: number
+          bonus_xp: number
+          coins_awarded: number
+          streak: number
+          total_points: number
+          total_score: number
+          xp_awarded: number
+        }[]
+      }
+      makron_get_or_create_daily_set: {
+        Args: never
+        Returns: {
+          date: string
+          question_ids: string[]
+        }[]
+      }
       makron_pack_attempters: {
         Args: { _pack_id: string }
         Returns: {
@@ -4551,6 +4642,7 @@ export type Database = {
         Returns: undefined
       }
       makron_pack_stats: { Args: { _pack_id: string }; Returns: Json }
+      makron_start_daily_session: { Args: never; Returns: string }
       makron_start_pack_session: { Args: { _pack_id: string }; Returns: string }
       makron_start_weakness_session: {
         Args: { _limit?: number; _unit_id: string }
