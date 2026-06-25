@@ -343,7 +343,81 @@ function SessionPage() {
             </div>
           )}
           {q.type === "text" && <Input value={answers[q.id] ?? ""} onChange={(e) => setAns(e.target.value)} placeholder="回答を入力" />}
+          {q.type === "numeric" && (
+            <Input type="number" inputMode="decimal" value={answers[q.id] ?? ""} onChange={(e) => setAns(e.target.value)} placeholder="数値で回答" />
+          )}
           {q.type === "written" && <Textarea rows={8} value={answers[q.id] ?? ""} onChange={(e) => setAns(e.target.value)} placeholder="記述で解答" />}
+          {q.type === "long_text" && <Textarea rows={14} value={answers[q.id] ?? ""} onChange={(e) => setAns(e.target.value)} placeholder="長文で記述（採点者が確認）" />}
+          {q.type === "fill_blank" && (() => {
+            const parts = q.prompt.split(/_{2,}/);
+            const cur = Array.isArray(answers[q.id]) ? answers[q.id] : [];
+            return (
+              <div className="space-y-2 text-base leading-loose">
+                {parts.map((seg, i) => (
+                  <span key={i}>
+                    <span className="whitespace-pre-wrap">{seg}</span>
+                    {i < parts.length - 1 && (
+                      <Input
+                        className="inline-block w-32 mx-1 align-baseline"
+                        value={cur[i] ?? ""}
+                        onChange={(e) => {
+                          const next = [...cur]; next[i] = e.target.value; setAns(next);
+                        }}
+                      />
+                    )}
+                  </span>
+                ))}
+              </div>
+            );
+          })()}
+          {q.type === "ordering" && (() => {
+            const cur: string[] = Array.isArray(answers[q.id]) && answers[q.id].length === q.options.length
+              ? answers[q.id] : [...q.options];
+            const move = (i: number, dir: -1 | 1) => {
+              const j = i + dir;
+              if (j < 0 || j >= cur.length) return;
+              const next = [...cur];
+              [next[i], next[j]] = [next[j], next[i]];
+              setAns(next);
+            };
+            return (
+              <div className="space-y-2">
+                <div className="text-xs text-muted-foreground">正しい順に並び替えてください</div>
+                {cur.map((o, i) => (
+                  <div key={i} className="flex items-center gap-2 border rounded p-2">
+                    <span className="text-xs font-mono w-6 text-muted-foreground">{i + 1}</span>
+                    <span className="flex-1">{o}</span>
+                    <Button size="sm" variant="ghost" onClick={() => move(i, -1)} disabled={i === 0}>↑</Button>
+                    <Button size="sm" variant="ghost" onClick={() => move(i, 1)} disabled={i === cur.length - 1}>↓</Button>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+          {q.type === "matching" && (() => {
+            // options を "左|右1,右2,..." 形式と解釈（左側の選択肢に対し、右側候補から選ぶ）
+            const lefts = q.options ?? [];
+            const rights = Array.from(new Set((q.accepted_answers ?? []).map((p) => p.split("=>")[1]?.trim()).filter(Boolean)));
+            const cur: Record<string, string> = (answers[q.id] && typeof answers[q.id] === "object") ? answers[q.id] : {};
+            return (
+              <div className="space-y-2">
+                <div className="text-xs text-muted-foreground">左側に対応する右側を選んでください</div>
+                {lefts.map((l) => (
+                  <div key={l} className="flex items-center gap-2 border rounded p-2">
+                    <span className="flex-1">{l}</span>
+                    <select
+                      className="border rounded px-2 py-1 bg-background"
+                      value={cur[l] ?? ""}
+                      onChange={(e) => setAns({ ...cur, [l]: e.target.value })}
+                    >
+                      <option value="">--</option>
+                      {rights.map((r) => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
           {q.type === "file" && (
             <div className="space-y-2">
               <Input type="file" onChange={(e) => e.target.files?.[0] && uploadFile(e.target.files[0])} />
