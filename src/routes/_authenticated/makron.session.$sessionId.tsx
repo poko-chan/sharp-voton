@@ -68,11 +68,21 @@ function SessionPage() {
         const { data } = await (supabase as any).from("makron_packs").select("*").eq("id", s.pack_id).maybeSingle();
         p = data; setPack(p);
       }
-      // 出題対象: パックが指定されればそのパックの問題、そうでなければ単元全体（後方互換）
-      const baseQuery = p
-        ? (supabase as any).from("makron_questions").select("*").eq("pack_id", s.pack_id)
-        : (supabase as any).from("makron_questions").select("*").eq("unit_id", s.unit_id).eq("status", "approved");
-      const { data: qs } = await baseQuery.neq("is_active", false).order("order_idx").order("created_at");
+      // 出題対象: question_ids（デイリー等）→ パック → 単元の順
+      let qs: any[] | null = null;
+      if (Array.isArray(s.question_ids) && s.question_ids.length > 0) {
+        const r = await (supabase as any).from("makron_questions").select("*").in("id", s.question_ids);
+        qs = r.data ?? [];
+        // preserve given order
+        const order = new Map<string, number>(s.question_ids.map((id: string, i: number) => [id, i]));
+        qs!.sort((a: any, b: any) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+      } else {
+        const baseQuery = p
+          ? (supabase as any).from("makron_questions").select("*").eq("pack_id", s.pack_id)
+          : (supabase as any).from("makron_questions").select("*").eq("unit_id", s.unit_id).eq("status", "approved");
+        const r = await baseQuery.neq("is_active", false).order("order_idx").order("created_at");
+        qs = r.data ?? [];
+      }
       let list = (qs ?? []) as Q[];
       if (p?.shuffle) list = shuffleArr(list);
       if (p?.question_limit && p.question_limit > 0 && (!s.all_mode)) list = list.slice(0, p.question_limit);
@@ -185,7 +195,8 @@ function SessionPage() {
   const finish = async () => {
     if (!confirm("提出して採点しますか？")) return;
     await saveCurrent();
-    const { error } = await (supabase as any).rpc("finalize_makron_session", { _session_id: sessionId });
+    const rpcName = session?.kind === "daily" ? "makron_finalize_daily" : "finalize_makron_session";
+    const { error } = await (supabase as any).rpc(rpcName, { _session_id: sessionId });
     if (error) return toast.error(error.message);
     nav({ to: "/makron/result/$sessionId", params: { sessionId } });
   };

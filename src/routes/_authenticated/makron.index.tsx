@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { BookOpen, Trophy, Zap, History, Plus, Filter, ShoppingBag } from "lucide-react";
+import { BookOpen, Trophy, Zap, History, Plus, Filter, ShoppingBag, CalendarDays, Flame } from "lucide-react";
 import { Link as RLink } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/makron/")({ component: MakronHome });
@@ -25,6 +25,7 @@ function MakronHome() {
   const [fField, setFField] = useState<string>("__all");
   const [fUnit, setFUnit] = useState<string>("__all");
   const [canCreate, setCanCreate] = useState(false);
+  const [daily, setDaily] = useState<{ date: string; completed: boolean; streak: number; total_questions: number } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -37,6 +38,8 @@ function MakronHome() {
       // 問題作成は誰でも可能（一般ユーザーの投稿は pending として扱われる）
       // 問題作成は管理者のみ
       setCanCreate(!!isAdmin);
+      const { data: ds } = await (supabase as any).rpc("makron_daily_status");
+      if (ds && ds[0]) setDaily(ds[0]);
     })();
   }, [user?.id, isAdmin]);
 
@@ -59,6 +62,7 @@ function MakronHome() {
           <MakronBadge icon={Zap} label="XP" value={me?.xp ?? 0} />
           <MakronBadge icon={Trophy} label="レベル" value={`Lv${me?.level ?? 1}`} />
           <MakronBadge icon={Trophy} label="順位" value={me && me.rank > 0 ? `${me.rank}位 / ${me.total_users}人` : "未参加"} />
+          <MakronBadge icon={Flame} label="ストリーク" value={`${daily?.streak ?? 0}日`} />
           <div className="ml-auto flex gap-2">
             <RLink to="/shop"><Button variant="outline" size="sm"><ShoppingBag className="h-4 w-4 mr-1" />ショップ</Button></RLink>
             <Link to="/makron/history"><Button variant="outline" size="sm"><History className="h-4 w-4 mr-1" />履歴</Button></Link>
@@ -66,6 +70,23 @@ function MakronHome() {
             {isAdmin && <Link to="/makron/admin"><Button size="sm"><Plus className="h-4 w-4 mr-1" />管理者画面</Button></Link>}
           </div>
         </div>
+
+        <Link to="/makron/daily">
+          <Card className={`p-4 cursor-pointer transition border ${daily?.completed ? "bg-green-500/10 border-green-500/40" : "bg-gradient-to-r from-primary/15 to-amber-500/10 border-primary/40 hover:border-primary"}`}>
+            <div className="flex items-center gap-3">
+              <CalendarDays className="h-8 w-8 text-primary" />
+              <div className="flex-1">
+                <div className="font-bold">デイリー演習</div>
+                <div className="text-xs text-muted-foreground">
+                  {daily?.completed ? "今日は完了済み！ また明日" : `毎日${daily?.total_questions ?? 10}問・完了で +50XP / +20コイン`}
+                </div>
+              </div>
+              <div className="flex items-center gap-1 text-amber-600">
+                <Flame className="h-4 w-4" /><span className="font-bold tabular-nums">{daily?.streak ?? 0}</span>
+              </div>
+            </div>
+          </Card>
+        </Link>
 
         <div className="grid lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2 space-y-3">
