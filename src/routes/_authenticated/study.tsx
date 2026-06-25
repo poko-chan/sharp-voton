@@ -22,10 +22,13 @@ export const Route = createFileRoute("/_authenticated/study")({
 });
 
 interface Subject { id: string; name: string; color: string; }
+interface Material { id: string; title: string; publisher: string | null; }
 
 function StudyPage() {
   const { user } = useAuth();
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [materialId, setMaterialId] = useState<string>("");
   const [logs, setLogs] = useState<any[]>([]);
   const [newSubject, setNewSubject] = useState("");
   const [newColor, setNewColor] = useState("#10b981");
@@ -39,6 +42,8 @@ function StudyPage() {
     if (!user) return;
     const { data: s } = await supabase.from("subjects").select("*").eq("user_id", user.id).order("created_at");
     setSubjects(s ?? []);
+    const { data: m } = await (supabase as any).from("materials").select("id,title,publisher").eq("status", "approved").order("title").limit(200);
+    setMaterials(m ?? []);
     const { data: l } = await supabase.from("study_logs").select("*, subjects(id,name,color)").eq("user_id", user.id).order("date", { ascending: false }).order("start_time", { ascending: true }).limit(1000);
     setLogs(l ?? []);
     emitProfileChange();
@@ -75,9 +80,10 @@ function StudyPage() {
       user_id: user.id, date, subject_id: subjectId,
       duration_minutes: duration, content,
       start_time: startTime || null,
+      material_id: materialId || null,
     } as never);
     if (error) return toast.error(error.message);
-    setContent(""); setDuration(30); setStartTime(""); load(); toast.success("記録しました🎉");
+    setContent(""); setDuration(30); setStartTime(""); setMaterialId(""); load(); toast.success("記録しました🎉");
   };
 
   const delLog = async (id: string) => {
@@ -247,6 +253,23 @@ function StudyPage() {
                 <VoiceMicButton onResult={(t) => setContent((c) => (c ? c + " " : "") + t)} />
               </div>
               <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="今日の学習内容を記入...（マイクボタンで音声入力可）" />
+            </div>
+            <div className="col-span-2">
+              <Label>使った教材（任意）</Label>
+              <Select value={materialId || "none"} onValueChange={(v) => setMaterialId(v === "none" ? "" : v)}>
+                <SelectTrigger><SelectValue placeholder="教材を選択（任意）" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">なし</SelectItem>
+                  {materials.map((m) => (
+                    <SelectItem key={m.id} value={m.id}>
+                      {m.title}{m.publisher ? ` / ${m.publisher}` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                教材データベースに無い場合は <a href="/materials" className="underline">こちら</a>から追加できます。
+              </p>
             </div>
           </div>
           <Button onClick={addLog} className="w-full" disabled={!subjectId || duration <= 0 || duration > 400}>記録する</Button>
