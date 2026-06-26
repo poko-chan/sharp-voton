@@ -56,6 +56,7 @@ const NAV = [
   { to: "/organizations", labelKey: "nav.dashboard" as const, icon: Users, override: "組織" },
   { to: "/shop", labelKey: "nav.dashboard" as const, icon: ShoppingBag, override: "コインショップ" },
   { to: "/settings", labelKey: "nav.settings" as const, icon: Settings, override: "設定" },
+  { to: "/help", labelKey: "nav.dashboard" as const, icon: HelpCircle, override: "ヘルプ" },
 ] as const;
 
 // Map prefix -> service key (for filtering hidden services)
