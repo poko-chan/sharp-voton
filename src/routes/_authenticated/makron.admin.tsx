@@ -449,6 +449,9 @@ function AdminPage() {
                 ))}
               </Card>
           </TabsContent>
+          <TabsContent value="daily" className="space-y-3">
+            <DailySetEditor />
+          </TabsContent>
         </Tabs>
       </div>
     </MakronShell>
