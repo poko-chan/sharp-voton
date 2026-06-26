@@ -26,11 +26,13 @@ import { useRestriction } from "@/lib/restriction-context";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAdminNavConfig } from "@/lib/admin-nav";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
+import { MikuCompanion } from "@/components/MikuCompanion";
 
 const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
   { to: "/today", labelKey: "nav.today" as const, icon: CalendarClock },
   { to: "/study", labelKey: "nav.study" as const, icon: BookOpen },
+  { to: "/materials", labelKey: "nav.dashboard" as const, icon: BookOpen, override: "教材データベース" },
   { to: "/timer", labelKey: "nav.timer" as const, icon: Timer },
   { to: "/calendar", labelKey: "nav.calendar" as const, icon: CalendarDays },
   { to: "/goals", labelKey: "nav.goals" as const, icon: Trophy },
