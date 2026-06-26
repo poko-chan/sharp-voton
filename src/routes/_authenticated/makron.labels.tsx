@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Tags } from "lucide-react";
+import { Plus, Trash2, Tags, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/makron/labels")({ component: LabelsPage });
@@ -58,6 +58,21 @@ function LabelsPage() {
     load();
   };
 
+  const renameSubject = async (id: string, current: string) => {
+    const name = prompt("教科の新しい名前", current);
+    if (!name || name === current) return;
+    const { error } = await (supabase as any).from("makron_subjects").update({ name }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("更新しました"); load();
+  };
+  const renameField = async (id: string, current: string) => {
+    const name = prompt("分野の新しい名前", current);
+    if (!name || name === current) return;
+    const { error } = await (supabase as any).from("makron_fields").update({ name }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("更新しました"); load();
+  };
+
   const subjFields = fields.filter((f) => f.subject_id === selSubj);
 
   return (
@@ -76,6 +91,7 @@ function LabelsPage() {
                 <div key={s.id} className={`flex items-center gap-1 p-2 rounded cursor-pointer ${selSubj === s.id ? "bg-primary/10" : "hover:bg-accent"}`}
                   onClick={() => setSelSubj(s.id)}>
                   <span className="flex-1 truncate">{s.name}</span>
+                  <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); renameSubject(s.id, s.name); }} title="名前を変更"><Pencil className="h-4 w-4" /></Button>
                   <Button size="sm" variant="ghost" className="text-destructive" onClick={(e) => { e.stopPropagation(); delSubject(s.id); }}><Trash2 className="h-4 w-4" /></Button>
                 </div>
               ))}
@@ -96,6 +112,7 @@ function LabelsPage() {
                   {subjFields.map((f) => (
                     <div key={f.id} className="flex items-center gap-1 p-2 rounded hover:bg-accent">
                       <span className="flex-1 truncate">{f.name}</span>
+                      <Button size="sm" variant="ghost" onClick={() => renameField(f.id, f.name)} title="名前を変更"><Pencil className="h-4 w-4" /></Button>
                       <Button size="sm" variant="ghost" className="text-destructive" onClick={() => delField(f.id)}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   ))}
