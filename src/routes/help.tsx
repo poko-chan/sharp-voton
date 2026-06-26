@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { HelpCircle, ArrowLeft, Search } from "lucide-react";
 import logoUrl from "@/assets/logo.png";
+import { Button } from "@/components/ui/button";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
@@ -63,6 +64,21 @@ function HelpPage() {
               placeholder="キーワードで検索…"
               className="pl-9"
             />
+          </div>
+        </Card>
+
+        <Card className="p-5 space-y-3 border-primary/30">
+          <h2 className="font-semibold">ログインできない場合</h2>
+          <p className="text-sm text-muted-foreground">
+            パスワードを忘れた、または登録メールアドレスを忘れた場合は、こちらから復旧できます。
+          </p>
+          <div className="flex gap-2 flex-wrap">
+            <Button asChild size="sm">
+              <Link to="/forgot">パスワードを再設定</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/forgot">メールアドレスを確認</Link>
+            </Button>
           </div>
         </Card>
 
