@@ -479,6 +479,7 @@ function AnnouncementsTab() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [tag, setTag] = useState("update");
+  const [showOnLogin, setShowOnLogin] = useState(false);
   const [publishAt, setPublishAt] = useState(() => {
     const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
     return d.toISOString().slice(0, 16);
@@ -488,7 +489,7 @@ function AnnouncementsTab() {
   const reload = async () => {
     const { data, error } = await supabase
       .from("announcements")
-      .select("id, title, body, publish_at, created_at, tag")
+      .select("id, title, body, publish_at, created_at, tag, show_on_login")
       .order("publish_at", { ascending: false });
     if (error) toast.error(error.message);
     else setItems(data ?? []);
@@ -501,11 +502,11 @@ function AnnouncementsTab() {
     try {
       const iso = new Date(publishAt).toISOString();
       const { error } = await supabase.from("announcements").insert({
-        title: title.trim(), body: body.trim(), publish_at: iso, tag,
+        title: title.trim(), body: body.trim(), publish_at: iso, tag, show_on_login: showOnLogin,
       } as any);
       if (error) throw error;
       toast.success("お知らせを送信しました");
-      setTitle(""); setBody("");
+      setTitle(""); setBody(""); setShowOnLogin(false);
       reload();
     } catch (e: any) { toast.error(e.message); }
     finally { setBusy(false); }
@@ -518,10 +519,10 @@ function AnnouncementsTab() {
   };
 
   const [editing, setEditing] = useState<any | null>(null);
-  const [editForm, setEditForm] = useState({ title: "", body: "", tag: "update", publishAt: "" });
+  const [editForm, setEditForm] = useState({ title: "", body: "", tag: "update", publishAt: "", showOnLogin: false });
   const openEdit = (a: any) => {
     const d = new Date(a.publish_at); d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-    setEditForm({ title: a.title, body: a.body, tag: a.tag ?? "other", publishAt: d.toISOString().slice(0, 16) });
+    setEditForm({ title: a.title, body: a.body, tag: a.tag ?? "other", publishAt: d.toISOString().slice(0, 16), showOnLogin: !!a.show_on_login });
     setEditing(a);
   };
   const saveEdit = async () => {
@@ -533,6 +534,7 @@ function AnnouncementsTab() {
         body: editForm.body.trim(),
         tag: editForm.tag,
         publish_at: new Date(editForm.publishAt).toISOString(),
+        show_on_login: editForm.showOnLogin,
       } as any).eq("id", editing.id);
       if (error) throw error;
       toast.success("更新しました");
@@ -558,6 +560,10 @@ function AnnouncementsTab() {
         <div><Label>本文</Label><Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={5} maxLength={5000} /></div>
         <div><Label>送信日時</Label><Input type="datetime-local" value={publishAt} onChange={(e) => setPublishAt(e.target.value)} /></div>
         <p className="text-xs text-muted-foreground">未来の日時を指定すると、その時刻以降にユーザーから見えるようになります。</p>
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={showOnLogin} onChange={(e) => setShowOnLogin(e.target.checked)} />
+          ログイン画面にも表示する（未ログインのユーザーにも見えます）
+        </label>
         <Button onClick={send} disabled={busy}><Send className="h-4 w-4 mr-2" />送信</Button>
       </Card>
 
