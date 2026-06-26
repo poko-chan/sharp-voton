@@ -8,6 +8,7 @@ import { listTowns, createTown, updateTown, deleteTown } from "@/lib/town.functi
 import { MAX_STAGE, stageName } from "@/lib/town";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { useMikuEnabled } from "@/components/MikuCompanion";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -347,6 +348,7 @@ function CustomizationPanel() {
             <span>環境音 (タイマーのみ)</span>
             <Switch checked={dock.has("ambient")} onCheckedChange={() => toggleDock("ambient")} />
           </label>
+          <MikuToggleRow />
         </div>
         <p className="text-[11px] text-muted-foreground">※ 環境音ボタンはタイマー画面のみで表示されます。</p>
       </div>
@@ -374,6 +376,16 @@ function CustomizationPanel() {
         </div>
       )}
     </Card>
+  );
+}
+
+function MikuToggleRow() {
+  const { enabled, toggle } = useMikuEnabled();
+  return (
+    <label className="flex items-center justify-between rounded border p-2 text-sm">
+      <span>🎤 初音ミクが画面を歩く</span>
+      <Switch checked={enabled} onCheckedChange={(v) => toggle(!!v)} />
+    </label>
   );
 }
 

@@ -61,6 +61,7 @@ import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedRoomsIndexRouteImport } from './routes/_authenticated/rooms.index'
+import { Route as AuthenticatedMaterialsIndexRouteImport } from './routes/_authenticated/materials.index'
 import { Route as AuthenticatedMakronIndexRouteImport } from './routes/_authenticated/makron.index'
 import { Route as AuthenticatedClassroomIndexRouteImport } from './routes/_authenticated/classroom.index'
 import { Route as AuthenticatedRoomsRoomIdRouteImport } from './routes/_authenticated/rooms.$roomId'
@@ -340,6 +341,12 @@ const AuthenticatedRoomsIndexRoute = AuthenticatedRoomsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRoomsRoute,
 } as any)
+const AuthenticatedMaterialsIndexRoute =
+  AuthenticatedMaterialsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedMaterialsRoute,
+  } as any)
 const AuthenticatedMakronIndexRoute =
   AuthenticatedMakronIndexRouteImport.update({
     id: '/',
@@ -492,6 +499,7 @@ export interface FileRoutesByFullPath {
   '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom/': typeof AuthenticatedClassroomIndexRoute
   '/makron/': typeof AuthenticatedMakronIndexRoute
+  '/materials/': typeof AuthenticatedMaterialsIndexRoute
   '/rooms/': typeof AuthenticatedRoomsIndexRoute
   '/makron/pack/$packId': typeof AuthenticatedMakronPackPackIdRouteWithChildren
   '/makron/result/$sessionId': typeof AuthenticatedMakronResultSessionIdRoute
@@ -525,7 +533,6 @@ export interface FileRoutesByTo {
   '/inventory': typeof AuthenticatedInventoryRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/listen': typeof AuthenticatedListenRoute
-  '/materials': typeof AuthenticatedMaterialsRouteWithChildren
   '/micro': typeof AuthenticatedMicroRoute
   '/missions': typeof AuthenticatedMissionsRoute
   '/notes': typeof AuthenticatedNotesRoute
@@ -558,6 +565,7 @@ export interface FileRoutesByTo {
   '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom': typeof AuthenticatedClassroomIndexRoute
   '/makron': typeof AuthenticatedMakronIndexRoute
+  '/materials': typeof AuthenticatedMaterialsIndexRoute
   '/rooms': typeof AuthenticatedRoomsIndexRoute
   '/makron/pack/$packId': typeof AuthenticatedMakronPackPackIdRouteWithChildren
   '/makron/result/$sessionId': typeof AuthenticatedMakronResultSessionIdRoute
@@ -628,6 +636,7 @@ export interface FileRoutesById {
   '/_authenticated/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/_authenticated/classroom/': typeof AuthenticatedClassroomIndexRoute
   '/_authenticated/makron/': typeof AuthenticatedMakronIndexRoute
+  '/_authenticated/materials/': typeof AuthenticatedMaterialsIndexRoute
   '/_authenticated/rooms/': typeof AuthenticatedRoomsIndexRoute
   '/_authenticated/makron/pack/$packId': typeof AuthenticatedMakronPackPackIdRouteWithChildren
   '/_authenticated/makron/result/$sessionId': typeof AuthenticatedMakronResultSessionIdRoute
@@ -698,6 +707,7 @@ export interface FileRouteTypes {
     | '/rooms/$roomId'
     | '/classroom/'
     | '/makron/'
+    | '/materials/'
     | '/rooms/'
     | '/makron/pack/$packId'
     | '/makron/result/$sessionId'
@@ -731,7 +741,6 @@ export interface FileRouteTypes {
     | '/inventory'
     | '/leaderboard'
     | '/listen'
-    | '/materials'
     | '/micro'
     | '/missions'
     | '/notes'
@@ -764,6 +773,7 @@ export interface FileRouteTypes {
     | '/rooms/$roomId'
     | '/classroom'
     | '/makron'
+    | '/materials'
     | '/rooms'
     | '/makron/pack/$packId'
     | '/makron/result/$sessionId'
@@ -833,6 +843,7 @@ export interface FileRouteTypes {
     | '/_authenticated/rooms/$roomId'
     | '/_authenticated/classroom/'
     | '/_authenticated/makron/'
+    | '/_authenticated/materials/'
     | '/_authenticated/rooms/'
     | '/_authenticated/makron/pack/$packId'
     | '/_authenticated/makron/result/$sessionId'
@@ -1223,6 +1234,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRoomsIndexRouteImport
       parentRoute: typeof AuthenticatedRoomsRoute
     }
+    '/_authenticated/materials/': {
+      id: '/_authenticated/materials/'
+      path: '/'
+      fullPath: '/materials/'
+      preLoaderRoute: typeof AuthenticatedMaterialsIndexRouteImport
+      parentRoute: typeof AuthenticatedMaterialsRoute
+    }
     '/_authenticated/makron/': {
       id: '/_authenticated/makron/'
       path: '/'
@@ -1378,11 +1396,13 @@ const AuthenticatedMakronRouteWithChildren =
 
 interface AuthenticatedMaterialsRouteChildren {
   AuthenticatedMaterialsIdRoute: typeof AuthenticatedMaterialsIdRoute
+  AuthenticatedMaterialsIndexRoute: typeof AuthenticatedMaterialsIndexRoute
 }
 
 const AuthenticatedMaterialsRouteChildren: AuthenticatedMaterialsRouteChildren =
   {
     AuthenticatedMaterialsIdRoute: AuthenticatedMaterialsIdRoute,
+    AuthenticatedMaterialsIndexRoute: AuthenticatedMaterialsIndexRoute,
   }
 
 const AuthenticatedMaterialsRouteWithChildren =

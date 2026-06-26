@@ -1740,6 +1740,8 @@ export type Database = {
       }
       makron_daily_completions: {
         Row: {
+          attempts: number
+          best_score: number | null
           completed_at: string
           date: string
           score: number
@@ -1748,6 +1750,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attempts?: number
+          best_score?: number | null
           completed_at?: string
           date: string
           score?: number
@@ -1756,6 +1760,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attempts?: number
+          best_score?: number | null
           completed_at?: string
           date?: string
           score?: number
@@ -4440,6 +4446,14 @@ export type Database = {
         Args: { _amount: number; _reason: string }
         Returns: number
       }
+      admin_list_daily_sets: {
+        Args: { _limit?: number }
+        Returns: {
+          date: string
+          num_questions: number
+          question_ids: string[]
+        }[]
+      }
       admin_makron_analytics: {
         Args: never
         Returns: {
@@ -4470,6 +4484,10 @@ export type Database = {
       }
       admin_review_question: {
         Args: { _approve: boolean; _question_id: string }
+        Returns: undefined
+      }
+      admin_set_daily_set: {
+        Args: { _date: string; _question_ids: string[] }
         Returns: undefined
       }
       admin_set_user_coins: {
@@ -4601,6 +4619,9 @@ export type Database = {
       makron_daily_status: {
         Args: never
         Returns: {
+          attempts: number
+          best_score: number
+          can_retry: boolean
           completed: boolean
           date: string
           streak: number

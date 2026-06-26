@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/makron/daily")({ component: DailyPage });
 
-type Status = { date: string; completed: boolean; streak: number; total_questions: number };
+type Status = { date: string; completed: boolean; streak: number; total_questions: number; best_score?: number; attempts?: number; can_retry?: boolean };
 
 function DailyPage() {
   const nav = useNavigate();
@@ -36,6 +36,7 @@ function DailyPage() {
     setBusy(false);
     if (error) {
       if (error.message?.includes("today_completed")) return toast.info("今日はもう完了しています！");
+      if (error.message?.includes("today_retry_used")) return toast.info("今日の再挑戦は終了しました（1日2回まで）");
       if (error.message?.includes("no_questions_available")) return toast.error("デイリー問題がまだ用意されていません");
       return toast.error(error.message);
     }
@@ -51,7 +52,11 @@ function DailyPage() {
             <div className="flex-1">
               <div className="text-xs text-muted-foreground">{s?.date}</div>
               <div className="text-2xl font-bold mt-0.5">
-                {s?.completed ? "今日のデイリーは完了済み" : `今日のデイリー演習 (${s?.total_questions ?? 0}問)`}
+                {s?.completed
+                  ? "今日のデイリーは完了済み"
+                  : s?.can_retry
+                  ? `再挑戦できます (${s?.best_score ?? 0} / ${s?.total_questions ?? 0}点)`
+                  : `今日のデイリー演習 (${s?.total_questions ?? 0}問)`}
               </div>
             </div>
             <div className="text-center">
@@ -68,9 +73,17 @@ function DailyPage() {
                 <CheckCircle2 className="h-5 w-5" /> 明日また挑戦しましょう
               </div>
             ) : (
-              <Button size="lg" className="w-full" onClick={start} disabled={busy || !s || s.total_questions === 0}>
-                <Play className="h-5 w-5 mr-2" /> {busy ? "開始中..." : "デイリー演習を始める"}
-              </Button>
+              <>
+                <Button size="lg" className="w-full" onClick={start} disabled={busy || !s || s.total_questions === 0}>
+                  <Play className="h-5 w-5 mr-2" />
+                  {busy ? "開始中..." : s?.can_retry ? "もう一回挑戦する（最後の1回）" : "デイリー演習を始める"}
+                </Button>
+                {s?.can_retry && (
+                  <div className="text-[11px] text-muted-foreground mt-2 text-center">
+                    満点ではなかったので、もう1回だけ再挑戦できます。
+                  </div>
+                )}
+              </>
             )}
           </div>
         </Card>

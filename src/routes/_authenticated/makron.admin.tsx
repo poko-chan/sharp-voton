@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Trash2, Save, FileText, ChevronRight, FlagOff, Image as ImageIcon, Power, Download, BarChart3, Check, X } from "lucide-react";
+import { Plus, Trash2, Save, FileText, ChevronRight, FlagOff, Image as ImageIcon, Power, Download, BarChart3, Check, X, CalendarDays } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
@@ -177,6 +177,7 @@ function AdminPage() {
             <TabsTrigger value="grading">手動採点 ({pending.length})</TabsTrigger>
             <TabsTrigger value="reports">報告 ({reports.filter(r => r.status === "open").length})</TabsTrigger>
             <TabsTrigger value="analytics"><BarChart3 className="h-3 w-3 mr-1" />分析</TabsTrigger>
+            <TabsTrigger value="daily"><CalendarDays className="h-3 w-3 mr-1" />デイリー</TabsTrigger>
           </TabsList>
 
           <TabsContent value="units" className="space-y-4">
@@ -448,9 +449,86 @@ function AdminPage() {
                 ))}
               </Card>
           </TabsContent>
+          <TabsContent value="daily" className="space-y-3">
+            <DailySetEditor />
+          </TabsContent>
         </Tabs>
       </div>
     </MakronShell>
   );
 }
+
+function DailySetEditor() {
+  const [date, setDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
+  const [qs, setQs] = useState<any[]>([]);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [recent, setRecent] = useState<any[]>([]);
+  const [search, setSearch] = useState("");
+
+  const loadAll = async () => {
+    const { data } = await (supabase as any).from("makron_questions")
+      .select("id, prompt, points, status, is_active")
+      .eq("status", "approved").eq("is_active", true)
+      .order("created_at", { ascending: false }).limit(500);
+    setQs(data ?? []);
+    const { data: cur } = await (supabase as any).from("makron_daily_sets").select("question_ids").eq("date", date).maybeSingle();
+    setSelected((cur?.question_ids as string[]) ?? []);
+    const { data: rec } = await (supabase as any).rpc("admin_list_daily_sets", { _limit: 14 });
+    setRecent(rec ?? []);
+  };
+  useEffect(() => { loadAll(); }, [date]);
+
+  const toggle = (id: string) => setSelected((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
+  const save = async () => {
+    const { error } = await (supabase as any).rpc("admin_set_daily_set", { _date: date, _question_ids: selected });
+    if (error) return toast.error(error.message);
+    toast.success(`${date} のデイリー(${selected.length}問)を保存しました`);
+    loadAll();
+  };
+  const filtered = qs.filter((q) => !search || (q.prompt ?? "").toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div className="space-y-3">
+      <Card className="p-3 flex flex-wrap items-center gap-2">
+        <label className="text-sm font-bold">対象日:</label>
+        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-44" />
+        <span className="text-xs text-muted-foreground">選択中: <span className="font-bold text-foreground">{selected.length}</span> 問</span>
+        <Button size="sm" className="ml-auto" onClick={save}><Save className="h-3 w-3 mr-1" />保存</Button>
+      </Card>
+      <div className="grid md:grid-cols-2 gap-3">
+        <Card className="p-3 space-y-2">
+          <div className="font-bold text-sm">問題を選ぶ（承認済み）</div>
+          <Input placeholder="検索" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <div className="max-h-[55vh] overflow-auto divide-y">
+            {filtered.map((q) => (
+              <label key={q.id} className={`flex items-center gap-2 p-2 cursor-pointer text-sm ${selected.includes(q.id) ? "bg-primary/10" : "hover:bg-accent/40"}`}>
+                <input type="checkbox" checked={selected.includes(q.id)} onChange={() => toggle(q.id)} />
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">{q.points}点</span>
+                <span className="flex-1 min-w-0 truncate">{q.prompt}</span>
+              </label>
+            ))}
+            {filtered.length === 0 && <div className="text-xs text-muted-foreground p-3">該当なし</div>}
+          </div>
+        </Card>
+        <Card className="p-3 space-y-2">
+          <div className="font-bold text-sm">直近のデイリー</div>
+          <div className="max-h-[55vh] overflow-auto divide-y">
+            {recent.length === 0 && <div className="text-xs text-muted-foreground p-3">まだ登録なし</div>}
+            {recent.map((r: any) => (
+              <div key={r.date} className="flex items-center gap-2 py-2 text-sm">
+                <span className="tabular-nums">{r.date}</span>
+                <span className="text-[10px] text-muted-foreground">{r.num_questions}問</span>
+                <Button size="sm" variant="ghost" className="ml-auto" onClick={() => setDate(String(r.date).slice(0,10))}>編集</Button>
+              </div>
+            ))}
+          </div>
+          <div className="text-[10px] text-muted-foreground">
+            ※ 設定しない日は、自動で承認済み問題10問が選ばれます。
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 
