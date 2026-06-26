@@ -11,9 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HelpRouteImport } from './routes/help'
+import { Route as ForgotRouteImport } from './routes/forgot'
 import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
@@ -85,6 +87,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -98,6 +105,11 @@ const LoginRoute = LoginRouteImport.update({
 const HelpRoute = HelpRouteImport.update({
   id: '/help',
   path: '/help',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotRoute = ForgotRouteImport.update({
+  id: '/forgot',
+  path: '/forgot',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
@@ -422,9 +434,11 @@ const AuthenticatedMakronPackPackIdDashboardRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin-login': typeof AdminLoginRoute
+  '/forgot': typeof ForgotRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -488,9 +502,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin-login': typeof AdminLoginRoute
+  '/forgot': typeof ForgotRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -554,9 +570,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/admin-login': typeof AdminLoginRoute
+  '/forgot': typeof ForgotRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -622,9 +640,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin-login'
+    | '/forgot'
     | '/help'
     | '/login'
     | '/privacy'
+    | '/reset-password'
     | '/sitemap.xml'
     | '/terms'
     | '/admin'
@@ -688,9 +708,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin-login'
+    | '/forgot'
     | '/help'
     | '/login'
     | '/privacy'
+    | '/reset-password'
     | '/sitemap.xml'
     | '/terms'
     | '/admin'
@@ -753,9 +775,11 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/admin-login'
+    | '/forgot'
     | '/help'
     | '/login'
     | '/privacy'
+    | '/reset-password'
     | '/sitemap.xml'
     | '/terms'
     | '/_authenticated/admin'
@@ -821,9 +845,11 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
+  ForgotRoute: typeof ForgotRoute
   HelpRoute: typeof HelpRoute
   LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -847,6 +873,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -866,6 +899,13 @@ declare module '@tanstack/react-router' {
       path: '/help'
       fullPath: '/help'
       preLoaderRoute: typeof HelpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot': {
+      id: '/forgot'
+      path: '/forgot'
+      fullPath: '/forgot'
+      preLoaderRoute: typeof ForgotRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin-login': {
@@ -1471,9 +1511,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
+  ForgotRoute: ForgotRoute,
   HelpRoute: HelpRoute,
   LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   ApiChatRoute: ApiChatRoute,
