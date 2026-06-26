@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Trash2, Save, FileText, ChevronRight, FlagOff, Image as ImageIcon, Power, Download, BarChart3, Check, X } from "lucide-react";
+import { Plus, Trash2, Save, FileText, ChevronRight, FlagOff, Image as ImageIcon, Power, Download, BarChart3, Check, X, CalendarDays } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
@@ -177,6 +177,7 @@ function AdminPage() {
             <TabsTrigger value="grading">手動採点 ({pending.length})</TabsTrigger>
             <TabsTrigger value="reports">報告 ({reports.filter(r => r.status === "open").length})</TabsTrigger>
             <TabsTrigger value="analytics"><BarChart3 className="h-3 w-3 mr-1" />分析</TabsTrigger>
+            <TabsTrigger value="daily"><CalendarDays className="h-3 w-3 mr-1" />デイリー</TabsTrigger>
           </TabsList>
 
           <TabsContent value="units" className="space-y-4">
@@ -453,4 +454,5 @@ function AdminPage() {
     </MakronShell>
   );
 }
+
 
