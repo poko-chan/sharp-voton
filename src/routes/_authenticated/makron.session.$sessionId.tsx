@@ -14,6 +14,10 @@ import { ScratchPad } from "@/components/makron/ScratchPad";
 import { ChevronLeft, ChevronRight, Flag, NotebookPen, Upload, Bookmark, ThumbsUp, Lightbulb, Flag as FlagIcon, ScanText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { ReportDialog } from "@/components/makron/ReportDialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/_authenticated/makron/session/$sessionId")({ component: SessionPage });
 
@@ -55,6 +59,9 @@ function SessionPage() {
   const [hintTickets, setHintTickets] = useState(0);
   const [reportOpen, setReportOpen] = useState(false);
   const [ocrBusy, setOcrBusy] = useState(false);
+  const [hintConfirmOpen, setHintConfirmOpen] = useState(false);
+  const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -90,13 +97,8 @@ function SessionPage() {
 
       if (p?.skip_preview) setShowPreview(false);
 
-      const { data: aRows } = await (supabase as any).from("makron_answers").select("*").eq("session_id", sessionId);
-      const a: Record<string, any> = {}, f: Record<string, string> = {};
-      for (const r of aRows ?? []) {
-        a[r.question_id] = r.answer;
-        if (r.file_url) f[r.question_id] = r.file_url;
-      }
-      setAnswers(a); setFiles(f);
+      // 途中保存はしない方針: 既存のDB回答は読み込まず、毎回新規に進めます。
+      setAnswers({}); setFiles({});
       if (user) {
         const [{ data: bm }, { data: lk }, { data: inv }] = await Promise.all([
           (supabase as any).from("makron_bookmarks").select("question_id").eq("user_id", user.id),
@@ -137,43 +139,46 @@ function SessionPage() {
     if (!q.hint_text) return toast.info("この問題にはヒントが用意されていません");
     if (hintShown.has(q.id)) return;
     if (hintTickets <= 0) return toast.error("ヒント券がありません（ショップで購入できます）");
-    if (!confirm(`ヒント券を1枚使ってヒントを表示しますか？（残り ${hintTickets} 枚）`)) return;
-    const { error } = await (supabase as any).rpc("consume_inventory", { _item_code: "hint_ticket", _qty: 1 });
-    if (error) return toast.error(error.message);
-    setHintTickets((n) => n - 1);
-    setHintShown((s) => new Set(s).add(q.id));
+    setHintConfirmOpen(true);
   };
 
-  const saveCurrent = async () => {
+  const confirmUseHint = async () => {
     if (!q) return;
-    const val = answers[q.id];
+    const { error } = await (supabase as any).rpc("consume_inventory", { _item_code: "hint_ticket", _qty: 1 });
+    if (error) { toast.error(error.message); setHintConfirmOpen(false); return; }
+    setHintTickets((n) => n - 1);
+    setHintShown((s) => new Set(s).add(q.id));
+    setHintConfirmOpen(false);
+  };
+
+  // 単一問題の自動採点判定（ローカルのみ）
+  const computeAuto = (qq: Q, val: any): boolean | null => {
     let auto: boolean | null = null;
-    if (q.grading === "auto") {
-      if (q.type === "single") auto = !!val && (q.correct_options ?? [])[0] === val;
-      else if (q.type === "multi") {
+    if (qq.grading === "auto") {
+      if (qq.type === "single") auto = !!val && (qq.correct_options ?? [])[0] === val;
+      else if (qq.type === "multi") {
         const v = Array.isArray(val) ? [...val].sort() : [];
-        const c = [...(q.correct_options ?? [])].sort();
+        const c = [...(qq.correct_options ?? [])].sort();
         auto = v.length === c.length && v.every((x, i) => x === c[i]);
-      } else if (q.type === "text" || q.type === "ocr") {
+      } else if (qq.type === "text" || qq.type === "ocr") {
         const s = String(val ?? "").trim().toLowerCase();
-        auto = (q.accepted_answers ?? []).some((a) => a.trim().toLowerCase() === s);
-      } else if (q.type === "numeric") {
+        auto = (qq.accepted_answers ?? []).some((a) => a.trim().toLowerCase() === s);
+      } else if (qq.type === "numeric") {
         const n = Number(val);
-        auto = !isNaN(n) && (q.accepted_answers ?? []).some((a) => Number(a) === n);
-      } else if (q.type === "fill_blank") {
+        auto = !isNaN(n) && (qq.accepted_answers ?? []).some((a) => Number(a) === n);
+      } else if (qq.type === "fill_blank") {
         const arr = Array.isArray(val) ? val : [];
-        const correct = q.accepted_answers ?? [];
+        const correct = qq.accepted_answers ?? [];
         auto = arr.length === correct.length &&
           arr.every((v, i) => String(v ?? "").trim().toLowerCase() === String(correct[i] ?? "").trim().toLowerCase());
-      } else if (q.type === "ordering") {
+      } else if (qq.type === "ordering") {
         const arr = Array.isArray(val) ? val : [];
-        const correct = q.correct_options ?? [];
+        const correct = qq.correct_options ?? [];
         auto = arr.length === correct.length && arr.every((v, i) => v === correct[i]);
-      } else if (q.type === "matching") {
+      } else if (qq.type === "matching") {
         const obj = (val && typeof val === "object") ? val : {};
-        // accepted_answers として "left=>right" 形式を期待
         const map: Record<string, string> = {};
-        (q.accepted_answers ?? []).forEach((p) => {
+        (qq.accepted_answers ?? []).forEach((p) => {
           const [k, v] = p.split("=>");
           if (k && v) map[k.trim()] = v.trim();
         });
@@ -181,24 +186,40 @@ function SessionPage() {
         auto = keys.length > 0 && keys.every((k) => String(obj[k] ?? "").trim() === map[k]);
       }
     }
-    const pts = auto === true ? q.points : (auto === false ? 0 : null);
-    await (supabase as any).from("makron_answers").upsert({
-      session_id: sessionId, question_id: q.id, answer: val ?? null,
-      file_url: files[q.id] ?? null, auto_correct: auto, awarded_points: pts,
-      review_flag: reviewFlags.has(q.id),
-      is_correct: auto,
-    }, { onConflict: "session_id,question_id" });
+    return auto;
   };
 
-  const goto = async (newIdx: number) => { await saveCurrent(); setIdx(newIdx); };
+  // 問題間の移動は途中保存せず、ローカル state のみで切り替えます。
+  const goto = (newIdx: number) => { setIdx(newIdx); };
 
-  const finish = async () => {
-    if (!confirm("提出して採点しますか？")) return;
-    await saveCurrent();
-    const rpcName = session?.kind === "daily" ? "makron_finalize_daily" : "finalize_makron_session";
-    const { error } = await (supabase as any).rpc(rpcName, { _session_id: sessionId });
-    if (error) return toast.error(error.message);
-    nav({ to: "/makron/result/$sessionId", params: { sessionId } });
+  const finish = () => setSubmitConfirmOpen(true);
+
+  const confirmFinish = async () => {
+    setSubmitting(true);
+    try {
+      // 提出時にまとめてDBに書き込み、その後採点RPCを呼ぶ
+      const rows = questions.map((qq) => {
+        const val = answers[qq.id];
+        const auto = computeAuto(qq, val);
+        const pts = auto === true ? qq.points : (auto === false ? 0 : null);
+        return {
+          session_id: sessionId, question_id: qq.id,
+          answer: val ?? null, file_url: files[qq.id] ?? null,
+          auto_correct: auto, awarded_points: pts,
+          review_flag: reviewFlags.has(qq.id), is_correct: auto,
+        };
+      });
+      if (rows.length > 0) {
+        const { error: upErr } = await (supabase as any)
+          .from("makron_answers").upsert(rows, { onConflict: "session_id,question_id" });
+        if (upErr) { toast.error(upErr.message); return; }
+      }
+      const rpcName = session?.kind === "daily" ? "makron_finalize_daily" : "finalize_makron_session";
+      const { error } = await (supabase as any).rpc(rpcName, { _session_id: sessionId });
+      if (error) { toast.error(error.message); return; }
+      setSubmitConfirmOpen(false);
+      nav({ to: "/makron/result/$sessionId", params: { sessionId } });
+    } finally { setSubmitting(false); }
   };
 
   const uploadFile = async (file: File) => {
@@ -478,6 +499,36 @@ function SessionPage() {
         </div>
       </div>
       <ReportDialog open={reportOpen} onOpenChange={setReportOpen} questionId={q.id} />
+      <AlertDialog open={hintConfirmOpen} onOpenChange={setHintConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ヒントを表示しますか？</AlertDialogTitle>
+            <AlertDialogDescription>
+              ヒント券を1枚使います（残り {hintTickets} 枚）。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogAction onClick={(e) => { e.preventDefault(); confirmUseHint(); }}>使う</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={submitConfirmOpen} onOpenChange={(o) => !submitting && setSubmitConfirmOpen(o)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>提出して採点しますか？</AlertDialogTitle>
+            <AlertDialogDescription>
+              提出すると採点され、結果が記録されます。途中保存はされないため、提出しない場合この演習の解答は残りません。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={submitting}>キャンセル</AlertDialogCancel>
+            <AlertDialogAction disabled={submitting} onClick={(e) => { e.preventDefault(); confirmFinish(); }}>
+              {submitting ? "採点中…" : "提出する"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </MakronShell>
   );
 }
