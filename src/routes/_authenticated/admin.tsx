@@ -610,6 +610,10 @@ function AnnouncementsTab() {
             </div>
             <div><Label>本文</Label><Textarea value={editForm.body} onChange={(e) => setEditForm({ ...editForm, body: e.target.value })} rows={5} maxLength={5000} /></div>
             <div><Label>公開日時</Label><Input type="datetime-local" value={editForm.publishAt} onChange={(e) => setEditForm({ ...editForm, publishAt: e.target.value })} /></div>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={editForm.showOnLogin} onChange={(e) => setEditForm({ ...editForm, showOnLogin: e.target.checked })} />
+              ログイン画面にも表示する
+            </label>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setEditing(null)}>キャンセル</Button>
