@@ -278,6 +278,14 @@ function LoginPage() {
           </button>
         </div>
 
+        {mode === "signin" && (
+          <div className="text-center text-xs">
+            <Link to="/forgot" className="text-muted-foreground hover:text-primary hover:underline">
+              パスワード／メールアドレスを忘れた場合
+            </Link>
+          </div>
+        )}
+
         <div className="text-center text-[11px] text-muted-foreground space-x-3">
           <Link to="/privacy" className="hover:underline">プライバシー</Link>
           <Link to="/terms" className="hover:underline">利用規約</Link>
