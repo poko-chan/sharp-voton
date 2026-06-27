@@ -14,6 +14,7 @@ import { ScratchPad } from "@/components/makron/ScratchPad";
 import { ChevronLeft, ChevronRight, Flag, NotebookPen, Upload, Bookmark, ThumbsUp, Lightbulb, Flag as FlagIcon, ScanText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { ReportDialog } from "@/components/makron/ReportDialog";
+import { MakronHandwriteOCR } from "@/components/makron/MakronHandwriteOCR";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -62,6 +63,14 @@ function SessionPage() {
   const [hintConfirmOpen, setHintConfirmOpen] = useState(false);
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const startedAtRef = useRef<number>(Date.now());
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setElapsed(Math.floor((Date.now() - startedAtRef.current) / 1000)), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const fmtTime = (s: number) => `${Math.floor(s / 60)}分${String(s % 60).padStart(2, "0")}秒`;
 
   useEffect(() => {
     (async () => {
@@ -192,6 +201,24 @@ function SessionPage() {
   // 問題間の移動は途中保存せず、ローカル state のみで切り替えます。
   const goto = (newIdx: number) => { setIdx(newIdx); };
 
+  // Enter で次へ / 最後の問題は提出
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Enter" || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
+      if ((e as any).isComposing) return;
+      const t = e.target as HTMLElement | null;
+      const tag = t?.tagName;
+      // textarea や記述系の長文入力中は Enter を奪わない
+      if (tag === "TEXTAREA") return;
+      if (showPreview || submitConfirmOpen || hintConfirmOpen || reportOpen) return;
+      e.preventDefault();
+      if (idx + 1 < questions.length) setIdx(idx + 1);
+      else setSubmitConfirmOpen(true);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [idx, questions.length, showPreview, submitConfirmOpen, hintConfirmOpen, reportOpen]);
+
   const finish = () => setSubmitConfirmOpen(true);
 
   const confirmFinish = async () => {
@@ -307,7 +334,7 @@ function SessionPage() {
     <MakronShell
       back="/makron"
       title={`問題 ${idx + 1} / ${questions.length}`}
-      subtitle={`配点: ${q.points} 点${pack && !pack.is_official ? " ・ 報酬なし" : ""}`}
+      subtitle={`配点: ${q.points} 点 ・ 経過 ${fmtTime(elapsed)}${pack && !pack.is_official ? " ・ 報酬なし" : ""}`}
       right={
         <div className="flex gap-1">
           <Button size="sm" variant="ghost" onClick={() => setReviewFlags((s) => { const n = new Set(s); n.has(q.id) ? n.delete(q.id) : n.add(q.id); return n; })} title="後で見直すフラグを付ける">
