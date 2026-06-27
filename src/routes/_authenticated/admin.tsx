@@ -695,6 +695,21 @@ function FeedbackTab() {
           </Select>
         </div>
         <span className="text-muted-foreground ml-auto">{filtered.length}/{items.length} 件</span>
+        <Button size="sm" variant="outline" onClick={async () => {
+          const lines = filtered.map((f, i) =>
+            `## ${i + 1}. [${(CAT_META[f.category] ?? CAT_META.other).label}] (${f.status})\n` +
+            `route: ${f.route ?? "-"}\n` +
+            `created: ${new Date(f.created_at).toLocaleString("ja-JP")}\n` +
+            `body:\n${f.body}\n` +
+            (f.admin_reply ? `admin_reply:\n${f.admin_reply}\n` : ""),
+          ).join("\n---\n\n");
+          const prompt =
+            "以下は Lovable アプリのユーザーフィードバック一覧です。" +
+            "重複や類似要望を統合し、優先度（高/中/低）と推定工数、対応案を表形式で整理してください。" +
+            "最後に「すぐ修正すべきバグ」「機能要望ロードマップ案」を分けてまとめてください。\n\n" + lines;
+          try { await navigator.clipboard.writeText(prompt); toast.success(`${filtered.length}件をAI用プロンプトとしてコピーしました`); }
+          catch { toast.error("コピーに失敗しました"); }
+        }}>📋 AIプロンプトとしてコピー</Button>
       </div>
 
       {filtered.map((f) => {
