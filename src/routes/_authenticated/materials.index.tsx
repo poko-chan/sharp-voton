@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Book, Plus, Search, Barcode, ScanLine, Camera, X } from "lucide-react";
 import { toast } from "sonner";
+import { BrowserMultiFormatReader } from "@zxing/browser";
 
 export const Route = createFileRoute("/_authenticated/materials/")({ component: MaterialsPage });
 
@@ -99,6 +100,7 @@ function BarcodeScanButton({ onScan }: { onScan: (code: string) => void }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef<number | null>(null);
+  const zxingRef = useRef<any>(null);
 
   const stop = () => {
     setScanning(false);
@@ -106,12 +108,37 @@ function BarcodeScanButton({ onScan }: { onScan: (code: string) => void }) {
     rafRef.current = null;
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+    try { zxingRef.current?.reset?.(); } catch { /* noop */ }
+    zxingRef.current = null;
   };
 
   const start = async () => {
     setErr(null);
     const BD = (window as any).BarcodeDetector;
-    if (!BD) { setErr("このブラウザはカメラスキャン（BarcodeDetector）に未対応です。手入力をご利用ください。"); return; }
+    if (!BD) {
+      try {
+        const reader = new BrowserMultiFormatReader();
+        zxingRef.current = reader;
+        const v = videoRef.current!;
+        setScanning(true);
+        await reader.decodeFromConstraints(
+          { video: { facingMode: "environment" } },
+          v,
+          (result, _err, controls) => {
+            if (result) {
+              const val = result.getText();
+              try { controls.stop(); } catch { /* noop */ }
+              stop();
+              onScan(val);
+              setOpen(false);
+            }
+          },
+        );
+      } catch (e: any) {
+        setErr(e?.message ?? "カメラを起動できませんでした（ZXing フォールバック）");
+      }
+      return;
+    }
     try {
       const detector = new BD({ formats: ["ean_13","ean_8","code_128","code_39","upc_a","upc_e","qr_code","itf"] });
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });

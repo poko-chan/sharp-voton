@@ -14,6 +14,7 @@ import { ScratchPad } from "@/components/makron/ScratchPad";
 import { ChevronLeft, ChevronRight, Flag, NotebookPen, Upload, Bookmark, ThumbsUp, Lightbulb, Flag as FlagIcon, ScanText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { ReportDialog } from "@/components/makron/ReportDialog";
+import { MakronHandwriteOCR } from "@/components/makron/MakronHandwriteOCR";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -62,6 +63,14 @@ function SessionPage() {
   const [hintConfirmOpen, setHintConfirmOpen] = useState(false);
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const startedAtRef = useRef<number>(Date.now());
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setElapsed(Math.floor((Date.now() - startedAtRef.current) / 1000)), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const fmtTime = (s: number) => `${Math.floor(s / 60)}分${String(s % 60).padStart(2, "0")}秒`;
 
   useEffect(() => {
     (async () => {
@@ -192,6 +201,24 @@ function SessionPage() {
   // 問題間の移動は途中保存せず、ローカル state のみで切り替えます。
   const goto = (newIdx: number) => { setIdx(newIdx); };
 
+  // Enter で次へ / 最後の問題は提出
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Enter" || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
+      if ((e as any).isComposing) return;
+      const t = e.target as HTMLElement | null;
+      const tag = t?.tagName;
+      // textarea や記述系の長文入力中は Enter を奪わない
+      if (tag === "TEXTAREA") return;
+      if (showPreview || submitConfirmOpen || hintConfirmOpen || reportOpen) return;
+      e.preventDefault();
+      if (idx + 1 < questions.length) setIdx(idx + 1);
+      else setSubmitConfirmOpen(true);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [idx, questions.length, showPreview, submitConfirmOpen, hintConfirmOpen, reportOpen]);
+
   const finish = () => setSubmitConfirmOpen(true);
 
   const confirmFinish = async () => {
@@ -307,7 +334,7 @@ function SessionPage() {
     <MakronShell
       back="/makron"
       title={`問題 ${idx + 1} / ${questions.length}`}
-      subtitle={`配点: ${q.points} 点${pack && !pack.is_official ? " ・ 報酬なし" : ""}`}
+      subtitle={`配点: ${q.points} 点 ・ 経過 ${fmtTime(elapsed)}${pack && !pack.is_official ? " ・ 報酬なし" : ""}`}
       right={
         <div className="flex gap-1">
           <Button size="sm" variant="ghost" onClick={() => setReviewFlags((s) => { const n = new Set(s); n.has(q.id) ? n.delete(q.id) : n.add(q.id); return n; })} title="後で見直すフラグを付ける">
@@ -459,11 +486,14 @@ function SessionPage() {
           {q.type === "ocr" && (
             <div className="space-y-2">
               <div className="text-xs text-muted-foreground flex items-center gap-1">
-                <ScanText className="h-3 w-3" />手書き写真を選ぶと、端末内で文字認識(AI不使用)して下の欄に入力します。
+                <ScanText className="h-3 w-3" />手書きパッドに書いてください。1 秒手を止めると自動で読み取ります（空白・改行は無視）。
               </div>
-              <Input type="file" accept="image/*" disabled={ocrBusy} onChange={(e) => e.target.files?.[0] && runOcr(e.target.files[0])} />
-              {ocrBusy && <div className="text-xs text-amber-600 flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" />読み取り中…（数十秒かかる場合があります）</div>}
-              <Textarea rows={4} value={answers[q.id] ?? ""} onChange={(e) => setAns(e.target.value)} placeholder="読み取り結果（編集可）" />
+              <MakronHandwriteOCR onChange={(t) => setAns(t)} />
+              <details className="text-xs text-muted-foreground">
+                <summary className="cursor-pointer">手書きでなく画像を提出する</summary>
+                <Input className="mt-1" type="file" accept="image/*" disabled={ocrBusy} onChange={(e) => e.target.files?.[0] && runOcr(e.target.files[0])} />
+                {ocrBusy && <div className="text-xs text-amber-600 flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" />読み取り中…</div>}
+              </details>
             </div>
           )}
         </Card>
@@ -490,9 +520,11 @@ function SessionPage() {
             const answered =
               v !== undefined && v !== null && v !== "" &&
               !(Array.isArray(v) && v.length === 0);
+            const flagged = reviewFlags.has(questions[i].id);
             return (
-              <button key={i} onClick={() => goto(i)} className={`h-7 w-7 text-xs rounded border ${i === idx ? "bg-primary text-primary-foreground" : answered ? "bg-success/20" : ""}`}>
+              <button key={i} onClick={() => goto(i)} className={`h-7 w-7 text-xs rounded border relative ${i === idx ? "bg-primary text-primary-foreground" : answered ? "bg-success/20" : ""} ${flagged ? "ring-2 ring-amber-500" : ""}`}>
                 {i + 1}
+                {flagged && <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-amber-500" />}
               </button>
             );
           })}
