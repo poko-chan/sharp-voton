@@ -486,11 +486,14 @@ function SessionPage() {
           {q.type === "ocr" && (
             <div className="space-y-2">
               <div className="text-xs text-muted-foreground flex items-center gap-1">
-                <ScanText className="h-3 w-3" />手書き写真を選ぶと、端末内で文字認識(AI不使用)して下の欄に入力します。
+                <ScanText className="h-3 w-3" />手書きパッドに書いてください。1 秒手を止めると自動で読み取ります（空白・改行は無視）。
               </div>
-              <Input type="file" accept="image/*" disabled={ocrBusy} onChange={(e) => e.target.files?.[0] && runOcr(e.target.files[0])} />
-              {ocrBusy && <div className="text-xs text-amber-600 flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" />読み取り中…（数十秒かかる場合があります）</div>}
-              <Textarea rows={4} value={answers[q.id] ?? ""} onChange={(e) => setAns(e.target.value)} placeholder="読み取り結果（編集可）" />
+              <MakronHandwriteOCR onChange={(t) => setAns(t)} />
+              <details className="text-xs text-muted-foreground">
+                <summary className="cursor-pointer">手書きでなく画像を提出する</summary>
+                <Input className="mt-1" type="file" accept="image/*" disabled={ocrBusy} onChange={(e) => e.target.files?.[0] && runOcr(e.target.files[0])} />
+                {ocrBusy && <div className="text-xs text-amber-600 flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" />読み取り中…</div>}
+              </details>
             </div>
           )}
         </Card>
@@ -517,9 +520,11 @@ function SessionPage() {
             const answered =
               v !== undefined && v !== null && v !== "" &&
               !(Array.isArray(v) && v.length === 0);
+            const flagged = reviewFlags.has(questions[i].id);
             return (
-              <button key={i} onClick={() => goto(i)} className={`h-7 w-7 text-xs rounded border ${i === idx ? "bg-primary text-primary-foreground" : answered ? "bg-success/20" : ""}`}>
+              <button key={i} onClick={() => goto(i)} className={`h-7 w-7 text-xs rounded border relative ${i === idx ? "bg-primary text-primary-foreground" : answered ? "bg-success/20" : ""} ${flagged ? "ring-2 ring-amber-500" : ""}`}>
                 {i + 1}
+                {flagged && <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-amber-500" />}
               </button>
             );
           })}
