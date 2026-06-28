@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Timer, CalendarDays, BookOpen, Brain,
   MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy,
   Megaphone, GraduationCap, Zap, Headphones, Menu, X, MoreHorizontal,
-  StickyNote, Users, Ban, HelpCircle,
+  StickyNote, Users, Ban, HelpCircle, ClipboardList,
   CalendarClock, Stamp, Activity, Share2, ScanLine, Flame,
   ShoppingBag,
 } from "lucide-react";
@@ -33,6 +33,7 @@ const NAV = [
   { to: "/today", labelKey: "nav.today" as const, icon: CalendarClock },
   { to: "/study", labelKey: "nav.study" as const, icon: BookOpen },
   { to: "/materials", labelKey: "nav.dashboard" as const, icon: BookOpen, override: "教材データベース" },
+  { to: "/exams", labelKey: "nav.dashboard" as const, icon: ClipboardList, override: "試験" },
   { to: "/timer", labelKey: "nav.timer" as const, icon: Timer },
   { to: "/calendar", labelKey: "nav.calendar" as const, icon: CalendarDays },
   { to: "/goals", labelKey: "nav.goals" as const, icon: Trophy },

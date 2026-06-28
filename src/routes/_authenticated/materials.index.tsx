@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Book, Plus, Search, Barcode, ScanLine, Camera, X } from "lucide-react";
+import { Book, Plus, Search, Barcode, ScanLine, Camera, X, Star } from "lucide-react";
 import { toast } from "sonner";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 
@@ -36,7 +36,24 @@ function MaterialsPage() {
     if (q) qry = qry.or(`title.ilike.%${q}%,author.ilike.%${q}%,publisher.ilike.%${q}%,isbn.eq.${q},barcode.eq.${q}`);
     const { data, error } = await qry;
     if (error) return toast.error(error.message);
-    setItems(data ?? []);
+    let favIds: string[] = [];
+    if (user) {
+      const { data: f } = await (supabase as any).from("material_favorites").select("material_id").eq("user_id", user.id);
+      favIds = (f ?? []).map((r: any) => r.material_id);
+    }
+    const withFav = (data ?? []).map((m: any) => ({ ...m, _fav: favIds.includes(m.id) }));
+    withFav.sort((a: any, b: any) => Number(b._fav) - Number(a._fav));
+    setItems(withFav);
+  };
+  const toggleFav = async (m: any, e: React.MouseEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    if (!user) return;
+    if (m._fav) {
+      await (supabase as any).from("material_favorites").delete().eq("user_id", user.id).eq("material_id", m.id);
+    } else {
+      await (supabase as any).from("material_favorites").insert({ user_id: user.id, material_id: m.id });
+    }
+    load();
   };
   useEffect(() => { load(); }, [subject, showMine]);
 
@@ -75,7 +92,12 @@ function MaterialsPage() {
             <Card className="p-3 hover:bg-accent/40 transition flex gap-3">
               {m.cover_url ? <img src={m.cover_url} alt={m.title} className="w-16 h-20 object-cover rounded" /> : <div className="w-16 h-20 bg-muted rounded flex items-center justify-center text-xs">No img</div>}
               <div className="flex-1 min-w-0">
-                <div className="font-bold truncate">{m.title}</div>
+                <div className="flex items-start gap-1">
+                  <div className="font-bold truncate flex-1">{m.title}</div>
+                  <button onClick={(e) => toggleFav(m, e)} className="shrink-0" title="お気に入り">
+                    <Star className={`h-4 w-4 ${m._fav ? "fill-amber-400 text-amber-400" : "text-muted-foreground"}`} />
+                  </button>
+                </div>
                 {m.subtitle && <div className="text-xs text-muted-foreground truncate">{m.subtitle}</div>}
                 <div className="flex gap-1 flex-wrap mt-1">
                   {m.subject && <Badge variant="secondary" className="text-[10px]">{m.subject}</Badge>}
