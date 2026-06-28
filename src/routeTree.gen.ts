@@ -73,6 +73,7 @@ import { Route as AuthenticatedMakronLabelsRouteImport } from './routes/_authent
 import { Route as AuthenticatedMakronHistoryRouteImport } from './routes/_authenticated/makron.history'
 import { Route as AuthenticatedMakronDailyRouteImport } from './routes/_authenticated/makron.daily'
 import { Route as AuthenticatedMakronAdminRouteImport } from './routes/_authenticated/makron.admin'
+import { Route as AuthenticatedExamsExamIdRouteImport } from './routes/_authenticated/exams.$examId'
 import { Route as AuthenticatedClassroomClassIdRouteImport } from './routes/_authenticated/classroom.$classId'
 import { Route as AuthenticatedMakronUnitUnitIdRouteImport } from './routes/_authenticated/makron.unit.$unitId'
 import { Route as AuthenticatedMakronSessionSessionIdRouteImport } from './routes/_authenticated/makron.session.$sessionId'
@@ -413,6 +414,12 @@ const AuthenticatedMakronAdminRoute =
     path: '/admin',
     getParentRoute: () => AuthenticatedMakronRoute,
   } as any)
+const AuthenticatedExamsExamIdRoute =
+  AuthenticatedExamsExamIdRouteImport.update({
+    id: '/$examId',
+    path: '/$examId',
+    getParentRoute: () => AuthenticatedExamsRoute,
+  } as any)
 const AuthenticatedClassroomClassIdRoute =
   AuthenticatedClassroomClassIdRouteImport.update({
     id: '/classroom/$classId',
@@ -503,6 +510,7 @@ export interface FileRoutesByFullPath {
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
+  '/exams/$examId': typeof AuthenticatedExamsExamIdRoute
   '/makron/admin': typeof AuthenticatedMakronAdminRoute
   '/makron/daily': typeof AuthenticatedMakronDailyRoute
   '/makron/history': typeof AuthenticatedMakronHistoryRoute
@@ -570,6 +578,7 @@ export interface FileRoutesByTo {
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
+  '/exams/$examId': typeof AuthenticatedExamsExamIdRoute
   '/makron/admin': typeof AuthenticatedMakronAdminRoute
   '/makron/daily': typeof AuthenticatedMakronDailyRoute
   '/makron/history': typeof AuthenticatedMakronHistoryRoute
@@ -643,6 +652,7 @@ export interface FileRoutesById {
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/_authenticated/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
+  '/_authenticated/exams/$examId': typeof AuthenticatedExamsExamIdRoute
   '/_authenticated/makron/admin': typeof AuthenticatedMakronAdminRoute
   '/_authenticated/makron/daily': typeof AuthenticatedMakronDailyRoute
   '/_authenticated/makron/history': typeof AuthenticatedMakronHistoryRoute
@@ -716,6 +726,7 @@ export interface FileRouteTypes {
     | '/r/$code'
     | '/share/$token'
     | '/classroom/$classId'
+    | '/exams/$examId'
     | '/makron/admin'
     | '/makron/daily'
     | '/makron/history'
@@ -783,6 +794,7 @@ export interface FileRouteTypes {
     | '/r/$code'
     | '/share/$token'
     | '/classroom/$classId'
+    | '/exams/$examId'
     | '/makron/admin'
     | '/makron/daily'
     | '/makron/history'
@@ -855,6 +867,7 @@ export interface FileRouteTypes {
     | '/r/$code'
     | '/share/$token'
     | '/_authenticated/classroom/$classId'
+    | '/_authenticated/exams/$examId'
     | '/_authenticated/makron/admin'
     | '/_authenticated/makron/daily'
     | '/_authenticated/makron/history'
@@ -1340,6 +1353,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMakronAdminRouteImport
       parentRoute: typeof AuthenticatedMakronRoute
     }
+    '/_authenticated/exams/$examId': {
+      id: '/_authenticated/exams/$examId'
+      path: '/$examId'
+      fullPath: '/exams/$examId'
+      preLoaderRoute: typeof AuthenticatedExamsExamIdRouteImport
+      parentRoute: typeof AuthenticatedExamsRoute
+    }
     '/_authenticated/classroom/$classId': {
       id: '/_authenticated/classroom/$classId'
       path: '/classroom/$classId'
@@ -1386,10 +1406,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedExamsRouteChildren {
+  AuthenticatedExamsExamIdRoute: typeof AuthenticatedExamsExamIdRoute
   AuthenticatedExamsIndexRoute: typeof AuthenticatedExamsIndexRoute
 }
 
 const AuthenticatedExamsRouteChildren: AuthenticatedExamsRouteChildren = {
+  AuthenticatedExamsExamIdRoute: AuthenticatedExamsExamIdRoute,
   AuthenticatedExamsIndexRoute: AuthenticatedExamsIndexRoute,
 }
 
