@@ -2538,6 +2538,32 @@ export type Database = {
           },
         ]
       }
+      material_favorites: {
+        Row: {
+          created_at: string
+          material_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          material_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          material_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_favorites_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       material_reports: {
         Row: {
           created_at: string
