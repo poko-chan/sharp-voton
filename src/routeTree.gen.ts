@@ -64,6 +64,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedRoomsIndexRouteImport } from './routes/_authenticated/rooms.index'
 import { Route as AuthenticatedMaterialsIndexRouteImport } from './routes/_authenticated/materials.index'
 import { Route as AuthenticatedMakronIndexRouteImport } from './routes/_authenticated/makron.index'
+import { Route as AuthenticatedExamsIndexRouteImport } from './routes/_authenticated/exams.index'
 import { Route as AuthenticatedClassroomIndexRouteImport } from './routes/_authenticated/classroom.index'
 import { Route as AuthenticatedRoomsRoomIdRouteImport } from './routes/_authenticated/rooms.$roomId'
 import { Route as AuthenticatedOrganizationsOrgIdRouteImport } from './routes/_authenticated/organizations.$orgId'
@@ -359,6 +360,11 @@ const AuthenticatedMakronIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedMakronRoute,
   } as any)
+const AuthenticatedExamsIndexRoute = AuthenticatedExamsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedExamsRoute,
+} as any)
 const AuthenticatedClassroomIndexRoute =
   AuthenticatedClassroomIndexRouteImport.update({
     id: '/classroom/',
@@ -461,7 +467,7 @@ export interface FileRoutesByFullPath {
   '/classchat': typeof AuthenticatedClasschatRoute
   '/coach': typeof AuthenticatedCoachRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/exams': typeof AuthenticatedExamsRoute
+  '/exams': typeof AuthenticatedExamsRouteWithChildren
   '/export': typeof AuthenticatedExportRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/friends': typeof AuthenticatedFriendsRoute
@@ -505,6 +511,7 @@ export interface FileRoutesByFullPath {
   '/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdRoute
   '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom/': typeof AuthenticatedClassroomIndexRoute
+  '/exams/': typeof AuthenticatedExamsIndexRoute
   '/makron/': typeof AuthenticatedMakronIndexRoute
   '/materials/': typeof AuthenticatedMaterialsIndexRoute
   '/rooms/': typeof AuthenticatedRoomsIndexRoute
@@ -531,7 +538,6 @@ export interface FileRoutesByTo {
   '/classchat': typeof AuthenticatedClasschatRoute
   '/coach': typeof AuthenticatedCoachRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/exams': typeof AuthenticatedExamsRoute
   '/export': typeof AuthenticatedExportRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/friends': typeof AuthenticatedFriendsRoute
@@ -572,6 +578,7 @@ export interface FileRoutesByTo {
   '/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdRoute
   '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom': typeof AuthenticatedClassroomIndexRoute
+  '/exams': typeof AuthenticatedExamsIndexRoute
   '/makron': typeof AuthenticatedMakronIndexRoute
   '/materials': typeof AuthenticatedMaterialsIndexRoute
   '/rooms': typeof AuthenticatedRoomsIndexRoute
@@ -600,7 +607,7 @@ export interface FileRoutesById {
   '/_authenticated/classchat': typeof AuthenticatedClasschatRoute
   '/_authenticated/coach': typeof AuthenticatedCoachRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/exams': typeof AuthenticatedExamsRoute
+  '/_authenticated/exams': typeof AuthenticatedExamsRouteWithChildren
   '/_authenticated/export': typeof AuthenticatedExportRoute
   '/_authenticated/flashcards': typeof AuthenticatedFlashcardsRoute
   '/_authenticated/friends': typeof AuthenticatedFriendsRoute
@@ -644,6 +651,7 @@ export interface FileRoutesById {
   '/_authenticated/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdRoute
   '/_authenticated/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/_authenticated/classroom/': typeof AuthenticatedClassroomIndexRoute
+  '/_authenticated/exams/': typeof AuthenticatedExamsIndexRoute
   '/_authenticated/makron/': typeof AuthenticatedMakronIndexRoute
   '/_authenticated/materials/': typeof AuthenticatedMaterialsIndexRoute
   '/_authenticated/rooms/': typeof AuthenticatedRoomsIndexRoute
@@ -716,6 +724,7 @@ export interface FileRouteTypes {
     | '/organizations/$orgId'
     | '/rooms/$roomId'
     | '/classroom/'
+    | '/exams/'
     | '/makron/'
     | '/materials/'
     | '/rooms/'
@@ -742,7 +751,6 @@ export interface FileRouteTypes {
     | '/classchat'
     | '/coach'
     | '/dashboard'
-    | '/exams'
     | '/export'
     | '/flashcards'
     | '/friends'
@@ -783,6 +791,7 @@ export interface FileRouteTypes {
     | '/organizations/$orgId'
     | '/rooms/$roomId'
     | '/classroom'
+    | '/exams'
     | '/makron'
     | '/materials'
     | '/rooms'
@@ -854,6 +863,7 @@ export interface FileRouteTypes {
     | '/_authenticated/organizations/$orgId'
     | '/_authenticated/rooms/$roomId'
     | '/_authenticated/classroom/'
+    | '/_authenticated/exams/'
     | '/_authenticated/makron/'
     | '/_authenticated/materials/'
     | '/_authenticated/rooms/'
@@ -1267,6 +1277,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMakronIndexRouteImport
       parentRoute: typeof AuthenticatedMakronRoute
     }
+    '/_authenticated/exams/': {
+      id: '/_authenticated/exams/'
+      path: '/'
+      fullPath: '/exams/'
+      preLoaderRoute: typeof AuthenticatedExamsIndexRouteImport
+      parentRoute: typeof AuthenticatedExamsRoute
+    }
     '/_authenticated/classroom/': {
       id: '/_authenticated/classroom/'
       path: '/classroom'
@@ -1368,6 +1385,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedExamsRouteChildren {
+  AuthenticatedExamsIndexRoute: typeof AuthenticatedExamsIndexRoute
+}
+
+const AuthenticatedExamsRouteChildren: AuthenticatedExamsRouteChildren = {
+  AuthenticatedExamsIndexRoute: AuthenticatedExamsIndexRoute,
+}
+
+const AuthenticatedExamsRouteWithChildren =
+  AuthenticatedExamsRoute._addFileChildren(AuthenticatedExamsRouteChildren)
+
 interface AuthenticatedMakronPackPackIdRouteChildren {
   AuthenticatedMakronPackPackIdDashboardRoute: typeof AuthenticatedMakronPackPackIdDashboardRoute
 }
@@ -1464,7 +1492,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedClasschatRoute: typeof AuthenticatedClasschatRoute
   AuthenticatedCoachRoute: typeof AuthenticatedCoachRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedExamsRoute: typeof AuthenticatedExamsRoute
+  AuthenticatedExamsRoute: typeof AuthenticatedExamsRouteWithChildren
   AuthenticatedExportRoute: typeof AuthenticatedExportRoute
   AuthenticatedFlashcardsRoute: typeof AuthenticatedFlashcardsRoute
   AuthenticatedFriendsRoute: typeof AuthenticatedFriendsRoute
@@ -1508,7 +1536,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedClasschatRoute: AuthenticatedClasschatRoute,
   AuthenticatedCoachRoute: AuthenticatedCoachRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedExamsRoute: AuthenticatedExamsRoute,
+  AuthenticatedExamsRoute: AuthenticatedExamsRouteWithChildren,
   AuthenticatedExportRoute: AuthenticatedExportRoute,
   AuthenticatedFlashcardsRoute: AuthenticatedFlashcardsRoute,
   AuthenticatedFriendsRoute: AuthenticatedFriendsRoute,
