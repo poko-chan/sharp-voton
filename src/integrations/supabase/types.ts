@@ -1183,6 +1183,177 @@ export type Database = {
         }
         Relationships: []
       }
+      exam_series: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      exam_subjects: {
+        Row: {
+          actual_score: number | null
+          content_satisfaction: number | null
+          created_at: string
+          duration_min: number | null
+          exam_date: string | null
+          exam_id: string
+          id: string
+          max_score: number
+          name: string
+          order_no: number
+          reflection: string | null
+          study_subject_ids: string[]
+          target_score: number | null
+          time_satisfaction: number | null
+          user_id: string
+        }
+        Insert: {
+          actual_score?: number | null
+          content_satisfaction?: number | null
+          created_at?: string
+          duration_min?: number | null
+          exam_date?: string | null
+          exam_id: string
+          id?: string
+          max_score?: number
+          name: string
+          order_no?: number
+          reflection?: string | null
+          study_subject_ids?: string[]
+          target_score?: number | null
+          time_satisfaction?: number | null
+          user_id: string
+        }
+        Update: {
+          actual_score?: number | null
+          content_satisfaction?: number | null
+          created_at?: string
+          duration_min?: number | null
+          exam_date?: string | null
+          exam_id?: string
+          id?: string
+          max_score?: number
+          name?: string
+          order_no?: number
+          reflection?: string | null
+          study_subject_ids?: string[]
+          target_score?: number | null
+          time_satisfaction?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_subjects_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "exams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exam_todos: {
+        Row: {
+          coin_awarded: boolean
+          created_at: string
+          done: boolean
+          done_at: string | null
+          exam_subject_id: string
+          id: string
+          order_no: number
+          text: string
+          user_id: string
+        }
+        Insert: {
+          coin_awarded?: boolean
+          created_at?: string
+          done?: boolean
+          done_at?: string | null
+          exam_subject_id: string
+          id?: string
+          order_no?: number
+          text: string
+          user_id: string
+        }
+        Update: {
+          coin_awarded?: boolean
+          created_at?: string
+          done?: boolean
+          done_at?: string | null
+          exam_subject_id?: string
+          id?: string
+          order_no?: number
+          text?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_todos_exam_subject_id_fkey"
+            columns: ["exam_subject_id"]
+            isOneToOne: false
+            referencedRelation: "exam_subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exams: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          id: string
+          name: string
+          note: string | null
+          series_id: string | null
+          start_date: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          name: string
+          note?: string | null
+          series_id?: string | null
+          start_date?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          name?: string
+          note?: string | null
+          series_id?: string | null
+          start_date?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exams_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "exam_series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       faq_entries: {
         Row: {
           answer: string
@@ -2418,6 +2589,7 @@ export type Database = {
           description: string | null
           difficulty: number | null
           edition: string | null
+          favorite: boolean
           format: string | null
           id: string
           isbn: string | null
@@ -2454,6 +2626,7 @@ export type Database = {
           description?: string | null
           difficulty?: number | null
           edition?: string | null
+          favorite?: boolean
           format?: string | null
           id?: string
           isbn?: string | null
@@ -2490,6 +2663,7 @@ export type Database = {
           description?: string | null
           difficulty?: number | null
           edition?: string | null
+          favorite?: boolean
           format?: string | null
           id?: string
           isbn?: string | null
@@ -3451,6 +3625,7 @@ export type Database = {
           duration_minutes: number
           id: string
           material_id: string | null
+          material_ids: string[]
           start_time: string | null
           subject_id: string | null
           tag: string | null
@@ -3463,6 +3638,7 @@ export type Database = {
           duration_minutes?: number
           id?: string
           material_id?: string | null
+          material_ids?: string[]
           start_time?: string | null
           subject_id?: string | null
           tag?: string | null
@@ -3475,6 +3651,7 @@ export type Database = {
           duration_minutes?: number
           id?: string
           material_id?: string | null
+          material_ids?: string[]
           start_time?: string | null
           subject_id?: string | null
           tag?: string | null
@@ -3738,6 +3915,7 @@ export type Database = {
           end_time: string
           id: string
           label: string | null
+          material_ids: string[]
           note: string | null
           start_time: string
           subject_id: string | null
@@ -3752,6 +3930,7 @@ export type Database = {
           end_time: string
           id?: string
           label?: string | null
+          material_ids?: string[]
           note?: string | null
           start_time: string
           subject_id?: string | null
@@ -3766,6 +3945,7 @@ export type Database = {
           end_time?: string
           id?: string
           label?: string | null
+          material_ids?: string[]
           note?: string | null
           start_time?: string
           subject_id?: string | null
@@ -4521,6 +4701,7 @@ export type Database = {
         Returns: boolean
       }
       claim_referral: { Args: { _code: string }; Returns: Json }
+      complete_exam_todo: { Args: { _id: string }; Returns: Json }
       consume_inventory: {
         Args: { _item_code: string; _qty?: number }
         Returns: number
