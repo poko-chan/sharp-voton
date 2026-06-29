@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { Music2, Volume2, VolumeX, X, Link as LinkIcon, Plus } from "lucide-react";
+import { Music2, Volume2, VolumeX, X, Link as LinkIcon, Plus, Upload } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 
 type Preset = "off" | "birds" | "rain" | "wave" | "fire" | "white" | "pink" | "brown";
 
@@ -15,12 +17,15 @@ export function AmbientSound() {
   const [open, setOpen] = useState(false);
   const [preset, setPreset] = useState<Preset>("off");
   const [vol, setVol] = useState(0.4);
-  const [customs, setCustoms] = useState<{ id: string; label: string; url: string }[]>(() => {
+  const { user } = useAuth();
+  const [customs, setCustoms] = useState<{ id: string; label: string; url?: string; path?: string }[]>(() => {
     try { return JSON.parse(localStorage.getItem("lovable.ambient.customs.v1") || "[]"); } catch { return []; }
   });
   const [showAdd, setShowAdd] = useState(false);
   const [newLabel, setNewLabel] = useState("");
   const [newUrl, setNewUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [playingCustomId, setPlayingCustomId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ctxRef = useRef<AudioContext | null>(null);
@@ -53,14 +58,45 @@ export function AmbientSound() {
     try { localStorage.setItem("lovable.ambient.customs.v1", JSON.stringify(next)); } catch {}
   };
 
-  const playCustom = (c: { id: string; url: string }) => {
+  const playCustom = async (c: { id: string; url?: string; path?: string }) => {
     stop();
     setPreset("off");
-    const a = new Audio(c.url);
+    let url = c.url;
+    if (c.path) {
+      const { data, error } = await supabase.storage.from("ambient-audio").createSignedUrl(c.path, 60 * 60 * 6);
+      if (error || !data) return;
+      url = data.signedUrl;
+    }
+    if (!url) return;
+    const a = new Audio(url);
     a.loop = true; a.volume = vol; a.crossOrigin = "anonymous";
     a.play().catch(() => {});
     audioRef.current = a;
     setPlayingCustomId(c.id);
+  };
+
+  const handleUpload = async (file: File) => {
+    if (!user) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "mp3";
+      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("ambient-audio").upload(path, file, { contentType: file.type || undefined });
+      if (error) { alert("アップロード失敗: " + error.message); return; }
+      const label = newLabel.trim() || file.name.replace(/\.[^.]+$/, "");
+      persistCustoms([...customs, { id: crypto.randomUUID(), label, path }]);
+      setNewLabel(""); setShowAdd(false);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const removeCustom = async (c: typeof customs[number]) => {
+    if (c.path) {
+      try { await supabase.storage.from("ambient-audio").remove([c.path]); } catch {}
+    }
+    persistCustoms(customs.filter((x) => x.id !== c.id));
   };
 
   const ensureCtx = () => {
@@ -239,24 +275,34 @@ export function AmbientSound() {
 
           <div className="pt-2 border-t border-border/60 space-y-1.5">
             <div className="flex items-center justify-between">
-              <div className="text-[11px] font-semibold flex items-center gap-1"><LinkIcon className="h-3 w-3" />お気に入りの音楽 (URL)</div>
+              <div className="text-[11px] font-semibold flex items-center gap-1"><Music2 className="h-3 w-3" />お気に入りの音楽</div>
               <button className="text-[10px] text-primary hover:underline" onClick={() => setShowAdd((v) => !v)}>
                 <Plus className="inline h-3 w-3" />追加
               </button>
             </div>
             {showAdd && (
-              <div className="space-y-1">
-                <input className="w-full text-xs p-1.5 rounded border bg-background" placeholder="名前 (例: お気に入りBGM)" value={newLabel} onChange={(e) => setNewLabel(e.target.value)} />
-                <input className="w-full text-xs p-1.5 rounded border bg-background" placeholder="音声ファイルの URL (mp3, wav, ogg)" value={newUrl} onChange={(e) => setNewUrl(e.target.value)} />
+              <div className="space-y-1.5">
+                <input className="w-full text-xs p-1.5 rounded border bg-background" placeholder="名前 (任意・ファイル名を使用)" value={newLabel} onChange={(e) => setNewLabel(e.target.value)} />
+                <input ref={fileInputRef} type="file" accept="audio/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); }} />
                 <button
-                  className="w-full text-xs py-1 rounded bg-primary text-primary-foreground"
+                  className="w-full text-xs py-1.5 rounded bg-primary text-primary-foreground flex items-center justify-center gap-1 disabled:opacity-50"
+                  disabled={uploading || !user}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="h-3 w-3" />{uploading ? "アップロード中..." : "音声ファイルをアップロード"}
+                </button>
+                <div className="text-[10px] text-muted-foreground flex items-center gap-1 pt-1 border-t border-border/40 mt-1">
+                  <LinkIcon className="h-3 w-3" />URL から追加（直リンクのみ）
+                </div>
+                <input className="w-full text-xs p-1.5 rounded border bg-background" placeholder="https://.../music.mp3" value={newUrl} onChange={(e) => setNewUrl(e.target.value)} />
+                <button
+                  className="w-full text-xs py-1 rounded border bg-background hover:bg-accent"
                   onClick={() => {
                     if (!newLabel.trim() || !newUrl.trim()) return;
                     persistCustoms([...customs, { id: crypto.randomUUID(), label: newLabel.trim(), url: newUrl.trim() }]);
                     setNewLabel(""); setNewUrl(""); setShowAdd(false);
                   }}
-                >保存</button>
-                <div className="text-[10px] text-muted-foreground">※ YouTube などのページURLは再生不可。直リンク(mp3等)を入力してください。</div>
+                >URLを保存</button>
               </div>
             )}
             <div className="max-h-32 overflow-auto space-y-1">
@@ -264,9 +310,9 @@ export function AmbientSound() {
               {customs.map((c) => (
                 <div key={c.id} className={`flex items-center gap-1.5 text-xs rounded border px-2 py-1 ${playingCustomId === c.id ? "bg-primary/15 border-primary" : ""}`}>
                   <button className="flex-1 text-left truncate" onClick={() => playingCustomId === c.id ? stop() : playCustom(c)}>
-                    {playingCustomId === c.id ? "⏸" : "▶"} {c.label}
+                    {playingCustomId === c.id ? "⏸" : "▶"} {c.label} {c.path && <span className="text-[9px] text-muted-foreground">📁</span>}
                   </button>
-                  <button className="text-muted-foreground hover:text-destructive" onClick={() => persistCustoms(customs.filter((x) => x.id !== c.id))}>
+                  <button className="text-muted-foreground hover:text-destructive" onClick={() => removeCustom(c)}>
                     <X className="h-3 w-3" />
                   </button>
                 </div>
