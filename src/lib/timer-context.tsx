@@ -102,7 +102,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     else {
       // Also snap into Today timeline as a study block (#5/#6 timer→Today auto sync)
       try {
-        await supabase.from("today_entries").insert({
+        await (supabase as any).from("today_entries").insert({
           user_id: user.id,
           date: localDateStr(),
           category: "study",
