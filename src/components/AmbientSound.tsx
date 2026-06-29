@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { Music2, Volume2, VolumeX, X, Link as LinkIcon, Plus } from "lucide-react";
+import { Music2, Volume2, VolumeX, X, Link as LinkIcon, Plus, Upload } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 
 type Preset = "off" | "birds" | "rain" | "wave" | "fire" | "white" | "pink" | "brown";
 
@@ -15,12 +17,15 @@ export function AmbientSound() {
   const [open, setOpen] = useState(false);
   const [preset, setPreset] = useState<Preset>("off");
   const [vol, setVol] = useState(0.4);
-  const [customs, setCustoms] = useState<{ id: string; label: string; url: string }[]>(() => {
+  const { user } = useAuth();
+  const [customs, setCustoms] = useState<{ id: string; label: string; url?: string; path?: string }[]>(() => {
     try { return JSON.parse(localStorage.getItem("lovable.ambient.customs.v1") || "[]"); } catch { return []; }
   });
   const [showAdd, setShowAdd] = useState(false);
   const [newLabel, setNewLabel] = useState("");
   const [newUrl, setNewUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [playingCustomId, setPlayingCustomId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ctxRef = useRef<AudioContext | null>(null);
@@ -53,14 +58,45 @@ export function AmbientSound() {
     try { localStorage.setItem("lovable.ambient.customs.v1", JSON.stringify(next)); } catch {}
   };
 
-  const playCustom = (c: { id: string; url: string }) => {
+  const playCustom = async (c: { id: string; url?: string; path?: string }) => {
     stop();
     setPreset("off");
-    const a = new Audio(c.url);
+    let url = c.url;
+    if (c.path) {
+      const { data, error } = await supabase.storage.from("ambient-audio").createSignedUrl(c.path, 60 * 60 * 6);
+      if (error || !data) return;
+      url = data.signedUrl;
+    }
+    if (!url) return;
+    const a = new Audio(url);
     a.loop = true; a.volume = vol; a.crossOrigin = "anonymous";
     a.play().catch(() => {});
     audioRef.current = a;
     setPlayingCustomId(c.id);
+  };
+
+  const handleUpload = async (file: File) => {
+    if (!user) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "mp3";
+      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("ambient-audio").upload(path, file, { contentType: file.type || undefined });
+      if (error) { alert("アップロード失敗: " + error.message); return; }
+      const label = newLabel.trim() || file.name.replace(/\.[^.]+$/, "");
+      persistCustoms([...customs, { id: crypto.randomUUID(), label, path }]);
+      setNewLabel(""); setShowAdd(false);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const removeCustom = async (c: typeof customs[number]) => {
+    if (c.path) {
+      try { await supabase.storage.from("ambient-audio").remove([c.path]); } catch {}
+    }
+    persistCustoms(customs.filter((x) => x.id !== c.id));
   };
 
   const ensureCtx = () => {
