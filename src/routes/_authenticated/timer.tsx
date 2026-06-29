@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Play, Pause, Square, RotateCcw, Maximize2, Minimize2, Wind } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTimer, fmtMs } from "@/lib/timer-context";
+import { MaterialPicker } from "@/components/MaterialPicker";
 
 export const Route = createFileRoute("/_authenticated/timer")({
   component: TimerPage,
@@ -69,6 +70,7 @@ function Stopwatch() {
   const [subject, setSubject] = useState(isThis ? state?.subjectId ?? "" : "");
   const [content, setContent] = useState(isThis ? state?.content ?? "" : "");
   const [record, setRecord] = useState(isThis ? state?.record ?? true : true);
+  const [materialIds, setMaterialIds] = useState<string[]>(isThis ? state?.materialIds ?? [] : []);
 
   const running = isThis && state?.running;
 
@@ -85,12 +87,16 @@ function Stopwatch() {
             <SelectContent>{subjects.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
           </Select>
           <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="やったこと・メモ" rows={2} disabled={isThis} />
+          <div>
+            <Label className="mb-1 block">使った教材（任意・複数可）</Label>
+            <MaterialPicker value={materialIds} onChange={setMaterialIds} disabled={isThis} />
+          </div>
         </div>
       )}
       <div className="text-7xl font-mono font-bold tabular-nums tracking-wider">{fmtMs(isThis ? elapsedMs : 0)}</div>
       <div className="flex justify-center gap-3 flex-wrap">
         {!isThis ? (
-          <Button size="lg" onClick={() => start({ kind: "stopwatch", targetMs: 0, subjectId: subject, content, record })}>
+          <Button size="lg" onClick={() => start({ kind: "stopwatch", targetMs: 0, subjectId: subject, content, record, materialIds })}>
             <Play className="mr-2 h-4 w-4" /> 開始
           </Button>
         ) : running ? (
@@ -112,6 +118,7 @@ function CountdownTimer() {
   const [subject, setSubject] = useState(isThis ? state?.subjectId ?? "" : "");
   const [content, setContent] = useState(isThis ? state?.content ?? "" : "");
   const [record, setRecord] = useState(isThis ? state?.record ?? true : true);
+  const [materialIds, setMaterialIds] = useState<string[]>(isThis ? state?.materialIds ?? [] : []);
   const [minutes, setMinutes] = useState(25);
 
   return (
@@ -127,6 +134,10 @@ function CountdownTimer() {
             <SelectContent>{subjects.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
           </Select>
           <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="やったこと・メモ" rows={2} disabled={isThis} />
+          <div>
+            <Label className="mb-1 block">使った教材（任意・複数可）</Label>
+            <MaterialPicker value={materialIds} onChange={setMaterialIds} disabled={isThis} />
+          </div>
         </div>
       )}
       {!isThis && (
@@ -138,7 +149,7 @@ function CountdownTimer() {
       <div className="text-7xl font-mono font-bold tabular-nums">{fmtMs(isThis ? remainingMs : minutes * 60000)}</div>
       <div className="flex justify-center gap-3">
         {!isThis ? (
-          <Button size="lg" onClick={() => start({ kind: "countdown", targetMs: minutes * 60000, subjectId: subject, content, record })}>
+          <Button size="lg" onClick={() => start({ kind: "countdown", targetMs: minutes * 60000, subjectId: subject, content, record, materialIds })}>
             <Play className="mr-2 h-4 w-4" /> 開始
           </Button>
         ) : (
@@ -160,6 +171,7 @@ function Pomodoro() {
   const [content, setContent] = useState(isThis ? state?.content ?? "" : "");
   const [focusMin, setFocusMin] = useState(isThis ? state?.focusMin ?? 25 : 25);
   const [breakMin, setBreakMin] = useState(isThis ? state?.breakMin ?? 5 : 5);
+  const [materialIds, setMaterialIds] = useState<string[]>(isThis ? state?.materialIds ?? [] : []);
   const mode = isThis ? state?.pomoMode ?? "focus" : "focus";
   const cycles = isThis ? state?.cycles ?? 0 : 0;
   const running = isThis && state?.running;
@@ -179,11 +191,15 @@ function Pomodoro() {
           <SelectContent>{subjects.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
         </Select>
         <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="やったこと・メモ" rows={2} disabled={isThis} />
+        <div>
+          <Label className="mb-1 block">使った教材（任意・複数可）</Label>
+          <MaterialPicker value={materialIds} onChange={setMaterialIds} disabled={isThis} />
+        </div>
       </div>
       <div className="text-7xl font-mono font-bold tabular-nums">{fmtMs(isThis ? remainingMs : focusMin * 60000)}</div>
       <div className="flex justify-center gap-3">
         {!isThis ? (
-          <Button size="lg" onClick={() => start({ kind: "pomodoro", targetMs: focusMin * 60000, pomoMode: "focus", focusMin, breakMin, cycles: 0, subjectId: subject, content, record: true })}>
+          <Button size="lg" onClick={() => start({ kind: "pomodoro", targetMs: focusMin * 60000, pomoMode: "focus", focusMin, breakMin, cycles: 0, subjectId: subject, content, record: true, materialIds })}>
             <Play className="mr-2 h-4 w-4" /> 開始
           </Button>
         ) : running ? (
