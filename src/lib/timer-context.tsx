@@ -24,6 +24,7 @@ export type TimerState = {
   subjectId?: string;
   content?: string;
   record?: boolean;
+  materialIds?: string[];
 };
 
 const LS_KEY = "studyplus.timer.v1";
@@ -94,6 +95,8 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       duration_minutes: minutes,
       content: state.content || kindLabel,
       start_time: startTime,
+      material_id: state.materialIds?.[0] || null,
+      material_ids: state.materialIds ?? [],
     } as any);
     if (error) toast.error(error.message);
     else {
@@ -107,6 +110,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
           color: "#22c55e",
           start_time: startTime,
           end_time: endTime,
+          material_ids: state.materialIds ?? [],
         });
       } catch {}
       toast.success(`${minutes}分を記録しました🎉`);
