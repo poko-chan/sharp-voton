@@ -23,7 +23,6 @@ export const Route = createFileRoute("/_authenticated/study")({
 });
 
 interface Subject { id: string; name: string; color: string; }
-interface Material { id: string; title: string; publisher: string | null; }
 
 function StudyPage() {
   const { user } = useAuth();
