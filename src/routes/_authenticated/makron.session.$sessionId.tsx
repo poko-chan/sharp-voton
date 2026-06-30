@@ -11,10 +11,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { ScratchPad } from "@/components/makron/ScratchPad";
-import { ChevronLeft, ChevronRight, Flag, NotebookPen, Upload, Bookmark, ThumbsUp, Lightbulb, Flag as FlagIcon, ScanText, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Flag, NotebookPen, Upload, Bookmark, ThumbsUp, Lightbulb, Flag as FlagIcon, ScanText, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { ReportDialog } from "@/components/makron/ReportDialog";
 import { MakronHandwriteOCR } from "@/components/makron/MakronHandwriteOCR";
+import { useServerFn } from "@tanstack/react-start";
+import { gradeWrittenAnswer } from "@/lib/grading.functions";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -63,6 +65,9 @@ function SessionPage() {
   const [hintConfirmOpen, setHintConfirmOpen] = useState(false);
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const gradeFn = useServerFn(gradeWrittenAnswer);
+  const [grading, setGrading] = useState(false);
+  const [aiGrades, setAiGrades] = useState<Record<string, { score: number; rate: number; feedback: string; good: string[]; improve: string[] }>>({});
   const startedAtRef = useRef<number>(Date.now());
   const [elapsed, setElapsed] = useState(0);
 
