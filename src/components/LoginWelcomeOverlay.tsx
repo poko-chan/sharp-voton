@@ -13,7 +13,7 @@ const SESSION_KEY = "lovable.loginOverlay.shownAt.v1";
  * 「Welcome, {name}」が中央フェードイン → 上にスライド → 下から掲示板スライドイン。
  */
 export function LoginWelcomeOverlay() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [enabled, setEnabled] = useState<boolean>(true);
   const [boards, setBoards] = useState<Board[]>([]);
   const [phase, setPhase] = useState<"hidden" | "welcome" | "board" | "closing">("hidden");
@@ -65,7 +65,11 @@ export function LoginWelcomeOverlay() {
 
   if (phase === "hidden" || !enabled) return null;
 
-  const displayName = (profile as any)?.username || user?.email?.split("@")[0] || "you";
+  const displayName =
+    (user?.user_metadata as any)?.username ||
+    (user?.user_metadata as any)?.full_name ||
+    user?.email?.split("@")[0] ||
+    "you";
 
   return (
     <div
