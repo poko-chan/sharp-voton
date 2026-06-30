@@ -289,6 +289,7 @@ export type Database = {
         Row: {
           app_version: string
           id: number
+          login_overlay_enabled: boolean
           maintenance_message: string | null
           maintenance_mode: boolean
           maintenance_until: string | null
@@ -299,6 +300,7 @@ export type Database = {
         Insert: {
           app_version?: string
           id?: number
+          login_overlay_enabled?: boolean
           maintenance_message?: string | null
           maintenance_mode?: boolean
           maintenance_until?: string | null
@@ -309,6 +311,7 @@ export type Database = {
         Update: {
           app_version?: string
           id?: number
+          login_overlay_enabled?: boolean
           maintenance_message?: string | null
           maintenance_mode?: boolean
           maintenance_until?: string | null
