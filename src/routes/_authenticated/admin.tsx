@@ -1268,3 +1268,110 @@ function OrgsAdminTab() {
     </div>
   );
 }
+
+function LoginBoardsTab() {
+  const { user } = useAuth();
+  const [items, setItems] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [overlayOn, setOverlayOn] = useState(true);
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [audience, setAudience] = useState<"all" | "user">("all");
+  const [targetUser, setTargetUser] = useState<string>("");
+
+  const load = async () => {
+    const { data } = await (supabase as any)
+      .from("login_boards").select("*").order("created_at", { ascending: false });
+    setItems(data ?? []);
+    const { data: u } = await (supabase as any).from("profiles").select("id,username").limit(200);
+    setUsers(u ?? []);
+    const { data: s } = await (supabase as any).from("app_settings").select("login_overlay_enabled").limit(1).maybeSingle();
+    setOverlayOn(s?.login_overlay_enabled ?? true);
+  };
+  useEffect(() => { load(); }, []);
+
+  const toggleOverlay = async (v: boolean) => {
+    setOverlayOn(v);
+    await (supabase as any).from("app_settings").update({ login_overlay_enabled: v }).neq("id", -1);
+    toast.success(v ? "ログイン演出をONにしました" : "ログイン演出をOFFにしました（以後/updatesで閲覧）");
+  };
+
+  const create = async () => {
+    if (!title.trim() || !body.trim()) return toast.error("タイトル・本文を入力");
+    if (audience === "user" && !targetUser) return toast.error("対象ユーザーを選択");
+    const { error } = await (supabase as any).from("login_boards").insert({
+      title, body, audience,
+      target_user_id: audience === "user" ? targetUser : null,
+      created_by: user?.id,
+    });
+    if (error) return toast.error(error.message);
+    setTitle(""); setBody(""); setAudience("all"); setTargetUser("");
+    toast.success("掲示板を投稿しました"); load();
+  };
+
+  const toggleActive = async (id: string, active: boolean) => {
+    await (supabase as any).from("login_boards").update({ active }).eq("id", id);
+    load();
+  };
+  const remove = async (id: string) => {
+    if (!confirm("削除しますか？")) return;
+    await (supabase as any).from("login_boards").delete().eq("id", id);
+    load();
+  };
+
+  return (
+    <div className="space-y-4 pt-4">
+      <Card className="p-4 space-y-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="font-bold">ログイン演出（毎ログイン時のWelcome＋掲示板）</div>
+            <div className="text-xs text-muted-foreground">OFFにすると以降ログインしたユーザーには出ません。<a className="underline" href="/updates">/updates</a> から詳細閲覧可能。</div>
+          </div>
+          <Switch checked={overlayOn} onCheckedChange={toggleOverlay} />
+        </div>
+      </Card>
+      <Card className="p-4 space-y-3">
+        <div className="font-bold">新規投稿</div>
+        <Input placeholder="タイトル" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <Textarea rows={5} placeholder="本文（マークダウン不要）" value={body} onChange={(e) => setBody(e.target.value)} />
+        <div className="flex gap-2 items-center">
+          <Select value={audience} onValueChange={(v: any) => setAudience(v)}>
+            <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全体</SelectItem>
+              <SelectItem value="user">個別</SelectItem>
+            </SelectContent>
+          </Select>
+          {audience === "user" && (
+            <Select value={targetUser} onValueChange={setTargetUser}>
+              <SelectTrigger className="flex-1"><SelectValue placeholder="ユーザーを選択" /></SelectTrigger>
+              <SelectContent>
+                {users.map((u) => <SelectItem key={u.id} value={u.id}>{u.username || u.id.slice(0, 8)}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          )}
+          <Button onClick={create}>投稿</Button>
+        </div>
+      </Card>
+      <Card className="p-3 space-y-2">
+        <div className="font-bold">既存投稿</div>
+        {items.length === 0 && <div className="text-xs text-muted-foreground">まだありません</div>}
+        {items.map((b) => (
+          <div key={b.id} className="border rounded p-3 text-sm space-y-1">
+            <div className="flex items-start gap-2">
+              <div className="flex-1">
+                <div className="font-semibold">{b.title} <span className="text-[10px] px-1.5 rounded bg-muted ml-1">{b.audience === "all" ? "全体" : "個別"}</span></div>
+                <div className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleString("ja-JP")}</div>
+                <div className="text-sm whitespace-pre-wrap mt-1">{b.body}</div>
+              </div>
+              <div className="flex items-center gap-1">
+                <Switch checked={b.active} onCheckedChange={(v) => toggleActive(b.id, v)} />
+                <Button size="sm" variant="ghost" onClick={() => remove(b.id)}><Trash2 className="h-3 w-3" /></Button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </Card>
+    </div>
+  );
+}
