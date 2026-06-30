@@ -22,6 +22,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AuthenticatedUpdatesRouteImport } from './routes/_authenticated/updates'
 import { Route as AuthenticatedTutorRouteImport } from './routes/_authenticated/tutor'
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
@@ -145,6 +146,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedUpdatesRoute = AuthenticatedUpdatesRouteImport.update({
+  id: '/updates',
+  path: '/updates',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTutorRoute = AuthenticatedTutorRouteImport.update({
   id: '/tutor',
@@ -513,6 +519,7 @@ export interface FileRoutesByFullPath {
   '/timer': typeof AuthenticatedTimerRoute
   '/today': typeof AuthenticatedTodayRoute
   '/tutor': typeof AuthenticatedTutorRoute
+  '/updates': typeof AuthenticatedUpdatesRoute
   '/api/chat': typeof ApiChatRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
@@ -582,6 +589,7 @@ export interface FileRoutesByTo {
   '/timer': typeof AuthenticatedTimerRoute
   '/today': typeof AuthenticatedTodayRoute
   '/tutor': typeof AuthenticatedTutorRoute
+  '/updates': typeof AuthenticatedUpdatesRoute
   '/api/chat': typeof ApiChatRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
@@ -657,6 +665,7 @@ export interface FileRoutesById {
   '/_authenticated/timer': typeof AuthenticatedTimerRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
   '/_authenticated/tutor': typeof AuthenticatedTutorRoute
+  '/_authenticated/updates': typeof AuthenticatedUpdatesRoute
   '/api/chat': typeof ApiChatRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
@@ -732,6 +741,7 @@ export interface FileRouteTypes {
     | '/timer'
     | '/today'
     | '/tutor'
+    | '/updates'
     | '/api/chat'
     | '/r/$code'
     | '/share/$token'
@@ -801,6 +811,7 @@ export interface FileRouteTypes {
     | '/timer'
     | '/today'
     | '/tutor'
+    | '/updates'
     | '/api/chat'
     | '/r/$code'
     | '/share/$token'
@@ -875,6 +886,7 @@ export interface FileRouteTypes {
     | '/_authenticated/timer'
     | '/_authenticated/today'
     | '/_authenticated/tutor'
+    | '/_authenticated/updates'
     | '/api/chat'
     | '/r/$code'
     | '/share/$token'
@@ -1008,6 +1020,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/updates': {
+      id: '/_authenticated/updates'
+      path: '/updates'
+      fullPath: '/updates'
+      preLoaderRoute: typeof AuthenticatedUpdatesRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/tutor': {
       id: '/_authenticated/tutor'
@@ -1568,6 +1587,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTimerRoute: typeof AuthenticatedTimerRoute
   AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
   AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
+  AuthenticatedUpdatesRoute: typeof AuthenticatedUpdatesRoute
   AuthenticatedClassroomClassIdRoute: typeof AuthenticatedClassroomClassIdRoute
   AuthenticatedClassroomIndexRoute: typeof AuthenticatedClassroomIndexRoute
 }
@@ -1612,6 +1632,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTimerRoute: AuthenticatedTimerRoute,
   AuthenticatedTodayRoute: AuthenticatedTodayRoute,
   AuthenticatedTutorRoute: AuthenticatedTutorRoute,
+  AuthenticatedUpdatesRoute: AuthenticatedUpdatesRoute,
   AuthenticatedClassroomClassIdRoute: AuthenticatedClassroomClassIdRoute,
   AuthenticatedClassroomIndexRoute: AuthenticatedClassroomIndexRoute,
 }

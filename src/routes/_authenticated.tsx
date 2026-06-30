@@ -5,6 +5,7 @@ import { AppShell } from "@/components/AppShell";
 import { TimerProvider } from "@/lib/timer-context";
 import { I18nProvider } from "@/lib/i18n";
 import { ServiceGate } from "@/components/ServiceGate";
+import { LoginWelcomeOverlay } from "@/components/LoginWelcomeOverlay";
 
 // Map URL prefix -> service key (must match SERVICES in restriction-context).
 const ROUTE_SERVICE: Array<[string, string]> = [
@@ -46,7 +47,10 @@ function AuthLayout() {
   if (isMakron) {
     return (
       <I18nProvider>
-        <TimerProvider>{content}</TimerProvider>
+        <TimerProvider>
+          {content}
+          <LoginWelcomeOverlay />
+        </TimerProvider>
       </I18nProvider>
     );
   }
@@ -54,6 +58,7 @@ function AuthLayout() {
     <I18nProvider>
       <TimerProvider>
         <AppShell>{content}</AppShell>
+        <LoginWelcomeOverlay />
       </TimerProvider>
     </I18nProvider>
   );
