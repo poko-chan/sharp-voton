@@ -410,8 +410,52 @@ function SessionPage() {
           {q.type === "numeric" && (
             <Input type="number" inputMode="decimal" value={answers[q.id] ?? ""} onChange={(e) => setAns(e.target.value)} placeholder="数値で回答" />
           )}
-          {q.type === "written" && <Textarea rows={8} value={answers[q.id] ?? ""} onChange={(e) => setAns(e.target.value)} placeholder="記述で解答" />}
-          {q.type === "long_text" && <Textarea rows={14} value={answers[q.id] ?? ""} onChange={(e) => setAns(e.target.value)} placeholder="長文で記述（採点者が確認）" />}
+          {(q.type === "written" || q.type === "long_text") && (
+            <div className="space-y-2">
+              <Textarea
+                rows={q.type === "long_text" ? 14 : 8}
+                value={answers[q.id] ?? ""}
+                onChange={(e) => setAns(e.target.value)}
+                placeholder={q.type === "long_text" ? "長文で記述" : "記述で解答"}
+              />
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={grading || !(answers[q.id] ?? "").trim()}
+                  onClick={async () => {
+                    setGrading(true);
+                    try {
+                      const r = await gradeFn({ data: {
+                        prompt: q.prompt,
+                        answer: String(answers[q.id] ?? ""),
+                        model_answer: q.model_answer ?? undefined,
+                        max_points: q.points ?? 10,
+                      }});
+                      setAiGrades((p) => ({ ...p, [q.id]: r }));
+                    } catch (e: any) { toast.error(e?.message ?? "採点失敗"); }
+                    finally { setGrading(false); }
+                  }}
+                >
+                  {grading ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Sparkles className="h-3 w-3 mr-1" />}
+                  AIで採点プレビュー
+                </Button>
+                <span className="text-xs text-muted-foreground">最終的な得点は提出後に確定します</span>
+              </div>
+              {aiGrades[q.id] && (
+                <div className="rounded border bg-muted/30 p-3 text-sm space-y-1">
+                  <div className="font-bold">AI採点: {aiGrades[q.id].score} / {q.points}（{aiGrades[q.id].rate}%）</div>
+                  <div className="text-foreground/90 whitespace-pre-wrap">{aiGrades[q.id].feedback}</div>
+                  {aiGrades[q.id].good.length > 0 && (
+                    <div className="text-xs"><span className="font-semibold text-emerald-600">良い点:</span> {aiGrades[q.id].good.join(" / ")}</div>
+                  )}
+                  {aiGrades[q.id].improve.length > 0 && (
+                    <div className="text-xs"><span className="font-semibold text-amber-600">改善点:</span> {aiGrades[q.id].improve.join(" / ")}</div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
           {q.type === "fill_blank" && (() => {
             const parts = q.prompt.split(/_{2,}/);
             const cur = Array.isArray(answers[q.id]) ? answers[q.id] : [];
@@ -494,11 +538,6 @@ function SessionPage() {
                 <ScanText className="h-3 w-3" />手書きパッドに書いてください。1 秒手を止めると自動で読み取ります（空白・改行は無視）。
               </div>
               <MakronHandwriteOCR onChange={(t) => setAns(t)} />
-              <details className="text-xs text-muted-foreground">
-                <summary className="cursor-pointer">手書きでなく画像を提出する</summary>
-                <Input className="mt-1" type="file" accept="image/*" disabled={ocrBusy} onChange={(e) => e.target.files?.[0] && runOcr(e.target.files[0])} />
-                {ocrBusy && <div className="text-xs text-amber-600 flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" />読み取り中…</div>}
-              </details>
             </div>
           )}
         </Card>
