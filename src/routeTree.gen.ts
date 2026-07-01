@@ -58,6 +58,7 @@ import { Route as AuthenticatedFlashcardsRouteImport } from './routes/_authentic
 import { Route as AuthenticatedExportRouteImport } from './routes/_authenticated/export'
 import { Route as AuthenticatedExamsRouteImport } from './routes/_authenticated/exams'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCoeditRouteImport } from './routes/_authenticated/coedit'
 import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/coach'
 import { Route as AuthenticatedClasschatRouteImport } from './routes/_authenticated/classchat'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
@@ -332,6 +333,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedCoeditRoute = AuthenticatedCoeditRouteImport.update({
+  id: '/coedit',
+  path: '/coedit',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedCoachRoute = AuthenticatedCoachRouteImport.update({
   id: '/coach',
   path: '/coach',
@@ -498,6 +504,7 @@ export interface FileRoutesByFullPath {
   '/chat': typeof AuthenticatedChatRoute
   '/classchat': typeof AuthenticatedClasschatRoute
   '/coach': typeof AuthenticatedCoachRoute
+  '/coedit': typeof AuthenticatedCoeditRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exams': typeof AuthenticatedExamsRouteWithChildren
   '/export': typeof AuthenticatedExportRoute
@@ -574,6 +581,7 @@ export interface FileRoutesByTo {
   '/chat': typeof AuthenticatedChatRoute
   '/classchat': typeof AuthenticatedClasschatRoute
   '/coach': typeof AuthenticatedCoachRoute
+  '/coedit': typeof AuthenticatedCoeditRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/export': typeof AuthenticatedExportRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
@@ -648,6 +656,7 @@ export interface FileRoutesById {
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/_authenticated/classchat': typeof AuthenticatedClasschatRoute
   '/_authenticated/coach': typeof AuthenticatedCoachRoute
+  '/_authenticated/coedit': typeof AuthenticatedCoeditRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/exams': typeof AuthenticatedExamsRouteWithChildren
   '/_authenticated/export': typeof AuthenticatedExportRoute
@@ -726,6 +735,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/classchat'
     | '/coach'
+    | '/coedit'
     | '/dashboard'
     | '/exams'
     | '/export'
@@ -802,6 +812,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/classchat'
     | '/coach'
+    | '/coedit'
     | '/dashboard'
     | '/export'
     | '/flashcards'
@@ -875,6 +886,7 @@ export interface FileRouteTypes {
     | '/_authenticated/chat'
     | '/_authenticated/classchat'
     | '/_authenticated/coach'
+    | '/_authenticated/coedit'
     | '/_authenticated/dashboard'
     | '/_authenticated/exams'
     | '/_authenticated/export'
@@ -1297,6 +1309,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/coedit': {
+      id: '/_authenticated/coedit'
+      path: '/coedit'
+      fullPath: '/coedit'
+      preLoaderRoute: typeof AuthenticatedCoeditRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/coach': {
       id: '/_authenticated/coach'
       path: '/coach'
@@ -1592,6 +1611,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
   AuthenticatedClasschatRoute: typeof AuthenticatedClasschatRoute
   AuthenticatedCoachRoute: typeof AuthenticatedCoachRoute
+  AuthenticatedCoeditRoute: typeof AuthenticatedCoeditRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExamsRoute: typeof AuthenticatedExamsRouteWithChildren
   AuthenticatedExportRoute: typeof AuthenticatedExportRoute
@@ -1639,6 +1659,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedChatRoute: AuthenticatedChatRoute,
   AuthenticatedClasschatRoute: AuthenticatedClasschatRoute,
   AuthenticatedCoachRoute: AuthenticatedCoachRoute,
+  AuthenticatedCoeditRoute: AuthenticatedCoeditRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExamsRoute: AuthenticatedExamsRouteWithChildren,
   AuthenticatedExportRoute: AuthenticatedExportRoute,
