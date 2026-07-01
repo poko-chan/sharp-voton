@@ -63,6 +63,7 @@ import { Route as AuthenticatedCoeditRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/coach'
 import { Route as AuthenticatedClasschatRouteImport } from './routes/_authenticated/classchat'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
+import { Route as AuthenticatedChallengesRouteImport } from './routes/_authenticated/challenges'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -359,6 +360,11 @@ const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedChallengesRoute = AuthenticatedChallengesRouteImport.update({
+  id: '/challenges',
+  path: '/challenges',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
@@ -507,6 +513,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
+  '/challenges': typeof AuthenticatedChallengesRoute
   '/chat': typeof AuthenticatedChatRoute
   '/classchat': typeof AuthenticatedClasschatRoute
   '/coach': typeof AuthenticatedCoachRoute
@@ -585,6 +592,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
+  '/challenges': typeof AuthenticatedChallengesRoute
   '/chat': typeof AuthenticatedChatRoute
   '/classchat': typeof AuthenticatedClasschatRoute
   '/coach': typeof AuthenticatedCoachRoute
@@ -661,6 +669,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
+  '/_authenticated/challenges': typeof AuthenticatedChallengesRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/_authenticated/classchat': typeof AuthenticatedClasschatRoute
   '/_authenticated/coach': typeof AuthenticatedCoachRoute
@@ -741,6 +750,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/announcements'
     | '/calendar'
+    | '/challenges'
     | '/chat'
     | '/classchat'
     | '/coach'
@@ -819,6 +829,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/announcements'
     | '/calendar'
+    | '/challenges'
     | '/chat'
     | '/classchat'
     | '/coach'
@@ -894,6 +905,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/announcements'
     | '/_authenticated/calendar'
+    | '/_authenticated/challenges'
     | '/_authenticated/chat'
     | '/_authenticated/classchat'
     | '/_authenticated/coach'
@@ -1356,6 +1368,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChatRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/challenges': {
+      id: '/_authenticated/challenges'
+      path: '/challenges'
+      fullPath: '/challenges'
+      preLoaderRoute: typeof AuthenticatedChallengesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/calendar': {
       id: '/_authenticated/calendar'
       path: '/calendar'
@@ -1627,6 +1646,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
+  AuthenticatedChallengesRoute: typeof AuthenticatedChallengesRoute
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
   AuthenticatedClasschatRoute: typeof AuthenticatedClasschatRoute
   AuthenticatedCoachRoute: typeof AuthenticatedCoachRoute
@@ -1676,6 +1696,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
+  AuthenticatedChallengesRoute: AuthenticatedChallengesRoute,
   AuthenticatedChatRoute: AuthenticatedChatRoute,
   AuthenticatedClasschatRoute: AuthenticatedClasschatRoute,
   AuthenticatedCoachRoute: AuthenticatedCoachRoute,
