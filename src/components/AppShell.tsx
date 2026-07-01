@@ -60,6 +60,14 @@ const NAV = [
   { to: "/shop", labelKey: "nav.dashboard" as const, icon: ShoppingBag, override: "コインショップ" },
   { to: "/settings", labelKey: "nav.settings" as const, icon: Settings, override: "設定" },
   { to: "/help", labelKey: "nav.dashboard" as const, icon: HelpCircle, override: "ヘルプ" },
+ { to: "/tools", labelKey: "nav.dashboard" as const, icon: Sparkles, override: "ツールとゲーム" },
+ { to: "/qa", labelKey: "nav.dashboard" as const, icon: MessagesSquare, override: "Q&A掲示板" },
+ { to: "/coedit", labelKey: "nav.dashboard" as const, icon: StickyNote, override: "共同ノート" },
+ { to: "/photolog", labelKey: "nav.dashboard" as const, icon: BookOpen, override: "写真ログ" },
+ { to: "/challenges", labelKey: "nav.dashboard" as const, icon: Trophy, override: "グループ対決" },
+ { to: "/mentor", labelKey: "nav.dashboard" as const, icon: Users, override: "メンター" },
+ { to: "/rivals", labelKey: "nav.dashboard" as const, icon: Target, override: "ライバル" },
+ { to: "/mistakes", labelKey: "nav.dashboard" as const, icon: Brain, override: "間違い直し" },
 ] as const;
 
 // Map prefix -> service key (for filtering hidden services)
