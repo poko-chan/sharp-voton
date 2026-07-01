@@ -38,6 +38,7 @@ import { Route as AuthenticatedRankRouteImport } from './routes/_authenticated/r
 import { Route as AuthenticatedQuestionsRouteImport } from './routes/_authenticated/questions'
 import { Route as AuthenticatedQaRouteImport } from './routes/_authenticated/qa'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
+import { Route as AuthenticatedPhotologRouteImport } from './routes/_authenticated/photolog'
 import { Route as AuthenticatedParentRouteImport } from './routes/_authenticated/parent'
 import { Route as AuthenticatedOrganizationsRouteImport } from './routes/_authenticated/organizations'
 import { Route as AuthenticatedOcrRouteImport } from './routes/_authenticated/ocr'
@@ -228,6 +229,11 @@ const AuthenticatedQaRoute = AuthenticatedQaRouteImport.update({
 const AuthenticatedPracticeRoute = AuthenticatedPracticeRouteImport.update({
   id: '/practice',
   path: '/practice',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPhotologRoute = AuthenticatedPhotologRouteImport.update({
+  id: '/photolog',
+  path: '/photolog',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedParentRoute = AuthenticatedParentRouteImport.update({
@@ -525,6 +531,7 @@ export interface FileRoutesByFullPath {
   '/ocr': typeof AuthenticatedOcrRoute
   '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/parent': typeof AuthenticatedParentRoute
+  '/photolog': typeof AuthenticatedPhotologRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/qa': typeof AuthenticatedQaRoute
   '/questions': typeof AuthenticatedQuestionsRoute
@@ -599,6 +606,7 @@ export interface FileRoutesByTo {
   '/ocr': typeof AuthenticatedOcrRoute
   '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/parent': typeof AuthenticatedParentRoute
+  '/photolog': typeof AuthenticatedPhotologRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/qa': typeof AuthenticatedQaRoute
   '/questions': typeof AuthenticatedQuestionsRoute
@@ -677,6 +685,7 @@ export interface FileRoutesById {
   '/_authenticated/ocr': typeof AuthenticatedOcrRoute
   '/_authenticated/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/_authenticated/parent': typeof AuthenticatedParentRoute
+  '/_authenticated/photolog': typeof AuthenticatedPhotologRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/qa': typeof AuthenticatedQaRoute
   '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
@@ -756,6 +765,7 @@ export interface FileRouteTypes {
     | '/ocr'
     | '/organizations'
     | '/parent'
+    | '/photolog'
     | '/practice'
     | '/qa'
     | '/questions'
@@ -830,6 +840,7 @@ export interface FileRouteTypes {
     | '/ocr'
     | '/organizations'
     | '/parent'
+    | '/photolog'
     | '/practice'
     | '/qa'
     | '/questions'
@@ -907,6 +918,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ocr'
     | '/_authenticated/organizations'
     | '/_authenticated/parent'
+    | '/_authenticated/photolog'
     | '/_authenticated/practice'
     | '/_authenticated/qa'
     | '/_authenticated/questions'
@@ -1167,6 +1179,13 @@ declare module '@tanstack/react-router' {
       path: '/practice'
       fullPath: '/practice'
       preLoaderRoute: typeof AuthenticatedPracticeRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/photolog': {
+      id: '/_authenticated/photolog'
+      path: '/photolog'
+      fullPath: '/photolog'
+      preLoaderRoute: typeof AuthenticatedPhotologRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/parent': {
@@ -1632,6 +1651,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedOcrRoute: typeof AuthenticatedOcrRoute
   AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRouteWithChildren
   AuthenticatedParentRoute: typeof AuthenticatedParentRoute
+  AuthenticatedPhotologRoute: typeof AuthenticatedPhotologRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedQaRoute: typeof AuthenticatedQaRoute
   AuthenticatedQuestionsRoute: typeof AuthenticatedQuestionsRoute
@@ -1680,6 +1700,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedOcrRoute: AuthenticatedOcrRoute,
   AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRouteWithChildren,
   AuthenticatedParentRoute: AuthenticatedParentRoute,
+  AuthenticatedPhotologRoute: AuthenticatedPhotologRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedQaRoute: AuthenticatedQaRoute,
   AuthenticatedQuestionsRoute: AuthenticatedQuestionsRoute,
