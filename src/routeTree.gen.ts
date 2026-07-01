@@ -36,6 +36,7 @@ import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedRequestsRouteImport } from './routes/_authenticated/requests'
 import { Route as AuthenticatedRankRouteImport } from './routes/_authenticated/rank'
 import { Route as AuthenticatedQuestionsRouteImport } from './routes/_authenticated/questions'
+import { Route as AuthenticatedQaRouteImport } from './routes/_authenticated/qa'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
 import { Route as AuthenticatedParentRouteImport } from './routes/_authenticated/parent'
 import { Route as AuthenticatedOrganizationsRouteImport } from './routes/_authenticated/organizations'
@@ -216,6 +217,11 @@ const AuthenticatedRankRoute = AuthenticatedRankRouteImport.update({
 const AuthenticatedQuestionsRoute = AuthenticatedQuestionsRouteImport.update({
   id: '/questions',
   path: '/questions',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedQaRoute = AuthenticatedQaRouteImport.update({
+  id: '/qa',
+  path: '/qa',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedPracticeRoute = AuthenticatedPracticeRouteImport.update({
@@ -513,6 +519,7 @@ export interface FileRoutesByFullPath {
   '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/parent': typeof AuthenticatedParentRoute
   '/practice': typeof AuthenticatedPracticeRoute
+  '/qa': typeof AuthenticatedQaRoute
   '/questions': typeof AuthenticatedQuestionsRoute
   '/rank': typeof AuthenticatedRankRoute
   '/requests': typeof AuthenticatedRequestsRoute
@@ -585,6 +592,7 @@ export interface FileRoutesByTo {
   '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/parent': typeof AuthenticatedParentRoute
   '/practice': typeof AuthenticatedPracticeRoute
+  '/qa': typeof AuthenticatedQaRoute
   '/questions': typeof AuthenticatedQuestionsRoute
   '/rank': typeof AuthenticatedRankRoute
   '/requests': typeof AuthenticatedRequestsRoute
@@ -661,6 +669,7 @@ export interface FileRoutesById {
   '/_authenticated/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/_authenticated/parent': typeof AuthenticatedParentRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
+  '/_authenticated/qa': typeof AuthenticatedQaRoute
   '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
   '/_authenticated/rank': typeof AuthenticatedRankRoute
   '/_authenticated/requests': typeof AuthenticatedRequestsRoute
@@ -738,6 +747,7 @@ export interface FileRouteTypes {
     | '/organizations'
     | '/parent'
     | '/practice'
+    | '/qa'
     | '/questions'
     | '/rank'
     | '/requests'
@@ -810,6 +820,7 @@ export interface FileRouteTypes {
     | '/organizations'
     | '/parent'
     | '/practice'
+    | '/qa'
     | '/questions'
     | '/rank'
     | '/requests'
@@ -885,6 +896,7 @@ export interface FileRouteTypes {
     | '/_authenticated/organizations'
     | '/_authenticated/parent'
     | '/_authenticated/practice'
+    | '/_authenticated/qa'
     | '/_authenticated/questions'
     | '/_authenticated/rank'
     | '/_authenticated/requests'
@@ -1129,6 +1141,13 @@ declare module '@tanstack/react-router' {
       path: '/questions'
       fullPath: '/questions'
       preLoaderRoute: typeof AuthenticatedQuestionsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/qa': {
+      id: '/_authenticated/qa'
+      path: '/qa'
+      fullPath: '/qa'
+      preLoaderRoute: typeof AuthenticatedQaRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/practice': {
@@ -1594,6 +1613,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRouteWithChildren
   AuthenticatedParentRoute: typeof AuthenticatedParentRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
+  AuthenticatedQaRoute: typeof AuthenticatedQaRoute
   AuthenticatedQuestionsRoute: typeof AuthenticatedQuestionsRoute
   AuthenticatedRankRoute: typeof AuthenticatedRankRoute
   AuthenticatedRequestsRoute: typeof AuthenticatedRequestsRoute
@@ -1640,6 +1660,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRouteWithChildren,
   AuthenticatedParentRoute: AuthenticatedParentRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
+  AuthenticatedQaRoute: AuthenticatedQaRoute,
   AuthenticatedQuestionsRoute: AuthenticatedQuestionsRoute,
   AuthenticatedRankRoute: AuthenticatedRankRoute,
   AuthenticatedRequestsRoute: AuthenticatedRequestsRoute,
