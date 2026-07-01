@@ -45,6 +45,7 @@ import { Route as AuthenticatedOrganizationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedOcrRouteImport } from './routes/_authenticated/ocr'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
+import { Route as AuthenticatedMistakesRouteImport } from './routes/_authenticated/mistakes'
 import { Route as AuthenticatedMissionsRouteImport } from './routes/_authenticated/missions'
 import { Route as AuthenticatedMicroRouteImport } from './routes/_authenticated/micro'
 import { Route as AuthenticatedMentorRouteImport } from './routes/_authenticated/mentor'
@@ -269,6 +270,11 @@ const AuthenticatedNotificationsRoute =
 const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
   id: '/notes',
   path: '/notes',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMistakesRoute = AuthenticatedMistakesRouteImport.update({
+  id: '/mistakes',
+  path: '/mistakes',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedMissionsRoute = AuthenticatedMissionsRouteImport.update({
@@ -546,6 +552,7 @@ export interface FileRoutesByFullPath {
   '/mentor': typeof AuthenticatedMentorRoute
   '/micro': typeof AuthenticatedMicroRoute
   '/missions': typeof AuthenticatedMissionsRoute
+  '/mistakes': typeof AuthenticatedMistakesRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/ocr': typeof AuthenticatedOcrRoute
@@ -624,6 +631,7 @@ export interface FileRoutesByTo {
   '/mentor': typeof AuthenticatedMentorRoute
   '/micro': typeof AuthenticatedMicroRoute
   '/missions': typeof AuthenticatedMissionsRoute
+  '/mistakes': typeof AuthenticatedMistakesRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/ocr': typeof AuthenticatedOcrRoute
@@ -706,6 +714,7 @@ export interface FileRoutesById {
   '/_authenticated/mentor': typeof AuthenticatedMentorRoute
   '/_authenticated/micro': typeof AuthenticatedMicroRoute
   '/_authenticated/missions': typeof AuthenticatedMissionsRoute
+  '/_authenticated/mistakes': typeof AuthenticatedMistakesRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/ocr': typeof AuthenticatedOcrRoute
@@ -789,6 +798,7 @@ export interface FileRouteTypes {
     | '/mentor'
     | '/micro'
     | '/missions'
+    | '/mistakes'
     | '/notes'
     | '/notifications'
     | '/ocr'
@@ -867,6 +877,7 @@ export interface FileRouteTypes {
     | '/mentor'
     | '/micro'
     | '/missions'
+    | '/mistakes'
     | '/notes'
     | '/notifications'
     | '/ocr'
@@ -948,6 +959,7 @@ export interface FileRouteTypes {
     | '/_authenticated/mentor'
     | '/_authenticated/micro'
     | '/_authenticated/missions'
+    | '/_authenticated/mistakes'
     | '/_authenticated/notes'
     | '/_authenticated/notifications'
     | '/_authenticated/ocr'
@@ -1264,6 +1276,13 @@ declare module '@tanstack/react-router' {
       path: '/notes'
       fullPath: '/notes'
       preLoaderRoute: typeof AuthenticatedNotesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/mistakes': {
+      id: '/_authenticated/mistakes'
+      path: '/mistakes'
+      fullPath: '/mistakes'
+      preLoaderRoute: typeof AuthenticatedMistakesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/missions': {
@@ -1705,6 +1724,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMentorRoute: typeof AuthenticatedMentorRoute
   AuthenticatedMicroRoute: typeof AuthenticatedMicroRoute
   AuthenticatedMissionsRoute: typeof AuthenticatedMissionsRoute
+  AuthenticatedMistakesRoute: typeof AuthenticatedMistakesRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOcrRoute: typeof AuthenticatedOcrRoute
@@ -1757,6 +1777,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMentorRoute: AuthenticatedMentorRoute,
   AuthenticatedMicroRoute: AuthenticatedMicroRoute,
   AuthenticatedMissionsRoute: AuthenticatedMissionsRoute,
+  AuthenticatedMistakesRoute: AuthenticatedMistakesRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOcrRoute: AuthenticatedOcrRoute,
