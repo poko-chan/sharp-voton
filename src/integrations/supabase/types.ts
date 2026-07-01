@@ -708,6 +708,68 @@ export type Database = {
         }
         Relationships: []
       }
+      class_qa_answers: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          question_id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          question_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          question_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_qa_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "class_qa_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_qa_questions: {
+        Row: {
+          best_answer_id: string | null
+          body: string | null
+          class_id: string | null
+          created_at: string
+          id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          best_answer_id?: string | null
+          body?: string | null
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          best_answer_id?: string | null
+          body?: string | null
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       class_student_permissions: {
         Row: {
           can_comment: boolean
@@ -764,6 +826,36 @@ export type Database = {
           invite_code?: string
           name?: string
           owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      coedit_notes: {
+        Row: {
+          collaborators: string[]
+          content: string
+          created_at: string
+          id: string
+          owner_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          collaborators?: string[]
+          content?: string
+          created_at?: string
+          id?: string
+          owner_id: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          collaborators?: string[]
+          content?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          title?: string
           updated_at?: string
         }
         Relationships: []
@@ -1057,6 +1149,24 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_mystery_box: {
+        Row: {
+          date: string
+          reward_coins: number
+          user_id: string
+        }
+        Insert: {
+          date?: string
+          reward_coins: number
+          user_id: string
+        }
+        Update: {
+          date?: string
+          reward_coins?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_reflections: {
         Row: {
           created_at: string
@@ -1077,6 +1187,24 @@ export type Database = {
           date?: string
           id?: string
           summary?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_slot_plays: {
+        Row: {
+          date: string
+          reward_coins: number
+          user_id: string
+        }
+        Insert: {
+          date?: string
+          reward_coins: number
+          user_id: string
+        }
+        Update: {
+          date?: string
+          reward_coins?: number
           user_id?: string
         }
         Relationships: []
@@ -1638,6 +1766,62 @@ export type Database = {
           score?: number
           user_answer?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      group_challenge_members: {
+        Row: {
+          challenge_id: string
+          joined_at: string
+          team: string
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          joined_at?: string
+          team?: string
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          joined_at?: string
+          team?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_challenge_members_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "group_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_challenges: {
+        Row: {
+          created_at: string
+          ends_on: string
+          id: string
+          name: string
+          owner_id: string
+          starts_on: string
+        }
+        Insert: {
+          created_at?: string
+          ends_on?: string
+          id?: string
+          name: string
+          owner_id: string
+          starts_on?: string
+        }
+        Update: {
+          created_at?: string
+          ends_on?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          starts_on?: string
         }
         Relationships: []
       }
@@ -2719,6 +2903,36 @@ export type Database = {
         }
         Relationships: []
       }
+      mentor_sessions: {
+        Row: {
+          answer: string | null
+          created_at: string
+          id: string
+          mentor_id: string
+          question: string
+          reward_coins: number
+          student_id: string
+        }
+        Insert: {
+          answer?: string | null
+          created_at?: string
+          id?: string
+          mentor_id: string
+          question: string
+          reward_coins?: number
+          student_id: string
+        }
+        Update: {
+          answer?: string | null
+          created_at?: string
+          id?: string
+          mentor_id?: string
+          question?: string
+          reward_coins?: number
+          student_id?: string
+        }
+        Relationships: []
+      }
       notebook_photos: {
         Row: {
           created_at: string
@@ -3078,6 +3292,33 @@ export type Database = {
         }
         Relationships: []
       }
+      photo_study_logs: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          image_url: string
+          likes: number
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          likes?: number
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          likes?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       plan_template_marketplace: {
         Row: {
           author_id: string
@@ -3373,6 +3614,39 @@ export type Database = {
           time_taken?: number | null
           updated_at?: string
           winner_id?: string | null
+        }
+        Relationships: []
+      }
+      rival_matches: {
+        Row: {
+          a_id: string
+          a_minutes: number
+          b_id: string
+          b_minutes: number
+          created_at: string
+          id: string
+          week_start: string
+          winner: string | null
+        }
+        Insert: {
+          a_id: string
+          a_minutes?: number
+          b_id: string
+          b_minutes?: number
+          created_at?: string
+          id?: string
+          week_start: string
+          winner?: string | null
+        }
+        Update: {
+          a_id?: string
+          a_minutes?: number
+          b_id?: string
+          b_minutes?: number
+          created_at?: string
+          id?: string
+          week_start?: string
+          winner?: string | null
         }
         Relationships: []
       }
@@ -3770,6 +4044,36 @@ export type Database = {
           id?: string
           room_id?: string
           started_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      style_diagnosis: {
+        Row: {
+          creativity: number
+          focus: number
+          logic: number
+          memory: number
+          stamina: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          creativity?: number
+          focus?: number
+          logic?: number
+          memory?: number
+          stamina?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          creativity?: number
+          focus?: number
+          logic?: number
+          memory?: number
+          stamina?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -4601,6 +4905,30 @@ export type Database = {
           earned_at?: string
           id?: string
           title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      voice_diaries: {
+        Row: {
+          created_at: string
+          id: string
+          summary: string | null
+          transcript: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          summary?: string | null
+          transcript: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          summary?: string | null
+          transcript?: string
           user_id?: string
         }
         Relationships: []
