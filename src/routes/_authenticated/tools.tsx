@@ -181,10 +181,10 @@ function LatexOcr() {
 function IcsExport({ userId }: { userId?: string }) {
   const download = async () => {
     if (!userId) return;
-    const { data: exams } = await supabase.from("exams").select("id,name,date").eq("user_id", userId);
+    const { data: exams } = await supabase.from("exams").select("id,name,start_date").eq("user_id", userId);
     const { data: logs } = await supabase.from("study_logs").select("date,duration_minutes").eq("user_id", userId).order("date",{ascending:false}).limit(30);
     let ics = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//StudyPlus//JP\n";
-    for (const e of (exams??[])) { const d=String(e.date).replace(/-/g,""); ics += `BEGIN:VEVENT\nUID:${e.id}\nDTSTART;VALUE=DATE:${d}\nDTEND;VALUE=DATE:${d}\nSUMMARY:試験 ${e.name}\nEND:VEVENT\n`; }
+    for (const e of (exams??[])) { const d=String(e.start_date).replace(/-/g,""); ics += `BEGIN:VEVENT\nUID:${e.id}\nDTSTART;VALUE=DATE:${d}\nDTEND;VALUE=DATE:${d}\nSUMMARY:試験 ${e.name}\nEND:VEVENT\n`; }
     for (const l of (logs??[])) { const d=String(l.date).replace(/-/g,""); ics += `BEGIN:VEVENT\nUID:log-${l.date}\nDTSTART;VALUE=DATE:${d}\nDTEND;VALUE=DATE:${d}\nSUMMARY:学習 ${l.duration_minutes}分\nEND:VEVENT\n`; }
     ics += "END:VCALENDAR";
     const blob = new Blob([ics], { type: "text/calendar" }); const a = document.createElement("a");
