@@ -33,6 +33,7 @@ import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/s
 import { Route as AuthenticatedShareRouteImport } from './routes/_authenticated/share'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
+import { Route as AuthenticatedRivalsRouteImport } from './routes/_authenticated/rivals'
 import { Route as AuthenticatedRequestsRouteImport } from './routes/_authenticated/requests'
 import { Route as AuthenticatedRankRouteImport } from './routes/_authenticated/rank'
 import { Route as AuthenticatedQuestionsRouteImport } from './routes/_authenticated/questions'
@@ -206,6 +207,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
 const AuthenticatedRoomsRoute = AuthenticatedRoomsRouteImport.update({
   id: '/rooms',
   path: '/rooms',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedRivalsRoute = AuthenticatedRivalsRouteImport.update({
+  id: '/rivals',
+  path: '/rivals',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedRequestsRoute = AuthenticatedRequestsRouteImport.update({
@@ -551,6 +557,7 @@ export interface FileRoutesByFullPath {
   '/questions': typeof AuthenticatedQuestionsRoute
   '/rank': typeof AuthenticatedRankRoute
   '/requests': typeof AuthenticatedRequestsRoute
+  '/rivals': typeof AuthenticatedRivalsRoute
   '/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
@@ -628,6 +635,7 @@ export interface FileRoutesByTo {
   '/questions': typeof AuthenticatedQuestionsRoute
   '/rank': typeof AuthenticatedRankRoute
   '/requests': typeof AuthenticatedRequestsRoute
+  '/rivals': typeof AuthenticatedRivalsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
   '/shop': typeof AuthenticatedShopRoute
@@ -709,6 +717,7 @@ export interface FileRoutesById {
   '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
   '/_authenticated/rank': typeof AuthenticatedRankRoute
   '/_authenticated/requests': typeof AuthenticatedRequestsRoute
+  '/_authenticated/rivals': typeof AuthenticatedRivalsRoute
   '/_authenticated/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/share': typeof AuthenticatedShareRoute
@@ -791,6 +800,7 @@ export interface FileRouteTypes {
     | '/questions'
     | '/rank'
     | '/requests'
+    | '/rivals'
     | '/rooms'
     | '/settings'
     | '/share'
@@ -868,6 +878,7 @@ export interface FileRouteTypes {
     | '/questions'
     | '/rank'
     | '/requests'
+    | '/rivals'
     | '/settings'
     | '/share'
     | '/shop'
@@ -948,6 +959,7 @@ export interface FileRouteTypes {
     | '/_authenticated/questions'
     | '/_authenticated/rank'
     | '/_authenticated/requests'
+    | '/_authenticated/rivals'
     | '/_authenticated/rooms'
     | '/_authenticated/settings'
     | '/_authenticated/share'
@@ -1168,6 +1180,13 @@ declare module '@tanstack/react-router' {
       path: '/rooms'
       fullPath: '/rooms'
       preLoaderRoute: typeof AuthenticatedRoomsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/rivals': {
+      id: '/_authenticated/rivals'
+      path: '/rivals'
+      fullPath: '/rivals'
+      preLoaderRoute: typeof AuthenticatedRivalsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/requests': {
@@ -1697,6 +1716,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedQuestionsRoute: typeof AuthenticatedQuestionsRoute
   AuthenticatedRankRoute: typeof AuthenticatedRankRoute
   AuthenticatedRequestsRoute: typeof AuthenticatedRequestsRoute
+  AuthenticatedRivalsRoute: typeof AuthenticatedRivalsRoute
   AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedShareRoute: typeof AuthenticatedShareRoute
@@ -1748,6 +1768,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedQuestionsRoute: AuthenticatedQuestionsRoute,
   AuthenticatedRankRoute: AuthenticatedRankRoute,
   AuthenticatedRequestsRoute: AuthenticatedRequestsRoute,
+  AuthenticatedRivalsRoute: AuthenticatedRivalsRoute,
   AuthenticatedRoomsRoute: AuthenticatedRoomsRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedShareRoute: AuthenticatedShareRoute,
