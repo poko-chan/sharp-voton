@@ -16,7 +16,7 @@ function MentorPage() {
   const [list, setList] = useState<any[]>([]);
   const load = () => supabase.from("mentor_sessions").select("*").order("created_at",{ascending:false}).limit(30).then(({data})=>setList(data??[]));
   useEffect(()=>{load();}, []);
-  const ask = async () => { if(!user||!q)return; await supabase.from("mentor_sessions").insert({ student_id: user.id, question: q }); setQ(""); load(); };
+  const ask = async () => { if(!user||!q)return; await supabase.from("mentor_sessions").insert({ student_id: user.id, mentor_id: user.id, question: q } as any); setQ(""); load(); };
   const reply = async (id: string, ans: string) => { if(!user||!ans)return; const { data:c } = await supabase.from("user_coins").select("balance").eq("user_id", user.id).maybeSingle(); await supabase.from("mentor_sessions").update({ mentor_id: user.id, answer: ans, reward_coins: 15 }).eq("id", id); await supabase.from("user_coins").upsert({ user_id: user.id, balance: (c?.balance ?? 0) + 15 }); toast.success("+15コイン"); load(); };
   return (<div className="p-4 md:p-8 max-w-4xl mx-auto space-y-4">
     <div className="flex items-center gap-2"><Users className="h-7 w-7 text-primary" /><h1 className="text-2xl font-bold">メンター</h1></div>

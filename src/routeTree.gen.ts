@@ -46,6 +46,7 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedMissionsRouteImport } from './routes/_authenticated/missions'
 import { Route as AuthenticatedMicroRouteImport } from './routes/_authenticated/micro'
+import { Route as AuthenticatedMentorRouteImport } from './routes/_authenticated/mentor'
 import { Route as AuthenticatedMaterialsRouteImport } from './routes/_authenticated/materials'
 import { Route as AuthenticatedMakronRouteImport } from './routes/_authenticated/makron'
 import { Route as AuthenticatedListenRouteImport } from './routes/_authenticated/listen'
@@ -272,6 +273,11 @@ const AuthenticatedMissionsRoute = AuthenticatedMissionsRouteImport.update({
 const AuthenticatedMicroRoute = AuthenticatedMicroRouteImport.update({
   id: '/micro',
   path: '/micro',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMentorRoute = AuthenticatedMentorRouteImport.update({
+  id: '/mentor',
+  path: '/mentor',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedMaterialsRoute = AuthenticatedMaterialsRouteImport.update({
@@ -531,6 +537,7 @@ export interface FileRoutesByFullPath {
   '/listen': typeof AuthenticatedListenRoute
   '/makron': typeof AuthenticatedMakronRouteWithChildren
   '/materials': typeof AuthenticatedMaterialsRouteWithChildren
+  '/mentor': typeof AuthenticatedMentorRoute
   '/micro': typeof AuthenticatedMicroRoute
   '/missions': typeof AuthenticatedMissionsRoute
   '/notes': typeof AuthenticatedNotesRoute
@@ -607,6 +614,7 @@ export interface FileRoutesByTo {
   '/inventory': typeof AuthenticatedInventoryRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/listen': typeof AuthenticatedListenRoute
+  '/mentor': typeof AuthenticatedMentorRoute
   '/micro': typeof AuthenticatedMicroRoute
   '/missions': typeof AuthenticatedMissionsRoute
   '/notes': typeof AuthenticatedNotesRoute
@@ -687,6 +695,7 @@ export interface FileRoutesById {
   '/_authenticated/listen': typeof AuthenticatedListenRoute
   '/_authenticated/makron': typeof AuthenticatedMakronRouteWithChildren
   '/_authenticated/materials': typeof AuthenticatedMaterialsRouteWithChildren
+  '/_authenticated/mentor': typeof AuthenticatedMentorRoute
   '/_authenticated/micro': typeof AuthenticatedMicroRoute
   '/_authenticated/missions': typeof AuthenticatedMissionsRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
@@ -768,6 +777,7 @@ export interface FileRouteTypes {
     | '/listen'
     | '/makron'
     | '/materials'
+    | '/mentor'
     | '/micro'
     | '/missions'
     | '/notes'
@@ -844,6 +854,7 @@ export interface FileRouteTypes {
     | '/inventory'
     | '/leaderboard'
     | '/listen'
+    | '/mentor'
     | '/micro'
     | '/missions'
     | '/notes'
@@ -923,6 +934,7 @@ export interface FileRouteTypes {
     | '/_authenticated/listen'
     | '/_authenticated/makron'
     | '/_authenticated/materials'
+    | '/_authenticated/mentor'
     | '/_authenticated/micro'
     | '/_authenticated/missions'
     | '/_authenticated/notes'
@@ -1247,6 +1259,13 @@ declare module '@tanstack/react-router' {
       path: '/micro'
       fullPath: '/micro'
       preLoaderRoute: typeof AuthenticatedMicroRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/mentor': {
+      id: '/_authenticated/mentor'
+      path: '/mentor'
+      fullPath: '/mentor'
+      preLoaderRoute: typeof AuthenticatedMentorRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/materials': {
@@ -1664,6 +1683,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedListenRoute: typeof AuthenticatedListenRoute
   AuthenticatedMakronRoute: typeof AuthenticatedMakronRouteWithChildren
   AuthenticatedMaterialsRoute: typeof AuthenticatedMaterialsRouteWithChildren
+  AuthenticatedMentorRoute: typeof AuthenticatedMentorRoute
   AuthenticatedMicroRoute: typeof AuthenticatedMicroRoute
   AuthenticatedMissionsRoute: typeof AuthenticatedMissionsRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
@@ -1714,6 +1734,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedListenRoute: AuthenticatedListenRoute,
   AuthenticatedMakronRoute: AuthenticatedMakronRouteWithChildren,
   AuthenticatedMaterialsRoute: AuthenticatedMaterialsRouteWithChildren,
+  AuthenticatedMentorRoute: AuthenticatedMentorRoute,
   AuthenticatedMicroRoute: AuthenticatedMicroRoute,
   AuthenticatedMissionsRoute: AuthenticatedMissionsRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
