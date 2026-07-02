@@ -89,7 +89,7 @@ function Stopwatch() {
           <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="やったこと・メモ" rows={2} disabled={isThis} />
           <div>
             <Label className="mb-1 block">使った教材（任意・複数可）</Label>
-            <MaterialPicker value={materialIds} onChange={setMaterialIds} disabled={isThis} />
+            <MaterialPicker variant="large" value={materialIds} onChange={setMaterialIds} disabled={isThis} />
           </div>
         </div>
       )}
@@ -136,7 +136,7 @@ function CountdownTimer() {
           <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="やったこと・メモ" rows={2} disabled={isThis} />
           <div>
             <Label className="mb-1 block">使った教材（任意・複数可）</Label>
-            <MaterialPicker value={materialIds} onChange={setMaterialIds} disabled={isThis} />
+            <MaterialPicker variant="large" value={materialIds} onChange={setMaterialIds} disabled={isThis} />
           </div>
         </div>
       )}
@@ -193,7 +193,7 @@ function Pomodoro() {
         <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="やったこと・メモ" rows={2} disabled={isThis} />
         <div>
           <Label className="mb-1 block">使った教材（任意・複数可）</Label>
-          <MaterialPicker value={materialIds} onChange={setMaterialIds} disabled={isThis} />
+          <MaterialPicker variant="large" value={materialIds} onChange={setMaterialIds} disabled={isThis} />
         </div>
       </div>
       <div className="text-7xl font-mono font-bold tabular-nums">{fmtMs(isThis ? remainingMs : focusMin * 60000)}</div>
