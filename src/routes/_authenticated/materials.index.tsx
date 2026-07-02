@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Book, Plus, Search, Barcode, ScanLine, Camera, X, Star } from "lucide-react";
+import { Book, Plus, Search, Barcode, ScanLine, Camera, X, Star, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 
@@ -27,6 +27,8 @@ function MaterialsPage() {
   const [subject, setSubject] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [showMine, setShowMine] = useState(false);
+  const [usage, setUsage] = useState<Record<string, any>>({});
+  const [sortBy, setSortBy] = useState<"fav" | "usage" | "recent">("fav");
 
   const load = async () => {
     let qry: any = (supabase as any).from("materials").select("*").order("created_at", { ascending: false }).limit(200);
@@ -40,9 +42,12 @@ function MaterialsPage() {
     if (user) {
       const { data: f } = await (supabase as any).from("material_favorites").select("material_id").eq("user_id", user.id);
       favIds = (f ?? []).map((r: any) => r.material_id);
+      const { data: u } = await (supabase as any).rpc("my_material_usage");
+      const map: Record<string, any> = {};
+      (u ?? []).forEach((r: any) => { map[r.material_id] = r; });
+      setUsage(map);
     }
     const withFav = (data ?? []).map((m: any) => ({ ...m, _fav: favIds.includes(m.id) }));
-    withFav.sort((a: any, b: any) => Number(b._fav) - Number(a._fav));
     setItems(withFav);
   };
   const toggleFav = async (m: any, e: React.MouseEvent) => {
@@ -56,6 +61,18 @@ function MaterialsPage() {
     load();
   };
   useEffect(() => { load(); }, [subject, showMine]);
+
+  const sorted = [...items].sort((a: any, b: any) => {
+    if (sortBy === "fav") return Number(b._fav) - Number(a._fav);
+    if (sortBy === "usage") return (usage[b.id]?.total_minutes ?? 0) - (usage[a.id]?.total_minutes ?? 0);
+    return 0;
+  });
+
+  const myTotals = Object.values(usage).reduce((acc: any, u: any) => {
+    acc.minutes += u.total_minutes ?? 0;
+    acc.materials += 1;
+    return acc;
+  }, { minutes: 0, materials: 0 });
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">
@@ -82,12 +99,25 @@ function MaterialsPage() {
           <option value="">全教科</option>
           {SUBJECTS.map((s) => <option key={s}>{s}</option>)}
         </select>
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as any)} className="p-2 border rounded bg-background text-sm">
+          <option value="fav">★お気に入り順</option>
+          <option value="usage">利用時間順</option>
+          <option value="recent">追加順</option>
+        </select>
         <BarcodeScanButton onScan={(code) => { setQ(code); setTimeout(load, 0); }} />
       </Card>
 
+      {myTotals.materials > 0 && (
+        <Card className="p-3 mb-4 flex flex-wrap items-center gap-4 text-sm">
+          <div className="font-bold flex items-center gap-1"><Clock className="h-4 w-4" />あなたの教材利用</div>
+          <div>使用中: <b className="tabular-nums">{myTotals.materials}</b> 冊</div>
+          <div>累計: <b className="tabular-nums">{myTotals.minutes}</b> 分</div>
+        </Card>
+      )}
+
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {items.length === 0 && <Card className="p-6 col-span-full text-center text-sm text-muted-foreground">教材がありません。「追加」から登録できます。</Card>}
-        {items.map((m) => (
+        {sorted.length === 0 && <Card className="p-6 col-span-full text-center text-sm text-muted-foreground">教材がありません。「追加」から登録できます。</Card>}
+        {sorted.map((m) => (
           <Link key={m.id} to="/materials/$id" params={{ id: m.id }} className="block">
             <Card className="p-3 hover:bg-accent/40 transition flex gap-3">
               {m.cover_url ? <img src={m.cover_url} alt={m.title} className="w-16 h-20 object-cover rounded" /> : <div className="w-16 h-20 bg-muted rounded flex items-center justify-center text-xs">No img</div>}
@@ -103,6 +133,9 @@ function MaterialsPage() {
                   {m.subject && <Badge variant="secondary" className="text-[10px]">{m.subject}</Badge>}
                   {m.level && <Badge variant="outline" className="text-[10px]">{m.level}</Badge>}
                   {m.status !== "approved" && <Badge className="text-[10px] bg-amber-500">{m.status}</Badge>}
+                  {usage[m.id] && (
+                    <Badge variant="outline" className="text-[10px] gap-1"><Clock className="h-2.5 w-2.5" />{usage[m.id].total_minutes}分 / {usage[m.id].daily_avg}分平均</Badge>
+                  )}
                 </div>
                 <div className="text-[10px] text-muted-foreground mt-1 truncate">{m.publisher}{m.author ? ` / ${m.author}` : ""}</div>
               </div>
