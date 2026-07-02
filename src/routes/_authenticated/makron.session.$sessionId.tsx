@@ -267,18 +267,12 @@ function SessionPage() {
           answer: val ?? null, file_url: files[qq.id] ?? null,
           auto_correct: auto, awarded_points: pts,
           review_flag: reviewFlags.has(qq.id), is_correct: isCorrect,
-          feedback: g?.feedback ?? null,
+          manual_comment: g?.feedback ?? null,
         };
       });
       if (rows.length > 0) {
-        // feedback カラムが無いスキーマもあるため、失敗時は削除して再試行
-        let { error: upErr } = await (supabase as any)
+        const { error: upErr } = await (supabase as any)
           .from("makron_answers").upsert(rows, { onConflict: "session_id,question_id" });
-        if (upErr && /feedback/i.test(upErr.message)) {
-          const fallback = rows.map(({ feedback: _f, ...rest }) => rest);
-          const r2 = await (supabase as any).from("makron_answers").upsert(fallback, { onConflict: "session_id,question_id" });
-          upErr = r2.error;
-        }
         if (upErr) { toast.error(upErr.message); return; }
       }
       const rpcName = session?.kind === "daily" ? "makron_finalize_daily" : "finalize_makron_session";
