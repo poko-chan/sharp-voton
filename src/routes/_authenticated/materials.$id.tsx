@@ -14,6 +14,15 @@ import { BarChart3, Clock, Users, CalendarDays } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/materials/$id")({ component: MaterialDetail });
 
+function Stat({ icon, label, value }: { icon?: React.ReactNode; label: string; value: React.ReactNode }) {
+  return (
+    <div className="rounded border p-2">
+      <div className="text-[10px] text-muted-foreground flex items-center gap-1">{icon}{label}</div>
+      <div className="font-bold tabular-nums text-sm">{value}</div>
+    </div>
+  );
+}
+
 const FIELDS: [string,string][] = [
   ["title","タイトル"],["subtitle","サブタイトル"],["isbn","ISBN"],["barcode","バーコード"],
   ["subject","教科"],["sub_subject","分野"],["publisher","出版社"],["author","著者"],
