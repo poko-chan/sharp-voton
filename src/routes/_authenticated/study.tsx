@@ -254,7 +254,7 @@ function StudyPage() {
             </div>
             <div className="col-span-2">
               <Label>使った教材（任意）</Label>
-              <MaterialPicker value={materialIds} onChange={setMaterialIds} />
+              <MaterialPicker variant="large" value={materialIds} onChange={setMaterialIds} />
               <p className="text-xs text-muted-foreground mt-1">
                 教材データベースに無い場合は <a href="/materials" className="underline">こちら</a>から追加できます。
               </p>

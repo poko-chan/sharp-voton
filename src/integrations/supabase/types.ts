@@ -5254,6 +5254,27 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      material_global_usage: {
+        Args: { _material_id: string }
+        Returns: {
+          last_used: string
+          sessions_count: number
+          total_minutes: number
+          users_count: number
+        }[]
+      }
+      my_material_usage: {
+        Args: never
+        Returns: {
+          daily_avg: number
+          days_used: number
+          first_used: string
+          last_used: string
+          material_id: string
+          sessions_count: number
+          total_minutes: number
+        }[]
+      }
       my_org_ids: { Args: never; Returns: string[] }
       org_invite_member: {
         Args: { _message?: string; _org: string; _role?: string; _user: string }

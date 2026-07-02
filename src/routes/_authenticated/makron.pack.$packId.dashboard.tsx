@@ -33,15 +33,28 @@ function PackDashboard() {
   const load = async () => {
     const { data: p } = await (supabase as any).from("makron_packs").select("*").eq("id", packId).maybeSingle();
     setPack(p);
-    const { data: s } = await (supabase as any).rpc("makron_pack_stats", { _pack_id: packId });
+    const [{ data: s, error: sErr }, { data: a, error: aErr }] = await Promise.all([
+      (supabase as any).rpc("makron_pack_stats", { _pack_id: packId }),
+      (supabase as any).rpc("makron_pack_attempters", { _pack_id: packId }),
+    ]);
+    if (sErr) toast.error("統計取得: " + sErr.message);
+    if (aErr) toast.error("演習者取得: " + aErr.message);
     setStats(s);
-    const { data: a } = await (supabase as any).rpc("makron_pack_attempters", { _pack_id: packId });
     setAttempters(a ?? []);
-    let q = (supabase as any).from("makron_sessions")
-      .select("id, user_id, total_score, total_points, passed, started_at, finished_at, profile:profiles!makron_sessions_user_id_fkey(display_name, username)")
+    const { data: ses, error: sesErr } = await (supabase as any).from("makron_sessions")
+      .select("id, user_id, total_score, total_points, passed, started_at, finished_at")
       .eq("pack_id", packId).order("started_at", { ascending: false }).limit(200);
-    const { data: ses } = await q;
-    setSessions(ses ?? []);
+    if (sesErr) toast.error("セッション取得: " + sesErr.message);
+    const list = ses ?? [];
+    // makron_sessions.user_id は auth.users を参照するため profiles を別クエリで結合
+    const uids = Array.from(new Set(list.map((r: any) => r.user_id).filter(Boolean)));
+    let profMap: Record<string, any> = {};
+    if (uids.length > 0) {
+      const { data: profs } = await (supabase as any).from("profiles")
+        .select("id, display_name, username").in("id", uids);
+      (profs ?? []).forEach((p: any) => { profMap[p.id] = p; });
+    }
+    setSessions(list.map((r: any) => ({ ...r, profile: profMap[r.user_id] })));
   };
   useEffect(() => { load(); }, [packId]);
 

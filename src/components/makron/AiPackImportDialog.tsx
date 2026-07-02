@@ -10,6 +10,7 @@ import { Copy, Sparkles, Loader2, ClipboardPaste, Check } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { chromeAiStatus, createChromeAiSession, extractJSON } from "@/lib/chrome-ai";
+import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
 
 type Mode = "new" | "add";
 type Unit = { id: string; title?: string; subject?: string; field?: string; unit?: string };
@@ -188,10 +189,7 @@ export function AiPackImportDialog({
             </TabsList>
 
             <TabsContent value="auto" className="space-y-2 pt-2">
-              <Card className="p-3 text-xs text-muted-foreground">
-                Chrome 内蔵 AI（Gemini Nano）でこの場で生成します。
-                {aiStatus === "downloadable" && "（初回はモデルのダウンロードが発生します）"}
-              </Card>
+              <ChromeAiStatusBadge />
               <Button onClick={runChromeAi} disabled={busy || !canChrome} className="w-full">
                 {busy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Sparkles className="h-4 w-4 mr-1" />}
                 AI に生成させてインポート

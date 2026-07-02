@@ -229,16 +229,45 @@ function SessionPage() {
   const confirmFinish = async () => {
     setSubmitting(true);
     try {
+      // 記述/長文で未採点の解答は、提出時にAIで自動採点して点数として確定させる
+      const graded: Record<string, { score: number; rate: number; feedback: string; good: string[]; improve: string[] }> = { ...aiGrades };
+      for (const qq of questions) {
+        if ((qq.type === "written" || qq.type === "long_text") && qq.grading === "auto") {
+          const val = String(answers[qq.id] ?? "").trim();
+          if (!val || graded[qq.id]) continue;
+          try {
+            const r = await gradeFn({ data: {
+              prompt: qq.prompt,
+              answer: val,
+              model_answer: qq.model_answer ?? undefined,
+              max_points: qq.points ?? 10,
+            }});
+            graded[qq.id] = r;
+          } catch (e: any) {
+            toast.error(`AI採点失敗 (問${questions.indexOf(qq)+1}): ${e?.message ?? "unknown"}`);
+          }
+        }
+      }
+      setAiGrades(graded);
+
       // 提出時にまとめてDBに書き込み、その後採点RPCを呼ぶ
       const rows = questions.map((qq) => {
         const val = answers[qq.id];
         const auto = computeAuto(qq, val);
-        const pts = auto === true ? qq.points : (auto === false ? 0 : null);
+        let pts: number | null = auto === true ? qq.points : (auto === false ? 0 : null);
+        let isCorrect: boolean | null = auto;
+        // 記述系: AI採点結果を正式点数として採用
+        const g = graded[qq.id];
+        if ((qq.type === "written" || qq.type === "long_text") && g) {
+          pts = g.score;
+          isCorrect = qq.points > 0 ? g.score >= qq.points * 0.6 : null;
+        }
         return {
           session_id: sessionId, question_id: qq.id,
           answer: val ?? null, file_url: files[qq.id] ?? null,
           auto_correct: auto, awarded_points: pts,
-          review_flag: reviewFlags.has(qq.id), is_correct: auto,
+          review_flag: reviewFlags.has(qq.id), is_correct: isCorrect,
+          manual_comment: g?.feedback ?? null,
         };
       });
       if (rows.length > 0) {
@@ -438,9 +467,9 @@ function SessionPage() {
                   }}
                 >
                   {grading ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Sparkles className="h-3 w-3 mr-1" />}
-                  AIで採点プレビュー
+                  {aiGrades[q.id] ? "AI採点をやり直す" : "AIで採点"}
                 </Button>
-                <span className="text-xs text-muted-foreground">最終的な得点は提出後に確定します</span>
+                <span className="text-xs text-muted-foreground">この採点結果が提出時の得点として確定します（未実行なら提出時に自動採点）</span>
               </div>
               {aiGrades[q.id] && (
                 <div className="rounded border bg-muted/30 p-3 text-sm space-y-1">
