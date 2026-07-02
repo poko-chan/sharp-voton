@@ -43,6 +43,52 @@ export async function chromeAiStatus(): Promise<Status> {
   return "unavailable";
 }
 
+export type ChromeAiDiagnostics = {
+  status: Status;
+  reason: string;
+  hasApi: boolean;
+  browser: string;
+  isSecure: boolean;
+};
+
+export async function chromeAiDiagnostics(): Promise<ChromeAiDiagnostics> {
+  const lm = getLM();
+  const hasApi = !!lm;
+  const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+  const isChrome = /Chrome\/(\d+)/.test(ua) && !/Edg\//.test(ua);
+  const chromeVer = ua.match(/Chrome\/(\d+)/)?.[1];
+  const isSecure = typeof window !== "undefined" ? (window.isSecureContext ?? false) : false;
+  const status = await chromeAiStatus();
+  let reason = "";
+  if (!hasApi) {
+    if (!isChrome) reason = "Chrome 138+ が必要です（現在のブラウザは非対応）。";
+    else if (chromeVer && Number(chromeVer) < 138) reason = `Chrome ${chromeVer} は非対応です。138 以上に更新してください。`;
+    else reason = "内蔵 AI API が見つかりません。chrome://flags/#prompt-api-for-gemini-nano を Enabled にし、chrome://components の Optimization Guide On Device Model を最新に更新してください。";
+  } else if (status === "unavailable") reason = "モデルは利用不可（デバイス要件未達 or ダウンロード失敗の可能性）。";
+  else if (status === "downloadable") reason = "初回はモデルのダウンロード（数百MB）が必要です。ボタンを押すと開始します。";
+  else if (status === "downloading") reason = "モデルを取得中です…しばらくお待ちください。";
+  else reason = "利用可能です。";
+  if (!isSecure) reason = "HTTPS でないため利用できません。";
+  return { status, reason, hasApi, browser: isChrome ? `Chrome ${chromeVer ?? "?"}` : ua.split(" ").pop() ?? ua, isSecure };
+}
+
+/** モデルを明示的にダウンロード開始する（downloadable のとき） */
+export async function chromeAiEnsureDownloaded(onProgress?: (loaded: number, total: number) => void): Promise<Status> {
+  const lm = getLM();
+  if (!lm) return "unavailable";
+  try {
+    const s: any = await lm.create({
+      monitor(m: any) {
+        m.addEventListener?.("downloadprogress", (e: any) => {
+          try { onProgress?.(e.loaded ?? 0, e.total ?? 1); } catch { /* noop */ }
+        });
+      },
+    });
+    try { s.destroy?.(); } catch { /* noop */ }
+  } catch { /* noop */ }
+  return chromeAiStatus();
+}
+
 export async function isChromeAiUsable(): Promise<boolean> {
   const s = await chromeAiStatus();
   return s === "available" || s === "downloadable" || s === "downloading";
