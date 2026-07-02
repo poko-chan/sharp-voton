@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Pencil, Flag } from "lucide-react";
 import { toast } from "sonner";
+import { BarChart3, Clock, Users, CalendarDays } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/materials/$id")({ component: MaterialDetail });
 
@@ -32,6 +33,8 @@ function MaterialDetail() {
   const [edit, setEdit] = useState<Record<string, string>>({});
   const [editing, setEditing] = useState(false);
   const [report, setReport] = useState("");
+  const [myUse, setMyUse] = useState<any>(null);
+  const [globalUse, setGlobalUse] = useState<any>(null);
 
   const load = async () => {
     const { data } = await (supabase as any).from("materials").select("*").eq("id", id).maybeSingle();
@@ -39,6 +42,10 @@ function MaterialDetail() {
     if (user) {
       const { data: r } = await (supabase as any).rpc("has_role", { _user_id: user.id, _role: "admin" });
       setIsAdmin(!!r);
+      const { data: mu } = await (supabase as any).rpc("my_material_usage");
+      setMyUse((mu ?? []).find((r: any) => r.material_id === id) ?? null);
+      const { data: gu } = await (supabase as any).rpc("material_global_usage", { _material_id: id });
+      setGlobalUse(Array.isArray(gu) ? gu[0] : gu);
     }
   };
   useEffect(() => { load(); }, [id]);
@@ -121,6 +128,21 @@ function MaterialDetail() {
             </div>
           ) : null))}
         </dl>
+      </Card>
+
+      <Card className="p-4 mb-4">
+        <div className="text-sm font-bold mb-2 flex items-center gap-2"><BarChart3 className="h-4 w-4" />利用状況</div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+          <Stat icon={<Clock className="h-3.5 w-3.5" />} label="あなたの総学習時間" value={myUse ? `${myUse.total_minutes}分` : "0分"} />
+          <Stat icon={<CalendarDays className="h-3.5 w-3.5" />} label="使用日数 / 1日平均" value={myUse ? `${myUse.days_used}日 / ${myUse.daily_avg}分` : "-"} />
+          <Stat icon={<Users className="h-3.5 w-3.5" />} label="全体利用者数" value={globalUse ? `${globalUse.users_count}人` : "0人"} />
+          <Stat icon={<Clock className="h-3.5 w-3.5" />} label="全体総学習時間" value={globalUse ? `${globalUse.total_minutes}分` : "0分"} />
+        </div>
+        {(myUse?.first_used || myUse?.last_used) && (
+          <div className="text-[11px] text-muted-foreground mt-2">
+            初回: {myUse.first_used ?? "-"} ・ 最終: {myUse.last_used ?? "-"}
+          </div>
+        )}
       </Card>
 
       <Card className="p-4">
