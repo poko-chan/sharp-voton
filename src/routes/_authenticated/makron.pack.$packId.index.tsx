@@ -14,7 +14,7 @@ import { Play, Plus, Save, Trash2, Settings, Image as ImageIcon, Power, BarChart
 import { toast } from "sonner";
 import { AiPackImportDialog } from "@/components/makron/AiPackImportDialog";
 
-export const Route = createFileRoute("/_authenticated/makron/pack/$packId")({ component: PackPage });
+export const Route = createFileRoute("/_authenticated/makron/pack/$packId/")({ component: PackPage });
 
 const TYPES = [
   { v: "single", l: "単一選択" }, { v: "multi", l: "複数選択" },
