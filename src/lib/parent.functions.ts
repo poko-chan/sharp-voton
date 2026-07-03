@@ -165,7 +165,7 @@ export const getChildFullDashboard = createServerFn({ method: "POST" })
       makronSessions: makronSessions.data ?? [],
       makronAnswers: makronAnswers.data ?? [],
       focusLogs: focusLogs.data ?? [],
-      notes: (notes as any).data ?? [],
+      notes: notes.data ?? [],
       flashcards: flashcards.data ?? [],
       badges: badges.data ?? [],
       titles: titles.data ?? [],
