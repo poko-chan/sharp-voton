@@ -268,7 +268,17 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       )}
       <nav className="flex-1 px-3 space-y-0.5 overflow-auto pb-4">
-        {navVisible.map((n) => {
+        {isParent ? (
+          parentNav.map((n) => {
+            const active = path === n.to || path.startsWith(n.to + "/");
+            const Icon = n.icon;
+            return (
+              <Link key={n.to} to={n.to as any} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${active ? "bg-sidebar-primary text-sidebar-primary-foreground font-medium shadow-sm" : "hover:bg-sidebar-accent/70 text-sidebar-foreground"}`}>
+                <Icon className="h-4 w-4" /> {n.label}
+              </Link>
+            );
+          })
+        ) : navVisible.map((n) => {
           const active = path === n.to || path.startsWith(n.to + "/");
           return (
             <Link
@@ -286,13 +296,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           );
         })}
 
-        {accountKind === "parent" && (
-          <Link to={"/parent" as any} className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition border border-blue-500/30 text-blue-600 hover:bg-blue-500/10 mt-2">
-            <Users className="h-4 w-4" /> 保護者ダッシュボード
-          </Link>
-        )}
-
-        {navHiddenByUser.length > 0 && (
+        {!isParent && navHiddenByUser.length > 0 && (
           <Popover>
             <PopoverTrigger className="mt-2 w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm border border-border/60 hover:bg-accent">
               <MoreHorizontal className="h-4 w-4" /> その他 ({navHiddenByUser.length})
@@ -307,7 +311,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Popover>
         )}
 
-        {navRestricted.length > 0 && (
+        {!isParent && navRestricted.length > 0 && (
           <Popover>
             <PopoverTrigger className="mt-2 w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm border border-red-500/30 text-red-600 hover:bg-red-500/10">
               <Ban className="h-4 w-4" /> 利用停止中 ({navRestricted.length})
@@ -322,7 +326,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Popover>
         )}
 
-        {isAdmin && (
+        {!isParent && isAdmin && (
           <Link
             to="/admin"
             className={`mt-3 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition border border-warning/40 ${
