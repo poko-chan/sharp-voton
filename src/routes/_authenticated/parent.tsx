@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { listMyChildren, linkChildAccount, unlinkChild, updateChildProfile, getChildSummary } from "@/lib/parent.functions";
+import { listMyChildren, linkChildAccount, unlinkChild, updateChildProfile, getChildSummary, getChildFullDashboard } from "@/lib/parent.functions";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { Users, Link2, Trash2, Ban } from "lucide-react";
+import { Users, Link2, Trash2, Ban, Activity, Trophy, Coins, Brain, Target, Camera, Clock, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { SERVICES } from "@/lib/restriction-context";
 
@@ -107,6 +107,7 @@ function ChildPanel({ child, onChange, unlink }: any) {
           <TabsTrigger value="profile">プロフィール</TabsTrigger>
           <TabsTrigger value="restrict"><Ban className="h-3 w-3 mr-1" /> 利用制限</TabsTrigger>
           <TabsTrigger value="study">学習状況</TabsTrigger>
+          <TabsTrigger value="detail"><Activity className="h-3 w-3 mr-1" /> 詳細</TabsTrigger>
         </TabsList>
         <TabsContent value="profile" className="space-y-2 pt-3">
           <Label>表示名</Label>
@@ -129,8 +130,91 @@ function ChildPanel({ child, onChange, unlink }: any) {
             </table>
           </div>
         </TabsContent>
+        <TabsContent value="detail" className="pt-3">
+          <ChildFullDetail childId={child.id} />
+        </TabsContent>
       </Tabs>
     </Card>
+  );
+}
+
+function ChildFullDetail({ childId }: { childId: string }) {
+  const fetchFull = useServerFn(getChildFullDashboard);
+  const [d, setD] = useState<any>(null);
+  useEffect(() => { fetchFull({ data: { childId } }).then(setD).catch(() => {}); }, [childId]);
+  if (!d) return <div className="text-sm text-muted-foreground">読み込み中...</div>;
+  const totalMin = (d.logs ?? []).reduce((s: number, r: any) => s + (r.duration_minutes ?? 0), 0);
+  const focusMin = Math.round((d.focusLogs ?? []).reduce((s: number, r: any) => s + (r.duration_sec ?? 0), 0) / 60);
+  const correct = (d.makronAnswers ?? []).filter((a: any) => a.is_correct).length;
+  const answered = (d.makronAnswers ?? []).length;
+  const acc = answered ? Math.round((correct / answered) * 100) : 0;
+  const openGoals = (d.goals ?? []).filter((g: any) => !g.completed_at).length;
+
+  const Stat = ({ icon: Icon, label, value }: any) => (
+    <div className="rounded border p-3 flex items-center gap-3">
+      <Icon className="h-5 w-5 text-primary" />
+      <div>
+        <div className="text-[10px] text-muted-foreground">{label}</div>
+        <div className="text-lg font-bold tabular-nums">{value}</div>
+      </div>
+    </div>
+  );
+  const List = ({ title, rows, render }: any) => (
+    <div className="space-y-1">
+      <div className="text-xs font-semibold text-muted-foreground">{title}</div>
+      <div className="max-h-56 overflow-auto rounded border divide-y text-xs">
+        {rows.length === 0 && <div className="p-3 text-center text-muted-foreground">なし</div>}
+        {rows.map((r: any, i: number) => <div key={i} className="p-2">{render(r)}</div>)}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <Stat icon={Clock} label="90日学習(分)" value={totalMin} />
+        <Stat icon={Activity} label="集中(分)" value={focusMin} />
+        <Stat icon={Brain} label="Markon正解率" value={`${acc}%`} />
+        <Stat icon={Coins} label="コイン残高" value={d.coins?.balance ?? 0} />
+        <Stat icon={Target} label="進行中の目標" value={openGoals} />
+        <Stat icon={Trophy} label="バッジ" value={(d.badges ?? []).length} />
+        <Stat icon={BookOpen} label="ノート" value={(d.notes ?? []).length} />
+        <Stat icon={Camera} label="写真ログ" value={(d.photoLogs ?? []).length} />
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-3">
+        <List title="Today予定" rows={d.todayEntries.slice(0, 30)} render={(r: any) => (
+          <div className="flex justify-between"><span>{r.planned_date} · {r.title ?? r.content ?? ""}</span><span className="text-muted-foreground">{r.done_at ? "済" : "未"}</span></div>
+        )} />
+        <List title="目標" rows={d.goals} render={(r: any) => (
+          <div className="flex justify-between"><span>{r.title}</span><span className="text-muted-foreground">{r.completed_at ? "達成" : `${r.progress ?? 0}/${r.target ?? "?"}`}</span></div>
+        )} />
+        <List title="Markonセッション" rows={d.makronSessions} render={(r: any) => (
+          <div className="flex justify-between"><span>{new Date(r.started_at).toLocaleDateString("ja-JP")}</span><span>{r.total_score ?? "-"}/{r.total_points ?? "-"} {r.passed === true ? "✅" : r.passed === false ? "❌" : ""}</span></div>
+        )} />
+        <List title="集中セッション" rows={d.focusLogs.slice(0, 30)} render={(r: any) => (
+          <div className="flex justify-between"><span>{new Date(r.started_at).toLocaleString("ja-JP")}</span><span>{Math.round((r.duration_sec ?? 0)/60)}分 集中度{r.focus_score ?? "-"}</span></div>
+        )} />
+        <List title="コイン取引" rows={d.txns.slice(0, 30)} render={(r: any) => (
+          <div className="flex justify-between"><span className={r.amount > 0 ? "text-green-600" : "text-red-600"}>{r.amount > 0 ? "+" : ""}{r.amount}</span><span className="text-muted-foreground truncate ml-2">{r.reason}</span></div>
+        )} />
+        <List title="振り返り" rows={d.reflections} render={(r: any) => (
+          <div><div className="text-muted-foreground">{r.date}</div><div className="line-clamp-2">{r.content ?? r.text ?? ""}</div></div>
+        )} />
+        <List title="試験" rows={d.exams} render={(r: any) => (
+          <div className="flex justify-between"><span>{r.title}</span><span className="text-muted-foreground">{r.date}</span></div>
+        )} />
+        <List title="ノート" rows={d.notes} render={(r: any) => (
+          <div className="flex justify-between"><span className="truncate">{r.title || "無題"}</span><span className="text-muted-foreground">{new Date(r.updated_at).toLocaleDateString("ja-JP")}</span></div>
+        )} />
+        <List title="写真ログ" rows={d.photoLogs} render={(r: any) => (
+          <div className="flex gap-2 items-center">{r.photo_url && <img src={r.photo_url} className="h-10 w-10 object-cover rounded" />}<span className="text-muted-foreground">{new Date(r.created_at).toLocaleDateString("ja-JP")}</span><span className="truncate">{r.caption ?? ""}</span></div>
+        )} />
+        <List title="ミッション" rows={d.missions.slice(0, 30)} render={(r: any) => (
+          <div className="flex justify-between"><span>{r.date} {r.title ?? r.code}</span><span>{r.completed_at ? "✅" : "-"}</span></div>
+        )} />
+      </div>
+    </div>
   );
 }
 

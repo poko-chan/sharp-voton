@@ -28,12 +28,19 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 function AuthLayout() {
-  const { user, loading } = useAuth();
+  const { user, loading, accountKind } = useAuth();
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
   }, [user, loading, navigate]);
+  // Parents can only access parent-related surfaces.
+  useEffect(() => {
+    if (loading || !user || accountKind !== "parent") return;
+    const allowed = ["/parent", "/settings", "/notifications", "/help", "/announcements", "/updates"];
+    const ok = allowed.some((p) => path === p || path.startsWith(p + "/"));
+    if (!ok) navigate({ to: "/parent" });
+  }, [accountKind, path, user, loading, navigate]);
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">読み込み中...</div>;
   }
