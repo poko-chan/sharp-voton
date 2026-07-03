@@ -135,9 +135,13 @@ export const getChildFullDashboard = createServerFn({ method: "POST" })
       supabaseAdmin.from("exam_subjects").select("*").eq("user_id", cid).limit(200),
       supabaseAdmin.from("streak_freezes").select("*").eq("user_id", cid),
       supabaseAdmin.from("makron_sessions").select("id, pack_id, total_score, total_points, passed, started_at, finished_at").eq("user_id", cid).order("started_at", { ascending: false }).limit(50),
-      supabaseAdmin.from("makron_answers").select("id, session_id, is_correct, awarded_points, created_at").eq("user_id", cid).gte("created_at", sinceIso).limit(500),
+      supabaseAdmin.from("makron_sessions").select("id").eq("user_id", cid).then(async ({ data: ss }) => {
+        const ids = (ss ?? []).map((s: any) => s.id);
+        if (ids.length === 0) return { data: [] as any[] };
+        return await supabaseAdmin.from("makron_answers").select("id, session_id, is_correct, awarded_points, created_at").in("session_id", ids).gte("created_at", sinceIso).limit(500);
+      }),
       supabaseAdmin.from("focus_logs").select("*").eq("user_id", cid).gte("started_at", sinceIso).order("started_at", { ascending: false }).limit(200),
-      supabaseAdmin.from("notes").select("id, title, updated_at").eq("user_id", cid).order("updated_at", { ascending: false }).limit(30) as any,
+      supabaseAdmin.from("sticky_notes").select("id, title, updated_at").eq("user_id", cid).order("updated_at", { ascending: false }).limit(30),
       supabaseAdmin.from("flashcards").select("id, front, back, updated_at").eq("user_id", cid).order("updated_at", { ascending: false }).limit(30),
       supabaseAdmin.from("user_badges").select("*").eq("user_id", cid),
       supabaseAdmin.from("user_titles").select("*").eq("user_id", cid),
