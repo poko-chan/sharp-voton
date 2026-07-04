@@ -212,6 +212,7 @@ function TodayPage() {
         </Button>
         <Button onClick={() => setAddOpen(true)}><Plus className="h-4 w-4 mr-1" />追加</Button>
       </div>
+      <ChromeAiStatusBadge />
 
       {reflection && (
         <Card className="border-primary/30 bg-primary/5">
