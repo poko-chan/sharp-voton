@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { ocrImage } from "@/lib/ocr.functions";
+import { ocrLocal } from "@/lib/ocr-local";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -14,9 +13,9 @@ export const Route = createFileRoute("/_authenticated/ocr")({ component: OcrPage
 
 function OcrPage() {
   const { user } = useAuth();
-  const ocr = useServerFn(ocrImage);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [notes, setNotes] = useState<any[]>([]);
 
   const load = async () => {
@@ -28,12 +27,9 @@ function OcrPage() {
 
   const onFile = async (f: File) => {
     if (!f) return;
-    setLoading(true);
+    setLoading(true); setProgress(0);
     try {
-      const dataUrl: string = await new Promise((res, rej) => {
-        const r = new FileReader(); r.onload = () => res(r.result as string); r.onerror = rej; r.readAsDataURL(f);
-      });
-      const r = await ocr({ data: { dataUrl } });
+      const r = await ocrLocal(f, { onProgress: (_s, p) => setProgress(Math.round(p * 100)) });
       setText(r.text);
     } catch (e: any) { toast.error(e.message); } finally { setLoading(false); }
   };
@@ -52,7 +48,7 @@ function OcrPage() {
         <input type="file" accept="image/*" capture="environment" className="hidden" id="ocr-file"
           onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
         <Button className="w-full" disabled={loading} onClick={() => document.getElementById("ocr-file")?.click()}>
-          <Upload className="h-4 w-4 mr-1" />{loading ? "読み取り中..." : "画像を選択 / 撮影"}
+          <Upload className="h-4 w-4 mr-1" />{loading ? `読み取り中... ${progress}%` : "画像を選択 / 撮影（オフライン処理）"}
         </Button>
         <Textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="抽出されたテキストがここに表示されます（編集可）" rows={8} />
         <Button onClick={save} disabled={!text.trim()}>保存</Button>

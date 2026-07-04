@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Maximize2, Minimize2, Plus, Trash2, Eraser } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
-import { ocrImage } from "@/lib/ocr.functions";
+import { ocrLocal } from "@/lib/ocr-local";
 import { toast } from "sonner";
 
 type Page = { id: string; dataUrl?: string; text: string };
@@ -20,7 +19,6 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const drawing = useRef(false);
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const runOcr = useServerFn(ocrImage);
 
   useEffect(() => {
     const c = canvasRef.current;
@@ -65,9 +63,10 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
   const triggerOcr = async () => {
     const c = canvasRef.current;
     if (!c) return;
-    const dataUrl = c.toDataURL("image/png");
     try {
-      const res = await runOcr({ data: { dataUrl } });
+      const blob: Blob = await new Promise((r) => c.toBlob((b) => r(b!), "image/png")!);
+      const dataUrl = c.toDataURL("image/png");
+      const res = await ocrLocal(blob);
       const cleaned = (res.text ?? "").replace(/\s+/g, "");
       setPages((prev) => prev.map((p, i) => (i === active ? { ...p, dataUrl, text: cleaned } : p)));
     } catch (err: any) {

@@ -15,8 +15,8 @@ import { ChevronLeft, ChevronRight, Flag, NotebookPen, Upload, Bookmark, ThumbsU
 import { toast } from "sonner";
 import { ReportDialog } from "@/components/makron/ReportDialog";
 import { MakronHandwriteOCR } from "@/components/makron/MakronHandwriteOCR";
-import { useServerFn } from "@tanstack/react-start";
-import { gradeWrittenAnswer } from "@/lib/grading.functions";
+import { nanoGradeWritten } from "@/lib/nano-tasks";
+import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -65,7 +65,8 @@ function SessionPage() {
   const [hintConfirmOpen, setHintConfirmOpen] = useState(false);
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const gradeFn = useServerFn(gradeWrittenAnswer);
+  const gradeFn = async (args: { data: { prompt: string; answer: string; model_answer?: string; max_points: number } }) =>
+    nanoGradeWritten(args.data);
   const [grading, setGrading] = useState(false);
   const [aiGrades, setAiGrades] = useState<Record<string, { score: number; rate: number; feedback: string; good: string[]; improve: string[] }>>({});
   const startedAtRef = useRef<number>(Date.now());
@@ -399,6 +400,7 @@ function SessionPage() {
       }
     >
       <div className="max-w-5xl mx-auto p-6 space-y-4">
+        <ChromeAiStatusBadge />
         <Card className="p-5 space-y-4">
           <div className="text-lg whitespace-pre-wrap">{q.prompt}</div>
           {q.image_url && <img src={q.image_url} alt="" className="max-h-80 rounded border" />}

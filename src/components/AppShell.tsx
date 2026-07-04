@@ -27,6 +27,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useAdminNavConfig } from "@/lib/admin-nav";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { MikuCompanion } from "@/components/MikuCompanion";
+import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
 
 const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
@@ -356,6 +357,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         <TimerIndicator />
         {/* Account switcher top bar */}
         <div className="flex justify-end items-center px-3 py-1 border-b border-border/40 bg-background/40">
+          <ChromeAiStatusBadge compact />
+          <div className="mx-2 h-4 w-px bg-border" />
           <AccountSwitcher />
         </div>
 

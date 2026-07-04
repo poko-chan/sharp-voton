@@ -10,6 +10,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { Sparkles, Gift, Dice5, Music, FileText, CalendarPlus, Volume2, Mic, Camera } from "lucide-react";
+import { ocrLocal } from "@/lib/ocr-local";
+import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
 
 export const Route = createFileRoute("/_authenticated/tools")({ component: ToolsHub });
 
@@ -21,6 +23,7 @@ function ToolsHub() {
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-4">
       <div className="flex items-center gap-2"><Sparkles className="h-7 w-7 text-primary" /><h1 className="text-2xl font-bold">ツールとゲーム</h1></div>
+      <ChromeAiStatusBadge />
       <Tabs defaultValue="slot">
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="slot"><Dice5 className="h-4 w-4 mr-1" />スロット</TabsTrigger>
@@ -164,17 +167,18 @@ function LatexOcr() {
   const run = async (f: File) => {
     setBusy(true); setOut("");
     try {
-      const b64 = await new Promise<string>(r=>{ const fr=new FileReader(); fr.onload=()=>r((fr.result as string).split(",")[1]); fr.readAsDataURL(f); });
-      const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", { method:"POST", headers:{"Content-Type":"application/json","Lovable-API-Key": (window as any).LOVABLE_PUBLIC_KEY ?? ""}, body: JSON.stringify({ model:"google/gemini-2.5-flash", messages:[{role:"user", content:[{type:"text",text:"この画像の数式をLaTeXで返してください。$$で囲む。説明不要。"},{type:"image_url",image_url:{url:`data:${f.type};base64,${b64}`}}]}]})});
-      const j = await res.json(); setOut(j.choices?.[0]?.message?.content ?? "");
-    } catch (e:any) { toast.error("認識失敗（AIキー未接続の場合はサーバー関数化が必要）"); }
+      const r = await ocrLocal(f, { lang: "eng" });
+      // 数式向けに軽く整形（\ を付与できないので生テキスト＋$$で囲むだけ）
+      const t = r.text.trim();
+      setOut(t ? `$$${t}$$` : "");
+    } catch (e:any) { toast.error("認識失敗: " + (e?.message ?? "")); }
     setBusy(false);
   };
   return (<Card className="p-6 space-y-3 mt-4">
     <Input type="file" accept="image/*" disabled={busy} onChange={(e)=>e.target.files?.[0] && run(e.target.files[0])} />
     {busy && <div className="text-sm">認識中…</div>}
     {out && <Textarea readOnly value={out} rows={6} className="font-mono" />}
-    <div className="text-xs text-muted-foreground">※クライアント直呼び。実運用ではサーバー関数化を推奨</div>
+    <div className="text-xs text-muted-foreground">オフライン（tesseract.js）で処理。数式記号は完璧ではありません</div>
   </Card>);
 }
 
