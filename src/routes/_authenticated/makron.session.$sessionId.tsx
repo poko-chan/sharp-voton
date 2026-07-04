@@ -400,6 +400,7 @@ function SessionPage() {
       }
     >
       <div className="max-w-5xl mx-auto p-6 space-y-4">
+        <ChromeAiStatusBadge />
         <Card className="p-5 space-y-4">
           <div className="text-lg whitespace-pre-wrap">{q.prompt}</div>
           {q.image_url && <img src={q.image_url} alt="" className="max-h-80 rounded border" />}
