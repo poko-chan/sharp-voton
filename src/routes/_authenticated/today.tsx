@@ -13,8 +13,8 @@ import { Trash2, Plus, CalendarClock, Sparkles } from "lucide-react";
 import { School, BookOpen, Brain } from "lucide-react";
 import { toast } from "sonner";
 import { localDateStr } from "@/lib/date";
-import { useServerFn } from "@tanstack/react-start";
-import { generateDailyReflection } from "@/lib/reflection.functions";
+import { nanoReflectDaily } from "@/lib/nano-tasks";
+import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
 
 export const Route = createFileRoute("/_authenticated/today")({ component: TodayPage });
 
@@ -80,7 +80,19 @@ function TodayPage() {
   const [schoolOpen, setSchoolOpen] = useState(false);
   const [reflection, setReflection] = useState<string>("");
   const [reflecting, setReflecting] = useState(false);
-  const reflectFn = useServerFn(generateDailyReflection);
+  const reflectFn = async ({ data }: { data: { date: string } }) => {
+    // 該当日のセグメント/学習ログを取得してNanoで要約
+    const [{ data: es }, { data: ls }] = await Promise.all([
+      supabase.from("today_entries").select("category,label,start_time,end_time").eq("user_id", user!.id).eq("date", data.date).order("start_time"),
+      supabase.from("study_logs").select("duration_minutes,content,subjects(name)").eq("user_id", user!.id).eq("date", data.date),
+    ]);
+    const segments = ((es as any[]) ?? []).map((e) => `${e.start_time}-${e.end_time} ${e.category} ${e.label ?? ""}`).join("\n");
+    const total = ((ls as any[]) ?? []).reduce((s, l) => s + (l.duration_minutes ?? 0), 0);
+    const subs = Array.from(new Set(((ls as any[]) ?? []).map((l) => l.subjects?.name).filter(Boolean))).join(", ");
+    const summary = await nanoReflectDaily({ date: data.date, segments, studyTotalMin: total, subjects: subs });
+    await supabase.from("daily_reflections").upsert({ user_id: user!.id, date: data.date, summary }, { onConflict: "user_id,date" });
+    return { summary };
+  };
 
   const load = async () => {
     if (!user) return;
