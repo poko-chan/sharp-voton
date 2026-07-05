@@ -65,8 +65,10 @@ function SessionPage() {
   const [hintConfirmOpen, setHintConfirmOpen] = useState(false);
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const gradeFn = async (args: { data: { prompt: string; answer: string; model_answer?: string; max_points: number } }) =>
-    nanoGradeWritten(args.data);
+  const gradeFn = async (args: { data: {
+    prompt: string; answer: string; model_answer?: string; max_points: number;
+    onProgress?: (partial: string, chars: number) => void;
+  } }) => nanoGradeWritten(args.data);
   const [grading, setGrading] = useState(false);
   const [aiGrades, setAiGrades] = useState<Record<string, { score: number; rate: number; feedback: string; good: string[]; improve: string[] }>>({});
   const [gradingProgress, setGradingProgress] = useState<string>("");
