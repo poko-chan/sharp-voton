@@ -569,7 +569,7 @@ function SessionPage() {
               <div className="text-xs text-muted-foreground flex items-center gap-1">
                 <ScanText className="h-3 w-3" />手書きパッドに書いてください。1 秒手を止めると自動で読み取ります（空白・改行は無視）。
               </div>
-              <MakronHandwriteOCR onChange={(t) => setAns(t)} />
+              <MakronHandwriteOCR key={q.id} onChange={(t) => setAns(t)} />
             </div>
           )}
         </Card>
