@@ -8,6 +8,7 @@ export type GradeResult = {
 
 export async function nanoGradeWritten(input: {
   prompt: string; answer: string; model_answer?: string; max_points?: number;
+  onProgress?: (partial: string, chars: number) => void;
 }): Promise<GradeResult> {
   const max = input.max_points ?? 10;
   const sys = `あなたは厳格だが公平な採点者です。与えられた問題と模範解答に対し、生徒の解答を採点します。
@@ -19,7 +20,9 @@ export async function nanoGradeWritten(input: {
 【生徒の解答】${input.answer}`;
   const s = await createChromeAiSession({ system: sys, temperature: 0.2 });
   try {
-    const raw = await s.prompt(user);
+    const raw = input.onProgress
+      ? await s.promptStreaming(user, (p) => input.onProgress?.(p, p.length))
+      : await s.prompt(user);
     const parsed = extractJSON<any>(raw);
     return {
       score: Math.max(0, Math.min(max, Number(parsed.score) || 0)),
@@ -33,6 +36,7 @@ export async function nanoGradeWritten(input: {
 
 export async function nanoReflectDaily(input: {
   date: string; segments: string; studyTotalMin: number; subjects: string;
+  onProgress?: (partial: string) => void;
 }): Promise<string> {
   const sys = `あなたは優しい学習コーチ。ユーザーの1日を200字以内で振り返ります。共感→気づき→明日の小さな提案の順。マークダウン記号は使わない、ふつうの文。`;
   const user = `日付: ${input.date}
@@ -42,5 +46,9 @@ ${input.segments || "（記録なし）"}
 
 勉強合計: ${input.studyTotalMin}分 (${input.subjects || "未指定"})`;
   const s = await createChromeAiSession({ system: sys, temperature: 0.7 });
-  try { return await s.prompt(user); } finally { s.destroy(); }
+  try {
+    return input.onProgress
+      ? await s.promptStreaming(user, input.onProgress)
+      : await s.prompt(user);
+  } finally { s.destroy(); }
 }
