@@ -457,22 +457,26 @@ function SessionPage() {
                   disabled={grading || !(answers[q.id] ?? "").trim()}
                   onClick={async () => {
                     setGrading(true);
+                    setGradingProgress("");
                     try {
                       const r = await gradeFn({ data: {
                         prompt: q.prompt,
                         answer: String(answers[q.id] ?? ""),
                         model_answer: q.model_answer ?? undefined,
                         max_points: q.points ?? 10,
+                        onProgress: (_p: string, chars: number) => setGradingProgress(`生成中… ${chars}文字`),
                       }});
                       setAiGrades((p) => ({ ...p, [q.id]: r }));
                     } catch (e: any) { toast.error(e?.message ?? "採点失敗"); }
-                    finally { setGrading(false); }
+                    finally { setGrading(false); setGradingProgress(""); }
                   }}
                 >
                   {grading ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Sparkles className="h-3 w-3 mr-1" />}
                   {aiGrades[q.id] ? "AI採点をやり直す" : "AIで採点"}
                 </Button>
-                <span className="text-xs text-muted-foreground">この採点結果が提出時の得点として確定します（未実行なら提出時に自動採点）</span>
+                <span className="text-xs text-muted-foreground">
+                  {grading ? (gradingProgress || "Gemini Nano 起動中…") : "この採点結果が提出時の得点として確定します（未実行なら提出時に自動採点）"}
+                </span>
               </div>
               {aiGrades[q.id] && (
                 <div className="rounded border bg-muted/30 p-3 text-sm space-y-1">
