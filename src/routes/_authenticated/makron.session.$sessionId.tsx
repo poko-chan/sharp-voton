@@ -69,6 +69,7 @@ function SessionPage() {
     nanoGradeWritten(args.data);
   const [grading, setGrading] = useState(false);
   const [aiGrades, setAiGrades] = useState<Record<string, { score: number; rate: number; feedback: string; good: string[]; improve: string[] }>>({});
+  const [gradingProgress, setGradingProgress] = useState<string>("");
   const startedAtRef = useRef<number>(Date.now());
   const [elapsed, setElapsed] = useState(0);
 
