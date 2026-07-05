@@ -97,6 +97,7 @@ export async function isChromeAiUsable(): Promise<boolean> {
 export type ChromeAiSession = {
   prompt: (text: string) => Promise<string>;
   promptJSON: <T = unknown>(text: string) => Promise<T>;
+  promptStreaming: (text: string, onChunk: (partial: string) => void) => Promise<string>;
   destroy: () => void;
 };
 
@@ -125,6 +126,32 @@ export async function createChromeAiSession(opts?: {
       const out = await session.prompt(text);
       const str = typeof out === "string" ? out : String(out ?? "");
       return extractJSON<T>(str);
+    },
+    promptStreaming: async (text: string, onChunk: (partial: string) => void) => {
+      if (typeof session.promptStreaming !== "function") {
+        const r = await session.prompt(text);
+        const s = typeof r === "string" ? r : String(r ?? "");
+        onChunk(s);
+        return s;
+      }
+      const stream: ReadableStream<string> = session.promptStreaming(text);
+      const reader = stream.getReader();
+      let full = "";
+      let cumulative = false;
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        const v = typeof value === "string" ? value : String(value ?? "");
+        if (!cumulative && v.startsWith(full) && v.length >= full.length) {
+          full = v; cumulative = true;
+        } else if (cumulative) {
+          full = v;
+        } else {
+          full += v;
+        }
+        try { onChunk(full); } catch { /* noop */ }
+      }
+      return full;
     },
     destroy: () => {
       try { session.destroy?.(); } catch { /* noop */ }
