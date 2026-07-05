@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Maximize2, Minimize2, Plus, Trash2, Eraser } from "lucide-react";
+import { Maximize2, Minimize2, Plus, Trash2, Eraser, Loader2 } from "lucide-react";
 import { ocrLocal } from "@/lib/ocr-local";
 import { toast } from "sonner";
 
@@ -15,10 +15,14 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
   const [pages, setPages] = useState<Page[]>([{ id: crypto.randomUUID(), text: "" }]);
   const [active, setActive] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const drawing = useRef(false);
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onChangeRef = useRef(onChange);
+  useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
 
   useEffect(() => {
     const c = canvasRef.current;
@@ -34,8 +38,8 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
   }, [active, fullscreen]);
 
   useEffect(() => {
-    onChange?.(pages.map((p) => p.text).join(""));
-  }, [pages, onChange]);
+    onChangeRef.current?.(pages.map((p) => p.text).join(""));
+  }, [pages]);
 
   const pos = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const r = (e.target as HTMLCanvasElement).getBoundingClientRect();
@@ -63,15 +67,19 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
   const triggerOcr = async () => {
     const c = canvasRef.current;
     if (!c) return;
+    setBusy(true); setProgress(0);
     try {
       const blob: Blob = await new Promise((r) => c.toBlob((b) => r(b!), "image/png")!);
       const dataUrl = c.toDataURL("image/png");
-      const res = await ocrLocal(blob);
+      const res = await ocrLocal(blob, {
+        lang: "jpn",
+        onProgress: (_s, p) => setProgress(Math.round(p * 100)),
+      });
       const cleaned = (res.text ?? "").replace(/\s+/g, "");
       setPages((prev) => prev.map((p, i) => (i === active ? { ...p, dataUrl, text: cleaned } : p)));
     } catch (err: any) {
       toast.error(err?.message ?? "OCR失敗");
-    }
+    } finally { setBusy(false); }
   };
 
   const clearPage = () => {
@@ -126,7 +134,11 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
           onPointerLeave={end}
         />
         <div className="bg-muted/40 rounded p-2 text-sm min-h-[2.25rem] select-none" aria-readonly>
-          {pages[active]?.text || <span className="text-muted-foreground text-xs">手を止めると自動で読み取ります（1 秒）</span>}
+          {busy ? (
+            <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+              <Loader2 className="h-3 w-3 animate-spin" />オフラインOCR実行中… {progress}%
+            </span>
+          ) : (pages[active]?.text || <span className="text-muted-foreground text-xs">手を止めると自動で読み取ります（1 秒・日本語モード）</span>)}
         </div>
       </Card>
     </div>
