@@ -1,0 +1,1 @@
+ALTER TABLE public.makron_packs ADD COLUMN IF NOT EXISTS per_question_grading boolean NOT NULL DEFAULT false;

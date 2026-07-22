@@ -2251,6 +2251,7 @@ export type Database = {
           max_attempts: number | null
           order_idx: number
           pass_score: number | null
+          per_question_grading: boolean
           question_limit: number | null
           reward_attempts_cap: number | null
           shuffle: boolean
@@ -2275,6 +2276,7 @@ export type Database = {
           max_attempts?: number | null
           order_idx?: number
           pass_score?: number | null
+          per_question_grading?: boolean
           question_limit?: number | null
           reward_attempts_cap?: number | null
           shuffle?: boolean
@@ -2299,6 +2301,7 @@ export type Database = {
           max_attempts?: number | null
           order_idx?: number
           pass_score?: number | null
+          per_question_grading?: boolean
           question_limit?: number | null
           reward_attempts_cap?: number | null
           shuffle?: boolean
