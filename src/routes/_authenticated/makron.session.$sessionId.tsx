@@ -72,6 +72,9 @@ function SessionPage() {
   const [grading, setGrading] = useState(false);
   const [aiGrades, setAiGrades] = useState<Record<string, { score: number; rate: number; feedback: string; good: string[]; improve: string[] }>>({});
   const [gradingProgress, setGradingProgress] = useState<string>("");
+  // 一問ごと採点モード: 各問の即時判定結果と、確定済みかどうか
+  const [locked, setLocked] = useState<Set<string>>(new Set());
+  const [perQResult, setPerQResult] = useState<Record<string, { correct: boolean | null; explanation: string | null; correctAnswer: string }>>({});
   const startedAtRef = useRef<number>(Date.now());
   const [elapsed, setElapsed] = useState(0);
 
@@ -132,6 +135,8 @@ function SessionPage() {
 
   const q = questions[idx];
   const setAns = (val: any) => setAnswers((p) => ({ ...p, [q.id]: val }));
+  const perQMode = !!pack?.per_question_grading;
+  const currentLocked = q ? locked.has(q.id) : false;
 
   const toggleBookmark = async () => {
     if (!user || !q) return;
@@ -220,13 +225,53 @@ function SessionPage() {
       // textarea や記述系の長文入力中は Enter を奪わない
       if (tag === "TEXTAREA") return;
       if (showPreview || submitConfirmOpen || hintConfirmOpen || reportOpen) return;
+      if (perQMode && !currentLocked) return; // 一問採点モードでは採点前は Enter で進めない
       e.preventDefault();
       if (idx + 1 < questions.length) setIdx(idx + 1);
       else setSubmitConfirmOpen(true);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [idx, questions.length, showPreview, submitConfirmOpen, hintConfirmOpen, reportOpen]);
+  }, [idx, questions.length, showPreview, submitConfirmOpen, hintConfirmOpen, reportOpen, perQMode, currentLocked]);
+
+  // 現在の問題をその場で採点して確定（一問ごと採点モード）
+  const gradeCurrent = async () => {
+    if (!q) return;
+    const val = answers[q.id];
+    let correct: boolean | null = computeAuto(q, val);
+    let correctAnswer = "";
+    if (q.type === "single" || q.type === "multi" || q.type === "ordering") {
+      correctAnswer = (q.correct_options ?? []).join(", ");
+    } else if (q.type === "text" || q.type === "numeric" || q.type === "ocr" || q.type === "fill_blank") {
+      correctAnswer = (q.accepted_answers ?? []).join(" / ");
+    } else if (q.type === "matching") {
+      correctAnswer = (q.accepted_answers ?? []).join(" / ");
+    } else if (q.type === "written" || q.type === "long_text") {
+      // 記述系は AI 採点
+      const s = String(val ?? "").trim();
+      if (s) {
+        try {
+          setGrading(true);
+          const r = await gradeFn({ data: {
+            prompt: q.prompt, answer: s, model_answer: q.model_answer ?? undefined,
+            max_points: q.points ?? 10,
+            onProgress: (_p: string, chars: number) => setGradingProgress(`生成中… ${chars}文字`),
+          }});
+          setAiGrades((p) => ({ ...p, [q.id]: r }));
+          correct = q.points > 0 ? r.score >= q.points * 0.6 : null;
+        } catch (e: any) { toast.error(e?.message ?? "採点失敗"); return; }
+        finally { setGrading(false); setGradingProgress(""); }
+      }
+      correctAnswer = q.model_answer ?? "";
+    }
+    setPerQResult((p) => ({ ...p, [q.id]: { correct, explanation: q.explanation, correctAnswer } }));
+    setLocked((s) => new Set(s).add(q.id));
+  };
+
+  const nextOrSubmit = () => {
+    if (idx + 1 < questions.length) setIdx(idx + 1);
+    else setSubmitConfirmOpen(true);
+  };
 
   const finish = () => setSubmitConfirmOpen(true);
 
@@ -299,11 +344,9 @@ function SessionPage() {
   const runOcr = async (file: File) => {
     setOcrBusy(true);
     try {
-      const Tesseract = (await import("tesseract.js")).default;
-      const url = URL.createObjectURL(file);
-      const { data } = await Tesseract.recognize(url, "jpn+eng");
-      URL.revokeObjectURL(url);
-      const text = (data?.text ?? "").trim();
+      const { ocrLocal } = await import("@/lib/ocr-local");
+      const { text: raw } = await ocrLocal(file, { lang: "jpn" });
+      const text = raw.trim();
       setAns(text);
       toast.success("OCRで読み取りました（必要に応じて編集してください）");
     } catch (e: any) {
