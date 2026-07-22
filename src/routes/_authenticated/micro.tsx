@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { chromeAiStatus, chromeAiJSON } from "@/lib/chrome-ai";
+import { isAiUsable, aiJSON } from "@/lib/ai-provider";
 import { AiUnavailable } from "@/components/AiUnavailable";
 import { useEffect } from "react";
 
@@ -18,9 +18,8 @@ function MicroPage() {
   const [q, setQ] = useState<Q | null>(null);
   const [picked, setPicked] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [aiStatus, setAiStatus] = useState<string>("checking");
-  useEffect(() => { chromeAiStatus().then(setAiStatus); }, []);
-  const canAi = aiStatus === "available" || aiStatus === "downloadable" || aiStatus === "downloading";
+  const [canAi, setCanAi] = useState<boolean>(false);
+  useEffect(() => { isAiUsable().then(setCanAi); }, []);
 
   const next = async () => {
     setLoading(true); setPicked(null); setQ(null);
@@ -29,7 +28,7 @@ function MicroPage() {
       const prompt = `「${t}」から、1分で解ける4択クイズを1問作成。出力は厳密なJSONのみ:
 {"question":"問題文","choices":["A","B","C","D"],"answer":0,"explanation":"解説"}
 answer は 0〜3 の正解インデックス。`;
-      setQ(await chromeAiJSON<Q>(prompt));
+      setQ(await aiJSON<Q>(prompt));
     }
     catch (e: any) { toast.error(e.message); }
     finally { setLoading(false); }
@@ -42,7 +41,7 @@ answer は 0〜3 の正解インデックス。`;
         <p className="text-muted-foreground">1問1分。0分の日を作らないため。</p>
       </div>
       <Card className="p-5 space-y-3">
-        {!canAi && aiStatus !== "checking" && <AiUnavailable feature="マイクロ学習" />}
+        {!canAi && <AiUnavailable feature="マイクロ学習" />}
         <Input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="お題（空欄なら基礎一般教養）" maxLength={100} />
         <Button onClick={next} disabled={loading || !canAi}>
           {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
