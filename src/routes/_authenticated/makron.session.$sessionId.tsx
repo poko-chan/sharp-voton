@@ -629,31 +629,52 @@ function SessionPage() {
           </Card>
         )}
 
+        {perQMode && currentLocked && perQResult[q.id] && (
+          <Card className={`p-4 border-2 ${perQResult[q.id].correct === true ? "border-emerald-500 bg-emerald-500/10" : perQResult[q.id].correct === false ? "border-rose-500 bg-rose-500/10" : "border-muted"}`}>
+            <div className="font-bold mb-1">
+              {perQResult[q.id].correct === true ? "✅ 正解！" : perQResult[q.id].correct === false ? "❌ 不正解" : "採点結果"}
+            </div>
+            {perQResult[q.id].correctAnswer && (
+              <div className="text-sm"><span className="font-semibold">正解:</span> {perQResult[q.id].correctAnswer}</div>
+            )}
+            {perQResult[q.id].explanation && (
+              <div className="text-sm mt-1 whitespace-pre-wrap"><span className="font-semibold">解説:</span> {perQResult[q.id].explanation}</div>
+            )}
+          </Card>
+        )}
+
         <div className="flex items-center justify-between gap-2">
-          <Button variant="outline" disabled={idx === 0} onClick={() => goto(idx - 1)}><ChevronLeft className="h-4 w-4 mr-1" />前へ</Button>
-          <div className="text-xs text-muted-foreground">{idx + 1} / {questions.length}</div>
-          {idx + 1 < questions.length ? (
+          <Button variant="outline" disabled={perQMode || idx === 0} onClick={() => goto(idx - 1)}><ChevronLeft className="h-4 w-4 mr-1" />前へ</Button>
+          <div className="text-xs text-muted-foreground">{idx + 1} / {questions.length}{perQMode && " (一問ごと採点)"}</div>
+          {perQMode && !currentLocked ? (
+            <Button onClick={gradeCurrent} disabled={grading}>
+              {grading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Sparkles className="h-4 w-4 mr-1" />}
+              採点する
+            </Button>
+          ) : idx + 1 < questions.length ? (
             <Button onClick={() => goto(idx + 1)}>次へ<ChevronRight className="h-4 w-4 ml-1" /></Button>
           ) : (
             <Button onClick={finish}><Flag className="h-4 w-4 mr-1" />提出して採点へ</Button>
           )}
         </div>
 
-        <div className="flex flex-wrap gap-1 pt-2">
-          {questions.map((_, i) => {
-            const v = answers[questions[i].id];
-            const answered =
-              v !== undefined && v !== null && v !== "" &&
-              !(Array.isArray(v) && v.length === 0);
-            const flagged = reviewFlags.has(questions[i].id);
-            return (
-              <button key={i} onClick={() => goto(i)} className={`h-7 w-7 text-xs rounded border relative ${i === idx ? "bg-primary text-primary-foreground" : answered ? "bg-success/20" : ""} ${flagged ? "ring-2 ring-amber-500" : ""}`}>
-                {i + 1}
-                {flagged && <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-amber-500" />}
-              </button>
-            );
-          })}
-        </div>
+        {!perQMode && (
+          <div className="flex flex-wrap gap-1 pt-2">
+            {questions.map((_, i) => {
+              const v = answers[questions[i].id];
+              const answered =
+                v !== undefined && v !== null && v !== "" &&
+                !(Array.isArray(v) && v.length === 0);
+              const flagged = reviewFlags.has(questions[i].id);
+              return (
+                <button key={i} onClick={() => goto(i)} className={`h-7 w-7 text-xs rounded border relative ${i === idx ? "bg-primary text-primary-foreground" : answered ? "bg-success/20" : ""} ${flagged ? "ring-2 ring-amber-500" : ""}`}>
+                  {i + 1}
+                  {flagged && <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-amber-500" />}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
       <ReportDialog open={reportOpen} onOpenChange={setReportOpen} questionId={q.id} />
       <AlertDialog open={hintConfirmOpen} onOpenChange={setHintConfirmOpen}>
