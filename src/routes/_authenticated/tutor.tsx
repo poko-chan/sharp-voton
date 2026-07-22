@@ -17,7 +17,7 @@ import {
 import {
   getStudyContext, listTutorThreads, createTutorThread, renameTutorThread, deleteTutorThread,
 } from "@/lib/tutor.functions";
-import { chromeAiStatus, createChromeAiSession } from "@/lib/chrome-ai";
+import { isAiUsable, createAiSession } from "@/lib/ai-provider";
 import { AiUnavailable } from "@/components/AiUnavailable";
 
 type Attachment = { url: string; name: string; type: string };
@@ -58,9 +58,8 @@ function TutorPage() {
   const [deleteTarget, setDeleteTarget] = useState<Thread | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
-  const [aiStatus, setAiStatus] = useState<string>("checking");
-  useEffect(() => { chromeAiStatus().then(setAiStatus); }, []);
-  const canAi = aiStatus === "available" || aiStatus === "downloadable" || aiStatus === "downloading";
+  const [canAi, setCanAi] = useState<boolean>(false);
+  useEffect(() => { isAiUsable().then(setCanAi); }, []);
 
   const loadThreads = useCallback(async () => {
     try {
@@ -143,7 +142,7 @@ function TutorPage() {
         const imgNote = imgs.length ? `\n[添付画像: ${imgs.map((a) => a.name).join(", ")}]` : "";
         return `${m.role === "user" ? "ユーザー" : "アシスタント"}: ${m.content}${imgNote}`;
       }).join("\n\n");
-      const session = await createChromeAiSession({ system: systemPrompt });
+      const session = await createAiSession({ system: systemPrompt });
       let text = "";
       try { text = await session.prompt(history + "\n\nアシスタント:"); } finally { session.destroy(); }
       await supabase.from("tutor_messages").insert({
@@ -190,7 +189,7 @@ function TutorPage() {
           <p className="text-sm text-muted-foreground">新しいチャットごとに会話が保存されます</p>
         </div>
       </div>
-      {!canAi && aiStatus !== "checking" && <div className="mb-3"><AiUnavailable feature="AI家庭教師" /></div>}
+      {!canAi && <div className="mb-3"><AiUnavailable feature="AI家庭教師" /></div>}
 
       <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-3 h-[calc(100vh-10rem)]">
         {/* スレッドサイドバー */}

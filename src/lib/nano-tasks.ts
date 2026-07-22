@@ -1,6 +1,6 @@
 // Chrome Built-in AI (Gemini Nano) を使ったクライアント側タスク
 // AI Gateway を使わない。呼び出し側はブラウザ非対応時のエラーをUIに表示する。
-import { createChromeAiSession, extractJSON } from "@/lib/chrome-ai";
+import { createAiSession, extractJSON } from "@/lib/ai-provider";
 
 export type GradeResult = {
   score: number; rate: number; feedback: string; good: string[]; improve: string[];
@@ -18,7 +18,7 @@ export async function nanoGradeWritten(input: {
 【模範解答】${input.model_answer ?? "（明示なし。一般的な妥当性で判断）"}
 【満点】${max}
 【生徒の解答】${input.answer}`;
-  const s = await createChromeAiSession({ system: sys, temperature: 0.2 });
+  const s = await createAiSession({ system: sys, temperature: 0.2 });
   try {
     const raw = input.onProgress
       ? await s.promptStreaming(user, (p) => input.onProgress?.(p, p.length))
@@ -45,7 +45,7 @@ export async function nanoReflectDaily(input: {
 ${input.segments || "（記録なし）"}
 
 勉強合計: ${input.studyTotalMin}分 (${input.subjects || "未指定"})`;
-  const s = await createChromeAiSession({ system: sys, temperature: 0.7 });
+  const s = await createAiSession({ system: sys, temperature: 0.7 });
   try {
     return input.onProgress
       ? await s.promptStreaming(user, input.onProgress)

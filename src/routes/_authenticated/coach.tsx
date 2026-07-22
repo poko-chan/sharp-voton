@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Flame, BookOpen, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { localDateStr, addDaysStr } from "@/lib/date";
-import { chromeAiStatus, chromeAiPrompt } from "@/lib/chrome-ai";
+import { isAiUsable, aiPrompt } from "@/lib/ai-provider";
 import { AiUnavailable } from "@/components/AiUnavailable";
 
 export const Route = createFileRoute("/_authenticated/coach")({
@@ -18,10 +18,10 @@ function CoachPage() {
   const { user } = useAuth();
   const [advice, setAdvice] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [aiStatus, setAiStatus] = useState<string>("checking");
+  const [canAi, setCanAi] = useState<boolean>(false);
   const [stats, setStats] = useState<{ streak: number; todayMin: number; weekMin: number; daysSince: number } | null>(null);
 
-  useEffect(() => { chromeAiStatus().then(setAiStatus); }, []);
+  useEffect(() => { isAiUsable().then(setCanAi); }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -69,7 +69,7 @@ function CoachPage() {
 - 全くやってない場合でも、罪悪感をあおらない
 - 250字以内
 - マークダウン記号 (** や ##) は使わない、ふつうの文`;
-      const out = await chromeAiPrompt(prompt);
+      const out = await aiPrompt(prompt);
       setAdvice(out);
     } catch (e: any) {
       toast.error(e.message ?? "失敗");
@@ -77,8 +77,6 @@ function CoachPage() {
       setLoading(false);
     }
   };
-
-  const canAi = aiStatus === "available" || aiStatus === "downloadable" || aiStatus === "downloading";
 
   return (
     <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
@@ -98,7 +96,7 @@ function CoachPage() {
 
       <Card className="p-6 space-y-4">
         <h2 className="font-semibold">今のあなたへのアドバイス</h2>
-        {!canAi && aiStatus !== "checking" && <AiUnavailable feature="AI コーチ" />}
+        {!canAi && <AiUnavailable feature="AI コーチ" />}
         {advice ? (
           <p className="whitespace-pre-wrap text-sm leading-7">{advice}</p>
         ) : (

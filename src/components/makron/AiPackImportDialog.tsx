@@ -9,8 +9,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Copy, Sparkles, Loader2, ClipboardPaste, Check } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { chromeAiStatus, createChromeAiSession, extractJSON } from "@/lib/chrome-ai";
-import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
+import { isAiUsable, createAiSession, extractJSON } from "@/lib/ai-provider";
+import { AiStatusBadge } from "@/components/ChromeAiStatusBadge";
 
 type Mode = "new" | "add";
 type Unit = { id: string; title?: string; subject?: string; field?: string; unit?: string };
@@ -46,14 +46,14 @@ export function AiPackImportDialog({
   const [extra, setExtra] = useState("");
   const [packTitle, setPackTitle] = useState("");
   const [packDesc, setPackDesc] = useState("");
-  const [aiStatus, setAiStatus] = useState<string>("checking");
+  const [canAi, setCanAi] = useState<boolean>(false);
   const [busy, setBusy] = useState(false);
   const [response, setResponse] = useState("");
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!open) return;
-    chromeAiStatus().then(setAiStatus);
+    isAiUsable().then(setCanAi);
     setResponse(""); setCopied(false);
   }, [open]);
 
@@ -92,7 +92,7 @@ export function AiPackImportDialog({
   const runChromeAi = async () => {
     setBusy(true);
     try {
-      const session = await createChromeAiSession({
+      const session = await createAiSession({
         system: "あなたは日本の学習問題を作るアシスタントです。出力は必ず厳密な JSON のみ。コードブロックや前置きは禁止。",
         temperature: 0.7,
       });
@@ -116,7 +116,7 @@ export function AiPackImportDialog({
     } finally { setBusy(false); }
   };
 
-  const canChrome = aiStatus === "available" || aiStatus === "downloadable" || aiStatus === "downloading";
+  const canChrome = canAi;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -183,13 +183,13 @@ export function AiPackImportDialog({
           <Tabs defaultValue={canChrome ? "auto" : "manual"}>
             <TabsList className="w-full grid grid-cols-2">
               <TabsTrigger value="auto" disabled={!canChrome}>
-                自動生成 {canChrome ? "" : "(Chrome AI 未対応)"}
+                自動生成 {canChrome ? "" : "(ローカル AI 未対応)"}
               </TabsTrigger>
               <TabsTrigger value="manual">外部AIに依頼してコピペ</TabsTrigger>
             </TabsList>
 
             <TabsContent value="auto" className="space-y-2 pt-2">
-              <ChromeAiStatusBadge />
+              <AiStatusBadge />
               <Button onClick={runChromeAi} disabled={busy || !canChrome} className="w-full">
                 {busy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Sparkles className="h-4 w-4 mr-1" />}
                 AI に生成させてインポート
