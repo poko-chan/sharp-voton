@@ -17,7 +17,7 @@ import {
 import {
   getStudyContext, listTutorThreads, createTutorThread, renameTutorThread, deleteTutorThread,
 } from "@/lib/tutor.functions";
-import { chromeAiStatus, createChromeAiSession } from "@/lib/chrome-ai";
+import { isAiUsable, createAiSession } from "@/lib/ai-provider";
 import { AiUnavailable } from "@/components/AiUnavailable";
 
 type Attachment = { url: string; name: string; type: string };
@@ -58,9 +58,8 @@ function TutorPage() {
   const [deleteTarget, setDeleteTarget] = useState<Thread | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
-  const [aiStatus, setAiStatus] = useState<string>("checking");
-  useEffect(() => { chromeAiStatus().then(setAiStatus); }, []);
-  const canAi = aiStatus === "available" || aiStatus === "downloadable" || aiStatus === "downloading";
+  const [canAi, setCanAi] = useState<boolean>(false);
+  useEffect(() => { isAiUsable().then(setCanAi); }, []);
 
   const loadThreads = useCallback(async () => {
     try {
@@ -143,7 +142,7 @@ function TutorPage() {
         const imgNote = imgs.length ? `\n[添付画像: ${imgs.map((a) => a.name).join(", ")}]` : "";
         return `${m.role === "user" ? "ユーザー" : "アシスタント"}: ${m.content}${imgNote}`;
       }).join("\n\n");
-      const session = await createChromeAiSession({ system: systemPrompt });
+      const session = await createAiSession({ system: systemPrompt });
       let text = "";
       try { text = await session.prompt(history + "\n\nアシスタント:"); } finally { session.destroy(); }
       await supabase.from("tutor_messages").insert({
