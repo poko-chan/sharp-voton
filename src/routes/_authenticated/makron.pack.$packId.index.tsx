@@ -279,6 +279,10 @@ function PackPage() {
                   <Switch checked={!!pack.skip_preview} onCheckedChange={(v) => saveSettings({ skip_preview: v })} />
                   演習開始前のプレビューを表示しない
                 </label>
+                <label className="flex items-center gap-2 text-sm">
+                  <Switch checked={!!pack.per_question_grading} onCheckedChange={(v) => saveSettings({ per_question_grading: v })} />
+                  一問ごと採点モード（回答するとその場で正誤表示、前後移動と後回し不可）
+                </label>
                 <div className="grid sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs">出題数（空欄 = 全問）</label>
