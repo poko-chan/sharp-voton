@@ -189,7 +189,7 @@ function TutorPage() {
           <p className="text-sm text-muted-foreground">新しいチャットごとに会話が保存されます</p>
         </div>
       </div>
-      {!canAi && aiStatus !== "checking" && <div className="mb-3"><AiUnavailable feature="AI家庭教師" /></div>}
+      {!canAi && <div className="mb-3"><AiUnavailable feature="AI家庭教師" /></div>}
 
       <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-3 h-[calc(100vh-10rem)]">
         {/* スレッドサイドバー */}
