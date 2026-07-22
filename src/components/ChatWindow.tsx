@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import ReactMarkdown from "react-markdown";
 import { Send, Loader2 } from "lucide-react";
-import { chromeAiStatus, createChromeAiSession, type ChromeAiSession } from "@/lib/chrome-ai";
+import { isAiUsable, createAiSession, type AiSession } from "@/lib/ai-provider";
 import { AiUnavailable } from "@/components/AiUnavailable";
 import { toast } from "sonner";
 
@@ -30,19 +30,17 @@ export function ChatWindow({
     })),
   );
   const [isLoading, setIsLoading] = useState(false);
-  const [aiStatus, setAiStatus] = useState<string>("checking");
-  const sessionRef = useRef<ChromeAiSession | null>(null);
+  const [canAi, setCanAi] = useState<boolean>(false);
+  const sessionRef = useRef<AiSession | null>(null);
 
-  useEffect(() => { chromeAiStatus().then(setAiStatus); }, []);
+  useEffect(() => { isAiUsable().then(setCanAi); }, []);
   useEffect(() => {
     return () => { sessionRef.current?.destroy(); sessionRef.current = null; };
   }, [id]);
 
-  const canAi = aiStatus === "available" || aiStatus === "downloadable" || aiStatus === "downloading";
-
   const ensureSession = async () => {
     if (sessionRef.current) return sessionRef.current;
-    sessionRef.current = await createChromeAiSession({ system });
+    sessionRef.current = await createAiSession({ system });
     return sessionRef.current;
   };
 
@@ -69,7 +67,7 @@ export function ChatWindow({
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto">
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {!canAi && aiStatus !== "checking" && <AiUnavailable feature="チャット" />}
+        {!canAi && <AiUnavailable feature="チャット" />}
         {messages.length === 0 && (
           <p className="text-center text-muted-foreground text-sm">
             会話を開始してください
