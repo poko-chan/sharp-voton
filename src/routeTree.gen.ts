@@ -22,6 +22,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiAiStreamRouteImport } from './routes/api/ai-stream'
 import { Route as AuthenticatedUpdatesRouteImport } from './routes/_authenticated/updates'
 import { Route as AuthenticatedTutorRouteImport } from './routes/_authenticated/tutor'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
@@ -154,6 +155,11 @@ const RCodeRoute = RCodeRouteImport.update({
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiStreamRoute = ApiAiStreamRouteImport.update({
+  id: '/api/ai-stream',
+  path: '/api/ai-stream',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedUpdatesRoute = AuthenticatedUpdatesRouteImport.update({
@@ -583,6 +589,7 @@ export interface FileRoutesByFullPath {
   '/tools': typeof AuthenticatedToolsRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/updates': typeof AuthenticatedUpdatesRoute
+  '/api/ai-stream': typeof ApiAiStreamRoute
   '/api/chat': typeof ApiChatRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
@@ -662,6 +669,7 @@ export interface FileRoutesByTo {
   '/tools': typeof AuthenticatedToolsRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/updates': typeof AuthenticatedUpdatesRoute
+  '/api/ai-stream': typeof ApiAiStreamRoute
   '/api/chat': typeof ApiChatRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
@@ -746,6 +754,7 @@ export interface FileRoutesById {
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
   '/_authenticated/tutor': typeof AuthenticatedTutorRoute
   '/_authenticated/updates': typeof AuthenticatedUpdatesRoute
+  '/api/ai-stream': typeof ApiAiStreamRoute
   '/api/chat': typeof ApiChatRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
@@ -831,6 +840,7 @@ export interface FileRouteTypes {
     | '/tools'
     | '/tutor'
     | '/updates'
+    | '/api/ai-stream'
     | '/api/chat'
     | '/r/$code'
     | '/share/$token'
@@ -910,6 +920,7 @@ export interface FileRouteTypes {
     | '/tools'
     | '/tutor'
     | '/updates'
+    | '/api/ai-stream'
     | '/api/chat'
     | '/r/$code'
     | '/share/$token'
@@ -993,6 +1004,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tools'
     | '/_authenticated/tutor'
     | '/_authenticated/updates'
+    | '/api/ai-stream'
     | '/api/chat'
     | '/r/$code'
     | '/share/$token'
@@ -1030,6 +1042,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  ApiAiStreamRoute: typeof ApiAiStreamRoute
   ApiChatRoute: typeof ApiChatRoute
   RCodeRoute: typeof RCodeRoute
   ShareTokenRoute: typeof ShareTokenRoute
@@ -1126,6 +1139,13 @@ declare module '@tanstack/react-router' {
       path: '/api/chat'
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai-stream': {
+      id: '/api/ai-stream'
+      path: '/api/ai-stream'
+      fullPath: '/api/ai-stream'
+      preLoaderRoute: typeof ApiAiStreamRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/updates': {
@@ -1841,6 +1861,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  ApiAiStreamRoute: ApiAiStreamRoute,
   ApiChatRoute: ApiChatRoute,
   RCodeRoute: RCodeRoute,
   ShareTokenRoute: ShareTokenRoute,
