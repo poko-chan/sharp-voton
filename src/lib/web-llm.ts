@@ -1,20 +1,19 @@
 // WebLLM (MLC) ラッパー。Chrome Built-in AI と同じセッション形状を提供する。
-// 要件: WebGPU。初回のみモデル (~1GB) をブラウザキャッシュへダウンロード。
-
-import type * as WebLLM from "@mlc-ai/web-llm";
+// 要件: WebGPU。ライブラリ本体はブラウザで CDN から動的ロードする
+// （npm 依存としてバンドルすると SSR ビルドがメモリ不足で落ちるため）。
 
 export type WebLlmStatus = "unavailable" | "downloadable" | "downloading" | "available";
 
-// 小さめかつ実用的なモデル。必要ならユーザーが差し替えできる。
 export const DEFAULT_WEBLLM_MODEL = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
+const WEBLLM_CDN = "https://esm.run/@mlc-ai/web-llm@0.2.84";
 
-let modulePromise: Promise<typeof WebLLM> | null = null;
-function loadModule() {
-  if (!modulePromise) modulePromise = import("@mlc-ai/web-llm");
+let modulePromise: Promise<any> | null = null;
+function loadModule(): Promise<any> {
+  if (!modulePromise) modulePromise = import(/* @vite-ignore */ WEBLLM_CDN);
   return modulePromise;
 }
 
-let enginePromise: Promise<WebLLM.MLCEngineInterface> | null = null;
+let enginePromise: Promise<any> | null = null;
 let engineReady = false;
 let engineDownloading = false;
 let lastProgress = 0;
@@ -25,7 +24,6 @@ function hasWebGpu(): boolean {
 }
 
 export function isModelCached(): boolean {
-  // WebLLM 内部のキャッシュ判定 API は無いが、一度作った engine を保持しておく。
   return engineReady;
 }
 
@@ -41,7 +39,7 @@ export type WebLlmDiagnostics = {
   status: WebLlmStatus;
   reason: string;
   hasWebGpu: boolean;
-  progress: number; // 0..1
+  progress: number;
   progressText: string;
 };
 
@@ -59,26 +57,29 @@ export async function webLlmDiagnostics(): Promise<WebLlmDiagnostics> {
 export async function webLlmEnsureLoaded(
   onProgress?: (progress: number, text: string) => void,
   modelId: string = DEFAULT_WEBLLM_MODEL,
-): Promise<WebLLM.MLCEngineInterface> {
+): Promise<any> {
   if (!hasWebGpu()) throw new Error("WebGPU が利用できません");
   if (enginePromise) return enginePromise;
   engineDownloading = true;
   const mod = await loadModule();
-  enginePromise = mod.CreateMLCEngine(modelId, {
-    initProgressCallback: (p) => {
-      lastProgress = p.progress ?? 0;
-      lastProgressText = p.text ?? "";
-      try { onProgress?.(lastProgress, lastProgressText); } catch { /* noop */ }
-    },
-  }).then((eng) => {
-    engineReady = true;
-    engineDownloading = false;
-    return eng;
-  }).catch((err) => {
-    engineDownloading = false;
-    enginePromise = null;
-    throw err;
-  });
+  enginePromise = mod
+    .CreateMLCEngine(modelId, {
+      initProgressCallback: (p: any) => {
+        lastProgress = p.progress ?? 0;
+        lastProgressText = p.text ?? "";
+        try { onProgress?.(lastProgress, lastProgressText); } catch { /* noop */ }
+      },
+    })
+    .then((eng: any) => {
+      engineReady = true;
+      engineDownloading = false;
+      return eng;
+    })
+    .catch((err: unknown) => {
+      engineDownloading = false;
+      enginePromise = null;
+      throw err;
+    });
   return enginePromise;
 }
 
@@ -94,7 +95,7 @@ export async function createWebLlmSession(opts?: {
   temperature?: number;
 }): Promise<WebLlmSession> {
   const engine = await webLlmEnsureLoaded();
-  const history: WebLLM.ChatCompletionMessageParam[] = [];
+  const history: Array<{ role: string; content: string }> = [];
   if (opts?.system) history.push({ role: "system", content: opts.system });
 
   const complete = async (text: string, onChunk?: (p: string) => void) => {
@@ -105,7 +106,7 @@ export async function createWebLlmSession(opts?: {
       temperature: opts?.temperature ?? 0.4,
     });
     let full = "";
-    for await (const chunk of stream) {
+    for await (const chunk of stream as any) {
       const delta = chunk.choices?.[0]?.delta?.content ?? "";
       if (delta) {
         full += delta;
