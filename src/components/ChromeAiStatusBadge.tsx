@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
-import { Loader2, Sparkles, AlertTriangle, Download } from "lucide-react";
+import { Loader2, Sparkles, AlertTriangle, Download, Cpu, Cloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   aiDiagnostics,
   aiEnsureReady,
-  getAiEnginePref,
   setAiEnginePref,
+  AI_ENGINE_LABELS,
   type AiDiagnostics,
   type AiEnginePref,
 } from "@/lib/ai-provider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AiRunIndicator } from "@/components/AiRunIndicator";
 
 function statusColor(s: string) {
   return s === "available" ? "bg-emerald-500"
@@ -59,53 +61,65 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
     refresh();
   };
 
-  if (!d) return null;
+  const activeLabel = d ? AI_ENGINE_LABELS[d.active] : "確認中…";
+  const activeColor = !d ? "bg-muted-foreground" : d.active === "none" ? "bg-red-500" : "bg-emerald-500";
 
-  const activeLabel = d.active === "nano" ? "Gemini Nano"
-    : d.active === "webllm" ? "WebLLM"
-    : "利用不可";
-  const activeColor = d.active === "none" ? "bg-red-500" : "bg-emerald-500";
-
+  // compact: どの端末でも必ず表示されるボタン。押すと詳細ダイアログ。
   if (compact) {
     return (
-      <span className="inline-flex items-center gap-1 text-[11px]" title={`Nano:${d.nano.reason}\nWebLLM:${d.webllm.reason}`}>
-        <span className={`h-2 w-2 rounded-full ${activeColor}`} />
-        AI: {activeLabel}
-      </span>
+      <div className="flex items-center gap-2">
+        <AiRunIndicator />
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="h-7 gap-1.5 px-2 text-[11px]">
+              <span className={`h-2 w-2 rounded-full ${activeColor}`} />
+              AI: {activeLabel}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader><DialogTitle>AI エンジンの選択と状態</DialogTitle></DialogHeader>
+            <AiStatusBadge />
+          </DialogContent>
+        </Dialog>
+      </div>
     );
   }
 
+  if (!d) return <Card className="p-3 text-xs text-muted-foreground">AI の状態を確認中…</Card>;
+
   const nanoUsable = d.nano.status === "available" || d.nano.status === "downloadable" || d.nano.status === "downloading";
   const webUsable = d.webllm.status === "available" || d.webllm.status === "downloadable" || d.webllm.status === "downloading";
+  const cloudUsable = d.cloud.status === "available";
 
   return (
     <Card className="p-3 text-xs space-y-2">
       <div className="flex items-center gap-2">
         <span className={`h-2.5 w-2.5 rounded-full ${activeColor}`} />
         <span className="font-bold">アクティブ: {activeLabel}</span>
+        <AiRunIndicator />
         <Button size="sm" variant="ghost" className="ml-auto h-6 px-2 text-[10px]" onClick={refresh} disabled={busy}>
           {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : "再判定"}
         </Button>
       </div>
 
-      {nanoUsable && webUsable && (
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] text-muted-foreground">優先エンジン:</span>
-          <Select value={pref} onValueChange={onChangePref}>
-            <SelectTrigger className="h-7 text-[11px] w-40"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="auto">自動 (Nano 優先)</SelectItem>
-              <SelectItem value="nano">Gemini Nano</SelectItem>
-              <SelectItem value="webllm">WebLLM</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-muted-foreground">優先エンジン:</span>
+        <Select value={pref} onValueChange={onChangePref}>
+          <SelectTrigger className="h-7 text-[11px] w-44"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="auto">自動 (端末内→クラウド)</SelectItem>
+            <SelectItem value="nano" disabled={!nanoUsable}>Gemini Nano (端末内)</SelectItem>
+            <SelectItem value="webllm" disabled={!webUsable}>WebLLM (端末内)</SelectItem>
+            <SelectItem value="cloud" disabled={!cloudUsable}>クラウド AI</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       <div className="grid grid-cols-1 gap-2">
         <div className="rounded border p-2 space-y-1">
           <div className="flex items-center gap-2">
             <span className={`h-2 w-2 rounded-full ${statusColor(d.nano.status)}`} />
+            <Cpu className="h-3 w-3" />
             <span className="font-semibold">Gemini Nano ({d.nano.browser}): {statusLabel(d.nano.status)}</span>
           </div>
           <div className="text-muted-foreground whitespace-pre-wrap text-[10px]">{d.nano.reason}</div>
@@ -113,9 +127,18 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
         <div className="rounded border p-2 space-y-1">
           <div className="flex items-center gap-2">
             <span className={`h-2 w-2 rounded-full ${statusColor(d.webllm.status)}`} />
+            <Cpu className="h-3 w-3" />
             <span className="font-semibold">WebLLM: {statusLabel(d.webllm.status)}</span>
           </div>
           <div className="text-muted-foreground whitespace-pre-wrap text-[10px]">{d.webllm.reason}</div>
+        </div>
+        <div className="rounded border p-2 space-y-1">
+          <div className="flex items-center gap-2">
+            <span className={`h-2 w-2 rounded-full ${statusColor(d.cloud.status)}`} />
+            <Cloud className="h-3 w-3" />
+            <span className="font-semibold">クラウド AI: {statusLabel(d.cloud.status)}</span>
+          </div>
+          <div className="text-muted-foreground whitespace-pre-wrap text-[10px]">{d.cloud.reason}</div>
         </div>
       </div>
 
@@ -134,7 +157,7 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
       {d.active === "none" && (
         <div className="text-[10px] text-amber-600 flex items-start gap-1">
           <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
-          Gemini Nano・WebLLM のいずれも利用できません。Chrome の Built-in AI フラグを有効化するか、WebGPU 対応ブラウザ (Chrome / Edge) をご利用ください。
+          いずれのエンジンも利用できません。ネットワーク接続を確認してください（クラウド AI はオンラインなら常に利用できます）。
         </div>
       )}
       {d.active !== "none" && (
