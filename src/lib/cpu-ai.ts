@@ -38,8 +38,13 @@ export async function cpuAiEnsureLoaded(onProgress?: (progress: number, text: st
   if (!supported()) throw new Error("この端末では CPU AI を利用できません");
   if (generatorPromise) return generatorPromise;
   downloading = true;
-  generatorPromise = import(/* @vite-ignore */ TRANSFORMERS_CDN)
-    .then((mod: any) => mod.pipeline("text-generation", CPU_AI_MODEL, {
+  const importPromise = import(/* @vite-ignore */ TRANSFORMERS_CDN);
+  const importTimeout = new Promise<never>((_, reject) => {
+    window.setTimeout(() => reject(new Error("CPU AI 本体の取得が2分間進まなかったため中断しました")), 2 * 60 * 1000);
+  });
+  generatorPromise = Promise.race([importPromise, importTimeout])
+    .then((mod: any) => {
+      const loadModel = mod.pipeline("text-generation", CPU_AI_MODEL, {
       device: "wasm",
       dtype: "q4",
       progress_callback: (event: any) => {
@@ -48,7 +53,12 @@ export async function cpuAiEnsureLoaded(onProgress?: (progress: number, text: st
         lastProgressText = String(event?.file ?? event?.status ?? "");
         onProgress?.(lastProgress, lastProgressText);
       },
-    }))
+      });
+      const modelTimeout = new Promise<never>((_, reject) => {
+        window.setTimeout(() => reject(new Error("CPU AI モデルの取得が10分間進まなかったため中断しました")), 10 * 60 * 1000);
+      });
+      return Promise.race([loadModel, modelTimeout]);
+    })
     .then((generator: any) => {
       ready = true;
       downloading = false;

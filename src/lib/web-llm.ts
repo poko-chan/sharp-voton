@@ -9,7 +9,16 @@ const WEBLLM_CDN = "https://esm.run/@mlc-ai/web-llm@0.2.84";
 
 let modulePromise: Promise<any> | null = null;
 function loadModule(): Promise<any> {
-  if (!modulePromise) modulePromise = import(/* @vite-ignore */ WEBLLM_CDN);
+  if (!modulePromise) {
+    const importPromise = import(/* @vite-ignore */ WEBLLM_CDN);
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      window.setTimeout(() => reject(new Error("WebLLM 本体の取得が2分間進まなかったため中断しました")), 2 * 60 * 1000);
+    });
+    modulePromise = Promise.race([importPromise, timeoutPromise]).catch((error: unknown) => {
+      modulePromise = null;
+      throw error;
+    });
+  }
   return modulePromise;
 }
 
