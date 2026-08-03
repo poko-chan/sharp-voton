@@ -1,12 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { paidAiDisabled } from "@/lib/paid-ai-disabled.server";
 
 const MODEL = "google/gemini-2.5-flash";
 
 export const generateCoachAdvice = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    paidAiDisabled();
     const { supabase, userId } = context;
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("AI 設定がありません");
@@ -60,6 +62,7 @@ export const generateMicroQuestion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ topic: z.string().min(1).max(100).optional() }).parse(d))
   .handler(async ({ data }) => {
+    paidAiDisabled();
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("AI 設定がありません");
     const topic = data.topic || "中学・高校レベルの基礎一般教養";
@@ -85,6 +88,7 @@ export const generateListenSummary = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ topic: z.string().min(1).max(200) }).parse(d))
   .handler(async ({ data }) => {
+    paidAiDisabled();
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("AI 設定がありません");
     const prompt = `「${data.topic}」について、中学生でも理解できる優しい要約を400字程度で。読むだけ／聞き流すだけで頭に入る、会話調で。マークダウン記号は使わない。`;

@@ -22,16 +22,23 @@ function getLM(): any | null {
   return null;
 }
 
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => window.setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
 export async function chromeAiStatus(): Promise<Status> {
   const lm = getLM();
   if (!lm) return "unavailable";
   try {
     if (typeof lm.availability === "function") {
-      const s = await lm.availability();
+      const s = await withTimeout(Promise.resolve(lm.availability()), 4000, "unavailable");
       return (s as Status) ?? "unavailable";
     }
     if (typeof lm.capabilities === "function") {
-      const c = await lm.capabilities();
+      const c = await withTimeout(Promise.resolve(lm.capabilities()), 4000, null);
       const a = c?.available;
       if (a === "readily") return "available";
       if (a === "after-download") return "downloadable";
@@ -77,13 +84,17 @@ export async function chromeAiEnsureDownloaded(onProgress?: (loaded: number, tot
   const lm = getLM();
   if (!lm) return "unavailable";
   try {
-    const s: any = await lm.create({
+    const createPromise = Promise.resolve(lm.create({
       monitor(m: any) {
         m.addEventListener?.("downloadprogress", (e: any) => {
           try { onProgress?.(e.loaded ?? 0, e.total ?? 1); } catch { /* noop */ }
         });
       },
-    });
+    }));
+    const s: any = await Promise.race([
+      createPromise,
+      new Promise((_, reject) => window.setTimeout(() => reject(new Error("モデル取得がタイムアウトしました")), 10 * 60 * 1000)),
+    ]);
     try { s.destroy?.(); } catch { /* noop */ }
   } catch { /* noop */ }
   return chromeAiStatus();

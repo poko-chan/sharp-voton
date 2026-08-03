@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { paidAiDisabled } from "@/lib/paid-ai-disabled.server";
 
 const MODEL = "google/gemini-2.5-flash";
 
@@ -81,6 +82,7 @@ export const judgeTown = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ townId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
+    paidAiDisabled();
     const { supabase, userId } = context;
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY が設定されていません");

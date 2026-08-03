@@ -34,8 +34,24 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
   const [progress, setProgress] = useState<number | null>(null);
   const [progressText, setProgressText] = useState<string>("");
   const [pref, setPref] = useState<AiEnginePref>("auto");
+  const [diagnosticsError, setDiagnosticsError] = useState(false);
 
-  const refresh = () => aiDiagnostics().then((x) => { setD(x); setPref(x.pref); });
+  const refresh = async () => {
+    try {
+      const x = await Promise.race([
+        aiDiagnostics(),
+        new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error("timeout")), 8000)),
+      ]);
+      setD(x); setPref(x.pref); setDiagnosticsError(false);
+    } catch {
+      setDiagnosticsError(true);
+      setPref(getStoredPref());
+    }
+  };
+  const getStoredPref = (): AiEnginePref => {
+    const value = window.localStorage.getItem("ai.engine.pref");
+    return value === "nano" || value === "webllm" || value === "cpu" ? value : "auto";
+  };
   useEffect(() => {
     refresh();
     const handler = () => refresh();
@@ -61,8 +77,8 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
     refresh();
   };
 
-  const activeLabel = d ? AI_ENGINE_LABELS[d.active] : "確認中…";
-  const activeColor = !d ? "bg-muted-foreground" : d.active === "none" ? "bg-red-500" : "bg-emerald-500";
+  const activeLabel = d ? AI_ENGINE_LABELS[d.active] : diagnosticsError ? "再確認" : "確認中…";
+  const activeColor = !d ? diagnosticsError ? "bg-amber-500" : "bg-muted-foreground" : d.active === "none" ? "bg-red-500" : "bg-emerald-500";
 
   // compact: どの端末でも必ず表示されるボタン。押すと詳細ダイアログ。
   if (compact) {
@@ -85,11 +101,16 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
     );
   }
 
-  if (!d) return <Card className="p-3 text-xs text-muted-foreground">AI の状態を確認中…</Card>;
+  if (!d) return (
+    <Card className="p-3 text-xs text-muted-foreground space-y-2">
+      <div>{diagnosticsError ? "AI の判定が時間切れになりました。対応状況を再確認できます。" : "AI の状態を確認中…"}</div>
+      {diagnosticsError && <Button size="sm" variant="outline" onClick={refresh}>再確認</Button>}
+    </Card>
+  );
 
   const nanoUsable = d.nano.status === "available" || d.nano.status === "downloadable" || d.nano.status === "downloading";
   const webUsable = d.webllm.status === "available" || d.webllm.status === "downloadable" || d.webllm.status === "downloading";
-  const cloudUsable = d.cloud.status === "available";
+  const cpuUsable = d.cpu.status !== "unavailable";
 
   return (
     <Card className="p-3 text-xs space-y-2">
@@ -107,10 +128,10 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
         <Select value={pref} onValueChange={onChangePref}>
           <SelectTrigger className="h-7 text-[11px] w-44"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="auto">自動 (端末内→クラウド)</SelectItem>
+            <SelectItem value="auto">自動 (Nano→WebLLM→CPU)</SelectItem>
             <SelectItem value="nano" disabled={!nanoUsable}>Gemini Nano (端末内)</SelectItem>
             <SelectItem value="webllm" disabled={!webUsable}>WebLLM (端末内)</SelectItem>
-            <SelectItem value="cloud" disabled={!cloudUsable}>クラウド AI</SelectItem>
+            <SelectItem value="cpu" disabled={!cpuUsable}>CPU AI (端末内)</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -134,16 +155,19 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
         </div>
         <div className="rounded border p-2 space-y-1">
           <div className="flex items-center gap-2">
-            <span className={`h-2 w-2 rounded-full ${statusColor(d.cloud.status)}`} />
+            <span className={`h-2 w-2 rounded-full ${statusColor(d.cpu.status)}`} />
             <Cloud className="h-3 w-3" />
-            <span className="font-semibold">クラウド AI: {statusLabel(d.cloud.status)}</span>
+            <span className="font-semibold">CPU AI: {statusLabel(d.cpu.status)}</span>
           </div>
-          <div className="text-muted-foreground whitespace-pre-wrap text-[10px]">{d.cloud.reason}</div>
+          <div className="text-muted-foreground whitespace-pre-wrap text-[10px]">{d.cpu.reason}</div>
+        </div>
+        <div className="rounded border border-muted p-2 text-muted-foreground">
+          クラウド AI（AI Gateway）は有料プラン専用のため、このアプリでは使用できません。
         </div>
       </div>
 
-      {(d.active === "nano" || d.active === "webllm") &&
-       (d.nano.status === "downloadable" || d.webllm.status === "downloadable" || d.nano.status === "downloading" || d.webllm.status === "downloading") && (
+      {(d.active === "nano" || d.active === "webllm" || d.active === "cpu") &&
+       (d.nano.status === "downloadable" || d.webllm.status === "downloadable" || d.cpu.status === "downloadable" || d.nano.status === "downloading" || d.webllm.status === "downloading" || d.cpu.status === "downloading") && (
         <div className="flex items-center gap-2">
           <Button size="sm" onClick={download} disabled={busy}>
             {busy ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Download className="h-3 w-3 mr-1" />}
@@ -157,7 +181,7 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
       {d.active === "none" && (
         <div className="text-[10px] text-amber-600 flex items-start gap-1">
           <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
-          いずれのエンジンも利用できません。ネットワーク接続を確認してください（クラウド AI はオンラインなら常に利用できます）。
+          この端末では端末内 AI を利用できません。ブラウザを最新版に更新してください。
         </div>
       )}
       {d.active !== "none" && (

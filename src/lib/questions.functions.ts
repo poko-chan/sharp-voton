@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { paidAiDisabled } from "@/lib/paid-ai-disabled.server";
 
 const InputSchema = z.object({
   topic: z.string().min(1).max(500),
@@ -34,6 +35,7 @@ const RULES = `絶対ルール:
 - 解説(explanation)は1〜3文で簡潔に。`;
 
 async function callAI(prompt: string, opts?: { model?: string; jsonMode?: boolean }): Promise<string> {
+  paidAiDisabled();
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("LOVABLE_API_KEY が設定されていません");
   const body: any = {
