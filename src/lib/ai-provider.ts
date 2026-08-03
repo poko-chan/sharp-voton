@@ -15,16 +15,16 @@ import {
   webLlmEnsureLoaded,
   createWebLlmSession,
 } from "@/lib/web-llm";
-import { cloudAiStatus, cloudAiDiagnostics, createCloudAiSession } from "@/lib/ai-cloud";
+import { cpuAiStatus, cpuAiDiagnostics, cpuAiEnsureLoaded, createCpuAiSession } from "@/lib/cpu-ai";
 import { aiRunStart, aiRunChars, aiRunDone, aiRunError, aiRunModelLoading } from "@/lib/ai-status";
 
-export type AiEnginePref = "auto" | "nano" | "webllm" | "cloud";
-export type AiEngine = "nano" | "webllm" | "cloud" | "none";
+export type AiEnginePref = "auto" | "nano" | "webllm" | "cpu";
+export type AiEngine = "nano" | "webllm" | "cpu" | "none";
 
 export const AI_ENGINE_LABELS: Record<AiEngine, string> = {
   nano: "Gemini Nano (端末内)",
   webllm: "WebLLM (端末内)",
-  cloud: "クラウド AI",
+  cpu: "CPU AI (端末内)",
   none: "利用不可",
 };
 
@@ -33,7 +33,7 @@ const LS_KEY = "ai.engine.pref";
 export function getAiEnginePref(): AiEnginePref {
   if (typeof window === "undefined") return "auto";
   const v = window.localStorage.getItem(LS_KEY) as AiEnginePref | null;
-  return v === "nano" || v === "webllm" || v === "cloud" || v === "auto" ? v : "auto";
+  return v === "nano" || v === "webllm" || v === "cpu" || v === "auto" ? v : "auto";
 }
 
 export function setAiEnginePref(pref: AiEnginePref) {
@@ -53,18 +53,18 @@ function isWebLlmUsable(s: string) {
 
 /** 現在の設定 + 実際の可用性を突き合わせて、使うエンジンを決定 */
 export async function resolveAiEngine(): Promise<AiEngine> {
-  const [nano, web, cloud] = await Promise.all([chromeAiStatus(), webLlmStatus(), cloudAiStatus()]);
+  const [nano, web, cpu] = await Promise.all([chromeAiStatus(), webLlmStatus(), cpuAiStatus()]);
   const pref = getAiEnginePref();
-  const cloudOk = cloud === "available";
-  if (pref === "cloud" && cloudOk) return "cloud";
   if (pref === "nano" && isNanoUsable(nano)) return "nano";
   if (pref === "webllm" && isWebLlmUsable(web)) return "webllm";
-  // auto / 選択したものが使えない場合: 端末内 → クラウドの順にフォールバック
+  if (pref === "cpu" && cpu !== "unavailable") return "cpu";
+  // auto / 選択したものが使えない場合: すべて無料の端末内 AI
   if (pref === "auto" && isNanoUsable(nano)) return "nano";
   if (pref === "auto" && isWebLlmUsable(web)) return "webllm";
-  if (cloudOk) return "cloud";
+  if (pref === "auto" && cpu !== "unavailable") return "cpu";
   if (isNanoUsable(nano)) return "nano";
   if (isWebLlmUsable(web)) return "webllm";
+  if (cpu !== "unavailable") return "cpu";
   return "none";
 }
 
@@ -73,17 +73,17 @@ export type AiDiagnostics = {
   pref: AiEnginePref;
   nano: Awaited<ReturnType<typeof chromeAiDiagnostics>>;
   webllm: Awaited<ReturnType<typeof webLlmDiagnostics>>;
-  cloud: Awaited<ReturnType<typeof cloudAiDiagnostics>>;
+  cpu: Awaited<ReturnType<typeof cpuAiDiagnostics>>;
 };
 
 export async function aiDiagnostics(): Promise<AiDiagnostics> {
-  const [nano, webllm, cloud, active] = await Promise.all([
+  const [nano, webllm, cpu] = await Promise.all([
     chromeAiDiagnostics(),
     webLlmDiagnostics(),
-    cloudAiDiagnostics(),
-    resolveAiEngine(),
+    cpuAiDiagnostics(),
   ]);
-  return { active, pref: getAiEnginePref(), nano, webllm, cloud };
+  const active = await resolveAiEngine();
+  return { active, pref: getAiEnginePref(), nano, webllm, cpu };
 }
 
 export async function aiStatus(): Promise<AiEngine> {
@@ -109,6 +109,11 @@ export async function aiEnsureReady(
       onProgress?.(Math.round(p * 1000), 1000, text);
       aiRunModelLoading("webllm", Math.round(p * 100), text || "WebLLM モデルを取得中…");
     });
+  } else if (engine === "cpu") {
+    await cpuAiEnsureLoaded((p, text) => {
+      onProgress?.(p, 100, text);
+      aiRunModelLoading("cpu", p, text || "CPU AI モデルを取得中…");
+    });
   }
   return engine;
 }
@@ -121,17 +126,15 @@ export async function createAiSession(opts?: {
   topK?: number;
 }): Promise<AiSession & { engine: AiEngine }> {
   const engine = await resolveAiEngine();
-  const cloudFallback = () =>
-    Object.assign(withStatus(createCloudAiSession({ system: opts?.system, temperature: opts?.temperature }), "cloud"), {
-      engine: "cloud" as const,
-    });
-
   if (engine === "nano") {
     try {
       const s = await createChromeAiSession(opts);
       return Object.assign(withStatus(s, "nano"), { engine: "nano" as const });
     } catch {
-      if ((await cloudAiStatus()) === "available") return cloudFallback();
+      if ((await cpuAiStatus()) !== "unavailable") {
+        const s = await createCpuAiSession({ system: opts?.system, temperature: opts?.temperature });
+        return Object.assign(withStatus(s, "cpu"), { engine: "cpu" as const });
+      }
       throw new Error("Gemini Nano のセッション作成に失敗しました");
     }
   }
@@ -142,12 +145,19 @@ export async function createAiSession(opts?: {
       const s = await createWebLlmSession({ system: opts?.system, temperature: opts?.temperature });
       return Object.assign(withStatus(s, "webllm"), { engine: "webllm" as const });
     } catch {
-      if ((await cloudAiStatus()) === "available") return cloudFallback();
+      if ((await cpuAiStatus()) !== "unavailable") {
+        const s = await createCpuAiSession({ system: opts?.system, temperature: opts?.temperature });
+        return Object.assign(withStatus(s, "cpu"), { engine: "cpu" as const });
+      }
       throw new Error("WebLLM の読み込みに失敗しました");
     }
   }
-  if (engine === "cloud") return cloudFallback();
-  throw new Error("利用可能な AI エンジンがありません（Gemini Nano / WebLLM / クラウドいずれも利用不可）");
+  if (engine === "cpu") {
+    aiRunModelLoading("cpu", null, "CPU AI を準備中…");
+    const s = await createCpuAiSession({ system: opts?.system, temperature: opts?.temperature });
+    return Object.assign(withStatus(s, "cpu"), { engine: "cpu" as const });
+  }
+  throw new Error("利用可能な端末内 AI がありません（Gemini Nano / WebLLM / CPU AI）");
 }
 
 /** セッションをラップして、生成状況をグローバルに通知する */

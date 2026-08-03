@@ -35,7 +35,22 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
   const [progressText, setProgressText] = useState<string>("");
   const [pref, setPref] = useState<AiEnginePref>("auto");
 
-  const refresh = () => aiDiagnostics().then((x) => { setD(x); setPref(x.pref); });
+  const refresh = async () => {
+    try {
+      const x = await Promise.race([
+        aiDiagnostics(),
+        new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error("timeout")), 8000)),
+      ]);
+      setD(x); setPref(x.pref);
+    } catch {
+      setD(null);
+      setPref(getStoredPref());
+    }
+  };
+  const getStoredPref = (): AiEnginePref => {
+    const value = window.localStorage.getItem("ai.engine.pref");
+    return value === "nano" || value === "webllm" || value === "cpu" ? value : "auto";
+  };
   useEffect(() => {
     refresh();
     const handler = () => refresh();
@@ -89,7 +104,7 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
 
   const nanoUsable = d.nano.status === "available" || d.nano.status === "downloadable" || d.nano.status === "downloading";
   const webUsable = d.webllm.status === "available" || d.webllm.status === "downloadable" || d.webllm.status === "downloading";
-  const cloudUsable = d.cloud.status === "available";
+  const cpuUsable = d.cpu.status !== "unavailable";
 
   return (
     <Card className="p-3 text-xs space-y-2">
@@ -107,10 +122,10 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
         <Select value={pref} onValueChange={onChangePref}>
           <SelectTrigger className="h-7 text-[11px] w-44"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="auto">自動 (端末内→クラウド)</SelectItem>
+            <SelectItem value="auto">自動 (Nano→WebLLM→CPU)</SelectItem>
             <SelectItem value="nano" disabled={!nanoUsable}>Gemini Nano (端末内)</SelectItem>
             <SelectItem value="webllm" disabled={!webUsable}>WebLLM (端末内)</SelectItem>
-            <SelectItem value="cloud" disabled={!cloudUsable}>クラウド AI</SelectItem>
+            <SelectItem value="cpu" disabled={!cpuUsable}>CPU AI (端末内)</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -134,16 +149,19 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
         </div>
         <div className="rounded border p-2 space-y-1">
           <div className="flex items-center gap-2">
-            <span className={`h-2 w-2 rounded-full ${statusColor(d.cloud.status)}`} />
+            <span className={`h-2 w-2 rounded-full ${statusColor(d.cpu.status)}`} />
             <Cloud className="h-3 w-3" />
-            <span className="font-semibold">クラウド AI: {statusLabel(d.cloud.status)}</span>
+            <span className="font-semibold">CPU AI: {statusLabel(d.cpu.status)}</span>
           </div>
-          <div className="text-muted-foreground whitespace-pre-wrap text-[10px]">{d.cloud.reason}</div>
+          <div className="text-muted-foreground whitespace-pre-wrap text-[10px]">{d.cpu.reason}</div>
+        </div>
+        <div className="rounded border border-muted p-2 text-muted-foreground">
+          クラウド AI（AI Gateway）は有料プラン専用のため、このアプリでは使用できません。
         </div>
       </div>
 
-      {(d.active === "nano" || d.active === "webllm") &&
-       (d.nano.status === "downloadable" || d.webllm.status === "downloadable" || d.nano.status === "downloading" || d.webllm.status === "downloading") && (
+      {(d.active === "nano" || d.active === "webllm" || d.active === "cpu") &&
+       (d.nano.status === "downloadable" || d.webllm.status === "downloadable" || d.cpu.status === "downloadable" || d.nano.status === "downloading" || d.webllm.status === "downloading" || d.cpu.status === "downloading") && (
         <div className="flex items-center gap-2">
           <Button size="sm" onClick={download} disabled={busy}>
             {busy ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Download className="h-3 w-3 mr-1" />}
@@ -157,7 +175,7 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
       {d.active === "none" && (
         <div className="text-[10px] text-amber-600 flex items-start gap-1">
           <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
-          いずれのエンジンも利用できません。ネットワーク接続を確認してください（クラウド AI はオンラインなら常に利用できます）。
+          この端末では端末内 AI を利用できません。ブラウザを最新版に更新してください。
         </div>
       )}
       {d.active !== "none" && (

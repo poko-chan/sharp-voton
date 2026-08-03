@@ -62,7 +62,7 @@ export async function webLlmEnsureLoaded(
   if (enginePromise) return enginePromise;
   engineDownloading = true;
   const mod = await loadModule();
-  enginePromise = mod
+  const loadPromise = mod
     .CreateMLCEngine(modelId, {
       initProgressCallback: (p: any) => {
         lastProgress = p.progress ?? 0;
@@ -80,6 +80,14 @@ export async function webLlmEnsureLoaded(
       enginePromise = null;
       throw err;
     });
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    window.setTimeout(() => reject(new Error("WebLLM の取得が10分間進まなかったため中断しました")), 10 * 60 * 1000);
+  });
+  enginePromise = Promise.race([loadPromise, timeoutPromise]).catch((err: unknown) => {
+    engineDownloading = false;
+    enginePromise = null;
+    throw err;
+  });
   return enginePromise;
 }
 
