@@ -1,11 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { paidAiDisabled } from "@/lib/paid-ai-disabled.server";
 
 export const ocrImage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ dataUrl: z.string().min(20).max(15_000_000) }).parse(d))
   .handler(async ({ data }) => {
+    paidAiDisabled();
     const apiKey = process.env.LOVABLE_API_KEY!;
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

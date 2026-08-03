@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { paidAiDisabled } from "@/lib/paid-ai-disabled.server";
 
 const MODEL = "google/gemini-2.5-flash";
 
@@ -24,6 +25,7 @@ export const createTown = createServerFn({ method: "POST" })
     town_goal: z.string().min(1).max(4000),
   }).parse(d))
   .handler(async ({ data, context }) => {
+    paidAiDisabled();
     const { supabase, userId } = context;
     const { data: row, error } = await supabase.from("towns").insert({
       user_id: userId, name: data.name, town_goal: data.town_goal,

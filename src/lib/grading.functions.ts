@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { paidAiDisabled } from "@/lib/paid-ai-disabled.server";
 
 /**
  * 記述/長文回答のAI採点。模範解答と比較し、0-100スコア・部分点・フィードバックを返す。
@@ -16,6 +17,7 @@ export const gradeWrittenAnswer = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data }) => {
+    paidAiDisabled();
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("AI設定がありません");
     const sys = `あなたは厳格だが公平な採点者です。与えられた問題と模範解答に対し、生徒の解答を採点してください。
