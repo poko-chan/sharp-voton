@@ -34,6 +34,7 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
   const [progress, setProgress] = useState<number | null>(null);
   const [progressText, setProgressText] = useState<string>("");
   const [pref, setPref] = useState<AiEnginePref>("auto");
+  const [diagnosticsError, setDiagnosticsError] = useState(false);
 
   const refresh = async () => {
     try {
@@ -41,9 +42,9 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
         aiDiagnostics(),
         new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error("timeout")), 8000)),
       ]);
-      setD(x); setPref(x.pref);
+      setD(x); setPref(x.pref); setDiagnosticsError(false);
     } catch {
-      setD(null);
+      setDiagnosticsError(true);
       setPref(getStoredPref());
     }
   };
@@ -76,8 +77,8 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
     refresh();
   };
 
-  const activeLabel = d ? AI_ENGINE_LABELS[d.active] : "確認中…";
-  const activeColor = !d ? "bg-muted-foreground" : d.active === "none" ? "bg-red-500" : "bg-emerald-500";
+  const activeLabel = d ? AI_ENGINE_LABELS[d.active] : diagnosticsError ? "再確認" : "確認中…";
+  const activeColor = !d ? diagnosticsError ? "bg-amber-500" : "bg-muted-foreground" : d.active === "none" ? "bg-red-500" : "bg-emerald-500";
 
   // compact: どの端末でも必ず表示されるボタン。押すと詳細ダイアログ。
   if (compact) {
@@ -100,7 +101,12 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
     );
   }
 
-  if (!d) return <Card className="p-3 text-xs text-muted-foreground">AI の状態を確認中…</Card>;
+  if (!d) return (
+    <Card className="p-3 text-xs text-muted-foreground space-y-2">
+      <div>{diagnosticsError ? "AI の判定が時間切れになりました。対応状況を再確認できます。" : "AI の状態を確認中…"}</div>
+      {diagnosticsError && <Button size="sm" variant="outline" onClick={refresh}>再確認</Button>}
+    </Card>
+  );
 
   const nanoUsable = d.nano.status === "available" || d.nano.status === "downloadable" || d.nano.status === "downloading";
   const webUsable = d.webllm.status === "available" || d.webllm.status === "downloadable" || d.webllm.status === "downloading";

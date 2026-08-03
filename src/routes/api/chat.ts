@@ -1,8 +1,6 @@
 import "@tanstack/react-start";
 import { createFileRoute } from "@tanstack/react-router";
 
-type Body = { messages?: any[]; system?: string; model?: string; raw?: boolean };
-
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {

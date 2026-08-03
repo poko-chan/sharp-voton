@@ -1,12 +1,6 @@
 import "@tanstack/react-start";
 import { createFileRoute } from "@tanstack/react-router";
 
-type Body = {
-  system?: string;
-  messages?: Array<{ role: "user" | "assistant" | "system"; content: string }>;
-  temperature?: number;
-};
-
 export const Route = createFileRoute("/api/ai-stream")({
   server: {
     handlers: {
