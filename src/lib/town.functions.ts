@@ -25,7 +25,6 @@ export const createTown = createServerFn({ method: "POST" })
     town_goal: z.string().min(1).max(4000),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    paidAiDisabled();
     const { supabase, userId } = context;
     const { data: row, error } = await supabase.from("towns").insert({
       user_id: userId, name: data.name, town_goal: data.town_goal,
@@ -83,6 +82,7 @@ export const judgeTown = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ townId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
+    paidAiDisabled();
     const { supabase, userId } = context;
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY が設定されていません");

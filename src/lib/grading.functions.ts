@@ -18,8 +18,7 @@ export const gradeWrittenAnswer = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     paidAiDisabled();
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("AI設定がありません");
+    const apiKey = "";
     const sys = `あなたは厳格だが公平な採点者です。与えられた問題と模範解答に対し、生徒の解答を採点してください。
 出力は必ずJSON: {"score": 0-${data.max_points}, "rate": 0-100, "feedback": "短評（200字以内）", "good": ["..."], "improve": ["..."]}`;
     const user = `【問題】${data.prompt}\n【模範解答】${data.model_answer ?? "（明示なし。一般的な妥当性で判断）"}\n【満点】${data.max_points}\n【生徒の解答】${data.answer}`;
