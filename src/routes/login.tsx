@@ -161,8 +161,7 @@ function LoginPage() {
             width={64}
             height={64}
             decoding="async"
-            // @ts-expect-error fetchpriority is a valid HTML attribute
-            fetchpriority="high"
+            fetchPriority="high"
             className="mx-auto h-16 w-16 rounded-2xl shadow-md"
           />
           <h1 className="text-3xl font-bold">Study+</h1>

@@ -79,29 +79,42 @@ export async function chromeAiDiagnostics(): Promise<ChromeAiDiagnostics> {
   return { status, reason, hasApi, browser: isChrome ? `Chrome ${chromeVer ?? "?"}` : ua.split(" ").pop() ?? ua, isSecure };
 }
 
+let downloadPromise: Promise<Status> | null = null;
+
 /** モデルを明示的にダウンロード開始する（downloadable のとき） */
 export async function chromeAiEnsureDownloaded(onProgress?: (loaded: number, total: number) => void): Promise<Status> {
   const lm = getLM();
   if (!lm) return "unavailable";
-  try {
-    const createPromise = Promise.resolve(lm.create({
-      monitor(m: any) {
-        m.addEventListener?.("downloadprogress", (e: any) => {
-          try { onProgress?.(e.loaded ?? 0, e.total ?? 1); } catch { /* noop */ }
-        });
-      },
-    }));
-    const s: any = await Promise.race([
-      createPromise,
-      new Promise((_, reject) => window.setTimeout(() => reject(new Error("モデル取得がタイムアウトしました")), 10 * 60 * 1000)),
-    ]);
-    try { s.destroy?.(); } catch { /* noop */ }
-  } catch (error) {
-    throw error instanceof Error ? error : new Error("Gemini Nano の取得に失敗しました");
-  }
+
   const status = await chromeAiStatus();
-  if (status !== "available") throw new Error("Gemini Nano の取得が完了していません。通信と空き容量を確認して再試行してください");
-  return status;
+  if (status === "available") return "available";
+
+  if (downloadPromise) return downloadPromise;
+
+  downloadPromise = (async () => {
+    try {
+      const createPromise = Promise.resolve(lm.create({
+        monitor(m: any) {
+          m.addEventListener?.("downloadprogress", (e: any) => {
+            try { onProgress?.(e.loaded ?? 0, e.total ?? 1); } catch { /* noop */ }
+          });
+        },
+      }));
+      const s: any = await Promise.race([
+        createPromise,
+        new Promise((_, reject) => window.setTimeout(() => reject(new Error("Gemini Nano の取得が 10 分間進まなかったため中断しました")), 10 * 60 * 1000)),
+      ]);
+      try { s.destroy?.(); } catch { /* noop */ }
+      return chromeAiStatus();
+    } catch (e: any) {
+      console.error("Chrome AI Download Error:", e);
+      throw e;
+    } finally {
+      downloadPromise = null;
+    }
+  })();
+
+  return downloadPromise;
 }
 
 export async function isChromeAiUsable(): Promise<boolean> {

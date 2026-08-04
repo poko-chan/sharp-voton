@@ -45,3 +45,6 @@ export function aiRunDone(chars: number) {
 export function aiRunError(message: string) {
   setAiRunStatus({ phase: "error", message, progress: null });
 }
+export function aiRunIdle() {
+  setAiRunStatus({ phase: "idle", engine: "", progress: null, chars: 0, message: "", startedAt: null });
+}
