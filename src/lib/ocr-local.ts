@@ -2,7 +2,6 @@
 // tesseract.js より圧倒的に高精度。手書き日本語・数式・混在レイアウトに強い。
 // 失敗時は tesseract.js にフォールバック。
 import { ocrImage } from "@/lib/ocr.functions";
-import { prepareOcrImage } from "@/lib/ocr-image";
 
 export type OcrProgress = (status: string, progress: number) => void;
 
@@ -19,17 +18,18 @@ function toDataUrl(source: string | File | Blob): Promise<string> {
 async function fallbackTesseract(source: string | File | Blob, opts?: { lang?: string; onProgress?: OcrProgress }) {
   const Tesseract = (await import("tesseract.js")).default;
   const lang = opts?.lang ?? "jpn";
-  opts?.onProgress?.("preprocessing", 0.05);
-  const prepared = await prepareOcrImage(source);
-  if (prepared.isBlank) return { text: "" };
-  const res = await Tesseract.recognize(prepared.source, lang, {
+  
+  // Tesseract.js 7.0.0 uses a simplified recognize method
+  // We specify PSM 6 (Assume a single uniform block of text) which often works better for handwritten blocks
+  const res = await Tesseract.recognize(source as any, lang, {
     logger: (m: any) => {
-      try {
-        const progress = typeof m.progress === "number" ? 0.08 + m.progress * 0.92 : 0.08;
-        opts?.onProgress?.(m.status ?? "recognizing", progress);
-      } catch { /* noop */ }
+      try { opts?.onProgress?.(m.status ?? "", typeof m.progress === "number" ? m.progress : 0); } catch { /* noop */ }
     },
-  });
+    // Parameters for improved Japanese recognition
+    // @ts-ignore - Tesseract.js types might not include all these but they are passed to the engine
+    tessedit_pageseg_mode: "6",
+  } as any);
+  
   return { text: res.data.text ?? "" };
 }
 
@@ -40,13 +40,21 @@ export async function ocrLocal(source: string | File | Blob, opts?: {
   try {
     opts?.onProgress?.("uploading", 0.1);
     const dataUrl = await toDataUrl(source);
-    opts?.onProgress?.("recognizing", 0.5);
+    
+    // AI Gateway (Gemini)
+    opts?.onProgress?.("recognizing", 0.3);
     const r = await (ocrImage as any)({ data: { dataUrl } });
-    opts?.onProgress?.("done", 1);
+    
     const text = (r?.text ?? "").toString();
-    if (text.trim().length === 0) return await fallbackTesseract(source, opts);
+    if (text.trim().length === 0) {
+      opts?.onProgress?.("falling back", 0.5);
+      return await fallbackTesseract(source, opts);
+    }
+    
+    opts?.onProgress?.("done", 1);
     return { text };
-  } catch {
+  } catch (err) {
+    console.warn("Gemini OCR failed, falling back to Tesseract:", err);
     return await fallbackTesseract(source, opts);
   }
 }
