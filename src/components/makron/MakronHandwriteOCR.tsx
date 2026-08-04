@@ -31,7 +31,7 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
     const ctx = c.getContext("2d")!;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     ctx.strokeStyle = "#111";
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, c.width, c.height);
