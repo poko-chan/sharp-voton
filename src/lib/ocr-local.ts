@@ -29,7 +29,7 @@ async function fallbackTesseract(source: string | File | Blob, opts?: { lang?: s
         opts?.onProgress?.(m.status ?? "recognizing", progress);
       } catch { /* noop */ }
     },
-  }, { preserve_interword_spaces: "1", user_defined_dpi: "300" });
+  });
   return { text: res.data.text ?? "" };
 }
 

@@ -70,7 +70,15 @@ export async function webLlmEnsureLoaded(
   if (!hasWebGpu()) throw new Error("WebGPU が利用できません");
   if (enginePromise) return enginePromise;
   engineDownloading = true;
-  const mod = await loadModule();
+  let mod: any;
+  try {
+    mod = await loadModule();
+  } catch (error) {
+    engineDownloading = false;
+    enginePromise = null;
+    lastProgressText = error instanceof Error ? error.message : "WebLLM 本体の取得に失敗しました";
+    throw error;
+  }
   const loadPromise = mod
     .CreateMLCEngine(modelId, {
       initProgressCallback: (p: any) => {

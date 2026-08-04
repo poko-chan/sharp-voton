@@ -96,8 +96,12 @@ export async function chromeAiEnsureDownloaded(onProgress?: (loaded: number, tot
       new Promise((_, reject) => window.setTimeout(() => reject(new Error("モデル取得がタイムアウトしました")), 10 * 60 * 1000)),
     ]);
     try { s.destroy?.(); } catch { /* noop */ }
-  } catch { /* noop */ }
-  return chromeAiStatus();
+  } catch (error) {
+    throw error instanceof Error ? error : new Error("Gemini Nano の取得に失敗しました");
+  }
+  const status = await chromeAiStatus();
+  if (status !== "available") throw new Error("Gemini Nano の取得が完了していません。通信と空き容量を確認して再試行してください");
+  return status;
 }
 
 export async function isChromeAiUsable(): Promise<boolean> {
