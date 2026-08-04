@@ -6,6 +6,8 @@ export const CPU_AI_MODEL = "onnx-community/TinyLlama-1.1B-Chat-v1.0-ONNX";
 const TRANSFORMERS_CDN = "https://esm.run/@huggingface/transformers@3.7.6";
 
 let generatorPromise: Promise<any> | null = null;
+const CACHE_KEY = "ai.cpu.cached";
+function isCached() { return typeof window !== "undefined" && localStorage.getItem(CACHE_KEY) === "true"; }
 let ready = false;
 let downloading = false;
 let lastProgress = 0;
@@ -17,7 +19,7 @@ function supported() {
 
 export async function cpuAiStatus(): Promise<CpuAiStatus> {
   if (!supported()) return "unavailable";
-  if (ready) return "available";
+  if (ready || isCached()) return "available";
   if (downloading) return "downloading";
   return "downloadable";
 }
@@ -60,7 +62,7 @@ export async function cpuAiEnsureLoaded(onProgress?: (progress: number, text: st
       return Promise.race([loadModel, modelTimeout]);
     })
     .then((generator: any) => {
-      ready = true;
+      ready = true; localStorage.setItem(CACHE_KEY, "true");
       downloading = false;
       lastProgress = 100;
       return generator;

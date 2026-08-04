@@ -23,6 +23,8 @@ function loadModule(): Promise<any> {
 }
 
 let enginePromise: Promise<any> | null = null;
+const CACHE_KEY = "ai.webllm.cached";
+function isCached() { return typeof window !== "undefined" && localStorage.getItem(CACHE_KEY) === "true"; }
 let engineReady = false;
 let engineDownloading = false;
 let lastProgress = 0;
@@ -39,7 +41,7 @@ export function isModelCached(): boolean {
 export async function webLlmStatus(): Promise<WebLlmStatus> {
   if (typeof window === "undefined") return "unavailable";
   if (!hasWebGpu()) return "unavailable";
-  if (engineReady) return "available";
+  if (engineReady || isCached()) return "available";
   if (engineDownloading) return "downloading";
   return "downloadable";
 }
@@ -88,7 +90,7 @@ export async function webLlmEnsureLoaded(
       },
     })
     .then((eng: any) => {
-      engineReady = true;
+      engineReady = true; localStorage.setItem(CACHE_KEY, "true");
       engineDownloading = false;
       return eng;
     })

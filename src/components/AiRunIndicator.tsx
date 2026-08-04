@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
-import { getAiRunStatus, subscribeAiRunStatus, type AiRunStatus } from "@/lib/ai-status";
+import { Loader2, CheckCircle2, AlertTriangle, X } from "lucide-react";
+import { getAiRunStatus, subscribeAiRunStatus, type AiRunStatus, aiRunIdle } from "@/lib/ai-status";
 import { AI_ENGINE_LABELS, type AiEngine } from "@/lib/ai-provider";
+import { Button } from "@/components/ui/button";
 
 /** すべての AI 機能で共通の「生成状況」表示 */
 export function useAiRunStatus(): AiRunStatus {
@@ -15,13 +16,26 @@ export function AiRunIndicator({ className = "" }: { className?: string }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (s.phase === "idle") { setVisible(false); return; }
+    if (s.phase === "idle") {
+      setVisible(false);
+      return;
+    }
     setVisible(true);
     if (s.phase === "done") {
-      const t = setTimeout(() => setVisible(false), 2500);
+      const t = setTimeout(() => {
+        setVisible(false);
+        // phase は done のままにしておいて次回の生成でリセットされるのに任せるか、
+        // あるいは idle に戻す。ここでは視覚的に消すだけにする。
+      }, 2500);
       return () => clearTimeout(t);
     }
-  }, [s.phase, s.chars]);
+    if (s.phase === "error") {
+      const t = setTimeout(() => {
+        setVisible(false);
+      }, 8000); // エラーは少し長めに表示
+      return () => clearTimeout(t);
+    }
+  }, [s.phase, s.chars, s.message]);
 
   if (!visible) return null;
 
@@ -30,12 +44,12 @@ export function AiRunIndicator({ className = "" }: { className?: string }) {
 
   return (
     <div
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] ${
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] shadow-sm animate-in fade-in slide-in-from-bottom-1 ${
         s.phase === "error"
-          ? "border-destructive/40 text-destructive"
+          ? "border-destructive/40 bg-destructive/5 text-destructive"
           : s.phase === "done"
-            ? "border-emerald-500/40 text-emerald-600"
-            : "border-primary/40 text-primary"
+            ? "border-emerald-500/40 bg-emerald-500/5 text-emerald-600"
+            : "border-primary/40 bg-primary/5 text-primary"
       } ${className}`}
       aria-live="polite"
     >
@@ -51,6 +65,14 @@ export function AiRunIndicator({ className = "" }: { className?: string }) {
               ? `完了 ${s.chars}文字`
               : s.message}
       </span>
+      {s.phase === "error" && (
+        <button
+          onClick={() => { setVisible(false); aiRunIdle(); }}
+          className="ml-1 p-0.5 hover:bg-destructive/10 rounded-full transition-colors"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
     </div>
   );
 }
