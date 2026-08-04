@@ -39,39 +39,46 @@ export async function cpuAiDiagnostics() {
 export async function cpuAiEnsureLoaded(onProgress?: (progress: number, text: string) => void) {
   if (!supported()) throw new Error("この端末では CPU AI を利用できません");
   if (generatorPromise) return generatorPromise;
+
   downloading = true;
-  const importPromise = import(/* @vite-ignore */ TRANSFORMERS_CDN);
-  const importTimeout = new Promise<never>((_, reject) => {
-    window.setTimeout(() => reject(new Error("CPU AI 本体の取得が2分間進まなかったため中断しました")), 2 * 60 * 1000);
-  });
-  generatorPromise = Promise.race([importPromise, importTimeout])
-    .then((mod: any) => {
-      const loadModel = mod.pipeline("text-generation", CPU_AI_MODEL, {
-      device: "wasm",
-      dtype: "q4",
-      progress_callback: (event: any) => {
-        const raw = Number(event?.progress ?? 0);
-        lastProgress = Math.max(lastProgress, Math.min(100, Math.round(raw <= 1 ? raw * 100 : raw)));
-        lastProgressText = String(event?.file ?? event?.status ?? "");
-        onProgress?.(lastProgress, lastProgressText);
-      },
+  
+  generatorPromise = (async () => {
+    try {
+      const modPromise = import(/* @vite-ignore */ TRANSFORMERS_CDN);
+      const importTimeout = new Promise<never>((_, reject) => {
+        window.setTimeout(() => reject(new Error("CPU AI 本体の取得が2分間進まなかったため中断しました")), 2 * 60 * 1000);
       });
+      
+      const mod = await Promise.race([modPromise, importTimeout]);
+      
+      const loadModel = mod.pipeline("text-generation", CPU_AI_MODEL, {
+        device: "wasm",
+        dtype: "q4",
+        progress_callback: (event: any) => {
+          const raw = Number(event?.progress ?? 0);
+          lastProgress = Math.max(lastProgress, Math.min(100, Math.round(raw <= 1 ? raw * 100 : raw)));
+          lastProgressText = String(event?.file ?? event?.status ?? "");
+          onProgress?.(lastProgress, lastProgressText);
+        },
+      });
+      
       const modelTimeout = new Promise<never>((_, reject) => {
         window.setTimeout(() => reject(new Error("CPU AI モデルの取得が10分間進まなかったため中断しました")), 10 * 60 * 1000);
       });
-      return Promise.race([loadModel, modelTimeout]);
-    })
-    .then((generator: any) => {
-      ready = true; localStorage.setItem(CACHE_KEY, "true");
+      
+      const generator = await Promise.race([loadModel, modelTimeout]);
+      ready = true;
+      if (typeof window !== "undefined") localStorage.setItem(CACHE_KEY, "true");
       downloading = false;
       lastProgress = 100;
       return generator;
-    })
-    .catch((error: unknown) => {
+    } catch (error) {
       downloading = false;
       generatorPromise = null;
       throw error;
-    });
+    }
+  })();
+  
   return generatorPromise;
 }
 
