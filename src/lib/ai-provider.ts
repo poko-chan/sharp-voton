@@ -165,6 +165,14 @@ export async function createAiSession(opts?: {
       const s = await createChromeAiSession(opts);
       return Object.assign(withStatus(s, "nano"), { engine: "nano" as const });
     } catch {
+      if (isWebLlmUsable(await webLlmStatus())) {
+        aiRunModelLoading("webllm", null, "Gemini NanoからWebLLMへ切替中…");
+        const s = await createWebLlmSession({
+          system: opts?.system,
+          temperature: opts?.temperature,
+        });
+        return Object.assign(withStatus(s, "webllm"), { engine: "webllm" as const });
+      }
       if ((await cpuAiStatus()) !== "unavailable") {
         const s = await createCpuAiSession({ system: opts?.system, temperature: opts?.temperature });
         return Object.assign(withStatus(s, "cpu"), { engine: "cpu" as const });
