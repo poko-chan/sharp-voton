@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Maximize2, Minimize2, Plus, Trash2, Eraser, Loader2 } from "lucide-react";
+import { Maximize2, Minimize2, Plus, Trash2, Eraser, Loader2, ScanText } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { ocrLocal } from "@/lib/ocr-local";
 import { toast } from "sonner";
 
@@ -35,7 +36,17 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, c.width, c.height);
     ctxRef.current = ctx;
+    const saved = pages[active]?.dataUrl;
+    if (saved) {
+      const image = new Image();
+      image.onload = () => ctx.drawImage(image, 0, 0, c.width, c.height);
+      image.src = saved;
+    }
   }, [active, fullscreen]);
+
+  useEffect(() => () => {
+    if (idleTimer.current) clearTimeout(idleTimer.current);
+  }, []);
 
   useEffect(() => {
     onChangeRef.current?.(pages.map((p) => p.text).join(""));
@@ -43,7 +54,8 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
 
   const pos = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const r = (e.target as HTMLCanvasElement).getBoundingClientRect();
-    return { x: e.clientX - r.left, y: e.clientY - r.top };
+    const canvas = e.target as HTMLCanvasElement;
+    return { x: (e.clientX - r.left) * (canvas.width / r.width), y: (e.clientY - r.top) * (canvas.height / r.height) };
   };
   const start = (e: React.PointerEvent<HTMLCanvasElement>) => {
     drawing.current = true;
@@ -75,8 +87,9 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
         lang: "jpn",
         onProgress: (_s, p) => setProgress(Math.round(p * 100)),
       });
-      const cleaned = (res.text ?? "").replace(/\s+/g, "");
+      const cleaned = (res.text ?? "").replace(/[ \t]+/g, "").replace(/\n{3,}/g, "\n\n").trim();
       setPages((prev) => prev.map((p, i) => (i === active ? { ...p, dataUrl, text: cleaned } : p)));
+      if (!cleaned) toast.info("文字を認識できませんでした。大きく、線を離して書いてください");
     } catch (err: any) {
       toast.error(err?.message ?? "OCR失敗");
     } finally { setBusy(false); }
@@ -87,7 +100,7 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
     if (!c || !ctxRef.current) return;
     ctxRef.current.fillStyle = "#fff";
     ctxRef.current.fillRect(0, 0, c.width, c.height);
-    setPages((prev) => prev.map((p, i) => (i === active ? { ...p, text: "" } : p)));
+    setPages((prev) => prev.map((p, i) => (i === active ? { ...p, dataUrl: undefined, text: "" } : p)));
   };
 
   const addPage = () => {
@@ -117,7 +130,8 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
             <Button size="sm" variant="outline" onClick={deletePage} disabled={pages.length <= 1}>
               <Trash2 className="h-3 w-3" />
             </Button>
-            <Button size="sm" variant="outline" onClick={clearPage}><Eraser className="h-3 w-3" /></Button>
+            <Button size="sm" variant="outline" onClick={triggerOcr} disabled={busy} title="今すぐ読み取る"><ScanText className="h-3 w-3" /></Button>
+            <Button size="sm" variant="outline" onClick={clearPage} title="消去"><Eraser className="h-3 w-3" /></Button>
             <Button size="sm" variant="outline" onClick={() => setFullscreen((v) => !v)}>
               {fullscreen ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
             </Button>
@@ -133,12 +147,14 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
           onPointerUp={end}
           onPointerLeave={end}
         />
-        <div className="bg-muted/40 rounded p-2 text-sm min-h-[2.25rem] select-none" aria-readonly>
+        <div className="bg-muted/40 rounded p-2 text-sm min-h-[2.25rem]">
           {busy ? (
             <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-              <Loader2 className="h-3 w-3 animate-spin" />オフラインOCR実行中… {progress}%
+              <Loader2 className="h-3 w-3 animate-spin" />漢字を読み取り中… {progress}%
             </span>
-          ) : (pages[active]?.text || <span className="text-muted-foreground text-xs">手を止めると自動で読み取ります（1 秒・日本語モード）</span>)}
+          ) : pages[active]?.text ? (
+            <Textarea value={pages[active]?.text ?? ""} onChange={(event) => setPages((previous) => previous.map((page, index) => index === active ? { ...page, text: event.target.value } : page))} rows={3} aria-label="OCR読み取り結果" />
+          ) : <span className="text-muted-foreground text-xs">大きく書いて手を止めると、日本語として自動読取します。結果は修正できます。</span>}
         </div>
       </Card>
     </div>

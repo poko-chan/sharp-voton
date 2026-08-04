@@ -13,6 +13,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AiRunIndicator } from "@/components/AiRunIndicator";
+import { Progress } from "@/components/ui/progress";
+import { toast } from "sonner";
 
 function statusColor(s: string) {
   return s === "available" ? "bg-emerald-500"
@@ -66,6 +68,10 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
         setProgress(total > 0 ? Math.round((loaded / total) * 100) : null);
         if (text) setProgressText(text);
       });
+      await refresh();
+      toast.success("AIモデルの準備が完了しました");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "AIモデルの取得に失敗しました");
       await refresh();
     } finally { setBusy(false); }
   };
@@ -177,6 +183,7 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
           {progressText && <span className="text-[10px] text-muted-foreground truncate">{progressText}</span>}
         </div>
       )}
+      {busy && progress !== null && <Progress value={progress} aria-label={`AIモデル取得 ${progress}%`} />}
 
       {d.active === "none" && (
         <div className="text-[10px] text-amber-600 flex items-start gap-1">

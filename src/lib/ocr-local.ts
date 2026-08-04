@@ -2,6 +2,7 @@
 // tesseract.js より圧倒的に高精度。手書き日本語・数式・混在レイアウトに強い。
 // 失敗時は tesseract.js にフォールバック。
 import { ocrImage } from "@/lib/ocr.functions";
+import { prepareOcrImage } from "@/lib/ocr-image";
 
 export type OcrProgress = (status: string, progress: number) => void;
 
@@ -18,11 +19,17 @@ function toDataUrl(source: string | File | Blob): Promise<string> {
 async function fallbackTesseract(source: string | File | Blob, opts?: { lang?: string; onProgress?: OcrProgress }) {
   const Tesseract = (await import("tesseract.js")).default;
   const lang = opts?.lang ?? "jpn";
-  const res = await Tesseract.recognize(source as any, lang, {
+  opts?.onProgress?.("preprocessing", 0.05);
+  const prepared = await prepareOcrImage(source);
+  if (prepared.isBlank) return { text: "" };
+  const res = await Tesseract.recognize(prepared.source, lang, {
     logger: (m: any) => {
-      try { opts?.onProgress?.(m.status ?? "", typeof m.progress === "number" ? m.progress : 0); } catch { /* noop */ }
+      try {
+        const progress = typeof m.progress === "number" ? 0.08 + m.progress * 0.92 : 0.08;
+        opts?.onProgress?.(m.status ?? "recognizing", progress);
+      } catch { /* noop */ }
     },
-  });
+  }, { preserve_interword_spaces: "1", user_defined_dpi: "300" });
   return { text: res.data.text ?? "" };
 }
 
