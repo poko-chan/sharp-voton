@@ -13,6 +13,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AiRunIndicator } from "@/components/AiRunIndicator";
+import { Progress } from "@/components/ui/progress";
+import { toast } from "sonner";
 
 function statusColor(s: string) {
   return s === "available" ? "bg-emerald-500"
@@ -67,6 +69,10 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
         if (text) setProgressText(text);
       });
       await refresh();
+      toast.success("AIモデルの準備が完了しました");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "AIモデルの取得に失敗しました");
+      await refresh();
     } finally { setBusy(false); }
   };
 
@@ -80,7 +86,6 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
   const activeLabel = d ? AI_ENGINE_LABELS[d.active] : diagnosticsError ? "再確認" : "確認中…";
   const activeColor = !d ? diagnosticsError ? "bg-amber-500" : "bg-muted-foreground" : d.active === "none" ? "bg-red-500" : "bg-emerald-500";
 
-  // compact: どの端末でも必ず表示されるボタン。押すと詳細ダイアログ。
   if (compact) {
     return (
       <div className="flex items-center gap-2">
@@ -161,30 +166,29 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
           </div>
           <div className="text-muted-foreground whitespace-pre-wrap text-[10px]">{d.cpu.reason}</div>
         </div>
-        <div className="rounded border border-muted p-2 text-muted-foreground">
-          クラウド AI（AI Gateway）は有料プラン専用のため、このアプリでは使用できません。
-        </div>
       </div>
 
-      {(d.active === "nano" || d.active === "webllm" || d.active === "cpu") &&
-       (d.nano.status === "downloadable" || d.webllm.status === "downloadable" || d.cpu.status === "downloadable" || d.nano.status === "downloading" || d.webllm.status === "downloading" || d.cpu.status === "downloading") && (
-        <div className="flex items-center gap-2">
-          <Button size="sm" onClick={download} disabled={busy}>
-            {busy ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Download className="h-3 w-3 mr-1" />}
-            モデルを取得
-          </Button>
-          {progress !== null && <span className="tabular-nums">{progress}%</span>}
-          {progressText && <span className="text-[10px] text-muted-foreground truncate">{progressText}</span>}
+      {(d.nano.status === "downloadable" || d.webllm.status === "downloadable" || d.cpu.status === "downloadable" || d.nano.status === "downloading" || d.webllm.status === "downloading" || d.cpu.status === "downloading") && (
+        <div className="space-y-2 pt-1 border-t">
+          <div className="flex items-center gap-2">
+            <Button size="sm" onClick={download} disabled={busy} className="h-8">
+              {busy ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Download className="h-3 w-3 mr-1" />}
+              モデルを取得
+            </Button>
+            {progress !== null && <span className="tabular-nums font-mono text-[10px]">{progress}%</span>}
+            {progressText && <span className="text-[10px] text-muted-foreground truncate flex-1">{progressText}</span>}
+          </div>
+          {busy && progress !== null && <Progress value={progress} className="h-1" />}
         </div>
       )}
 
       {d.active === "none" && (
-        <div className="text-[10px] text-amber-600 flex items-start gap-1">
+        <div className="text-[10px] text-amber-600 flex items-start gap-1 bg-amber-50 p-2 rounded border border-amber-200">
           <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
-          この端末では端末内 AI を利用できません。ブラウザを最新版に更新してください。
+          この端末では端末内 AI を利用できません。Chrome 138+ で Prompt API を有効にするか、WebGPU 対応のブラウザを使用してください。
         </div>
       )}
-      {d.active !== "none" && (
+      {d.active !== "none" && !busy && (
         <div className="text-[10px] text-emerald-600 flex items-center gap-1">
           <Sparkles className="h-3 w-3" />すぐに生成できます ({activeLabel})。
         </div>
@@ -193,5 +197,4 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
   );
 }
 
-/** 後方互換用の別名 */
 export const ChromeAiStatusBadge = AiStatusBadge;

@@ -23,6 +23,8 @@ function loadModule(): Promise<any> {
 }
 
 let enginePromise: Promise<any> | null = null;
+const CACHE_KEY = "ai.webllm.cached";
+function isCached() { return typeof window !== "undefined" && localStorage.getItem(CACHE_KEY) === "true"; }
 let engineReady = false;
 let engineDownloading = false;
 let lastProgress = 0;
@@ -33,13 +35,13 @@ function hasWebGpu(): boolean {
 }
 
 export function isModelCached(): boolean {
-  return engineReady;
+  return engineReady || isCached();
 }
 
 export async function webLlmStatus(): Promise<WebLlmStatus> {
   if (typeof window === "undefined") return "unavailable";
   if (!hasWebGpu()) return "unavailable";
-  if (engineReady) return "available";
+  if (engineReady || isCached()) return "available";
   if (engineDownloading) return "downloading";
   return "downloadable";
 }
@@ -69,34 +71,36 @@ export async function webLlmEnsureLoaded(
 ): Promise<any> {
   if (!hasWebGpu()) throw new Error("WebGPU が利用できません");
   if (enginePromise) return enginePromise;
+  
   engineDownloading = true;
-  const mod = await loadModule();
-  const loadPromise = mod
-    .CreateMLCEngine(modelId, {
-      initProgressCallback: (p: any) => {
-        lastProgress = p.progress ?? 0;
-        lastProgressText = p.text ?? "";
-        try { onProgress?.(lastProgress, lastProgressText); } catch { /* noop */ }
-      },
-    })
-    .then((eng: any) => {
+  
+  enginePromise = (async () => {
+    try {
+      const mod = await loadModule();
+      const loadPromise = mod.CreateMLCEngine(modelId, {
+        initProgressCallback: (p: any) => {
+          lastProgress = p.progress ?? 0;
+          lastProgressText = p.text ?? "";
+          try { onProgress?.(lastProgress, lastProgressText); } catch { /* noop */ }
+        },
+      });
+      
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        window.setTimeout(() => reject(new Error("WebLLM の取得が10分間進まなかったため中断しました")), 10 * 60 * 1000);
+      });
+      
+      const eng = await Promise.race([loadPromise, timeoutPromise]);
       engineReady = true;
+      if (typeof window !== "undefined") localStorage.setItem(CACHE_KEY, "true");
       engineDownloading = false;
       return eng;
-    })
-    .catch((err: unknown) => {
+    } catch (err: any) {
       engineDownloading = false;
       enginePromise = null;
       throw err;
-    });
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    window.setTimeout(() => reject(new Error("WebLLM の取得が10分間進まなかったため中断しました")), 10 * 60 * 1000);
-  });
-  enginePromise = Promise.race([loadPromise, timeoutPromise]).catch((err: unknown) => {
-    engineDownloading = false;
-    enginePromise = null;
-    throw err;
-  });
+    }
+  })();
+  
   return enginePromise;
 }
 
