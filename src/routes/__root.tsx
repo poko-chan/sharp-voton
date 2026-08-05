@@ -69,7 +69,10 @@ const DEFAULT_DESC = "Study+ は勉強記録・集中タイマー・カレンダ
 // Chrome Built-in AI (Prompt API) Origin Trial token.
 // 環境変数 VITE_CHROME_AI_OT_TOKEN にトークンを入れると <meta http-equiv="origin-trial"> が挿入される。
 // 設定しない場合でも、ブラウザ側でフラグが有効なら動作する。
-const CHROME_AI_OT = (import.meta as any).env?.VITE_CHROME_AI_OT_TOKEN as string | undefined;
+const CHROME_AI_OT_FALLBACK =
+  "At5SSSv6Ka5G3TX73NUf8/ORFx50gBEMXNtvjgwSWUmW4ewx/HiJtiEnPDFEMpWmpsfVf1JHn2l9Mcy24uaWMgwAAAB6eyJvcmlnaW4iOiJodHRwczovL3N0dWR5LXBsdXMtdm90b24ubG92YWJsZS5hcHA6NDQzIiwiZmVhdHVyZSI6IkFJUHJvbXB0QVBJUGFyYW1zIiwiZXhwaXJ5IjoxNzkxMjQ0ODAwLCJpc1N1YmRvbWFpbiI6dHJ1ZX0=";
+const CHROME_AI_OT =
+  ((import.meta as any).env?.VITE_CHROME_AI_OT_TOKEN as string | undefined) || CHROME_AI_OT_FALLBACK;
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
