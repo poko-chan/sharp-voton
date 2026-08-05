@@ -807,6 +807,7 @@ export type Database = {
           id: string
           invite_code: string
           name: string
+          organization_id: string | null
           owner_id: string
           updated_at: string
         }
@@ -816,6 +817,7 @@ export type Database = {
           id?: string
           invite_code: string
           name: string
+          organization_id?: string | null
           owner_id: string
           updated_at?: string
         }
@@ -825,10 +827,19 @@ export type Database = {
           id?: string
           invite_code?: string
           name?: string
+          organization_id?: string | null
           owner_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "classes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       coedit_notes: {
         Row: {
@@ -2250,6 +2261,7 @@ export type Database = {
           is_official: boolean
           max_attempts: number | null
           order_idx: number
+          organization_id: string | null
           pass_score: number | null
           per_question_grading: boolean
           question_limit: number | null
@@ -2275,6 +2287,7 @@ export type Database = {
           is_official?: boolean
           max_attempts?: number | null
           order_idx?: number
+          organization_id?: string | null
           pass_score?: number | null
           per_question_grading?: boolean
           question_limit?: number | null
@@ -2300,6 +2313,7 @@ export type Database = {
           is_official?: boolean
           max_attempts?: number | null
           order_idx?: number
+          organization_id?: string | null
           pass_score?: number | null
           per_question_grading?: boolean
           question_limit?: number | null
@@ -2314,6 +2328,13 @@ export type Database = {
           xp_per_question?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "makron_packs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "makron_packs_unit_id_fkey"
             columns: ["unit_id"]
@@ -3208,10 +3229,13 @@ export type Database = {
           created_by: string | null
           description: string | null
           id: string
+          join_code: string | null
           name: string
+          owner_id: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           settings: Json
+          share_study_time: boolean
           slug: string | null
           status: Database["public"]["Enums"]["org_status"]
           updated_at: string
@@ -3221,10 +3245,13 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           id?: string
+          join_code?: string | null
           name: string
+          owner_id?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           settings?: Json
+          share_study_time?: boolean
           slug?: string | null
           status?: Database["public"]["Enums"]["org_status"]
           updated_at?: string
@@ -3234,10 +3261,13 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           id?: string
+          join_code?: string | null
           name?: string
+          owner_id?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           settings?: Json
+          share_study_time?: boolean
           slug?: string | null
           status?: Database["public"]["Enums"]["org_status"]
           updated_at?: string
@@ -5077,6 +5107,7 @@ export type Database = {
           xp_awarded: number
         }[]
       }
+      gen_org_join_code: { Args: never; Returns: string }
       get_leaderboard: {
         Args: { _limit?: number }
         Returns: {
@@ -5279,9 +5310,31 @@ export type Database = {
         }[]
       }
       my_org_ids: { Args: never; Returns: string[] }
+      org_create: {
+        Args: { _description?: string; _name: string }
+        Returns: string
+      }
+      org_enroll_all: {
+        Args: { _class: string; _org: string }
+        Returns: number
+      }
       org_invite_member: {
         Args: { _message?: string; _org: string; _role?: string; _user: string }
         Returns: string
+      }
+      org_join_by_code: { Args: { _code: string }; Returns: string }
+      org_member_stats: {
+        Args: { _org: string }
+        Returns: {
+          display_name: string
+          last_studied: string
+          minutes_30d: number
+          minutes_7d: number
+          role: Database["public"]["Enums"]["org_role"]
+          sessions_30d: number
+          user_id: string
+          username: string
+        }[]
       }
       org_respond_invitation: {
         Args: { _accept: boolean; _invite_id: string }
@@ -5293,6 +5346,10 @@ export type Database = {
           _req_id: string
           _role?: Database["public"]["Enums"]["org_role"]
         }
+        Returns: undefined
+      }
+      org_transfer_ownership: {
+        Args: { _org: string; _user: string }
         Returns: undefined
       }
       purchase_shop_item: { Args: { _item_id: string }; Returns: Json }
