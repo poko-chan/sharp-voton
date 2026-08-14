@@ -330,6 +330,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {!isParent && isAdmin && (
           <Link
             to="/admin"
+            search={{ tab: "users" }}
             className={`mt-3 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition border border-warning/40 ${
               path.startsWith("/admin")
                 ? "bg-warning/20 text-foreground"
