@@ -60,6 +60,7 @@ import { Route as AuthenticatedHabitsRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedFriendsRouteImport } from './routes/_authenticated/friends'
 import { Route as AuthenticatedFlashcardsRouteImport } from './routes/_authenticated/flashcards'
+import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/feed'
 import { Route as AuthenticatedExportRouteImport } from './routes/_authenticated/export'
 import { Route as AuthenticatedExamsRouteImport } from './routes/_authenticated/exams'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -351,6 +352,11 @@ const AuthenticatedFlashcardsRoute = AuthenticatedFlashcardsRouteImport.update({
   path: '/flashcards',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedFeedRoute = AuthenticatedFeedRouteImport.update({
+  id: '/feed',
+  path: '/feed',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedExportRoute = AuthenticatedExportRouteImport.update({
   id: '/export',
   path: '/export',
@@ -559,6 +565,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exams': typeof AuthenticatedExamsRouteWithChildren
   '/export': typeof AuthenticatedExportRoute
+  '/feed': typeof AuthenticatedFeedRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/friends': typeof AuthenticatedFriendsRoute
   '/goals': typeof AuthenticatedGoalsRoute
@@ -643,6 +650,7 @@ export interface FileRoutesByTo {
   '/coedit': typeof AuthenticatedCoeditRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/export': typeof AuthenticatedExportRoute
+  '/feed': typeof AuthenticatedFeedRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/friends': typeof AuthenticatedFriendsRoute
   '/goals': typeof AuthenticatedGoalsRoute
@@ -725,6 +733,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/exams': typeof AuthenticatedExamsRouteWithChildren
   '/_authenticated/export': typeof AuthenticatedExportRoute
+  '/_authenticated/feed': typeof AuthenticatedFeedRoute
   '/_authenticated/flashcards': typeof AuthenticatedFlashcardsRoute
   '/_authenticated/friends': typeof AuthenticatedFriendsRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
@@ -812,6 +821,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/exams'
     | '/export'
+    | '/feed'
     | '/flashcards'
     | '/friends'
     | '/goals'
@@ -896,6 +906,7 @@ export interface FileRouteTypes {
     | '/coedit'
     | '/dashboard'
     | '/export'
+    | '/feed'
     | '/flashcards'
     | '/friends'
     | '/goals'
@@ -977,6 +988,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/exams'
     | '/_authenticated/export'
+    | '/_authenticated/feed'
     | '/_authenticated/flashcards'
     | '/_authenticated/friends'
     | '/_authenticated/goals'
@@ -1418,6 +1430,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFlashcardsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/feed': {
+      id: '/_authenticated/feed'
+      path: '/feed'
+      fullPath: '/feed'
+      preLoaderRoute: typeof AuthenticatedFeedRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/export': {
       id: '/_authenticated/export'
       path: '/export'
@@ -1772,6 +1791,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExamsRoute: typeof AuthenticatedExamsRouteWithChildren
   AuthenticatedExportRoute: typeof AuthenticatedExportRoute
+  AuthenticatedFeedRoute: typeof AuthenticatedFeedRoute
   AuthenticatedFlashcardsRoute: typeof AuthenticatedFlashcardsRoute
   AuthenticatedFriendsRoute: typeof AuthenticatedFriendsRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
@@ -1825,6 +1845,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExamsRoute: AuthenticatedExamsRouteWithChildren,
   AuthenticatedExportRoute: AuthenticatedExportRoute,
+  AuthenticatedFeedRoute: AuthenticatedFeedRoute,
   AuthenticatedFlashcardsRoute: AuthenticatedFlashcardsRoute,
   AuthenticatedFriendsRoute: AuthenticatedFriendsRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
