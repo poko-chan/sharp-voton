@@ -72,6 +72,7 @@ import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedRoomsIndexRouteImport } from './routes/_authenticated/rooms.index'
+import { Route as AuthenticatedOrganizationsIndexRouteImport } from './routes/_authenticated/organizations.index'
 import { Route as AuthenticatedMaterialsIndexRouteImport } from './routes/_authenticated/materials.index'
 import { Route as AuthenticatedMakronIndexRouteImport } from './routes/_authenticated/makron.index'
 import { Route as AuthenticatedExamsIndexRouteImport } from './routes/_authenticated/exams.index'
@@ -411,6 +412,12 @@ const AuthenticatedRoomsIndexRoute = AuthenticatedRoomsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRoomsRoute,
 } as any)
+const AuthenticatedOrganizationsIndexRoute =
+  AuthenticatedOrganizationsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedOrganizationsRoute,
+  } as any)
 const AuthenticatedMaterialsIndexRoute =
   AuthenticatedMaterialsIndexRouteImport.update({
     id: '/',
@@ -606,6 +613,7 @@ export interface FileRoutesByFullPath {
   '/exams/': typeof AuthenticatedExamsIndexRoute
   '/makron/': typeof AuthenticatedMakronIndexRoute
   '/materials/': typeof AuthenticatedMaterialsIndexRoute
+  '/organizations/': typeof AuthenticatedOrganizationsIndexRoute
   '/rooms/': typeof AuthenticatedRoomsIndexRoute
   '/exams/series/$seriesId': typeof AuthenticatedExamsSeriesSeriesIdRoute
   '/makron/pack/$packId': typeof AuthenticatedMakronPackPackIdRouteWithChildren
@@ -650,7 +658,6 @@ export interface FileRoutesByTo {
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/ocr': typeof AuthenticatedOcrRoute
-  '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/parent': typeof AuthenticatedParentRoute
   '/photolog': typeof AuthenticatedPhotologRoute
   '/practice': typeof AuthenticatedPracticeRoute
@@ -686,6 +693,7 @@ export interface FileRoutesByTo {
   '/exams': typeof AuthenticatedExamsIndexRoute
   '/makron': typeof AuthenticatedMakronIndexRoute
   '/materials': typeof AuthenticatedMaterialsIndexRoute
+  '/organizations': typeof AuthenticatedOrganizationsIndexRoute
   '/rooms': typeof AuthenticatedRoomsIndexRoute
   '/exams/series/$seriesId': typeof AuthenticatedExamsSeriesSeriesIdRoute
   '/makron/result/$sessionId': typeof AuthenticatedMakronResultSessionIdRoute
@@ -771,6 +779,7 @@ export interface FileRoutesById {
   '/_authenticated/exams/': typeof AuthenticatedExamsIndexRoute
   '/_authenticated/makron/': typeof AuthenticatedMakronIndexRoute
   '/_authenticated/materials/': typeof AuthenticatedMaterialsIndexRoute
+  '/_authenticated/organizations/': typeof AuthenticatedOrganizationsIndexRoute
   '/_authenticated/rooms/': typeof AuthenticatedRoomsIndexRoute
   '/_authenticated/exams/series/$seriesId': typeof AuthenticatedExamsSeriesSeriesIdRoute
   '/_authenticated/makron/pack/$packId': typeof AuthenticatedMakronPackPackIdRouteWithChildren
@@ -857,6 +866,7 @@ export interface FileRouteTypes {
     | '/exams/'
     | '/makron/'
     | '/materials/'
+    | '/organizations/'
     | '/rooms/'
     | '/exams/series/$seriesId'
     | '/makron/pack/$packId'
@@ -901,7 +911,6 @@ export interface FileRouteTypes {
     | '/notes'
     | '/notifications'
     | '/ocr'
-    | '/organizations'
     | '/parent'
     | '/photolog'
     | '/practice'
@@ -937,6 +946,7 @@ export interface FileRouteTypes {
     | '/exams'
     | '/makron'
     | '/materials'
+    | '/organizations'
     | '/rooms'
     | '/exams/series/$seriesId'
     | '/makron/result/$sessionId'
@@ -1021,6 +1031,7 @@ export interface FileRouteTypes {
     | '/_authenticated/exams/'
     | '/_authenticated/makron/'
     | '/_authenticated/materials/'
+    | '/_authenticated/organizations/'
     | '/_authenticated/rooms/'
     | '/_authenticated/exams/series/$seriesId'
     | '/_authenticated/makron/pack/$packId'
@@ -1491,6 +1502,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRoomsIndexRouteImport
       parentRoute: typeof AuthenticatedRoomsRoute
     }
+    '/_authenticated/organizations/': {
+      id: '/_authenticated/organizations/'
+      path: '/'
+      fullPath: '/organizations/'
+      preLoaderRoute: typeof AuthenticatedOrganizationsIndexRouteImport
+      parentRoute: typeof AuthenticatedOrganizationsRoute
+    }
     '/_authenticated/materials/': {
       id: '/_authenticated/materials/'
       path: '/'
@@ -1715,11 +1733,13 @@ const AuthenticatedMaterialsRouteWithChildren =
 
 interface AuthenticatedOrganizationsRouteChildren {
   AuthenticatedOrganizationsOrgIdRoute: typeof AuthenticatedOrganizationsOrgIdRoute
+  AuthenticatedOrganizationsIndexRoute: typeof AuthenticatedOrganizationsIndexRoute
 }
 
 const AuthenticatedOrganizationsRouteChildren: AuthenticatedOrganizationsRouteChildren =
   {
     AuthenticatedOrganizationsOrgIdRoute: AuthenticatedOrganizationsOrgIdRoute,
+    AuthenticatedOrganizationsIndexRoute: AuthenticatedOrganizationsIndexRoute,
   }
 
 const AuthenticatedOrganizationsRouteWithChildren =
