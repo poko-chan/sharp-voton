@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Building2, Ban, UserCog, Plus, Trash2, Mail, Send, KeyRound, Crown, Clock, BookOpen, UserPlus, Copy } from "lucide-react";
 import { toast } from "sonner";
-import { ROLE_LABEL } from "./organizations";
+import { ROLE_LABEL } from "@/lib/org-roles";
 
 export const Route = createFileRoute("/_authenticated/organizations/$orgId")({ component: OrgAdmin });
 
