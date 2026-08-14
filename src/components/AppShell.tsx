@@ -42,6 +42,7 @@ const NAV = [
   { to: "/streak", labelKey: "nav.streak" as const, icon: Flame },
   { to: "/flashcards", labelKey: "nav.flashcards" as const, icon: Brain },
   { to: "/ocr", labelKey: "nav.ocr" as const, icon: ScanLine },
+  { to: "/feed", labelKey: "nav.dashboard" as const, icon: Users, override: "タイムライン" },
   { to: "/friends", labelKey: "nav.friends" as const, icon: Users },
   { to: "/rooms", labelKey: "nav.rooms" as const, icon: Users },
   { to: "/questions", labelKey: "nav.questions" as const, icon: Brain },
@@ -330,6 +331,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {!isParent && isAdmin && (
           <Link
             to="/admin"
+            search={{ tab: "users" }}
             className={`mt-3 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition border border-warning/40 ${
               path.startsWith("/admin")
                 ? "bg-warning/20 text-foreground"
