@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Heart, MessageCircle, Send, Trash2, Users } from "lucide-react";
+import { Heart, MessageCircle, Send, Trash2, Users, Sparkles, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/feed")({
@@ -44,6 +44,7 @@ function FeedPage() {
   const [orgs, setOrgs] = useState<any[]>([]);
   const [scope, setScope] = useState<string>("all");
   const [busy, setBusy] = useState(false);
+  const [recentLogs, setRecentLogs] = useState<any[]>([]);
 
   const load = async () => {
     let q = (supabase as any).from("social_posts").select("*").order("created_at", { ascending: false }).limit(60);
@@ -78,6 +79,37 @@ function FeedPage() {
       .select("organization:organizations(id, name)").eq("user_id", user.id)
       .then(({ data }: any) => setOrgs((data ?? []).map((m: any) => m.organization).filter(Boolean)));
   }, [user?.id]);
+
+  // 「勉強をシェア！」用：直近7日の勉強記録
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const since = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
+      const { data } = await (supabase as any).from("study_logs")
+        .select("id, date, duration_minutes, content, subject_id")
+        .eq("user_id", user.id).gte("date", since)
+        .order("date", { ascending: false }).limit(8);
+      const logs = data ?? [];
+      const sids = [...new Set(logs.map((l: any) => l.subject_id).filter(Boolean))] as string[];
+      let names: Record<string, string> = {};
+      if (sids.length) {
+        const { data: subs } = await (supabase as any).from("subjects").select("id, name").in("id", sids);
+        names = Object.fromEntries((subs ?? []).map((s: any) => [s.id, s.name]));
+      }
+      setRecentLogs(logs.map((l: any) => ({ ...l, subjectName: names[l.subject_id] ?? "" })));
+    })();
+  }, [user?.id]);
+
+  const useLog = (l: any) => {
+    setDraft((d) => ({
+      ...d,
+      minutes: String(l.duration_minutes ?? ""),
+      subject: l.subjectName || d.subject,
+      body: d.body.trim()
+        ? d.body
+        : `${l.subjectName ? l.subjectName + "を" : ""}${l.duration_minutes}分やりました！${l.content ? "\n" + l.content : ""}`,
+    }));
+  };
 
   const post = async () => {
     if (!draft.body.trim() || !user) return;
@@ -139,7 +171,22 @@ function FeedPage() {
     <div className="max-w-2xl mx-auto p-6 space-y-5">
       <h1 className="text-2xl font-bold flex items-center gap-2"><Users className="h-6 w-6 text-primary" />タイムライン</h1>
 
-      <Card className="p-4 space-y-2">
+      <Card className="p-4 space-y-3">
+        <div className="font-bold flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-primary" />勉強をシェア！</div>
+        {recentLogs.length > 0 && (
+          <div className="space-y-1">
+            <div className="text-[11px] text-muted-foreground">直近の勉強記録から選ぶ</div>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {recentLogs.map((l) => (
+                <button key={l.id} onClick={() => useLog(l)}
+                  className="shrink-0 rounded-lg border px-3 py-1.5 text-left text-xs hover:bg-accent transition">
+                  <div className="font-medium">{l.subjectName || "勉強"}・{l.duration_minutes}分</div>
+                  <div className="text-[10px] text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{l.date}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <Textarea rows={3} placeholder="今日の勉強を共有しよう！" value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} />
         <div className="flex flex-wrap gap-2">
           <Input className="w-28" type="number" placeholder="分" value={draft.minutes} onChange={(e) => setDraft({ ...draft, minutes: e.target.value })} />
