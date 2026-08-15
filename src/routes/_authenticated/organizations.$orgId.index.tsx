@@ -90,7 +90,7 @@ function OrgHome() {
               </Link>
             ))}
             {isStaff && (
-              <Link to="/organizations/$orgId/group/new" params={{ orgId }}>
+              <Link to="/organizations/$orgId/group/$groupId" params={{ orgId, groupId: "new" }}>
                 <Button size="sm" className="bg-sky-600 hover:bg-sky-700 text-white"><Plus className="h-3 w-3 mr-1" />グループ追加</Button>
               </Link>
             )}
