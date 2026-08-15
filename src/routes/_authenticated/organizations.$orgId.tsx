@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Building2, Ban, UserCog, Plus, Trash2, Mail, Send, KeyRound, Crown, Clock, BookOpen, UserPlus, Copy } from "lucide-react";
+import { Building2, Ban, UserCog, Plus, Trash2, Mail, Send, KeyRound, Crown, Clock, BookOpen, UserPlus, Copy, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 import { ROLE_LABEL } from "@/lib/org-roles";
+import { OrgAssignments } from "@/components/org/OrgAssignments";
 
 export const Route = createFileRoute("/_authenticated/organizations/$orgId")({ component: OrgAdmin });
 
@@ -41,26 +42,43 @@ function OrgAdmin() {
     if (!user) return;
     const { data: o } = await (supabase as any).from("organizations").select("*").eq("id", orgId).maybeSingle();
     setOrg(o);
-    const { data: m } = await (supabase as any).from("organization_members")
-      .select("id, role, suspended, user_id, profile:profiles!organization_members_user_id_fkey(display_name, username, avatar_url)")
+    const { data: m, error: mErr } = await (supabase as any).from("organization_members")
+      .select("id, role, suspended, user_id")
       .eq("organization_id", orgId);
-    setMembers(m ?? []);
+    if (mErr) toast.error(mErr.message);
     const role = (m ?? []).find((x: any) => x.user_id === user.id)?.role ?? null;
     setMyRole(role);
     const admin = isAdmin || ["owner","admin"].includes(role ?? "");
+    let reqRows: any[] = [], invRows: any[] = [];
     if (admin) {
       const [{ data: r }, { data: pi }, { data: jr }, { data: st }] = await Promise.all([
         (supabase as any).from("organization_service_restrictions").select("*").eq("organization_id", orgId),
         (supabase as any).from("organization_invitations")
-          .select("id, role, message, status, created_at, invitee_id, profile:profiles!organization_invitations_invitee_id_fkey(username, display_name)")
+          .select("id, role, message, status, created_at, invitee_id")
           .eq("organization_id", orgId).eq("status", "pending"),
         (supabase as any).from("organization_join_requests")
-          .select("id, status, message, created_at, user_id, profile:profiles!organization_join_requests_user_id_fkey(username, display_name)")
+          .select("id, status, message, created_at, user_id")
           .eq("organization_id", orgId).eq("status", "pending"),
         (supabase as any).rpc("org_member_stats", { _org: orgId }),
       ]);
-      setRestrictions(r ?? []); setPendingInvites(pi ?? []); setJoinReqs(jr ?? []); setStats(st ?? []);
+      reqRows = jr ?? []; invRows = pi ?? [];
+      setRestrictions(r ?? []); setStats(st ?? []);
     }
+    // profiles は外部キーが無いため個別取得してから結合する
+    const ids = Array.from(new Set([
+      ...(m ?? []).map((x: any) => x.user_id),
+      ...reqRows.map((x: any) => x.user_id),
+      ...invRows.map((x: any) => x.invitee_id),
+    ].filter(Boolean)));
+    const pmap: Record<string, any> = {};
+    if (ids.length) {
+      const { data: profs } = await supabase.from("profiles")
+        .select("id, username, display_name, avatar_url").in("id", ids);
+      for (const p of profs ?? []) pmap[p.id] = p;
+    }
+    setMembers((m ?? []).map((x: any) => ({ ...x, profile: pmap[x.user_id] })));
+    setJoinReqs(reqRows.map((x: any) => ({ ...x, profile: pmap[x.user_id] })));
+    setPendingInvites(invRows.map((x: any) => ({ ...x, profile: pmap[x.invitee_id] })));
     const [{ data: pk }, { data: cl }] = await Promise.all([
       (supabase as any).from("makron_packs").select("id, title, status").eq("organization_id", orgId).limit(50),
       (supabase as any).from("classes").select("id, name").eq("organization_id", orgId).limit(50),
@@ -160,6 +178,7 @@ function OrgAdmin() {
           {canAdmin && <TabsTrigger value="requests"><UserPlus className="h-3 w-3 mr-1" />参加申請 ({joinReqs.length})</TabsTrigger>}
           {canAdmin && <TabsTrigger value="stats"><Clock className="h-3 w-3 mr-1" />勉強時間</TabsTrigger>}
           <TabsTrigger value="content"><BookOpen className="h-3 w-3 mr-1" />問題集・クラス</TabsTrigger>
+          <TabsTrigger value="assignments"><ClipboardList className="h-3 w-3 mr-1" />課題</TabsTrigger>
           {canAdmin && <TabsTrigger value="invite"><Mail className="h-3 w-3 mr-1" />招待 ({pendingInvites.length})</TabsTrigger>}
           {canAdmin && <TabsTrigger value="restrictions"><Ban className="h-3 w-3 mr-1" />サービス制限</TabsTrigger>}
           {canAdmin && <TabsTrigger value="settings">設定</TabsTrigger>}
@@ -233,6 +252,10 @@ function OrgAdmin() {
             {stats.length === 0 && <Card className="p-6 text-sm text-muted-foreground">データがありません</Card>}
           </TabsContent>
         )}
+
+        <TabsContent value="assignments">
+          <OrgAssignments orgId={orgId} canAdmin={canAdmin} packs={packs} members={members} />
+        </TabsContent>
 
         <TabsContent value="content" className="space-y-3">
           <Card className="p-4 space-y-2">
