@@ -253,6 +253,10 @@ function OrgAdmin() {
           </TabsContent>
         )}
 
+        <TabsContent value="assignments">
+          <OrgAssignments orgId={orgId} canAdmin={canAdmin} packs={packs} members={members} />
+        </TabsContent>
+
         <TabsContent value="content" className="space-y-3">
           <Card className="p-4 space-y-2">
             <div className="font-bold flex items-center gap-1"><BookOpen className="h-4 w-4" />組織専用のMakron問題集 ({packs.length})</div>
