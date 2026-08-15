@@ -26,7 +26,7 @@ function AppPage() {
   const props = { orgId, ctx } as any;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-4">
+    <div className="max-w-6xl mx-auto p-6 space-y-4">
       <Link to="/organizations/$orgId" params={{ orgId }} className="text-sm underline text-muted-foreground">← 組織ホームへ</Link>
       <h1 className="text-xl font-bold">{ctx.appLabel(appKey)}<span className="text-xs font-normal text-muted-foreground ml-2">{meta?.desc}</span></h1>
       {appKey === "posts" && <OrgPosts {...props} />}
