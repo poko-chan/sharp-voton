@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Play, Square, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { isAiUsable, aiPrompt } from "@/lib/ai-provider";
+import { isAiUsable, aiStream } from "@/lib/ai-provider";
 import { AiUnavailable } from "@/components/AiUnavailable";
 
 export const Route = createFileRoute("/_authenticated/listen")({ component: ListenPage });
@@ -23,7 +23,8 @@ function ListenPage() {
     setLoading(true);
     try {
       const prompt = `「${topic.trim()}」について、中学生でも理解できる優しい要約を400字程度で。読むだけ／聞き流すだけで頭に入る、会話調で。マークダウン記号は使わない。`;
-      setText(await aiPrompt(prompt));
+      setText("");
+      await aiStream(prompt, (partial) => setText(partial));
     }
     catch (e: any) { toast.error(e.message); }
     finally { setLoading(false); }
