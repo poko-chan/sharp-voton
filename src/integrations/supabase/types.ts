@@ -3065,6 +3065,92 @@ export type Database = {
         }
         Relationships: []
       }
+      org_assignment_targets: {
+        Row: {
+          assignment_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          assignment_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          assignment_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_assignment_targets_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "org_pack_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_pack_assignments: {
+        Row: {
+          assign_all: boolean
+          created_at: string
+          created_by: string
+          due_at: string | null
+          id: string
+          instructions: string | null
+          organization_id: string
+          pack_id: string
+          required: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assign_all?: boolean
+          created_at?: string
+          created_by?: string
+          due_at?: string | null
+          id?: string
+          instructions?: string | null
+          organization_id: string
+          pack_id: string
+          required?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assign_all?: boolean
+          created_at?: string
+          created_by?: string
+          due_at?: string | null
+          id?: string
+          instructions?: string | null
+          organization_id?: string
+          pack_id?: string
+          required?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_pack_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_pack_assignments_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "makron_packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_invitations: {
         Row: {
           created_at: string
@@ -5284,6 +5370,7 @@ export type Database = {
       }
       is_org_admin: { Args: { _org: string; _user: string }; Returns: boolean }
       is_org_member: { Args: { _org: string; _user: string }; Returns: boolean }
+      is_org_staff: { Args: { _org: string; _user: string }; Returns: boolean }
       is_parent_of: {
         Args: { _child: string; _parent: string }
         Returns: boolean
@@ -5412,6 +5499,21 @@ export type Database = {
         }[]
       }
       my_org_ids: { Args: never; Returns: string[] }
+      org_assignment_progress: {
+        Args: { _assignment: string }
+        Returns: {
+          attempts: number
+          best_points: number
+          best_score: number
+          display_name: string
+          done: boolean
+          last_at: string
+          passed: boolean
+          role: string
+          user_id: string
+          username: string
+        }[]
+      }
       org_create: {
         Args: { _description?: string; _name: string }
         Returns: string
