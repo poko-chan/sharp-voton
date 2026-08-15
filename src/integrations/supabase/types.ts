@@ -3065,6 +3065,47 @@ export type Database = {
         }
         Relationships: []
       }
+      org_app_settings: {
+        Row: {
+          app_key: string
+          created_at: string
+          enabled: boolean
+          id: string
+          label: string | null
+          organization_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          app_key: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          label?: string | null
+          organization_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          app_key?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          label?: string | null
+          organization_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_app_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       org_assignment_targets: {
         Row: {
           assignment_id: string
@@ -3090,6 +3131,401 @@ export type Database = {
             columns: ["assignment_id"]
             isOneToOne: false
             referencedRelation: "org_pack_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_calendar_events: {
+        Row: {
+          all_day: boolean
+          color: string
+          created_at: string
+          created_by: string
+          description: string | null
+          ends_at: string | null
+          group_id: string | null
+          id: string
+          location: string | null
+          organization_id: string
+          starts_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          all_day?: boolean
+          color?: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          ends_at?: string | null
+          group_id?: string | null
+          id?: string
+          location?: string | null
+          organization_id: string
+          starts_at: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          all_day?: boolean
+          color?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          ends_at?: string | null
+          group_id?: string | null
+          id?: string
+          location?: string | null
+          organization_id?: string
+          starts_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_calendar_events_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "org_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_calendar_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_chat_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+          organization_id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+          organization_id: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_chat_blocks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_chat_messages: {
+        Row: {
+          body: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          id: string
+          sender_id: string
+          thread_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          sender_id: string
+          thread_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          sender_id?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_chat_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "org_chat_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_chat_participants: {
+        Row: {
+          created_at: string
+          id: string
+          last_read_at: string | null
+          status: string
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_read_at?: string | null
+          status?: string
+          thread_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_read_at?: string | null
+          status?: string
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_chat_participants_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "org_chat_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_chat_threads: {
+        Row: {
+          created_at: string
+          created_by: string
+          group_id: string | null
+          id: string
+          kind: string
+          organization_id: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          group_id?: string | null
+          id?: string
+          kind?: string
+          organization_id: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          group_id?: string | null
+          id?: string
+          kind?: string
+          organization_id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_chat_threads_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "org_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_chat_threads_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_digital_ids: {
+        Row: {
+          affiliation: string | null
+          barcode_value: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          id_number: string | null
+          issued_by: string | null
+          notes: string | null
+          organization_id: string
+          photo_url: string | null
+          updated_at: string
+          user_id: string
+          valid_until: string | null
+        }
+        Insert: {
+          affiliation?: string | null
+          barcode_value?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          id_number?: string | null
+          issued_by?: string | null
+          notes?: string | null
+          organization_id: string
+          photo_url?: string | null
+          updated_at?: string
+          user_id: string
+          valid_until?: string | null
+        }
+        Update: {
+          affiliation?: string | null
+          barcode_value?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          id_number?: string | null
+          issued_by?: string | null
+          notes?: string | null
+          organization_id?: string
+          photo_url?: string | null
+          updated_at?: string
+          user_id?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_digital_ids_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_group_members: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "org_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_groups: {
+        Row: {
+          color: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          leader_id: string
+          name: string
+          organization_id: string
+          perms: Json
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          leader_id: string
+          name: string
+          organization_id: string
+          perms?: Json
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          leader_id?: string
+          name?: string
+          organization_id?: string
+          perms?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_groups_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_notifications: {
+        Row: {
+          app_key: string
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          organization_id: string
+          read_at: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          app_key?: string
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          organization_id: string
+          read_at?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          app_key?: string
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          organization_id?: string
+          read_at?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_notifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -3147,6 +3583,269 @@ export type Database = {
             columns: ["pack_id"]
             isOneToOne: false
             referencedRelation: "makron_packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_post_comments: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          post_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          post_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "org_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_post_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "org_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_posts: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          group_id: string | null
+          id: string
+          images: string[]
+          organization_id: string
+          pinned: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body?: string
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          images?: string[]
+          organization_id: string
+          pinned?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          images?: string[]
+          organization_id?: string
+          pinned?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_posts_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "org_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_posts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          class_name: string | null
+          created_at: string
+          display_name: string | null
+          grade: string | null
+          id: string
+          organization_id: string
+          student_number: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          class_name?: string | null
+          created_at?: string
+          display_name?: string | null
+          grade?: string | null
+          id?: string
+          organization_id: string
+          student_number?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          class_name?: string | null
+          created_at?: string
+          display_name?: string | null
+          grade?: string | null
+          id?: string
+          organization_id?: string
+          student_number?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_survey_responses: {
+        Row: {
+          answers: Json
+          created_at: string
+          id: string
+          survey_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          created_at?: string
+          id?: string
+          survey_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          id?: string
+          survey_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_survey_responses_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "org_surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_surveys: {
+        Row: {
+          anonymous: boolean
+          closed: boolean
+          closes_at: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          group_id: string | null
+          id: string
+          organization_id: string
+          questions: Json
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          anonymous?: boolean
+          closed?: boolean
+          closes_at?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          group_id?: string | null
+          id?: string
+          organization_id: string
+          questions?: Json
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          anonymous?: boolean
+          closed?: boolean
+          closes_at?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          group_id?: string | null
+          id?: string
+          organization_id?: string
+          questions?: Json
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_surveys_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "org_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_surveys_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -5274,6 +5973,14 @@ export type Database = {
       }
       are_mutual_friends: { Args: { _a: string; _b: string }; Returns: boolean }
       can_create_questions: { Args: { _user_id: string }; Returns: boolean }
+      can_moderate_chat: {
+        Args: { _thread: string; _user: string }
+        Returns: boolean
+      }
+      can_see_org_post: {
+        Args: { _post: string; _user: string }
+        Returns: boolean
+      }
       can_view_submission: {
         Args: { _assignment_id: string; _user_id: string }
         Returns: boolean
@@ -5353,11 +6060,20 @@ export type Database = {
         }
         Returns: undefined
       }
+      group_org: { Args: { _group: string }; Returns: string }
+      group_perm: {
+        Args: { _group: string; _key: string; _user: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_chat_participant: {
+        Args: { _thread: string; _user: string }
         Returns: boolean
       }
       is_class_member: {
@@ -5366,6 +6082,14 @@ export type Database = {
       }
       is_class_teacher: {
         Args: { _class_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_group_leader: {
+        Args: { _group: string; _user: string }
+        Returns: boolean
+      }
+      is_group_member: {
+        Args: { _group: string; _user: string }
         Returns: boolean
       }
       is_org_admin: { Args: { _org: string; _user: string }; Returns: boolean }
@@ -5518,6 +6242,17 @@ export type Database = {
         Args: { _description?: string; _name: string }
         Returns: string
       }
+      org_create_group: {
+        Args: {
+          _color?: string
+          _description?: string
+          _members?: Json
+          _name: string
+          _org: string
+          _perms?: Json
+        }
+        Returns: string
+      }
       org_enroll_all: {
         Args: { _class: string; _org: string }
         Returns: number
@@ -5540,6 +6275,20 @@ export type Database = {
           username: string
         }[]
       }
+      org_notify_members: {
+        Args: {
+          _app: string
+          _body: string
+          _group: string
+          _org: string
+          _title: string
+        }
+        Returns: number
+      }
+      org_post_perm: {
+        Args: { _key: string; _post: string; _user: string }
+        Returns: boolean
+      }
       org_respond_invitation: {
         Args: { _accept: boolean; _invite_id: string }
         Returns: undefined
@@ -5552,6 +6301,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      org_start_dm: { Args: { _org: string; _other: string }; Returns: string }
       org_transfer_ownership: {
         Args: { _org: string; _user: string }
         Returns: undefined
