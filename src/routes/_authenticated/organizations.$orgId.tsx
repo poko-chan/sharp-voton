@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Building2, Ban, UserCog, Plus, Trash2, Mail, Send, KeyRound, Crown, Clock, BookOpen, UserPlus, Copy } from "lucide-react";
+import { Building2, Ban, UserCog, Plus, Trash2, Mail, Send, KeyRound, Crown, Clock, BookOpen, UserPlus, Copy, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 import { ROLE_LABEL } from "@/lib/org-roles";
+import { OrgAssignments } from "@/components/org/OrgAssignments";
 
 export const Route = createFileRoute("/_authenticated/organizations/$orgId")({ component: OrgAdmin });
 
@@ -177,6 +178,7 @@ function OrgAdmin() {
           {canAdmin && <TabsTrigger value="requests"><UserPlus className="h-3 w-3 mr-1" />参加申請 ({joinReqs.length})</TabsTrigger>}
           {canAdmin && <TabsTrigger value="stats"><Clock className="h-3 w-3 mr-1" />勉強時間</TabsTrigger>}
           <TabsTrigger value="content"><BookOpen className="h-3 w-3 mr-1" />問題集・クラス</TabsTrigger>
+          <TabsTrigger value="assignments"><ClipboardList className="h-3 w-3 mr-1" />課題</TabsTrigger>
           {canAdmin && <TabsTrigger value="invite"><Mail className="h-3 w-3 mr-1" />招待 ({pendingInvites.length})</TabsTrigger>}
           {canAdmin && <TabsTrigger value="restrictions"><Ban className="h-3 w-3 mr-1" />サービス制限</TabsTrigger>}
           {canAdmin && <TabsTrigger value="settings">設定</TabsTrigger>}
@@ -252,6 +254,7 @@ function OrgAdmin() {
         )}
 
         <TabsContent value="content" className="space-y-3">
+          {null}
           <Card className="p-4 space-y-2">
             <div className="font-bold flex items-center gap-1"><BookOpen className="h-4 w-4" />組織専用のMakron問題集 ({packs.length})</div>
             {packs.map((p: any) => (
