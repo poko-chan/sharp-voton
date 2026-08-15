@@ -41,26 +41,43 @@ function OrgAdmin() {
     if (!user) return;
     const { data: o } = await (supabase as any).from("organizations").select("*").eq("id", orgId).maybeSingle();
     setOrg(o);
-    const { data: m } = await (supabase as any).from("organization_members")
-      .select("id, role, suspended, user_id, profile:profiles!organization_members_user_id_fkey(display_name, username, avatar_url)")
+    const { data: m, error: mErr } = await (supabase as any).from("organization_members")
+      .select("id, role, suspended, user_id")
       .eq("organization_id", orgId);
-    setMembers(m ?? []);
+    if (mErr) toast.error(mErr.message);
     const role = (m ?? []).find((x: any) => x.user_id === user.id)?.role ?? null;
     setMyRole(role);
     const admin = isAdmin || ["owner","admin"].includes(role ?? "");
+    let reqRows: any[] = [], invRows: any[] = [];
     if (admin) {
       const [{ data: r }, { data: pi }, { data: jr }, { data: st }] = await Promise.all([
         (supabase as any).from("organization_service_restrictions").select("*").eq("organization_id", orgId),
         (supabase as any).from("organization_invitations")
-          .select("id, role, message, status, created_at, invitee_id, profile:profiles!organization_invitations_invitee_id_fkey(username, display_name)")
+          .select("id, role, message, status, created_at, invitee_id")
           .eq("organization_id", orgId).eq("status", "pending"),
         (supabase as any).from("organization_join_requests")
-          .select("id, status, message, created_at, user_id, profile:profiles!organization_join_requests_user_id_fkey(username, display_name)")
+          .select("id, status, message, created_at, user_id")
           .eq("organization_id", orgId).eq("status", "pending"),
         (supabase as any).rpc("org_member_stats", { _org: orgId }),
       ]);
-      setRestrictions(r ?? []); setPendingInvites(pi ?? []); setJoinReqs(jr ?? []); setStats(st ?? []);
+      reqRows = jr ?? []; invRows = pi ?? [];
+      setRestrictions(r ?? []); setStats(st ?? []);
     }
+    // profiles は外部キーが無いため個別取得してから結合する
+    const ids = Array.from(new Set([
+      ...(m ?? []).map((x: any) => x.user_id),
+      ...reqRows.map((x: any) => x.user_id),
+      ...invRows.map((x: any) => x.invitee_id),
+    ].filter(Boolean)));
+    const pmap: Record<string, any> = {};
+    if (ids.length) {
+      const { data: profs } = await supabase.from("profiles")
+        .select("id, username, display_name, avatar_url").in("id", ids);
+      for (const p of profs ?? []) pmap[p.id] = p;
+    }
+    setMembers((m ?? []).map((x: any) => ({ ...x, profile: pmap[x.user_id] })));
+    setJoinReqs(reqRows.map((x: any) => ({ ...x, profile: pmap[x.user_id] })));
+    setPendingInvites(invRows.map((x: any) => ({ ...x, profile: pmap[x.invitee_id] })));
     const [{ data: pk }, { data: cl }] = await Promise.all([
       (supabase as any).from("makron_packs").select("id, title, status").eq("organization_id", orgId).limit(50),
       (supabase as any).from("classes").select("id, name").eq("organization_id", orgId).limit(50),
