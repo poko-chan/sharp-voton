@@ -259,4 +259,14 @@ export async function aiJSON<T = unknown>(text: string, system?: string): Promis
   try { return await s.promptJSON<T>(text); } finally { s.destroy(); }
 }
 
+/** 生成途中のテキストを逐次受け取れる単発プロンプト（ストリーミング表示用） */
+export async function aiStream(
+  text: string,
+  onChunk: (partial: string) => void,
+  system?: string,
+): Promise<string> {
+  const s = await createAiSession({ system });
+  try { return await s.promptStreaming(text, onChunk); } finally { s.destroy(); }
+}
+
 export { extractJSON };

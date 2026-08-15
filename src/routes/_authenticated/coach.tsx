@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Flame, BookOpen, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { localDateStr, addDaysStr } from "@/lib/date";
-import { isAiUsable, aiPrompt } from "@/lib/ai-provider";
+import { isAiUsable, aiStream } from "@/lib/ai-provider";
 import { AiUnavailable } from "@/components/AiUnavailable";
 
 export const Route = createFileRoute("/_authenticated/coach")({
@@ -69,8 +69,8 @@ function CoachPage() {
 - 全くやってない場合でも、罪悪感をあおらない
 - 250字以内
 - マークダウン記号 (** や ##) は使わない、ふつうの文`;
-      const out = await aiPrompt(prompt);
-      setAdvice(out);
+      setAdvice("");
+      await aiStream(prompt, (partial) => setAdvice(partial));
     } catch (e: any) {
       toast.error(e.message ?? "失敗");
     } finally {
