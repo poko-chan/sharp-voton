@@ -88,6 +88,7 @@ import { Route as AuthenticatedMakronAdminRouteImport } from './routes/_authenti
 import { Route as AuthenticatedExamsExamIdRouteImport } from './routes/_authenticated/exams.$examId'
 import { Route as AuthenticatedClassroomClassIdRouteImport } from './routes/_authenticated/classroom.$classId'
 import { Route as AuthenticatedOrganizationsOrgIdIndexRouteImport } from './routes/_authenticated/organizations.$orgId.index'
+import { Route as AuthenticatedOrganizationsOrgIdProfileRouteImport } from './routes/_authenticated/organizations.$orgId.profile'
 import { Route as AuthenticatedMakronUnitUnitIdRouteImport } from './routes/_authenticated/makron.unit.$unitId'
 import { Route as AuthenticatedMakronSessionSessionIdRouteImport } from './routes/_authenticated/makron.session.$sessionId'
 import { Route as AuthenticatedMakronResultSessionIdRouteImport } from './routes/_authenticated/makron.result.$sessionId'
@@ -95,6 +96,7 @@ import { Route as AuthenticatedMakronPackPackIdRouteImport } from './routes/_aut
 import { Route as AuthenticatedExamsSeriesSeriesIdRouteImport } from './routes/_authenticated/exams.series.$seriesId'
 import { Route as AuthenticatedMakronPackPackIdIndexRouteImport } from './routes/_authenticated/makron.pack.$packId.index'
 import { Route as AuthenticatedOrganizationsOrgIdManageSectionRouteImport } from './routes/_authenticated/organizations.$orgId.manage.$section'
+import { Route as AuthenticatedOrganizationsOrgIdGroupGroupIdRouteImport } from './routes/_authenticated/organizations.$orgId.group.$groupId'
 import { Route as AuthenticatedOrganizationsOrgIdAppAppKeyRouteImport } from './routes/_authenticated/organizations.$orgId.app.$appKey'
 import { Route as AuthenticatedMakronPackPackIdDashboardRouteImport } from './routes/_authenticated/makron.pack.$packId.dashboard'
 
@@ -510,6 +512,12 @@ const AuthenticatedOrganizationsOrgIdIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedOrganizationsOrgIdRoute,
   } as any)
+const AuthenticatedOrganizationsOrgIdProfileRoute =
+  AuthenticatedOrganizationsOrgIdProfileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
+    getParentRoute: () => AuthenticatedOrganizationsOrgIdRoute,
+  } as any)
 const AuthenticatedMakronUnitUnitIdRoute =
   AuthenticatedMakronUnitUnitIdRouteImport.update({
     id: '/unit/$unitId',
@@ -550,6 +558,12 @@ const AuthenticatedOrganizationsOrgIdManageSectionRoute =
   AuthenticatedOrganizationsOrgIdManageSectionRouteImport.update({
     id: '/manage/$section',
     path: '/manage/$section',
+    getParentRoute: () => AuthenticatedOrganizationsOrgIdRoute,
+  } as any)
+const AuthenticatedOrganizationsOrgIdGroupGroupIdRoute =
+  AuthenticatedOrganizationsOrgIdGroupGroupIdRouteImport.update({
+    id: '/group/$groupId',
+    path: '/group/$groupId',
     getParentRoute: () => AuthenticatedOrganizationsOrgIdRoute,
   } as any)
 const AuthenticatedOrganizationsOrgIdAppAppKeyRoute =
@@ -648,9 +662,11 @@ export interface FileRoutesByFullPath {
   '/makron/result/$sessionId': typeof AuthenticatedMakronResultSessionIdRoute
   '/makron/session/$sessionId': typeof AuthenticatedMakronSessionSessionIdRoute
   '/makron/unit/$unitId': typeof AuthenticatedMakronUnitUnitIdRoute
+  '/organizations/$orgId/profile': typeof AuthenticatedOrganizationsOrgIdProfileRoute
   '/organizations/$orgId/': typeof AuthenticatedOrganizationsOrgIdIndexRoute
   '/makron/pack/$packId/dashboard': typeof AuthenticatedMakronPackPackIdDashboardRoute
   '/organizations/$orgId/app/$appKey': typeof AuthenticatedOrganizationsOrgIdAppAppKeyRoute
+  '/organizations/$orgId/group/$groupId': typeof AuthenticatedOrganizationsOrgIdGroupGroupIdRoute
   '/organizations/$orgId/manage/$section': typeof AuthenticatedOrganizationsOrgIdManageSectionRoute
   '/makron/pack/$packId/': typeof AuthenticatedMakronPackPackIdIndexRoute
 }
@@ -730,9 +746,11 @@ export interface FileRoutesByTo {
   '/makron/result/$sessionId': typeof AuthenticatedMakronResultSessionIdRoute
   '/makron/session/$sessionId': typeof AuthenticatedMakronSessionSessionIdRoute
   '/makron/unit/$unitId': typeof AuthenticatedMakronUnitUnitIdRoute
+  '/organizations/$orgId/profile': typeof AuthenticatedOrganizationsOrgIdProfileRoute
   '/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdIndexRoute
   '/makron/pack/$packId/dashboard': typeof AuthenticatedMakronPackPackIdDashboardRoute
   '/organizations/$orgId/app/$appKey': typeof AuthenticatedOrganizationsOrgIdAppAppKeyRoute
+  '/organizations/$orgId/group/$groupId': typeof AuthenticatedOrganizationsOrgIdGroupGroupIdRoute
   '/organizations/$orgId/manage/$section': typeof AuthenticatedOrganizationsOrgIdManageSectionRoute
   '/makron/pack/$packId': typeof AuthenticatedMakronPackPackIdIndexRoute
 }
@@ -821,9 +839,11 @@ export interface FileRoutesById {
   '/_authenticated/makron/result/$sessionId': typeof AuthenticatedMakronResultSessionIdRoute
   '/_authenticated/makron/session/$sessionId': typeof AuthenticatedMakronSessionSessionIdRoute
   '/_authenticated/makron/unit/$unitId': typeof AuthenticatedMakronUnitUnitIdRoute
+  '/_authenticated/organizations/$orgId/profile': typeof AuthenticatedOrganizationsOrgIdProfileRoute
   '/_authenticated/organizations/$orgId/': typeof AuthenticatedOrganizationsOrgIdIndexRoute
   '/_authenticated/makron/pack/$packId/dashboard': typeof AuthenticatedMakronPackPackIdDashboardRoute
   '/_authenticated/organizations/$orgId/app/$appKey': typeof AuthenticatedOrganizationsOrgIdAppAppKeyRoute
+  '/_authenticated/organizations/$orgId/group/$groupId': typeof AuthenticatedOrganizationsOrgIdGroupGroupIdRoute
   '/_authenticated/organizations/$orgId/manage/$section': typeof AuthenticatedOrganizationsOrgIdManageSectionRoute
   '/_authenticated/makron/pack/$packId/': typeof AuthenticatedMakronPackPackIdIndexRoute
 }
@@ -912,9 +932,11 @@ export interface FileRouteTypes {
     | '/makron/result/$sessionId'
     | '/makron/session/$sessionId'
     | '/makron/unit/$unitId'
+    | '/organizations/$orgId/profile'
     | '/organizations/$orgId/'
     | '/makron/pack/$packId/dashboard'
     | '/organizations/$orgId/app/$appKey'
+    | '/organizations/$orgId/group/$groupId'
     | '/organizations/$orgId/manage/$section'
     | '/makron/pack/$packId/'
   fileRoutesByTo: FileRoutesByTo
@@ -994,9 +1016,11 @@ export interface FileRouteTypes {
     | '/makron/result/$sessionId'
     | '/makron/session/$sessionId'
     | '/makron/unit/$unitId'
+    | '/organizations/$orgId/profile'
     | '/organizations/$orgId'
     | '/makron/pack/$packId/dashboard'
     | '/organizations/$orgId/app/$appKey'
+    | '/organizations/$orgId/group/$groupId'
     | '/organizations/$orgId/manage/$section'
     | '/makron/pack/$packId'
   id:
@@ -1084,9 +1108,11 @@ export interface FileRouteTypes {
     | '/_authenticated/makron/result/$sessionId'
     | '/_authenticated/makron/session/$sessionId'
     | '/_authenticated/makron/unit/$unitId'
+    | '/_authenticated/organizations/$orgId/profile'
     | '/_authenticated/organizations/$orgId/'
     | '/_authenticated/makron/pack/$packId/dashboard'
     | '/_authenticated/organizations/$orgId/app/$appKey'
+    | '/_authenticated/organizations/$orgId/group/$groupId'
     | '/_authenticated/organizations/$orgId/manage/$section'
     | '/_authenticated/makron/pack/$packId/'
   fileRoutesById: FileRoutesById
@@ -1663,6 +1689,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrganizationsOrgIdIndexRouteImport
       parentRoute: typeof AuthenticatedOrganizationsOrgIdRoute
     }
+    '/_authenticated/organizations/$orgId/profile': {
+      id: '/_authenticated/organizations/$orgId/profile'
+      path: '/profile'
+      fullPath: '/organizations/$orgId/profile'
+      preLoaderRoute: typeof AuthenticatedOrganizationsOrgIdProfileRouteImport
+      parentRoute: typeof AuthenticatedOrganizationsOrgIdRoute
+    }
     '/_authenticated/makron/unit/$unitId': {
       id: '/_authenticated/makron/unit/$unitId'
       path: '/unit/$unitId'
@@ -1710,6 +1743,13 @@ declare module '@tanstack/react-router' {
       path: '/manage/$section'
       fullPath: '/organizations/$orgId/manage/$section'
       preLoaderRoute: typeof AuthenticatedOrganizationsOrgIdManageSectionRouteImport
+      parentRoute: typeof AuthenticatedOrganizationsOrgIdRoute
+    }
+    '/_authenticated/organizations/$orgId/group/$groupId': {
+      id: '/_authenticated/organizations/$orgId/group/$groupId'
+      path: '/group/$groupId'
+      fullPath: '/organizations/$orgId/group/$groupId'
+      preLoaderRoute: typeof AuthenticatedOrganizationsOrgIdGroupGroupIdRouteImport
       parentRoute: typeof AuthenticatedOrganizationsOrgIdRoute
     }
     '/_authenticated/organizations/$orgId/app/$appKey': {
@@ -1809,17 +1849,23 @@ const AuthenticatedMaterialsRouteWithChildren =
   )
 
 interface AuthenticatedOrganizationsOrgIdRouteChildren {
+  AuthenticatedOrganizationsOrgIdProfileRoute: typeof AuthenticatedOrganizationsOrgIdProfileRoute
   AuthenticatedOrganizationsOrgIdIndexRoute: typeof AuthenticatedOrganizationsOrgIdIndexRoute
   AuthenticatedOrganizationsOrgIdAppAppKeyRoute: typeof AuthenticatedOrganizationsOrgIdAppAppKeyRoute
+  AuthenticatedOrganizationsOrgIdGroupGroupIdRoute: typeof AuthenticatedOrganizationsOrgIdGroupGroupIdRoute
   AuthenticatedOrganizationsOrgIdManageSectionRoute: typeof AuthenticatedOrganizationsOrgIdManageSectionRoute
 }
 
 const AuthenticatedOrganizationsOrgIdRouteChildren: AuthenticatedOrganizationsOrgIdRouteChildren =
   {
+    AuthenticatedOrganizationsOrgIdProfileRoute:
+      AuthenticatedOrganizationsOrgIdProfileRoute,
     AuthenticatedOrganizationsOrgIdIndexRoute:
       AuthenticatedOrganizationsOrgIdIndexRoute,
     AuthenticatedOrganizationsOrgIdAppAppKeyRoute:
       AuthenticatedOrganizationsOrgIdAppAppKeyRoute,
+    AuthenticatedOrganizationsOrgIdGroupGroupIdRoute:
+      AuthenticatedOrganizationsOrgIdGroupGroupIdRoute,
     AuthenticatedOrganizationsOrgIdManageSectionRoute:
       AuthenticatedOrganizationsOrgIdManageSectionRoute,
   }
