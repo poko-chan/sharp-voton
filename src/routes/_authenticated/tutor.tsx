@@ -52,6 +52,7 @@ function TutorPage() {
   const [input, setInput] = useState("");
   const [pending, setPending] = useState<Attachment[]>([]);
   const [busy, setBusy] = useState(false);
+  const [streaming, setStreaming] = useState("");
   const [uploading, setUploading] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameTitle, setRenameTitle] = useState("");
@@ -80,7 +81,7 @@ function TutorPage() {
 
   useEffect(() => { loadThreads(); }, [user]);
   useEffect(() => { loadMsgs(activeId); }, [activeId, loadMsgs]);
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, busy]);
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, busy, streaming]);
 
   const newChat = async () => {
     try {
@@ -144,7 +145,10 @@ function TutorPage() {
       }).join("\n\n");
       const session = await createAiSession({ system: systemPrompt });
       let text = "";
-      try { text = await session.prompt(history + "\n\nアシスタント:"); } finally { session.destroy(); }
+      setStreaming("");
+      try {
+        text = await session.promptStreaming(history + "\n\nアシスタント:", (partial) => setStreaming(partial));
+      } finally { session.destroy(); }
       await supabase.from("tutor_messages").insert({
         user_id: user.id, role: "assistant", content: text, attachments: [], thread_id: tid,
       });
@@ -156,7 +160,7 @@ function TutorPage() {
       await loadMsgs(tid);
       await loadThreads();
     } catch (e: any) { toast.error(e.message); }
-    finally { setBusy(false); }
+    finally { setBusy(false); setStreaming(""); }
   };
 
   const submitRename = async (id: string) => {
@@ -262,7 +266,20 @@ function TutorPage() {
                 </div>
               </div>
             ))}
-            {busy && <div className="flex justify-start"><div className="bg-muted rounded-2xl px-4 py-2"><Loader2 className="h-4 w-4 animate-spin" /></div></div>}
+            {busy && (
+              <div className="flex justify-start">
+                <div className="max-w-[85%] bg-muted rounded-2xl px-4 py-2 prose prose-sm dark:prose-invert">
+                  {streaming ? (
+                    <>
+                      <ReactMarkdown>{streaming}</ReactMarkdown>
+                      <span className="inline-block w-2 h-4 align-middle bg-primary/70 animate-pulse rounded-sm" />
+                    </>
+                  ) : (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  )}
+                </div>
+              </div>
+            )}
             <div ref={endRef} />
           </div>
 

@@ -30,6 +30,7 @@ export function ChatWindow({
     })),
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [streaming, setStreaming] = useState("");
   const [canAi, setCanAi] = useState<boolean>(false);
   const sessionRef = useRef<AiSession | null>(null);
 
@@ -50,19 +51,21 @@ export function ChatWindow({
     setMessages((m) => [...m, { id: userId, role: "user", text }]);
     try {
       const s = await ensureSession();
-      const reply = await s.prompt(text);
+      setStreaming("");
+      const reply = await s.promptStreaming(text, (partial) => setStreaming(partial));
       setMessages((m) => [...m, { id: `a_${Date.now()}`, role: "assistant", text: reply }]);
     } catch (e: any) {
       toast.error(e.message ?? "AI 応答に失敗");
     } finally {
       setIsLoading(false);
+      setStreaming("");
     }
   };
 
   const endRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, streaming]);
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto">
@@ -89,6 +92,20 @@ export function ChatWindow({
               </div>
             </div>
         ))}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="max-w-[80%] rounded-2xl px-4 py-2 bg-muted prose prose-sm dark:prose-invert">
+              {streaming ? (
+                <>
+                  <ReactMarkdown>{streaming}</ReactMarkdown>
+                  <span className="inline-block w-2 h-4 align-middle bg-primary/70 animate-pulse rounded-sm" />
+                </>
+              ) : (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              )}
+            </div>
+          </div>
+        )}
         <div ref={endRef} />
       </div>
       <form
