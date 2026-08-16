@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  Bell, Megaphone, ClipboardList, CalendarDays, IdCard, MessagesSquare, BookOpen,
+  Bell, Megaphone, ClipboardList, CalendarDays, IdCard, MessagesSquare, BookOpen, GraduationCap, ListChecks,
   Building2, ShieldAlert, Users, UserPlus, Clock, Ban, LayoutGrid, Settings, Plus, UserCog,
 } from "lucide-react";
 import { ORG_APPS, useOrg } from "@/lib/org-apps";
@@ -10,7 +10,7 @@ import { ROLE_LABEL } from "@/lib/org-roles";
 
 export const Route = createFileRoute("/_authenticated/organizations/$orgId/")({ component: OrgHome });
 
-const ICONS: Record<string, any> = { Bell, Megaphone, ClipboardList, CalendarDays, IdCard, MessagesSquare, BookOpen };
+const ICONS: Record<string, any> = { Bell, Megaphone, ClipboardList, CalendarDays, IdCard, MessagesSquare, BookOpen, GraduationCap };
 
 const MANAGE_ITEMS = [
   { section: "members", label: "メンバー管理", icon: UserCog },
@@ -19,6 +19,8 @@ const MANAGE_ITEMS = [
   { section: "stats", label: "学習統計", icon: Clock },
   { section: "assignments", label: "課題", icon: ClipboardList },
   { section: "content", label: "問題集・クラス", icon: BookOpen },
+  { section: "profile-fields", label: "プロフィール項目", icon: ListChecks },
+  { section: "roster", label: "名簿（学年・クラス）", icon: Users },
   { section: "restrictions", label: "アプリ制限", icon: Ban },
   { section: "apps", label: "アプリ管理", icon: LayoutGrid },
   { section: "settings", label: "組織設定", icon: Settings },
