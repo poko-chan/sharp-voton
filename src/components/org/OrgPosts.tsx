@@ -261,10 +261,22 @@ export function OrgPosts({ orgId, ctx }: { orgId: string; ctx: any }) {
                 </div>
               </div>
               {(p.author_id === user?.id || ctx.canAdmin) && (
-                <Button size="sm" variant="ghost" className="text-destructive" onClick={() => remove(p.id)}><Trash2 className="h-4 w-4" /></Button>
+                <div className="flex gap-1">
+                  <Button size="sm" variant="ghost" onClick={() => startEdit(p)} title="編集"><Pencil className="h-4 w-4" /></Button>
+                  <Button size="sm" variant="ghost" className="text-destructive" onClick={() => remove(p.id)} title="削除"><Trash2 className="h-4 w-4" /></Button>
+                </div>
               )}
             </div>
-            {p.body && <div className="text-sm whitespace-pre-wrap">{p.body}</div>}
+            {editId === p.id ? (
+              <div className="space-y-2">
+                <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+                <Textarea rows={4} value={editBody} onChange={(e) => setEditBody(e.target.value)} />
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={saveEdit}><Check className="h-4 w-4 mr-1" />保存</Button>
+                  <Button size="sm" variant="ghost" onClick={() => setEditId(null)}>やめる</Button>
+                </div>
+              </div>
+            ) : p.body ? <div className="text-sm whitespace-pre-wrap">{p.body}</div> : null}
             {p.images?.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {p.images.filter(isImage).map((u: string) => (
