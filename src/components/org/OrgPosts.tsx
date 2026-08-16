@@ -207,7 +207,9 @@ export function OrgPosts({ orgId, ctx }: { orgId: string; ctx: any }) {
           )}
           {ctx.groups.length === 0 && <div className="px-2 py-2 text-[11px] text-muted-foreground">グループはまだありません</div>}
         </Card>
-        <Button className="w-full" onClick={() => setCreating(true)}><Plus className="h-4 w-4 mr-1" />投稿する</Button>
+        <Button className="w-full" onClick={() => { setScope(channel === "all" ? "org" : channel); setCreating(true); }}>
+          <Plus className="h-4 w-4 mr-1" />投稿する
+        </Button>
       </aside>
 
       {/* 本体 */}
