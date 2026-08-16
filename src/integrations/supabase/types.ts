@@ -3407,6 +3407,272 @@ export type Database = {
           },
         ]
       }
+      org_edu_attempts: {
+        Row: {
+          ai_review: string | null
+          correct: boolean
+          created_at: string
+          id: string
+          organization_id: string
+          question_id: string
+          resolved_at: string | null
+          unit_id: string
+          user_answer: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_review?: string | null
+          correct?: boolean
+          created_at?: string
+          id?: string
+          organization_id: string
+          question_id: string
+          resolved_at?: string | null
+          unit_id: string
+          user_answer?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_review?: string | null
+          correct?: boolean
+          created_at?: string
+          id?: string
+          organization_id?: string
+          question_id?: string
+          resolved_at?: string | null
+          unit_id?: string
+          user_answer?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_edu_attempts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_edu_attempts_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "org_edu_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_edu_attempts_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "org_edu_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_edu_questions: {
+        Row: {
+          answer: string
+          audience: Json
+          body: string
+          choices: Json
+          created_at: string
+          created_by: string | null
+          explanation: string | null
+          hint_text: string | null
+          id: string
+          kind: string
+          level: number
+          organization_id: string
+          sort_order: number
+          unit_id: string
+          updated_at: string
+        }
+        Insert: {
+          answer?: string
+          audience?: Json
+          body: string
+          choices?: Json
+          created_at?: string
+          created_by?: string | null
+          explanation?: string | null
+          hint_text?: string | null
+          id?: string
+          kind?: string
+          level?: number
+          organization_id: string
+          sort_order?: number
+          unit_id: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          audience?: Json
+          body?: string
+          choices?: Json
+          created_at?: string
+          created_by?: string | null
+          explanation?: string | null
+          hint_text?: string | null
+          id?: string
+          kind?: string
+          level?: number
+          organization_id?: string
+          sort_order?: number
+          unit_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_edu_questions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_edu_questions_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "org_edu_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_edu_streaks: {
+        Row: {
+          best_streak: number
+          current_streak: number
+          id: string
+          last_date: string | null
+          organization_id: string
+          total_correct: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          best_streak?: number
+          current_streak?: number
+          id?: string
+          last_date?: string | null
+          organization_id: string
+          total_correct?: number
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          best_streak?: number
+          current_streak?: number
+          id?: string
+          last_date?: string | null
+          organization_id?: string
+          total_correct?: number
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_edu_streaks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_edu_subjects: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          organization_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          organization_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          organization_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_edu_subjects_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_edu_units: {
+        Row: {
+          audience: Json
+          created_at: string
+          description: string | null
+          id: string
+          level: number
+          organization_id: string
+          sort_order: number
+          subject_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          audience?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          level?: number
+          organization_id: string
+          sort_order?: number
+          subject_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          audience?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          level?: number
+          organization_id?: string
+          sort_order?: number
+          subject_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_edu_units_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_edu_units_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "org_edu_subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       org_group_members: {
         Row: {
           created_at: string
@@ -3698,6 +3964,97 @@ export type Database = {
           },
           {
             foreignKeyName: "org_posts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_profile_fields: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          label: string
+          options: Json
+          organization_id: string
+          required: boolean
+          sort_order: number
+          staff_only: boolean
+          type: string
+          updated_at: string
+          yearly: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          label: string
+          options?: Json
+          organization_id: string
+          required?: boolean
+          sort_order?: number
+          staff_only?: boolean
+          type?: string
+          updated_at?: string
+          yearly?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          label?: string
+          options?: Json
+          organization_id?: string
+          required?: boolean
+          sort_order?: number
+          staff_only?: boolean
+          type?: string
+          updated_at?: string
+          yearly?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_profile_fields_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_profile_years: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          updated_at: string
+          user_id: string
+          values: Json
+          year: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          updated_at?: string
+          user_id: string
+          values?: Json
+          year: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          updated_at?: string
+          user_id?: string
+          values?: Json
+          year?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_profile_years_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -4012,6 +4369,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          current_year: string | null
           description: string | null
           id: string
           join_code: string | null
@@ -4028,6 +4386,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          current_year?: string | null
           description?: string | null
           id?: string
           join_code?: string | null
@@ -4044,6 +4403,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          current_year?: string | null
           description?: string | null
           id?: string
           join_code?: string | null
@@ -6252,6 +6612,26 @@ export type Database = {
           _perms?: Json
         }
         Returns: string
+      }
+      org_edu_record_result: {
+        Args: { _correct: number; _org: string; _xp: number }
+        Returns: {
+          best_streak: number
+          current_streak: number
+          id: string
+          last_date: string | null
+          organization_id: string
+          total_correct: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "org_edu_streaks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       org_enroll_all: {
         Args: { _class: string; _org: string }

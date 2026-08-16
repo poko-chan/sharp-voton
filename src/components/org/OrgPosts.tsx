@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Heart, MessageCircle, Paperclip, Trash2, Plus, Send, Pin, PinOff, Hash, Users, FileText, Download, X } from "lucide-react";
+import { Heart, MessageCircle, Paperclip, Trash2, Plus, Send, Pin, PinOff, Hash, Users, FileText, Download, X, Search, ArrowDownUp, Pencil, Check } from "lucide-react";
 import { toast } from "sonner";
 import { loadOrgProfiles, nameOf } from "@/lib/org-apps";
 
@@ -30,6 +30,11 @@ export function OrgPosts({ orgId, ctx }: { orgId: string; ctx: any }) {
   const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [pins, setPins] = useState<string[]>([]);
+  const [chQuery, setChQuery] = useState("");
+  const [chSort, setChSort] = useState<"name" | "count" | "recent">("name");
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -120,16 +125,35 @@ export function OrgPosts({ orgId, ctx }: { orgId: string; ctx: any }) {
     load();
   };
 
+  const startEdit = (p: any) => { setEditId(p.id); setEditTitle(p.title); setEditBody(p.body ?? ""); };
+  const saveEdit = async () => {
+    if (!editTitle.trim()) return toast.error("タイトルを入力してください");
+    const { error } = await (supabase as any).from("org_posts")
+      .update({ title: editTitle.trim(), body: editBody }).eq("id", editId);
+    if (error) return toast.error(error.message);
+    setEditId(null); toast.success("更新しました"); load();
+  };
+
   const groupName = (id: string | null) => ctx.groups.find((g: any) => g.id === id)?.name;
   const countOf = (key: string) => posts.filter((p) => key === "all" ? true : key === "org" ? !p.group_id : p.group_id === key).length;
 
   const channels = useMemo(() => {
     const base = [{ id: "all", name: "すべての投稿", icon: "all" }, { id: "org", name: "組織全体", icon: "org" }];
-    const gs = ctx.groups.map((g: any) => ({ id: g.id, name: g.name, icon: "group" }));
+    const latest = (gid: string) => {
+      const t = posts.find((p) => p.group_id === gid)?.created_at;
+      return t ? new Date(t).getTime() : 0;
+    };
+    const q = chQuery.trim().toLowerCase();
+    let gs = ctx.groups.map((g: any) => ({ id: g.id, name: g.name, icon: "group" }));
+    if (q) gs = gs.filter((g: any) => g.name.toLowerCase().includes(q));
+    gs = [...gs].sort((a: any, b: any) =>
+      chSort === "count" ? countOf(b.id) - countOf(a.id)
+        : chSort === "recent" ? latest(b.id) - latest(a.id)
+        : a.name.localeCompare(b.name, "ja"));
     const pinned = gs.filter((g: any) => pins.includes(g.id));
     const rest = gs.filter((g: any) => !pins.includes(g.id));
     return { base, pinned, rest };
-  }, [ctx.groups, pins]);
+  }, [ctx.groups, pins, chQuery, chSort, posts]);
 
   const visible = posts.filter((p) => channel === "all" ? true : channel === "org" ? !p.group_id : p.group_id === channel);
 
@@ -154,6 +178,20 @@ export function OrgPosts({ orgId, ctx }: { orgId: string; ctx: any }) {
       <aside className="space-y-3 lg:sticky lg:top-4 self-start">
         <Card className="p-2 space-y-0.5">
           <div className="px-2 py-1 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">チャンネル</div>
+          <div className="px-1 pb-1 space-y-1">
+            <div className="relative">
+              <Search className="h-3 w-3 absolute left-2 top-2 text-muted-foreground" />
+              <Input className="h-7 pl-6 text-xs" placeholder="グループを検索" value={chQuery} onChange={(e) => setChQuery(e.target.value)} />
+            </div>
+            <div className="flex gap-1">
+              {([["name", "名前"], ["count", "投稿数"], ["recent", "新着"]] as const).map(([k, l]) => (
+                <button key={k} onClick={() => setChSort(k)}
+                  className={`flex-1 rounded px-1 py-0.5 text-[10px] border ${chSort === k ? "bg-primary/12 text-primary border-primary/40" : "hover:bg-muted"}`}>
+                  {k === "name" && <ArrowDownUp className="h-2.5 w-2.5 inline mr-0.5" />}{l}
+                </button>
+              ))}
+            </div>
+          </div>
           {channels.base.map((c) => <ChannelBtn key={c.id} id={c.id} name={c.name} kind={c.icon} />)}
           {channels.pinned.length > 0 && (
             <>
@@ -169,7 +207,9 @@ export function OrgPosts({ orgId, ctx }: { orgId: string; ctx: any }) {
           )}
           {ctx.groups.length === 0 && <div className="px-2 py-2 text-[11px] text-muted-foreground">グループはまだありません</div>}
         </Card>
-        <Button className="w-full" onClick={() => setCreating(true)}><Plus className="h-4 w-4 mr-1" />投稿する</Button>
+        <Button className="w-full" onClick={() => { setScope(channel === "all" ? "org" : channel); setCreating(true); }}>
+          <Plus className="h-4 w-4 mr-1" />投稿する
+        </Button>
       </aside>
 
       {/* 本体 */}
@@ -223,10 +263,22 @@ export function OrgPosts({ orgId, ctx }: { orgId: string; ctx: any }) {
                 </div>
               </div>
               {(p.author_id === user?.id || ctx.canAdmin) && (
-                <Button size="sm" variant="ghost" className="text-destructive" onClick={() => remove(p.id)}><Trash2 className="h-4 w-4" /></Button>
+                <div className="flex gap-1">
+                  <Button size="sm" variant="ghost" onClick={() => startEdit(p)} title="編集"><Pencil className="h-4 w-4" /></Button>
+                  <Button size="sm" variant="ghost" className="text-destructive" onClick={() => remove(p.id)} title="削除"><Trash2 className="h-4 w-4" /></Button>
+                </div>
               )}
             </div>
-            {p.body && <div className="text-sm whitespace-pre-wrap">{p.body}</div>}
+            {editId === p.id ? (
+              <div className="space-y-2">
+                <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+                <Textarea rows={4} value={editBody} onChange={(e) => setEditBody(e.target.value)} />
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={saveEdit}><Check className="h-4 w-4 mr-1" />保存</Button>
+                  <Button size="sm" variant="ghost" onClick={() => setEditId(null)}>やめる</Button>
+                </div>
+              </div>
+            ) : p.body ? <div className="text-sm whitespace-pre-wrap">{p.body}</div> : null}
             {p.images?.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {p.images.filter(isImage).map((u: string) => (

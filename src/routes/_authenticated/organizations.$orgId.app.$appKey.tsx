@@ -7,6 +7,7 @@ import { OrgDigitalId } from "@/components/org/OrgDigitalId";
 import { OrgChat } from "@/components/org/OrgChat";
 import { OrgNotifications } from "@/components/org/OrgNotifications";
 import { OrgMakron } from "@/components/org/OrgMakron";
+import { OrgEdu } from "@/components/org/OrgEdu";
 
 export const Route = createFileRoute("/_authenticated/organizations/$orgId/app/$appKey")({ component: AppPage });
 
@@ -36,6 +37,7 @@ function AppPage() {
       {appKey === "chat" && <OrgChat {...props} />}
       {appKey === "notifications" && <OrgNotifications {...props} />}
       {appKey === "makron" && <OrgMakron {...props} />}
+      {appKey === "edu" && <OrgEdu {...props} />}
     </div>
   );
 }

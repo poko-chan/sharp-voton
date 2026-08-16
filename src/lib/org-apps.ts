@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 
-export type OrgAppKey = "notifications" | "posts" | "surveys" | "calendar" | "digitalid" | "chat" | "makron";
+export type OrgAppKey = "notifications" | "posts" | "surveys" | "calendar" | "digitalid" | "chat" | "makron" | "edu";
 
 export const ORG_APPS: { key: OrgAppKey; label: string; desc: string; icon: string; color: string }[] = [
   { key: "notifications", label: "通知", desc: "各アプリからのお知らせ", icon: "Bell", color: "#f59e0b" },
@@ -12,6 +12,7 @@ export const ORG_APPS: { key: OrgAppKey; label: string; desc: string; icon: stri
   { key: "digitalid", label: "デジタル証", desc: "学生証・入退室バーコード", icon: "IdCard", color: "#f472b6" },
   { key: "chat", label: "チャット", desc: "承認制のDM・グループ会話", icon: "MessagesSquare", color: "#a78bfa" },
   { key: "makron", label: "Makron for school", desc: "組織専用の問題集・課題", icon: "BookOpen", color: "#fb923c" },
+  { key: "edu", label: "Makron for education", desc: "学年・クラス別の組織専用教材", icon: "GraduationCap", color: "#22c55e" },
 ];
 
 export const GROUP_PERMS: { key: string; label: string; app: string }[] = [
