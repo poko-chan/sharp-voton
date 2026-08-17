@@ -57,6 +57,8 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
   const [results, setResults] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<Record<string, any>>({});
   const [tab, setTab] = useState<"summary" | "individual">("summary");
+  const [secIdx, setSecIdx] = useState(0);
+  const [secPath, setSecPath] = useState<number[]>([]);
 
   const load = async () => {
     const { data, error } = await (supabase as any).from("org_surveys").select("*")
@@ -72,7 +74,7 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
 
   const create = async () => {
     if (!title.trim()) return toast.error("タイトルを入力してください");
-    if (qs.some((q) => !q.label.trim())) return toast.error("質問文が空のものがあります");
+    if (qs.some((q) => q.type !== "section" && !q.label.trim())) return toast.error("質問文が空のものがあります");
     const { error } = await (supabase as any).from("org_surveys").insert({
       organization_id: orgId, group_id: scope === "org" ? null : scope,
       title: title.trim(), description: desc || null, questions: qs, anonymous, created_by: user!.id,
@@ -87,7 +89,9 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
   };
 
   const submit = async (s: any) => {
-    for (const q of s.questions ?? []) {
+    const secs = splitSections(s.questions ?? []);
+    const visible = [...secPath, secIdx].flatMap((i) => secs[i]?.items ?? []);
+    for (const q of visible) {
       if (q.required && (answers[q.id] === undefined || answers[q.id] === "" || (Array.isArray(answers[q.id]) && !answers[q.id].length)))
         return toast.error("必須の質問に回答してください");
     }
