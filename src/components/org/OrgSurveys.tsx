@@ -346,7 +346,7 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
           <Button size="sm" variant={tab === "summary" ? "default" : "outline"} onClick={() => setTab("summary")}>概要</Button>
           <Button size="sm" variant={tab === "individual" ? "default" : "outline"} onClick={() => setTab("individual")}>個別</Button>
         </div>
-        {tab === "summary" && (current.questions ?? []).map((q: any) => {
+        {tab === "summary" && (current.questions ?? []).filter((q: any) => q.type !== "section").map((q: any) => {
           const vals = results.map((r) => r.answers?.[q.id]).filter((v) => v !== undefined && v !== "");
           const opts: string[] = q.type === "yesno" ? ["はい", "いいえ"] : (q.options ?? []);
           const isChoice = CHOICE.includes(q.type);
@@ -374,7 +374,7 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
         {tab === "individual" && results.map((r: any) => (
           <Card key={r.id} className="p-4 space-y-1 text-sm">
             <div className="text-[11px] text-muted-foreground">{current.anonymous ? "匿名" : nameOf(profiles[r.user_id])}</div>
-            {(current.questions ?? []).map((q: any) => (
+            {(current.questions ?? []).filter((q: any) => q.type !== "section").map((q: any) => (
               <div key={q.id}><span className="text-muted-foreground">{q.label}: </span>{Array.isArray(r.answers?.[q.id]) ? r.answers[q.id].join("、") : String(r.answers?.[q.id] ?? "—")}</div>
             ))}
           </Card>
@@ -404,11 +404,11 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
               <div className="font-bold leading-tight">{s.title}</div>
               <div className="text-[11px] text-muted-foreground">
                 {s.group_id ? (ctx.groups.find((g: any) => g.id === s.group_id)?.name ?? "グループ") : "組織全体"}
-                {s.anonymous && " ・匿名"} ・ 質問{(s.questions ?? []).length}問
+                {s.anonymous && " ・匿名"} ・ 質問{(s.questions ?? []).filter((q: any) => q.type !== "section").length}問
               </div>
               {myResponses[s.id] && <div className="text-[11px] text-emerald-600 flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5" />回答済み</div>}
               <div className="flex gap-2 pt-2 mt-auto">
-                <Button size="sm" className="flex-1" onClick={() => { setCurrent(s); setAnswers(myResponses[s.id]?.answers ?? {}); setView("answer"); }}>
+                <Button size="sm" className="flex-1" onClick={() => { setCurrent(s); setAnswers(myResponses[s.id]?.answers ?? {}); setSecIdx(0); setSecPath([]); setView("answer"); }}>
                   {myResponses[s.id] ? "回答を修正" : "回答する"}
                 </Button>
                 {(s.created_by === user?.id || ctx.canAdmin) && (
