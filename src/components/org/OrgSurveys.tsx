@@ -282,23 +282,58 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
   );
 
   /* ---------- 回答画面 ---------- */
-  if (view === "answer" && current) return (
-    <div className="max-w-2xl mx-auto space-y-3">
-      <Button variant="ghost" size="sm" onClick={() => setView("list")}><ArrowLeft className="h-4 w-4 mr-1" />一覧へ</Button>
-      <FormHeader t={current.title} d={current.description} />
-      {current.anonymous && <div className="text-xs text-muted-foreground px-1">この回答は匿名で集計されます。</div>}
-      {(current.questions ?? []).map((q: any) => (
-        <Card key={q.id} className="p-5 space-y-3">
-          <div className="text-sm font-medium">{q.label}{q.required && <span className="text-destructive"> *</span>}</div>
-          {renderInput(q)}
-        </Card>
-      ))}
-      <div className="flex gap-2">
-        <Button onClick={() => submit(current)}>送信</Button>
-        <Button variant="ghost" onClick={() => setView("list")}>キャンセル</Button>
+  if (view === "answer" && current) {
+    const secs = splitSections(current.questions ?? []);
+    const sec = secs[secIdx] ?? { title: "", desc: "", items: [] };
+    const nextIndex = () => {
+      for (const q of sec.items) {
+        if (!["single", "yesno"].includes(q.type)) continue;
+        const target = (q.goto ?? {})[answers[q.id]];
+        if (!target || target === "next") continue;
+        if (target === "end") return -1;
+        return Number(target);
+      }
+      return secIdx + 1;
+    };
+    const target = nextIndex();
+    const isLast = target === -1 || target >= secs.length;
+    const go = () => {
+      for (const q of sec.items) {
+        if (q.required && (answers[q.id] === undefined || answers[q.id] === "" || (Array.isArray(answers[q.id]) && !answers[q.id].length)))
+          return toast.error("必須の質問に回答してください");
+      }
+      setSecPath((p) => [...p, secIdx]);
+      setSecIdx(target);
+    };
+    return (
+      <div className="max-w-2xl mx-auto space-y-3">
+        <Button variant="ghost" size="sm" onClick={() => setView("list")}><ArrowLeft className="h-4 w-4 mr-1" />一覧へ</Button>
+        <FormHeader t={current.title} d={current.description} />
+        {current.anonymous && <div className="text-xs text-muted-foreground px-1">この回答は匿名で集計されます。</div>}
+        {secs.length > 1 && (
+          <div className="text-xs text-muted-foreground px-1">
+            セクション {secIdx + 1} / {secs.length}{sec.title ? `：${sec.title}` : ""}
+          </div>
+        )}
+        {sec.desc && <Card className="p-4 text-sm text-muted-foreground whitespace-pre-wrap">{sec.desc}</Card>}
+        {sec.items.map((q: any) => (
+          <Card key={q.id} className="p-5 space-y-3">
+            <div className="text-sm font-medium">{q.label}{q.required && <span className="text-destructive"> *</span>}</div>
+            {renderInput(q)}
+          </Card>
+        ))}
+        <div className="flex gap-2">
+          {secPath.length > 0 && (
+            <Button variant="outline" onClick={() => { setSecIdx(secPath[secPath.length - 1]); setSecPath((p) => p.slice(0, -1)); }}>戻る</Button>
+          )}
+          {isLast
+            ? <Button onClick={() => submit(current)}>送信</Button>
+            : <Button onClick={go}>次へ</Button>}
+          <Button variant="ghost" onClick={() => setView("list")}>キャンセル</Button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   /* ---------- 結果画面 ---------- */
   if (view === "results" && current) {
