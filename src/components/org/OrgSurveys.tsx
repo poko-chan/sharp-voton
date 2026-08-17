@@ -200,7 +200,19 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
         </div>
       </Card>
 
-      {qs.map((q, i) => (
+      {qs.map((q, i) => q.type === "section" ? (
+        <Card key={q.id} className="p-5 space-y-2 border-l-4 border-l-primary">
+          <div className="flex items-center gap-2">
+            <div className="text-[11px] font-semibold text-primary">セクション {qs.slice(0, i + 1).filter((x) => x.type === "section").length + 1}</div>
+            <button className="ml-auto text-muted-foreground hover:text-destructive"
+              onClick={() => setQs((a) => a.filter((_, idx) => idx !== i))}><Trash2 className="h-4 w-4" /></button>
+          </div>
+          <Input className="text-lg font-bold border-0 border-b rounded-none px-0 focus-visible:ring-0"
+            placeholder="セクションのタイトル" value={q.label} onChange={(e) => setQ(i, { label: e.target.value })} />
+          <Input className="border-0 border-b rounded-none px-0 focus-visible:ring-0"
+            placeholder="セクションの説明（任意）" value={q.desc ?? ""} onChange={(e) => setQ(i, { desc: e.target.value })} />
+        </Card>
+      ) : (
         <Card key={q.id} className="p-5 space-y-3 hover:border-primary/50 transition">
           <div className="flex justify-center -mt-2 text-muted-foreground/40"><GripVertical className="h-4 w-4 rotate-90" /></div>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -230,6 +242,27 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
           )}
           {q.type === "yesno" && <div className="text-xs text-muted-foreground">選択肢：はい / いいえ</div>}
 
+          {["single", "yesno"].includes(q.type) && qs.some((x) => x.type === "section") && (
+            <div className="space-y-1 rounded-lg bg-muted/40 p-3">
+              <div className="text-[11px] font-medium">回答に応じて次のセクションへ移動（分岐）</div>
+              {(q.type === "yesno" ? ["はい", "いいえ"] : (q.options ?? [])).filter(Boolean).map((o: string) => (
+                <div key={o} className="flex items-center gap-2">
+                  <span className="text-xs flex-1 truncate">{o}</span>
+                  <Select value={(q.goto ?? {})[o] ?? "next"} onValueChange={(v) => setQ(i, { goto: { ...(q.goto ?? {}), [o]: v } })}>
+                    <SelectTrigger className="h-8 w-52 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="next">次のセクションへ進む</SelectItem>
+                      <SelectItem value="end">アンケートを終了</SelectItem>
+                      {splitSections(qs).map((s, si) => (
+                        <SelectItem key={si} value={String(si)}>セクション {si + 1}{s.title ? `：${s.title}` : ""}へ</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="flex items-center justify-end gap-3 border-t pt-3">
             <button className="text-muted-foreground hover:text-foreground" title="複製"
               onClick={() => setQs((a) => [...a.slice(0, i + 1), { ...q, id: crypto.randomUUID() }, ...a.slice(i + 1)])}><Copy className="h-4 w-4" /></button>
@@ -242,6 +275,7 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
 
       <div className="flex gap-2 sticky bottom-4">
         <Button variant="outline" onClick={() => setQs((a) => [...a, { ...newQ(), type: "text", options: [] }])}><Plus className="h-4 w-4 mr-1" />質問を追加</Button>
+        <Button variant="outline" onClick={() => setQs((a) => [...a, newSection()])}><Plus className="h-4 w-4 mr-1" />セクションを追加</Button>
         <Button onClick={create}>配信する</Button>
       </div>
     </div>
