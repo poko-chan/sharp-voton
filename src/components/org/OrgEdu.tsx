@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { GraduationCap, Flame, Trophy, Star, Lock, CheckCircle2, Plus, Trash2, Settings2, ArrowLeft, Target, Sparkles } from "lucide-react";
+import { GraduationCap, Flame, Trophy, Star, Lock, CheckCircle2, Plus, Trash2, Settings2, ArrowLeft, Target, Sparkles, Brain, Map } from "lucide-react";
 import { toast } from "sonner";
 import { academicYear, audienceLabel, loadOrgFields, loadOrgYearValues, matchAudience, type OrgField } from "@/lib/org-profile";
+import { OrgEduReview } from "./OrgEduReview";
 
 const HUES = ["#7B6CFF", "#34D7B5", "#38bdf8", "#fb923c", "#f472b6"];
 const levelOf = (xp: number) => Math.floor(Math.sqrt(xp / 40)) + 1;
@@ -25,7 +26,7 @@ export function OrgEdu({ orgId, ctx }: { orgId: string; ctx: any }) {
   const [attempts, setAttempts] = useState<any[]>([]);
   const [streak, setStreak] = useState<any>(null);
   const [subjectId, setSubjectId] = useState<string | null>(null);
-  const [mode, setMode] = useState<"home" | "play" | "manage">("home");
+  const [mode, setMode] = useState<"home" | "play" | "manage" | "review">("home");
   const [unit, setUnit] = useState<any>(null);
   const isStaff = ctx.isStaff;
 
@@ -78,8 +79,24 @@ export function OrgEdu({ orgId, ctx }: { orgId: string; ctx: any }) {
       onDone={() => { setMode("home"); load(); }} />;
   }
 
+  const TabBar = (
+    <div className="flex gap-2">
+      <Button size="sm" variant={mode === "home" ? "default" : "outline"} onClick={() => setMode("home")}>
+        <Map className="h-4 w-4 mr-1" />カリキュラム
+      </Button>
+      <Button size="sm" variant={mode === "review" ? "default" : "outline"} onClick={() => setMode("review")}>
+        <Brain className="h-4 w-4 mr-1" />AI復習{mistakes > 0 ? `（${mistakes}）` : ""}
+      </Button>
+    </div>
+  );
+
+  if (mode === "review") {
+    return <div className="max-w-3xl mx-auto space-y-4">{TabBar}<OrgEduReview orgId={orgId} /></div>;
+  }
+
   return (
     <div className="max-w-3xl mx-auto space-y-5">
+      {TabBar}
       <Card className="p-5 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent border-primary/30">
         <div className="flex items-center gap-3 flex-wrap">
           <div className="h-12 w-12 rounded-2xl bg-primary/20 grid place-items-center"><GraduationCap className="h-6 w-6 text-primary" /></div>
@@ -229,19 +246,14 @@ function Play({ orgId, unit, questions, onExit }: { orgId: string; unit: any; qu
 function Manage({ orgId, fields, subjects, units, questions, onDone }:
   { orgId: string; fields: OrgField[]; subjects: any[]; units: any[]; questions: any[]; onDone: () => void }) {
   const { user } = useAuth();
+  const [tab, setTab] = useState<"questions" | "structure">("questions");
   const [subjectName, setSubjectName] = useState("");
   const [subjectId, setSubjectId] = useState(subjects[0]?.id ?? "");
   const [unitTitle, setUnitTitle] = useState("");
   const [unitLevel, setUnitLevel] = useState("1");
   const [unitAud, setUnitAud] = useState<Record<string, string[]>>({});
   const [unitId, setUnitId] = useState(units[0]?.id ?? "");
-  const [kind, setKind] = useState("choice");
-  const [body, setBody] = useState("");
-  const [choices, setChoices] = useState<string[]>(["", "", "", ""]);
-  const [answer, setAnswer] = useState("");
-  const [explanation, setExplanation] = useState("");
-  const [hint, setHint] = useState("");
-  const [qAud, setQAud] = useState<Record<string, string[]>>({});
+  const [draft, setDraft] = useState<any>(null);
 
   const selectFields = fields.filter((f) => f.type === "select");
   const toggleAud = (setter: any, key: string, opt: string) => setter((s: any) => {
@@ -284,17 +296,35 @@ function Manage({ orgId, fields, subjects, units, questions, onDone }:
     setUnitTitle(""); setUnitAud({}); toast.success("単元を追加しました"); onDone();
   };
 
-  const addQuestion = async () => {
-    if (!unitId || !body.trim() || !answer.trim()) return toast.error("単元・問題文・答えを入力してください");
-    const { error } = await (supabase as any).from("org_edu_questions").insert({
-      organization_id: orgId, unit_id: unitId, kind, body: body.trim(),
-      choices: kind === "choice" ? choices.filter(Boolean) : [],
-      answer: answer.trim(), explanation: explanation || null, hint_text: hint || null,
-      audience: qAud, created_by: user!.id, sort_order: questions.filter((q) => q.unit_id === unitId).length,
-    });
+  const newDraft = () => setDraft({
+    unit_id: unitId || units[0]?.id || "", kind: "choice", body: "",
+    choices: ["", "", "", ""], answer: "", explanation: "", hint_text: "", audience: {},
+  });
+
+  const editDraft = (q: any) => setDraft({
+    id: q.id, unit_id: q.unit_id, kind: q.kind, body: q.body,
+    choices: Array.isArray(q.choices) && q.choices.length ? q.choices : ["", "", "", ""],
+    answer: q.answer ?? "", explanation: q.explanation ?? "", hint_text: q.hint_text ?? "", audience: q.audience ?? {},
+  });
+
+  const saveQuestion = async () => {
+    if (!draft?.unit_id || !draft.body.trim() || !draft.answer.trim())
+      return toast.error("単元・問題文・正解を入力してください");
+    const payload = {
+      organization_id: orgId, unit_id: draft.unit_id, kind: draft.kind, body: draft.body.trim(),
+      choices: draft.kind === "choice" ? draft.choices.filter(Boolean) : [],
+      answer: draft.answer.trim(), explanation: draft.explanation || null, hint_text: draft.hint_text || null,
+      audience: draft.audience ?? {},
+    };
+    const { error } = draft.id
+      ? await (supabase as any).from("org_edu_questions").update(payload).eq("id", draft.id)
+      : await (supabase as any).from("org_edu_questions").insert({
+          ...payload, created_by: user!.id,
+          sort_order: questions.filter((q) => q.unit_id === draft.unit_id).length,
+        });
     if (error) return toast.error(error.message);
-    setBody(""); setAnswer(""); setExplanation(""); setHint(""); setChoices(["", "", "", ""]); setQAud({});
-    toast.success("問題を追加しました"); onDone();
+    toast.success(draft.id ? "問題を更新しました" : "問題を追加しました");
+    setDraft(null); onDone();
   };
 
   const del = async (table: string, id: string) => {
@@ -303,84 +333,157 @@ function Manage({ orgId, fields, subjects, units, questions, onDone }:
     onDone();
   };
 
+  const unitsOfSubject = units.filter((u) => !subjectId || u.subject_id === subjectId);
+  const unitLabel = (id: string) => units.find((u) => u.id === id)?.title ?? "単元";
+
   return (
     <div className="max-w-3xl mx-auto space-y-4">
-      <Button size="sm" variant="ghost" onClick={onDone}><ArrowLeft className="h-4 w-4 mr-1" />カリキュラムへ戻る</Button>
+      <div className="flex items-center gap-2 flex-wrap">
+        <Button size="sm" variant="ghost" onClick={onDone}><ArrowLeft className="h-4 w-4 mr-1" />カリキュラムへ戻る</Button>
+        <Button size="sm" variant={tab === "questions" ? "default" : "outline"} onClick={() => setTab("questions")}>問題</Button>
+        <Button size="sm" variant={tab === "structure" ? "default" : "outline"} onClick={() => setTab("structure")}>教科・単元</Button>
+      </div>
 
-      <Card className="p-4 space-y-2">
-        <div className="font-bold text-sm">教科</div>
-        <div className="flex flex-wrap gap-2">
-          {subjects.map((s) => (
-            <span key={s.id} className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs" style={{ borderColor: s.color }}>
-              {s.name}<button onClick={() => del("org_edu_subjects", s.id)}><Trash2 className="h-3 w-3 text-destructive" /></button>
-            </span>
-          ))}
-        </div>
-        <div className="flex gap-2">
-          <Input className="w-48" placeholder="教科名（例: 数学）" value={subjectName} onChange={(e) => setSubjectName(e.target.value)} />
-          <Button onClick={addSubject}><Plus className="h-4 w-4 mr-1" />追加</Button>
-        </div>
-      </Card>
-
-      <Card className="p-4 space-y-2">
-        <div className="font-bold text-sm">単元</div>
-        <div className="flex flex-wrap gap-2">
-          <Select value={subjectId} onValueChange={setSubjectId}>
-            <SelectTrigger className="w-40 h-9"><SelectValue placeholder="教科" /></SelectTrigger>
-            <SelectContent>{subjects.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
-          </Select>
-          <Input className="w-52" placeholder="単元名（例: 一次方程式）" value={unitTitle} onChange={(e) => setUnitTitle(e.target.value)} />
-          <Input className="w-20" type="number" min={1} value={unitLevel} onChange={(e) => setUnitLevel(e.target.value)} />
-        </div>
-        <AudPicker value={unitAud} onToggle={(k, o) => toggleAud(setUnitAud, k, o)} />
-        <Button size="sm" onClick={addUnit}><Plus className="h-4 w-4 mr-1" />単元を追加</Button>
-        <div className="space-y-1 pt-2">
-          {units.filter((u) => u.subject_id === subjectId).map((u) => (
-            <div key={u.id} className="flex items-center gap-2 text-xs border rounded-lg px-2 py-1">
-              <span className="font-medium">Lv{u.level} {u.title}</span>
-              <span className="text-muted-foreground">{audienceLabel(u.audience, fields)}</span>
-              <span className="ml-auto">{questions.filter((q) => q.unit_id === u.id).length}問</span>
-              <button onClick={() => del("org_edu_units", u.id)}><Trash2 className="h-3 w-3 text-destructive" /></button>
+      {tab === "structure" && (
+        <>
+          <Card className="p-4 space-y-2">
+            <div className="font-bold text-sm">教科</div>
+            <div className="flex flex-wrap gap-2">
+              {subjects.map((s) => (
+                <span key={s.id} className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs" style={{ borderColor: s.color }}>
+                  {s.name}<button onClick={() => del("org_edu_subjects", s.id)}><Trash2 className="h-3 w-3 text-destructive" /></button>
+                </span>
+              ))}
             </div>
-          ))}
-        </div>
-      </Card>
+            <div className="flex gap-2">
+              <Input className="w-48" placeholder="教科名（例: 数学）" value={subjectName} onChange={(e) => setSubjectName(e.target.value)} />
+              <Button onClick={addSubject}><Plus className="h-4 w-4 mr-1" />追加</Button>
+            </div>
+          </Card>
 
-      <Card className="p-4 space-y-2">
-        <div className="font-bold text-sm">問題を作る</div>
-        <div className="flex flex-wrap gap-2">
-          <Select value={unitId} onValueChange={setUnitId}>
-            <SelectTrigger className="w-56 h-9"><SelectValue placeholder="単元を選ぶ" /></SelectTrigger>
-            <SelectContent>{units.map((u) => <SelectItem key={u.id} value={u.id}>{u.title}</SelectItem>)}</SelectContent>
-          </Select>
-          <Select value={kind} onValueChange={setKind}>
-            <SelectTrigger className="w-36 h-9"><SelectValue /></SelectTrigger>
-            <SelectContent><SelectItem value="choice">選択式</SelectItem><SelectItem value="text">記述</SelectItem></SelectContent>
-          </Select>
-        </div>
-        <Textarea rows={3} placeholder="問題文" value={body} onChange={(e) => setBody(e.target.value)} />
-        {kind === "choice" && (
-          <div className="grid sm:grid-cols-2 gap-2">
-            {choices.map((c, i) => (
-              <Input key={i} placeholder={`選択肢${i + 1}`} value={c}
-                onChange={(e) => setChoices((a) => a.map((x, j) => j === i ? e.target.value : x))} />
-            ))}
+          <Card className="p-4 space-y-2">
+            <div className="font-bold text-sm">単元</div>
+            <div className="flex flex-wrap gap-2">
+              <Select value={subjectId} onValueChange={setSubjectId}>
+                <SelectTrigger className="w-40 h-9"><SelectValue placeholder="教科" /></SelectTrigger>
+                <SelectContent>{subjects.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+              </Select>
+              <Input className="w-52" placeholder="単元名（例: 一次方程式）" value={unitTitle} onChange={(e) => setUnitTitle(e.target.value)} />
+              <Input className="w-20" type="number" min={1} value={unitLevel} onChange={(e) => setUnitLevel(e.target.value)} />
+            </div>
+            <AudPicker value={unitAud} onToggle={(k, o) => toggleAud(setUnitAud, k, o)} />
+            <Button size="sm" onClick={addUnit}><Plus className="h-4 w-4 mr-1" />単元を追加</Button>
+            <div className="space-y-1 pt-2">
+              {unitsOfSubject.map((u) => (
+                <div key={u.id} className="flex items-center gap-2 text-xs border rounded-lg px-2 py-1">
+                  <span className="font-medium">Lv{u.level} {u.title}</span>
+                  <span className="text-muted-foreground">{audienceLabel(u.audience, fields)}</span>
+                  <span className="ml-auto">{questions.filter((q) => q.unit_id === u.id).length}問</span>
+                  <button onClick={() => del("org_edu_units", u.id)}><Trash2 className="h-3 w-3 text-destructive" /></button>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </>
+      )}
+
+      {tab === "questions" && (
+        <Card className="p-4 space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Select value={subjectId} onValueChange={(v) => { setSubjectId(v); const first = units.find((u) => u.subject_id === v); setUnitId(first?.id ?? ""); }}>
+              <SelectTrigger className="w-40 h-9"><SelectValue placeholder="教科" /></SelectTrigger>
+              <SelectContent>{subjects.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+            </Select>
+            <Select value={unitId} onValueChange={setUnitId}>
+              <SelectTrigger className="w-56 h-9"><SelectValue placeholder="単元を選ぶ" /></SelectTrigger>
+              <SelectContent>{unitsOfSubject.map((u) => <SelectItem key={u.id} value={u.id}>Lv{u.level} {u.title}</SelectItem>)}</SelectContent>
+            </Select>
+            <Button size="sm" onClick={newDraft} disabled={!unitId}><Plus className="h-4 w-4 mr-1" />問題を追加</Button>
           </div>
-        )}
-        <Input placeholder="正解（選択式は選択肢と同じ文字列）" value={answer} onChange={(e) => setAnswer(e.target.value)} />
-        <Textarea rows={2} placeholder="解説（任意）" value={explanation} onChange={(e) => setExplanation(e.target.value)} />
-        <Input placeholder="ヒント（任意・手動入力）" value={hint} onChange={(e) => setHint(e.target.value)} />
-        <AudPicker value={qAud} onToggle={(k, o) => toggleAud(setQAud, k, o)} />
-        <Button onClick={addQuestion}><Plus className="h-4 w-4 mr-1" />問題を追加</Button>
-        <div className="space-y-1 pt-2">
-          {questions.filter((q) => q.unit_id === unitId).map((q) => (
-            <div key={q.id} className="flex items-center gap-2 text-xs border rounded-lg px-2 py-1">
-              <span className="truncate flex-1">{q.body}</span>
-              <button onClick={() => del("org_edu_questions", q.id)}><Trash2 className="h-3 w-3 text-destructive" /></button>
-            </div>
-          ))}
-        </div>
-      </Card>
+
+          <div className="space-y-1">
+            {questions.filter((q) => q.unit_id === unitId).map((q, i) => (
+              <div key={q.id} className="flex items-center gap-2 text-xs border rounded-lg px-2 py-1">
+                <span className="text-muted-foreground">{i + 1}.</span>
+                <span className="truncate flex-1">{q.body}</span>
+                <span className="text-[10px] text-muted-foreground">{q.kind === "choice" ? "選択式" : "記述"}</span>
+                <Button size="sm" variant="ghost" className="h-6 px-2" onClick={() => editDraft(q)}>編集</Button>
+                <button onClick={() => del("org_edu_questions", q.id)}><Trash2 className="h-3 w-3 text-destructive" /></button>
+              </div>
+            ))}
+            {unitId && questions.filter((q) => q.unit_id === unitId).length === 0 && (
+              <div className="text-xs text-muted-foreground text-center p-6">問題はまだありません。「問題を追加」から作成してください。</div>
+            )}
+          </div>
+
+          {draft && (
+            <Card className="p-4 space-y-3 bg-muted/30">
+              <div className="text-xs text-muted-foreground">{unitLabel(draft.unit_id)} の問題</div>
+              <Textarea rows={3} placeholder="問題文" value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} />
+              <div className="grid sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs">単元</label>
+                  <Select value={draft.unit_id} onValueChange={(v) => setDraft({ ...draft, unit_id: v })}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>{units.map((u) => <SelectItem key={u.id} value={u.id}>Lv{u.level} {u.title}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-xs">タイプ</label>
+                  <Select value={draft.kind} onValueChange={(v) => setDraft({ ...draft, kind: v, answer: "" })}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="choice">選択式</SelectItem><SelectItem value="text">記述</SelectItem></SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {draft.kind === "choice" ? (
+                <div className="space-y-1">
+                  <label className="text-xs">選択肢（ラジオで正解を選択）</label>
+                  {draft.choices.map((o: string, i: number) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <input type="radio" checked={!!o && draft.answer === o} onChange={() => o && setDraft({ ...draft, answer: o })} />
+                      <Input value={o} placeholder={`選択肢${i + 1}`} onChange={(e) => {
+                        const cs = [...draft.choices]; const prev = cs[i]; cs[i] = e.target.value;
+                        setDraft({ ...draft, choices: cs, answer: draft.answer === prev ? e.target.value : draft.answer });
+                      }} />
+                      <Button size="sm" variant="ghost" onClick={() => setDraft({
+                        ...draft, choices: draft.choices.filter((_: any, j: number) => j !== i),
+                        answer: draft.answer === o ? "" : draft.answer,
+                      })}><Trash2 className="h-3 w-3" /></Button>
+                    </div>
+                  ))}
+                  <Button size="sm" variant="outline" onClick={() => setDraft({ ...draft, choices: [...draft.choices, ""] })}>
+                    <Plus className="h-3 w-3 mr-1" />選択肢追加
+                  </Button>
+                </div>
+              ) : (
+                <div>
+                  <label className="text-xs">正解（前後の空白は無視して照合します）</label>
+                  <Input value={draft.answer} onChange={(e) => setDraft({ ...draft, answer: e.target.value })} />
+                </div>
+              )}
+
+              <div>
+                <label className="text-xs">解説（任意）</label>
+                <Textarea rows={2} value={draft.explanation} onChange={(e) => setDraft({ ...draft, explanation: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-xs">ヒント（任意。AIは使わず作成者が記入）</label>
+                <Textarea rows={2} value={draft.hint_text} onChange={(e) => setDraft({ ...draft, hint_text: e.target.value })} />
+              </div>
+              <AudPicker value={draft.audience ?? {}} onToggle={(k, o) => setDraft((d: any) => {
+                const list: string[] = d.audience?.[k] ?? [];
+                return { ...d, audience: { ...(d.audience ?? {}), [k]: list.includes(o) ? list.filter((x) => x !== o) : [...list, o] } };
+              })} />
+              <div className="flex gap-2">
+                <Button onClick={saveQuestion}>{draft.id ? "更新" : "作成"}</Button>
+                <Button variant="ghost" onClick={() => setDraft(null)}>キャンセル</Button>
+              </div>
+            </Card>
+          )}
+        </Card>
+      )}
     </div>
   );
 }

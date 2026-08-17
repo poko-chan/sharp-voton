@@ -30,6 +30,17 @@ export const Q_TYPES: { key: string; label: string }[] = [
 
 const CHOICE = ["single", "multi", "dropdown", "yesno"];
 const newQ = () => ({ id: crypto.randomUUID(), type: "single", label: "", options: ["選択肢 1"], required: true });
+const newSection = () => ({ id: crypto.randomUUID(), type: "section", label: "", desc: "" });
+
+/** 質問配列をセクション単位に分割する（先頭にセクション見出しが無ければ既定の1つ目） */
+export function splitSections(qs: any[]) {
+  const secs: { title: string; desc?: string; items: any[] }[] = [{ title: "", desc: "", items: [] }];
+  for (const q of qs ?? []) {
+    if (q.type === "section") secs.push({ title: q.label, desc: q.desc, items: [] });
+    else secs[secs.length - 1].items.push(q);
+  }
+  return secs.filter((s, i) => i === 0 ? s.items.length > 0 : true);
+}
 
 export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
   const { user } = useAuth();
@@ -46,6 +57,8 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
   const [results, setResults] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<Record<string, any>>({});
   const [tab, setTab] = useState<"summary" | "individual">("summary");
+  const [secIdx, setSecIdx] = useState(0);
+  const [secPath, setSecPath] = useState<number[]>([]);
 
   const load = async () => {
     const { data, error } = await (supabase as any).from("org_surveys").select("*")
@@ -61,7 +74,7 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
 
   const create = async () => {
     if (!title.trim()) return toast.error("タイトルを入力してください");
-    if (qs.some((q) => !q.label.trim())) return toast.error("質問文が空のものがあります");
+    if (qs.some((q) => q.type !== "section" && !q.label.trim())) return toast.error("質問文が空のものがあります");
     const { error } = await (supabase as any).from("org_surveys").insert({
       organization_id: orgId, group_id: scope === "org" ? null : scope,
       title: title.trim(), description: desc || null, questions: qs, anonymous, created_by: user!.id,
@@ -76,7 +89,9 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
   };
 
   const submit = async (s: any) => {
-    for (const q of s.questions ?? []) {
+    const secs = splitSections(s.questions ?? []);
+    const visible = [...secPath, secIdx].flatMap((i) => secs[i]?.items ?? []);
+    for (const q of visible) {
       if (q.required && (answers[q.id] === undefined || answers[q.id] === "" || (Array.isArray(answers[q.id]) && !answers[q.id].length)))
         return toast.error("必須の質問に回答してください");
     }
@@ -185,7 +200,19 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
         </div>
       </Card>
 
-      {qs.map((q, i) => (
+      {qs.map((q, i) => q.type === "section" ? (
+        <Card key={q.id} className="p-5 space-y-2 border-l-4 border-l-primary">
+          <div className="flex items-center gap-2">
+            <div className="text-[11px] font-semibold text-primary">セクション {qs.slice(0, i + 1).filter((x) => x.type === "section").length + 1}</div>
+            <button className="ml-auto text-muted-foreground hover:text-destructive"
+              onClick={() => setQs((a) => a.filter((_, idx) => idx !== i))}><Trash2 className="h-4 w-4" /></button>
+          </div>
+          <Input className="text-lg font-bold border-0 border-b rounded-none px-0 focus-visible:ring-0"
+            placeholder="セクションのタイトル" value={q.label} onChange={(e) => setQ(i, { label: e.target.value })} />
+          <Input className="border-0 border-b rounded-none px-0 focus-visible:ring-0"
+            placeholder="セクションの説明（任意）" value={q.desc ?? ""} onChange={(e) => setQ(i, { desc: e.target.value })} />
+        </Card>
+      ) : (
         <Card key={q.id} className="p-5 space-y-3 hover:border-primary/50 transition">
           <div className="flex justify-center -mt-2 text-muted-foreground/40"><GripVertical className="h-4 w-4 rotate-90" /></div>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -215,6 +242,27 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
           )}
           {q.type === "yesno" && <div className="text-xs text-muted-foreground">選択肢：はい / いいえ</div>}
 
+          {["single", "yesno"].includes(q.type) && qs.some((x) => x.type === "section") && (
+            <div className="space-y-1 rounded-lg bg-muted/40 p-3">
+              <div className="text-[11px] font-medium">回答に応じて次のセクションへ移動（分岐）</div>
+              {(q.type === "yesno" ? ["はい", "いいえ"] : (q.options ?? [])).filter(Boolean).map((o: string) => (
+                <div key={o} className="flex items-center gap-2">
+                  <span className="text-xs flex-1 truncate">{o}</span>
+                  <Select value={(q.goto ?? {})[o] ?? "next"} onValueChange={(v) => setQ(i, { goto: { ...(q.goto ?? {}), [o]: v } })}>
+                    <SelectTrigger className="h-8 w-52 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="next">次のセクションへ進む</SelectItem>
+                      <SelectItem value="end">アンケートを終了</SelectItem>
+                      {splitSections(qs).map((s, si) => (
+                        <SelectItem key={si} value={String(si)}>セクション {si + 1}{s.title ? `：${s.title}` : ""}へ</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="flex items-center justify-end gap-3 border-t pt-3">
             <button className="text-muted-foreground hover:text-foreground" title="複製"
               onClick={() => setQs((a) => [...a.slice(0, i + 1), { ...q, id: crypto.randomUUID() }, ...a.slice(i + 1)])}><Copy className="h-4 w-4" /></button>
@@ -227,29 +275,65 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
 
       <div className="flex gap-2 sticky bottom-4">
         <Button variant="outline" onClick={() => setQs((a) => [...a, { ...newQ(), type: "text", options: [] }])}><Plus className="h-4 w-4 mr-1" />質問を追加</Button>
+        <Button variant="outline" onClick={() => setQs((a) => [...a, newSection()])}><Plus className="h-4 w-4 mr-1" />セクションを追加</Button>
         <Button onClick={create}>配信する</Button>
       </div>
     </div>
   );
 
   /* ---------- 回答画面 ---------- */
-  if (view === "answer" && current) return (
-    <div className="max-w-2xl mx-auto space-y-3">
-      <Button variant="ghost" size="sm" onClick={() => setView("list")}><ArrowLeft className="h-4 w-4 mr-1" />一覧へ</Button>
-      <FormHeader t={current.title} d={current.description} />
-      {current.anonymous && <div className="text-xs text-muted-foreground px-1">この回答は匿名で集計されます。</div>}
-      {(current.questions ?? []).map((q: any) => (
-        <Card key={q.id} className="p-5 space-y-3">
-          <div className="text-sm font-medium">{q.label}{q.required && <span className="text-destructive"> *</span>}</div>
-          {renderInput(q)}
-        </Card>
-      ))}
-      <div className="flex gap-2">
-        <Button onClick={() => submit(current)}>送信</Button>
-        <Button variant="ghost" onClick={() => setView("list")}>キャンセル</Button>
+  if (view === "answer" && current) {
+    const secs = splitSections(current.questions ?? []);
+    const sec = secs[secIdx] ?? { title: "", desc: "", items: [] };
+    const nextIndex = () => {
+      for (const q of sec.items) {
+        if (!["single", "yesno"].includes(q.type)) continue;
+        const target = (q.goto ?? {})[answers[q.id]];
+        if (!target || target === "next") continue;
+        if (target === "end") return -1;
+        return Number(target);
+      }
+      return secIdx + 1;
+    };
+    const target = nextIndex();
+    const isLast = target === -1 || target >= secs.length;
+    const go = () => {
+      for (const q of sec.items) {
+        if (q.required && (answers[q.id] === undefined || answers[q.id] === "" || (Array.isArray(answers[q.id]) && !answers[q.id].length)))
+          return toast.error("必須の質問に回答してください");
+      }
+      setSecPath((p) => [...p, secIdx]);
+      setSecIdx(target);
+    };
+    return (
+      <div className="max-w-2xl mx-auto space-y-3">
+        <Button variant="ghost" size="sm" onClick={() => setView("list")}><ArrowLeft className="h-4 w-4 mr-1" />一覧へ</Button>
+        <FormHeader t={current.title} d={current.description} />
+        {current.anonymous && <div className="text-xs text-muted-foreground px-1">この回答は匿名で集計されます。</div>}
+        {secs.length > 1 && (
+          <div className="text-xs text-muted-foreground px-1">
+            セクション {secIdx + 1} / {secs.length}{sec.title ? `：${sec.title}` : ""}
+          </div>
+        )}
+        {sec.desc && <Card className="p-4 text-sm text-muted-foreground whitespace-pre-wrap">{sec.desc}</Card>}
+        {sec.items.map((q: any) => (
+          <Card key={q.id} className="p-5 space-y-3">
+            <div className="text-sm font-medium">{q.label}{q.required && <span className="text-destructive"> *</span>}</div>
+            {renderInput(q)}
+          </Card>
+        ))}
+        <div className="flex gap-2">
+          {secPath.length > 0 && (
+            <Button variant="outline" onClick={() => { setSecIdx(secPath[secPath.length - 1]); setSecPath((p) => p.slice(0, -1)); }}>戻る</Button>
+          )}
+          {isLast
+            ? <Button onClick={() => submit(current)}>送信</Button>
+            : <Button onClick={go}>次へ</Button>}
+          <Button variant="ghost" onClick={() => setView("list")}>キャンセル</Button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   /* ---------- 結果画面 ---------- */
   if (view === "results" && current) {
@@ -262,7 +346,7 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
           <Button size="sm" variant={tab === "summary" ? "default" : "outline"} onClick={() => setTab("summary")}>概要</Button>
           <Button size="sm" variant={tab === "individual" ? "default" : "outline"} onClick={() => setTab("individual")}>個別</Button>
         </div>
-        {tab === "summary" && (current.questions ?? []).map((q: any) => {
+        {tab === "summary" && (current.questions ?? []).filter((q: any) => q.type !== "section").map((q: any) => {
           const vals = results.map((r) => r.answers?.[q.id]).filter((v) => v !== undefined && v !== "");
           const opts: string[] = q.type === "yesno" ? ["はい", "いいえ"] : (q.options ?? []);
           const isChoice = CHOICE.includes(q.type);
@@ -290,7 +374,7 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
         {tab === "individual" && results.map((r: any) => (
           <Card key={r.id} className="p-4 space-y-1 text-sm">
             <div className="text-[11px] text-muted-foreground">{current.anonymous ? "匿名" : nameOf(profiles[r.user_id])}</div>
-            {(current.questions ?? []).map((q: any) => (
+            {(current.questions ?? []).filter((q: any) => q.type !== "section").map((q: any) => (
               <div key={q.id}><span className="text-muted-foreground">{q.label}: </span>{Array.isArray(r.answers?.[q.id]) ? r.answers[q.id].join("、") : String(r.answers?.[q.id] ?? "—")}</div>
             ))}
           </Card>
@@ -320,11 +404,11 @@ export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
               <div className="font-bold leading-tight">{s.title}</div>
               <div className="text-[11px] text-muted-foreground">
                 {s.group_id ? (ctx.groups.find((g: any) => g.id === s.group_id)?.name ?? "グループ") : "組織全体"}
-                {s.anonymous && " ・匿名"} ・ 質問{(s.questions ?? []).length}問
+                {s.anonymous && " ・匿名"} ・ 質問{(s.questions ?? []).filter((q: any) => q.type !== "section").length}問
               </div>
               {myResponses[s.id] && <div className="text-[11px] text-emerald-600 flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5" />回答済み</div>}
               <div className="flex gap-2 pt-2 mt-auto">
-                <Button size="sm" className="flex-1" onClick={() => { setCurrent(s); setAnswers(myResponses[s.id]?.answers ?? {}); setView("answer"); }}>
+                <Button size="sm" className="flex-1" onClick={() => { setCurrent(s); setAnswers(myResponses[s.id]?.answers ?? {}); setSecIdx(0); setSecPath([]); setView("answer"); }}>
                   {myResponses[s.id] ? "回答を修正" : "回答する"}
                 </Button>
                 {(s.created_by === user?.id || ctx.canAdmin) && (
