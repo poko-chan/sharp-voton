@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { GraduationCap, Flame, Trophy, Star, Lock, CheckCircle2, Plus, Trash2, Settings2, ArrowLeft, Target, Sparkles } from "lucide-react";
+import { GraduationCap, Flame, Trophy, Star, Lock, CheckCircle2, Plus, Trash2, Settings2, ArrowLeft, Target, Sparkles, Brain, Map } from "lucide-react";
 import { toast } from "sonner";
 import { academicYear, audienceLabel, loadOrgFields, loadOrgYearValues, matchAudience, type OrgField } from "@/lib/org-profile";
+import { OrgEduReview } from "./OrgEduReview";
 
 const HUES = ["#7B6CFF", "#34D7B5", "#38bdf8", "#fb923c", "#f472b6"];
 const levelOf = (xp: number) => Math.floor(Math.sqrt(xp / 40)) + 1;
@@ -25,7 +26,7 @@ export function OrgEdu({ orgId, ctx }: { orgId: string; ctx: any }) {
   const [attempts, setAttempts] = useState<any[]>([]);
   const [streak, setStreak] = useState<any>(null);
   const [subjectId, setSubjectId] = useState<string | null>(null);
-  const [mode, setMode] = useState<"home" | "play" | "manage">("home");
+  const [mode, setMode] = useState<"home" | "play" | "manage" | "review">("home");
   const [unit, setUnit] = useState<any>(null);
   const isStaff = ctx.isStaff;
 
@@ -78,8 +79,24 @@ export function OrgEdu({ orgId, ctx }: { orgId: string; ctx: any }) {
       onDone={() => { setMode("home"); load(); }} />;
   }
 
+  const TabBar = (
+    <div className="flex gap-2">
+      <Button size="sm" variant={mode === "home" ? "default" : "outline"} onClick={() => setMode("home")}>
+        <Map className="h-4 w-4 mr-1" />カリキュラム
+      </Button>
+      <Button size="sm" variant={mode === "review" ? "default" : "outline"} onClick={() => setMode("review")}>
+        <Brain className="h-4 w-4 mr-1" />AI復習{mistakes > 0 ? `（${mistakes}）` : ""}
+      </Button>
+    </div>
+  );
+
+  if (mode === "review") {
+    return <div className="max-w-3xl mx-auto space-y-4">{TabBar}<OrgEduReview orgId={orgId} /></div>;
+  }
+
   return (
     <div className="max-w-3xl mx-auto space-y-5">
+      {TabBar}
       <Card className="p-5 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent border-primary/30">
         <div className="flex items-center gap-3 flex-wrap">
           <div className="h-12 w-12 rounded-2xl bg-primary/20 grid place-items-center"><GraduationCap className="h-6 w-6 text-primary" /></div>
