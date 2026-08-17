@@ -30,6 +30,17 @@ export const Q_TYPES: { key: string; label: string }[] = [
 
 const CHOICE = ["single", "multi", "dropdown", "yesno"];
 const newQ = () => ({ id: crypto.randomUUID(), type: "single", label: "", options: ["選択肢 1"], required: true });
+const newSection = () => ({ id: crypto.randomUUID(), type: "section", label: "", desc: "" });
+
+/** 質問配列をセクション単位に分割する（先頭にセクション見出しが無ければ既定の1つ目） */
+export function splitSections(qs: any[]) {
+  const secs: { title: string; desc?: string; items: any[] }[] = [{ title: "", desc: "", items: [] }];
+  for (const q of qs ?? []) {
+    if (q.type === "section") secs.push({ title: q.label, desc: q.desc, items: [] });
+    else secs[secs.length - 1].items.push(q);
+  }
+  return secs.filter((s, i) => i === 0 ? s.items.length > 0 : true);
+}
 
 export function OrgSurveys({ orgId, ctx }: { orgId: string; ctx: any }) {
   const { user } = useAuth();
