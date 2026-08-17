@@ -20,6 +20,9 @@ export function OrgChat({ orgId, ctx, moderateGroupId }: { orgId: string; ctx: a
   const [members, setMembers] = useState<any[]>([]);
   const [showNew, setShowNew] = useState(false);
   const [q, setQ] = useState("");
+  const [listQ, setListQ] = useState("");
+  const [tab, setTab] = useState<"all" | "dm" | "group" | "unread" | "pending">("all");
+  const [lastMsgs, setLastMsgs] = useState<Record<string, any>>({});
   const [editing, setEditing] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
 
@@ -42,6 +45,14 @@ export function OrgChat({ orgId, ctx, moderateGroupId }: { orgId: string; ctx: a
     if (m?.length) setProfiles((pr) => ({ ...pr }));
     const prof = await loadOrgProfiles(orgId, (m ?? []).map((x: any) => x.user_id));
     setProfiles((pr) => ({ ...prof, ...pr }));
+    if (ids.length) {
+      const { data: lm } = await (supabase as any).from("org_chat_messages")
+        .select("thread_id, body, created_at, sender_id, deleted_at").in("thread_id", ids)
+        .order("created_at", { ascending: false }).limit(500);
+      const last: Record<string, any> = {};
+      for (const m of lm ?? []) if (!last[m.thread_id]) last[m.thread_id] = m;
+      setLastMsgs(last);
+    } else setLastMsgs({});
   };
   useEffect(() => { load(); }, [orgId, moderateGroupId]);
 
@@ -85,12 +96,25 @@ export function OrgChat({ orgId, ctx, moderateGroupId }: { orgId: string; ctx: a
 
   const pending = threads.filter((t) => myPart(t)?.status === "pending");
   const accepted = threads.filter((t) => !myPart(t) || myPart(t)?.status === "accepted");
+  const isUnread = (t: any) => {
+    const m = lastMsgs[t.id];
+    if (!m || m.sender_id === user?.id) return false;
+    const read = myPart(t)?.last_read_at;
+    return !read || read < m.created_at;
+  };
+  const unreadCount = accepted.filter(isUnread).length;
+  const visible = (tab === "pending" ? pending : accepted)
+    .filter((t) => tab !== "dm" || t.kind !== "group")
+    .filter((t) => tab !== "group" || t.kind === "group")
+    .filter((t) => tab !== "unread" || isUnread(t))
+    .filter((t) => !listQ || title(t).includes(listQ) || (lastMsgs[t.id]?.body ?? "").includes(listQ));
   const activeThread = threads.find((t) => t.id === active);
   const activeStatus = activeThread ? myPart(activeThread)?.status : null;
 
   const ThreadItem = ({ t }: { t: any }) => {
     const others = (parts[t.id] ?? []).filter((p) => p.user_id !== user?.id);
     const av = profiles[others[0]?.user_id]?.avatar_url;
+    const last = lastMsgs[t.id];
     return (
       <button onClick={() => openThread(t.id)}
         className={`w-full flex items-center gap-2 rounded-lg p-2 text-left transition ${active === t.id ? "bg-primary/12" : "hover:bg-muted"}`}>
@@ -99,11 +123,12 @@ export function OrgChat({ orgId, ctx, moderateGroupId }: { orgId: string; ctx: a
           <AvatarFallback>{t.kind === "group" ? <Users className="h-4 w-4" /> : title(t).slice(0, 1)}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <div className="text-sm font-medium truncate">{title(t)}</div>
+          <div className={`text-sm truncate ${isUnread(t) ? "font-bold" : "font-medium"}`}>{title(t)}</div>
           <div className="text-[10px] text-muted-foreground truncate">
-            {t.kind === "group" ? "グループチャット" : "1対1のチャット"}{!myPart(t) && " ・閲覧（管理）"}
+            {last && !last.deleted_at ? last.body : (t.kind === "group" ? "グループチャット" : "1対1のチャット")}{!myPart(t) && " ・閲覧（管理）"}
           </div>
         </div>
+        {isUnread(t) && <span className="h-2 w-2 rounded-full bg-primary shrink-0" />}
       </button>
     );
   };
@@ -154,10 +179,29 @@ export function OrgChat({ orgId, ctx, moderateGroupId }: { orgId: string; ctx: a
           </Card>
         )}
 
-        <Card className="p-2 space-y-0.5">
-          <div className="px-1 py-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">チャット一覧</div>
-          {accepted.length === 0 && <div className="p-3 text-xs text-muted-foreground">まだチャットはありません</div>}
-          {accepted.map((t) => <ThreadItem key={t.id} t={t} />)}
+        <Card className="p-2 space-y-1">
+          <div className="flex flex-wrap gap-1">
+            {([
+              { k: "all", l: "すべて" },
+              { k: "unread", l: `未読${unreadCount ? ` ${unreadCount}` : ""}` },
+              { k: "dm", l: "1対1" },
+              { k: "group", l: "グループ" },
+              { k: "pending", l: `承認待ち${pending.length ? ` ${pending.length}` : ""}` },
+            ] as const).map((x) => (
+              <button key={x.k} onClick={() => setTab(x.k)}
+                className={`px-2 py-1 rounded-full text-[11px] border transition ${tab === x.k ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted"}`}>
+                {x.l}
+              </button>
+            ))}
+          </div>
+          <div className="relative">
+            <Search className="h-3.5 w-3.5 absolute left-2 top-2.5 text-muted-foreground" />
+            <Input className="pl-7 h-8" placeholder="チャットを検索" value={listQ} onChange={(e) => setListQ(e.target.value)} />
+          </div>
+          <div className="space-y-0.5 max-h-[60vh] overflow-auto">
+            {visible.length === 0 && <div className="p-3 text-xs text-muted-foreground">該当するチャットはありません</div>}
+            {visible.map((t) => <ThreadItem key={t.id} t={t} />)}
+          </div>
         </Card>
       </div>
 
