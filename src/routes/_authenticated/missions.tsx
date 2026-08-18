@@ -13,11 +13,11 @@ export const Route = createFileRoute("/_authenticated/missions")({ component: Mi
 
 // Templates come from DB (daily_mission_templates). Progress is computed live per category.
 // バトル/チャット/OCR系は廃止
-const HIDDEN_CATEGORIES = new Set(["battle", "ocr"]);
+const HIDDEN_CATEGORIES = new Set(["battle", "ocr", "habit"]);
 const HIDDEN_CODES = new Set(["chat_send_1", "chat_send_10"]);
 const CATEGORY_LABELS: Record<string, string> = {
   all: "すべて", study: "学習", makron: "Makron", social: "ソーシャル",
-  reflect: "ふりかえり", flash: "フラッシュ", focus: "集中", habit: "習慣",
+  reflect: "ふりかえり", flash: "フラッシュ", focus: "集中",
   plan: "計画", goal: "目標", class: "クラス", meta: "ログイン", time: "時間帯",
   streak: "ストリーク", coin: "コイン", night: "夜活", morning: "朝活",
 };
@@ -32,10 +32,9 @@ function MissionsPage() {
   const today = jstDateStr();
 
   const computeProgress = async (uid: string): Promise<Record<string, number>> => {
-    const [{ data: logs }, { data: cards }, { data: stamps }, { data: ans }, { data: subs }, { data: refl }, { data: batt }] = await Promise.all([
+    const [{ data: logs }, { data: cards }, { data: ans }, { data: subs }, { data: refl }, { data: batt }] = await Promise.all([
       supabase.from("study_logs").select("duration_minutes").eq("user_id", uid).eq("date", today),
       supabase.from("flashcards").select("id, last_reviewed_at").eq("user_id", uid),
-      supabase.from("habit_stamps").select("id").eq("user_id", uid).eq("date", today),
       (supabase as any).from("makron_answers").select("auto_correct, created_at").gte("created_at", today + "T00:00:00"),
       supabase.from("study_logs").select("subject_id").eq("user_id", uid).eq("date", today),
       supabase.from("daily_reflections").select("id").eq("user_id", uid).gte("created_at", today + "T00:00:00"),
@@ -43,7 +42,6 @@ function MissionsPage() {
     ]);
     const studyMin = (logs ?? []).reduce((s: number, r: any) => s + (r.duration_minutes ?? 0), 0);
     const reviewed = (cards ?? []).filter((c: any) => c.last_reviewed_at && c.last_reviewed_at.slice(0, 10) === today).length;
-    const stampCount = (stamps ?? []).length;
     const mkAns = ans ?? [];
     const mkCorrect = mkAns.filter((a: any) => a.auto_correct).length;
     const subjects = new Set((subs ?? []).map((r: any) => r.subject_id).filter(Boolean)).size;
@@ -54,7 +52,7 @@ function MissionsPage() {
       makron_1q: mkAns.length, makron_5q: mkAns.length, makron_10q: mkAns.length, makron_20q: mkAns.length, makron_50q: mkAns.length,
       makron_correct_5: mkCorrect, makron_correct_20: mkCorrect,
       flashcard_10: reviewed, flashcard_50: reviewed,
-      habit_stamp: stampCount, reflection: (refl ?? []).length,
+      reflection: (refl ?? []).length,
       all_subjects: subjects, login: 1,
       battle_1: battlesPlayed, battle_3: battlesPlayed,
       battle_win_1: battlesWon, battle_win_3: battlesWon,

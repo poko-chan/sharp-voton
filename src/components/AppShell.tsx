@@ -2,9 +2,9 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Timer, CalendarDays, BookOpen, Brain,
   MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy,
-  Megaphone, GraduationCap, Zap, Headphones, Menu, X, MoreHorizontal,
+  Megaphone, GraduationCap, Menu, X, MoreHorizontal,
   StickyNote, Users, Ban, HelpCircle, ClipboardList,
-  CalendarClock, Stamp, Activity, Share2, ScanLine, Flame,
+  CalendarClock, Activity, Share2,
   ShoppingBag,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
@@ -38,19 +38,12 @@ const NAV = [
   { to: "/timer", labelKey: "nav.timer" as const, icon: Timer },
   { to: "/calendar", labelKey: "nav.calendar" as const, icon: CalendarDays },
   { to: "/goals", labelKey: "nav.goals" as const, icon: Trophy },
-  { to: "/habits", labelKey: "nav.habits" as const, icon: Stamp },
-  { to: "/streak", labelKey: "nav.streak" as const, icon: Flame },
   { to: "/flashcards", labelKey: "nav.flashcards" as const, icon: Brain },
-  { to: "/ocr", labelKey: "nav.ocr" as const, icon: ScanLine },
   { to: "/feed", labelKey: "nav.dashboard" as const, icon: Users, override: "タイムライン" },
   { to: "/friends", labelKey: "nav.friends" as const, icon: Users },
-  { to: "/rooms", labelKey: "nav.rooms" as const, icon: Users },
   { to: "/questions", labelKey: "nav.questions" as const, icon: Brain },
   { to: "/practice", labelKey: "nav.practice" as const, icon: Target },
   { to: "/tutor", labelKey: "nav.tutor" as const, icon: Sparkles },
-  { to: "/coach", labelKey: "nav.coach" as const, icon: Sparkles },
-  { to: "/micro", labelKey: "nav.micro" as const, icon: Zap },
-  { to: "/listen", labelKey: "nav.listen" as const, icon: Headphones },
   { to: "/classroom", labelKey: "nav.classroom" as const, icon: GraduationCap },
   { to: "/chat", labelKey: "nav.chat" as const, icon: MessagesSquare },
   { to: "/notes", labelKey: "nav.notes" as const, icon: StickyNote },
@@ -62,13 +55,7 @@ const NAV = [
   { to: "/shop", labelKey: "nav.dashboard" as const, icon: ShoppingBag, override: "コインショップ" },
   { to: "/settings", labelKey: "nav.settings" as const, icon: Settings, override: "設定" },
   { to: "/help", labelKey: "nav.dashboard" as const, icon: HelpCircle, override: "ヘルプ" },
- { to: "/tools", labelKey: "nav.dashboard" as const, icon: Sparkles, override: "ツールとゲーム" },
- { to: "/qa", labelKey: "nav.dashboard" as const, icon: MessagesSquare, override: "Q&A掲示板" },
- { to: "/coedit", labelKey: "nav.dashboard" as const, icon: StickyNote, override: "共同ノート" },
- { to: "/photolog", labelKey: "nav.dashboard" as const, icon: BookOpen, override: "写真ログ" },
- { to: "/challenges", labelKey: "nav.dashboard" as const, icon: Trophy, override: "グループ対決" },
  { to: "/mentor", labelKey: "nav.dashboard" as const, icon: Users, override: "メンター" },
- { to: "/rivals", labelKey: "nav.dashboard" as const, icon: Target, override: "ライバル" },
  { to: "/mistakes", labelKey: "nav.dashboard" as const, icon: Brain, override: "間違い直し" },
 ] as const;
 
@@ -77,7 +64,6 @@ const ROUTE_SERVICE: Record<string, string> = {
   "/timer": "timer", "/tutor": "tutor", "/classroom": "classroom",
   "/classchat": "classchat", "/chat": "chat", "/notes": "notes",
   "/today": "today", "/practice": "practice", "/questions": "questions",
-  "/coach": "coach", "/micro": "micro", "/listen": "listen",
 };
 
 // Bottom-bar mobile shortcuts (5 primary, last is "more")

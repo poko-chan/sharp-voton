@@ -42,7 +42,7 @@ export type UserPrefs = {
   notif_settings?: Record<string, boolean>;
 };
 const DEFAULT: UserPrefs = {
-  widgets: ["streak", "today-chart", "weekly-diff", "habits"],
+  widgets: ["streak", "today-chart", "weekly-diff"],
   font_scale: 1.0,
   high_contrast: false,
   right_dock: ["ambient", "feedback"],
