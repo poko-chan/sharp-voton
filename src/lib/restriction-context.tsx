@@ -17,9 +17,6 @@ export const SERVICES = [
   { key: "today",     label: "Today" },
   { key: "practice",  label: "AI問題演習" },
   { key: "questions", label: "AI問題作成" },
-  { key: "coach",     label: "AIコーチ" },
-  { key: "micro",     label: "マイクロラーニング" },
-  { key: "listen",    label: "リスニング" },
 ] as const;
 
 type ServiceRow = { service_key: string; restricted: boolean; message: string | null; restricted_until: string | null };

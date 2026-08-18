@@ -8,9 +8,7 @@ const ROUTES: Array<{ q: string; to: string; label: string }> = [
   { q: "勉強記録 study", to: "/study", label: "勉強記録" },
   { q: "タイマー timer", to: "/timer", label: "タイマー" },
   { q: "暗記カード flashcard srs", to: "/flashcards", label: "暗記カード" },
-  { q: "ocr ノート", to: "/ocr", label: "ノートOCR" },
   { q: "友達 friends フォロー", to: "/friends", label: "フレンド" },
-  { q: "グループ ルーム", to: "/rooms", label: "勉強ルーム" },
   { q: "ショップ コイン shop", to: "/shop", label: "コインショップ" },
   { q: "通知", to: "/notifications", label: "通知" },
   { q: "設定 settings", to: "/settings", label: "設定" },
@@ -18,8 +16,6 @@ const ROUTES: Array<{ q: string; to: string; label: string }> = [
   { q: "目標 goals", to: "/goals", label: "学習目標" },
   { q: "カレンダー", to: "/calendar", label: "カレンダー" },
   { q: "ヒートマップ", to: "/heatmap", label: "ヒートマップ" },
-  { q: "習慣", to: "/habits", label: "習慣スタンプ" },
-  { q: "ストリーク streak", to: "/streak", label: "ストリーク保護" },
 ];
 
 export function SearchBar() {

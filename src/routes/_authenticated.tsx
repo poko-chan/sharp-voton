@@ -18,9 +18,6 @@ const ROUTE_SERVICE: Array<[string, string]> = [
   ["/today", "today"],
   ["/practice", "practice"],
   ["/questions", "questions"],
-  ["/coach", "coach"],
-  ["/micro", "micro"],
-  ["/listen", "listen"],
 ];
 
 export const Route = createFileRoute("/_authenticated")({
