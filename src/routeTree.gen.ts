@@ -25,38 +25,28 @@ import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiAiStreamRouteImport } from './routes/api/ai-stream'
 import { Route as AuthenticatedUpdatesRouteImport } from './routes/_authenticated/updates'
 import { Route as AuthenticatedTutorRouteImport } from './routes/_authenticated/tutor'
-import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
 import { Route as AuthenticatedStudyRouteImport } from './routes/_authenticated/study'
-import { Route as AuthenticatedStreakRouteImport } from './routes/_authenticated/streak'
 import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
 import { Route as AuthenticatedShareRouteImport } from './routes/_authenticated/share'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
-import { Route as AuthenticatedRivalsRouteImport } from './routes/_authenticated/rivals'
 import { Route as AuthenticatedRequestsRouteImport } from './routes/_authenticated/requests'
 import { Route as AuthenticatedRankRouteImport } from './routes/_authenticated/rank'
 import { Route as AuthenticatedQuestionsRouteImport } from './routes/_authenticated/questions'
-import { Route as AuthenticatedQaRouteImport } from './routes/_authenticated/qa'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
-import { Route as AuthenticatedPhotologRouteImport } from './routes/_authenticated/photolog'
 import { Route as AuthenticatedParentRouteImport } from './routes/_authenticated/parent'
 import { Route as AuthenticatedOrganizationsRouteImport } from './routes/_authenticated/organizations'
-import { Route as AuthenticatedOcrRouteImport } from './routes/_authenticated/ocr'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedMistakesRouteImport } from './routes/_authenticated/mistakes'
 import { Route as AuthenticatedMissionsRouteImport } from './routes/_authenticated/missions'
-import { Route as AuthenticatedMicroRouteImport } from './routes/_authenticated/micro'
 import { Route as AuthenticatedMentorRouteImport } from './routes/_authenticated/mentor'
 import { Route as AuthenticatedMaterialsRouteImport } from './routes/_authenticated/materials'
 import { Route as AuthenticatedMakronRouteImport } from './routes/_authenticated/makron'
-import { Route as AuthenticatedListenRouteImport } from './routes/_authenticated/listen'
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedHeatmapRouteImport } from './routes/_authenticated/heatmap'
-import { Route as AuthenticatedHabitsRouteImport } from './routes/_authenticated/habits'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedFriendsRouteImport } from './routes/_authenticated/friends'
 import { Route as AuthenticatedFlashcardsRouteImport } from './routes/_authenticated/flashcards'
@@ -64,21 +54,16 @@ import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/f
 import { Route as AuthenticatedExportRouteImport } from './routes/_authenticated/export'
 import { Route as AuthenticatedExamsRouteImport } from './routes/_authenticated/exams'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedCoeditRouteImport } from './routes/_authenticated/coedit'
-import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/coach'
 import { Route as AuthenticatedClasschatRouteImport } from './routes/_authenticated/classchat'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
-import { Route as AuthenticatedChallengesRouteImport } from './routes/_authenticated/challenges'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as AuthenticatedRoomsIndexRouteImport } from './routes/_authenticated/rooms.index'
 import { Route as AuthenticatedOrganizationsIndexRouteImport } from './routes/_authenticated/organizations.index'
 import { Route as AuthenticatedMaterialsIndexRouteImport } from './routes/_authenticated/materials.index'
 import { Route as AuthenticatedMakronIndexRouteImport } from './routes/_authenticated/makron.index'
 import { Route as AuthenticatedExamsIndexRouteImport } from './routes/_authenticated/exams.index'
 import { Route as AuthenticatedClassroomIndexRouteImport } from './routes/_authenticated/classroom.index'
-import { Route as AuthenticatedRoomsRoomIdRouteImport } from './routes/_authenticated/rooms.$roomId'
 import { Route as AuthenticatedOrganizationsOrgIdRouteImport } from './routes/_authenticated/organizations.$orgId'
 import { Route as AuthenticatedMaterialsIdRouteImport } from './routes/_authenticated/materials.$id'
 import { Route as AuthenticatedMakronLabelsRouteImport } from './routes/_authenticated/makron.labels'
@@ -179,11 +164,6 @@ const AuthenticatedTutorRoute = AuthenticatedTutorRouteImport.update({
   path: '/tutor',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
-  id: '/tools',
-  path: '/tools',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedTodayRoute = AuthenticatedTodayRouteImport.update({
   id: '/today',
   path: '/today',
@@ -197,11 +177,6 @@ const AuthenticatedTimerRoute = AuthenticatedTimerRouteImport.update({
 const AuthenticatedStudyRoute = AuthenticatedStudyRouteImport.update({
   id: '/study',
   path: '/study',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedStreakRoute = AuthenticatedStreakRouteImport.update({
-  id: '/streak',
-  path: '/streak',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedShopRoute = AuthenticatedShopRouteImport.update({
@@ -219,16 +194,6 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedRoomsRoute = AuthenticatedRoomsRouteImport.update({
-  id: '/rooms',
-  path: '/rooms',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedRivalsRoute = AuthenticatedRivalsRouteImport.update({
-  id: '/rivals',
-  path: '/rivals',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedRequestsRoute = AuthenticatedRequestsRouteImport.update({
   id: '/requests',
   path: '/requests',
@@ -244,19 +209,9 @@ const AuthenticatedQuestionsRoute = AuthenticatedQuestionsRouteImport.update({
   path: '/questions',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedQaRoute = AuthenticatedQaRouteImport.update({
-  id: '/qa',
-  path: '/qa',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedPracticeRoute = AuthenticatedPracticeRouteImport.update({
   id: '/practice',
   path: '/practice',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedPhotologRoute = AuthenticatedPhotologRouteImport.update({
-  id: '/photolog',
-  path: '/photolog',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedParentRoute = AuthenticatedParentRouteImport.update({
@@ -270,11 +225,6 @@ const AuthenticatedOrganizationsRoute =
     path: '/organizations',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedOcrRoute = AuthenticatedOcrRouteImport.update({
-  id: '/ocr',
-  path: '/ocr',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedNotificationsRoute =
   AuthenticatedNotificationsRouteImport.update({
     id: '/notifications',
@@ -296,11 +246,6 @@ const AuthenticatedMissionsRoute = AuthenticatedMissionsRouteImport.update({
   path: '/missions',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedMicroRoute = AuthenticatedMicroRouteImport.update({
-  id: '/micro',
-  path: '/micro',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedMentorRoute = AuthenticatedMentorRouteImport.update({
   id: '/mentor',
   path: '/mentor',
@@ -314,11 +259,6 @@ const AuthenticatedMaterialsRoute = AuthenticatedMaterialsRouteImport.update({
 const AuthenticatedMakronRoute = AuthenticatedMakronRouteImport.update({
   id: '/makron',
   path: '/makron',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedListenRoute = AuthenticatedListenRouteImport.update({
-  id: '/listen',
-  path: '/listen',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedLeaderboardRoute =
@@ -335,11 +275,6 @@ const AuthenticatedInventoryRoute = AuthenticatedInventoryRouteImport.update({
 const AuthenticatedHeatmapRoute = AuthenticatedHeatmapRouteImport.update({
   id: '/heatmap',
   path: '/heatmap',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedHabitsRoute = AuthenticatedHabitsRouteImport.update({
-  id: '/habits',
-  path: '/habits',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedGoalsRoute = AuthenticatedGoalsRouteImport.update({
@@ -377,16 +312,6 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedCoeditRoute = AuthenticatedCoeditRouteImport.update({
-  id: '/coedit',
-  path: '/coedit',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedCoachRoute = AuthenticatedCoachRouteImport.update({
-  id: '/coach',
-  path: '/coach',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedClasschatRoute = AuthenticatedClasschatRouteImport.update({
   id: '/classchat',
   path: '/classchat',
@@ -395,11 +320,6 @@ const AuthenticatedClasschatRoute = AuthenticatedClasschatRouteImport.update({
 const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
   id: '/chat',
   path: '/chat',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedChallengesRoute = AuthenticatedChallengesRouteImport.update({
-  id: '/challenges',
-  path: '/challenges',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
@@ -417,11 +337,6 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedRoomsIndexRoute = AuthenticatedRoomsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthenticatedRoomsRoute,
 } as any)
 const AuthenticatedOrganizationsIndexRoute =
   AuthenticatedOrganizationsIndexRouteImport.update({
@@ -451,12 +366,6 @@ const AuthenticatedClassroomIndexRoute =
     id: '/classroom/',
     path: '/classroom/',
     getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedRoomsRoomIdRoute =
-  AuthenticatedRoomsRoomIdRouteImport.update({
-    id: '/$roomId',
-    path: '/$roomId',
-    getParentRoute: () => AuthenticatedRoomsRoute,
   } as any)
 const AuthenticatedOrganizationsOrgIdRoute =
   AuthenticatedOrganizationsOrgIdRouteImport.update({
@@ -592,11 +501,8 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
-  '/challenges': typeof AuthenticatedChallengesRoute
   '/chat': typeof AuthenticatedChatRoute
   '/classchat': typeof AuthenticatedClasschatRoute
-  '/coach': typeof AuthenticatedCoachRoute
-  '/coedit': typeof AuthenticatedCoeditRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exams': typeof AuthenticatedExamsRouteWithChildren
   '/export': typeof AuthenticatedExportRoute
@@ -604,38 +510,28 @@ export interface FileRoutesByFullPath {
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/friends': typeof AuthenticatedFriendsRoute
   '/goals': typeof AuthenticatedGoalsRoute
-  '/habits': typeof AuthenticatedHabitsRoute
   '/heatmap': typeof AuthenticatedHeatmapRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
-  '/listen': typeof AuthenticatedListenRoute
   '/makron': typeof AuthenticatedMakronRouteWithChildren
   '/materials': typeof AuthenticatedMaterialsRouteWithChildren
   '/mentor': typeof AuthenticatedMentorRoute
-  '/micro': typeof AuthenticatedMicroRoute
   '/missions': typeof AuthenticatedMissionsRoute
   '/mistakes': typeof AuthenticatedMistakesRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
-  '/ocr': typeof AuthenticatedOcrRoute
   '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/parent': typeof AuthenticatedParentRoute
-  '/photolog': typeof AuthenticatedPhotologRoute
   '/practice': typeof AuthenticatedPracticeRoute
-  '/qa': typeof AuthenticatedQaRoute
   '/questions': typeof AuthenticatedQuestionsRoute
   '/rank': typeof AuthenticatedRankRoute
   '/requests': typeof AuthenticatedRequestsRoute
-  '/rivals': typeof AuthenticatedRivalsRoute
-  '/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
   '/shop': typeof AuthenticatedShopRoute
-  '/streak': typeof AuthenticatedStreakRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
   '/today': typeof AuthenticatedTodayRoute
-  '/tools': typeof AuthenticatedToolsRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/updates': typeof AuthenticatedUpdatesRoute
   '/api/ai-stream': typeof ApiAiStreamRoute
@@ -650,13 +546,11 @@ export interface FileRoutesByFullPath {
   '/makron/labels': typeof AuthenticatedMakronLabelsRoute
   '/materials/$id': typeof AuthenticatedMaterialsIdRoute
   '/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdRouteWithChildren
-  '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom/': typeof AuthenticatedClassroomIndexRoute
   '/exams/': typeof AuthenticatedExamsIndexRoute
   '/makron/': typeof AuthenticatedMakronIndexRoute
   '/materials/': typeof AuthenticatedMaterialsIndexRoute
   '/organizations/': typeof AuthenticatedOrganizationsIndexRoute
-  '/rooms/': typeof AuthenticatedRoomsIndexRoute
   '/exams/series/$seriesId': typeof AuthenticatedExamsSeriesSeriesIdRoute
   '/makron/pack/$packId': typeof AuthenticatedMakronPackPackIdRouteWithChildren
   '/makron/result/$sessionId': typeof AuthenticatedMakronResultSessionIdRoute
@@ -683,45 +577,33 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
-  '/challenges': typeof AuthenticatedChallengesRoute
   '/chat': typeof AuthenticatedChatRoute
   '/classchat': typeof AuthenticatedClasschatRoute
-  '/coach': typeof AuthenticatedCoachRoute
-  '/coedit': typeof AuthenticatedCoeditRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/export': typeof AuthenticatedExportRoute
   '/feed': typeof AuthenticatedFeedRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/friends': typeof AuthenticatedFriendsRoute
   '/goals': typeof AuthenticatedGoalsRoute
-  '/habits': typeof AuthenticatedHabitsRoute
   '/heatmap': typeof AuthenticatedHeatmapRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
-  '/listen': typeof AuthenticatedListenRoute
   '/mentor': typeof AuthenticatedMentorRoute
-  '/micro': typeof AuthenticatedMicroRoute
   '/missions': typeof AuthenticatedMissionsRoute
   '/mistakes': typeof AuthenticatedMistakesRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
-  '/ocr': typeof AuthenticatedOcrRoute
   '/parent': typeof AuthenticatedParentRoute
-  '/photolog': typeof AuthenticatedPhotologRoute
   '/practice': typeof AuthenticatedPracticeRoute
-  '/qa': typeof AuthenticatedQaRoute
   '/questions': typeof AuthenticatedQuestionsRoute
   '/rank': typeof AuthenticatedRankRoute
   '/requests': typeof AuthenticatedRequestsRoute
-  '/rivals': typeof AuthenticatedRivalsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
   '/shop': typeof AuthenticatedShopRoute
-  '/streak': typeof AuthenticatedStreakRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
   '/today': typeof AuthenticatedTodayRoute
-  '/tools': typeof AuthenticatedToolsRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/updates': typeof AuthenticatedUpdatesRoute
   '/api/ai-stream': typeof ApiAiStreamRoute
@@ -735,13 +617,11 @@ export interface FileRoutesByTo {
   '/makron/history': typeof AuthenticatedMakronHistoryRoute
   '/makron/labels': typeof AuthenticatedMakronLabelsRoute
   '/materials/$id': typeof AuthenticatedMaterialsIdRoute
-  '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/classroom': typeof AuthenticatedClassroomIndexRoute
   '/exams': typeof AuthenticatedExamsIndexRoute
   '/makron': typeof AuthenticatedMakronIndexRoute
   '/materials': typeof AuthenticatedMaterialsIndexRoute
   '/organizations': typeof AuthenticatedOrganizationsIndexRoute
-  '/rooms': typeof AuthenticatedRoomsIndexRoute
   '/exams/series/$seriesId': typeof AuthenticatedExamsSeriesSeriesIdRoute
   '/makron/result/$sessionId': typeof AuthenticatedMakronResultSessionIdRoute
   '/makron/session/$sessionId': typeof AuthenticatedMakronSessionSessionIdRoute
@@ -769,11 +649,8 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
-  '/_authenticated/challenges': typeof AuthenticatedChallengesRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/_authenticated/classchat': typeof AuthenticatedClasschatRoute
-  '/_authenticated/coach': typeof AuthenticatedCoachRoute
-  '/_authenticated/coedit': typeof AuthenticatedCoeditRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/exams': typeof AuthenticatedExamsRouteWithChildren
   '/_authenticated/export': typeof AuthenticatedExportRoute
@@ -781,38 +658,28 @@ export interface FileRoutesById {
   '/_authenticated/flashcards': typeof AuthenticatedFlashcardsRoute
   '/_authenticated/friends': typeof AuthenticatedFriendsRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
-  '/_authenticated/habits': typeof AuthenticatedHabitsRoute
   '/_authenticated/heatmap': typeof AuthenticatedHeatmapRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
-  '/_authenticated/listen': typeof AuthenticatedListenRoute
   '/_authenticated/makron': typeof AuthenticatedMakronRouteWithChildren
   '/_authenticated/materials': typeof AuthenticatedMaterialsRouteWithChildren
   '/_authenticated/mentor': typeof AuthenticatedMentorRoute
-  '/_authenticated/micro': typeof AuthenticatedMicroRoute
   '/_authenticated/missions': typeof AuthenticatedMissionsRoute
   '/_authenticated/mistakes': typeof AuthenticatedMistakesRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
-  '/_authenticated/ocr': typeof AuthenticatedOcrRoute
   '/_authenticated/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/_authenticated/parent': typeof AuthenticatedParentRoute
-  '/_authenticated/photolog': typeof AuthenticatedPhotologRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
-  '/_authenticated/qa': typeof AuthenticatedQaRoute
   '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
   '/_authenticated/rank': typeof AuthenticatedRankRoute
   '/_authenticated/requests': typeof AuthenticatedRequestsRoute
-  '/_authenticated/rivals': typeof AuthenticatedRivalsRoute
-  '/_authenticated/rooms': typeof AuthenticatedRoomsRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/share': typeof AuthenticatedShareRoute
   '/_authenticated/shop': typeof AuthenticatedShopRoute
-  '/_authenticated/streak': typeof AuthenticatedStreakRoute
   '/_authenticated/study': typeof AuthenticatedStudyRoute
   '/_authenticated/timer': typeof AuthenticatedTimerRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
-  '/_authenticated/tools': typeof AuthenticatedToolsRoute
   '/_authenticated/tutor': typeof AuthenticatedTutorRoute
   '/_authenticated/updates': typeof AuthenticatedUpdatesRoute
   '/api/ai-stream': typeof ApiAiStreamRoute
@@ -827,13 +694,11 @@ export interface FileRoutesById {
   '/_authenticated/makron/labels': typeof AuthenticatedMakronLabelsRoute
   '/_authenticated/materials/$id': typeof AuthenticatedMaterialsIdRoute
   '/_authenticated/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdRouteWithChildren
-  '/_authenticated/rooms/$roomId': typeof AuthenticatedRoomsRoomIdRoute
   '/_authenticated/classroom/': typeof AuthenticatedClassroomIndexRoute
   '/_authenticated/exams/': typeof AuthenticatedExamsIndexRoute
   '/_authenticated/makron/': typeof AuthenticatedMakronIndexRoute
   '/_authenticated/materials/': typeof AuthenticatedMaterialsIndexRoute
   '/_authenticated/organizations/': typeof AuthenticatedOrganizationsIndexRoute
-  '/_authenticated/rooms/': typeof AuthenticatedRoomsIndexRoute
   '/_authenticated/exams/series/$seriesId': typeof AuthenticatedExamsSeriesSeriesIdRoute
   '/_authenticated/makron/pack/$packId': typeof AuthenticatedMakronPackPackIdRouteWithChildren
   '/_authenticated/makron/result/$sessionId': typeof AuthenticatedMakronResultSessionIdRoute
@@ -862,11 +727,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/announcements'
     | '/calendar'
-    | '/challenges'
     | '/chat'
     | '/classchat'
-    | '/coach'
-    | '/coedit'
     | '/dashboard'
     | '/exams'
     | '/export'
@@ -874,38 +736,28 @@ export interface FileRouteTypes {
     | '/flashcards'
     | '/friends'
     | '/goals'
-    | '/habits'
     | '/heatmap'
     | '/inventory'
     | '/leaderboard'
-    | '/listen'
     | '/makron'
     | '/materials'
     | '/mentor'
-    | '/micro'
     | '/missions'
     | '/mistakes'
     | '/notes'
     | '/notifications'
-    | '/ocr'
     | '/organizations'
     | '/parent'
-    | '/photolog'
     | '/practice'
-    | '/qa'
     | '/questions'
     | '/rank'
     | '/requests'
-    | '/rivals'
-    | '/rooms'
     | '/settings'
     | '/share'
     | '/shop'
-    | '/streak'
     | '/study'
     | '/timer'
     | '/today'
-    | '/tools'
     | '/tutor'
     | '/updates'
     | '/api/ai-stream'
@@ -920,13 +772,11 @@ export interface FileRouteTypes {
     | '/makron/labels'
     | '/materials/$id'
     | '/organizations/$orgId'
-    | '/rooms/$roomId'
     | '/classroom/'
     | '/exams/'
     | '/makron/'
     | '/materials/'
     | '/organizations/'
-    | '/rooms/'
     | '/exams/series/$seriesId'
     | '/makron/pack/$packId'
     | '/makron/result/$sessionId'
@@ -953,45 +803,33 @@ export interface FileRouteTypes {
     | '/admin'
     | '/announcements'
     | '/calendar'
-    | '/challenges'
     | '/chat'
     | '/classchat'
-    | '/coach'
-    | '/coedit'
     | '/dashboard'
     | '/export'
     | '/feed'
     | '/flashcards'
     | '/friends'
     | '/goals'
-    | '/habits'
     | '/heatmap'
     | '/inventory'
     | '/leaderboard'
-    | '/listen'
     | '/mentor'
-    | '/micro'
     | '/missions'
     | '/mistakes'
     | '/notes'
     | '/notifications'
-    | '/ocr'
     | '/parent'
-    | '/photolog'
     | '/practice'
-    | '/qa'
     | '/questions'
     | '/rank'
     | '/requests'
-    | '/rivals'
     | '/settings'
     | '/share'
     | '/shop'
-    | '/streak'
     | '/study'
     | '/timer'
     | '/today'
-    | '/tools'
     | '/tutor'
     | '/updates'
     | '/api/ai-stream'
@@ -1005,13 +843,11 @@ export interface FileRouteTypes {
     | '/makron/history'
     | '/makron/labels'
     | '/materials/$id'
-    | '/rooms/$roomId'
     | '/classroom'
     | '/exams'
     | '/makron'
     | '/materials'
     | '/organizations'
-    | '/rooms'
     | '/exams/series/$seriesId'
     | '/makron/result/$sessionId'
     | '/makron/session/$sessionId'
@@ -1038,11 +874,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/announcements'
     | '/_authenticated/calendar'
-    | '/_authenticated/challenges'
     | '/_authenticated/chat'
     | '/_authenticated/classchat'
-    | '/_authenticated/coach'
-    | '/_authenticated/coedit'
     | '/_authenticated/dashboard'
     | '/_authenticated/exams'
     | '/_authenticated/export'
@@ -1050,38 +883,28 @@ export interface FileRouteTypes {
     | '/_authenticated/flashcards'
     | '/_authenticated/friends'
     | '/_authenticated/goals'
-    | '/_authenticated/habits'
     | '/_authenticated/heatmap'
     | '/_authenticated/inventory'
     | '/_authenticated/leaderboard'
-    | '/_authenticated/listen'
     | '/_authenticated/makron'
     | '/_authenticated/materials'
     | '/_authenticated/mentor'
-    | '/_authenticated/micro'
     | '/_authenticated/missions'
     | '/_authenticated/mistakes'
     | '/_authenticated/notes'
     | '/_authenticated/notifications'
-    | '/_authenticated/ocr'
     | '/_authenticated/organizations'
     | '/_authenticated/parent'
-    | '/_authenticated/photolog'
     | '/_authenticated/practice'
-    | '/_authenticated/qa'
     | '/_authenticated/questions'
     | '/_authenticated/rank'
     | '/_authenticated/requests'
-    | '/_authenticated/rivals'
-    | '/_authenticated/rooms'
     | '/_authenticated/settings'
     | '/_authenticated/share'
     | '/_authenticated/shop'
-    | '/_authenticated/streak'
     | '/_authenticated/study'
     | '/_authenticated/timer'
     | '/_authenticated/today'
-    | '/_authenticated/tools'
     | '/_authenticated/tutor'
     | '/_authenticated/updates'
     | '/api/ai-stream'
@@ -1096,13 +919,11 @@ export interface FileRouteTypes {
     | '/_authenticated/makron/labels'
     | '/_authenticated/materials/$id'
     | '/_authenticated/organizations/$orgId'
-    | '/_authenticated/rooms/$roomId'
     | '/_authenticated/classroom/'
     | '/_authenticated/exams/'
     | '/_authenticated/makron/'
     | '/_authenticated/materials/'
     | '/_authenticated/organizations/'
-    | '/_authenticated/rooms/'
     | '/_authenticated/exams/series/$seriesId'
     | '/_authenticated/makron/pack/$packId'
     | '/_authenticated/makron/result/$sessionId'
@@ -1248,13 +1069,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTutorRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/tools': {
-      id: '/_authenticated/tools'
-      path: '/tools'
-      fullPath: '/tools'
-      preLoaderRoute: typeof AuthenticatedToolsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/today': {
       id: '/_authenticated/today'
       path: '/today'
@@ -1274,13 +1088,6 @@ declare module '@tanstack/react-router' {
       path: '/study'
       fullPath: '/study'
       preLoaderRoute: typeof AuthenticatedStudyRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/streak': {
-      id: '/_authenticated/streak'
-      path: '/streak'
-      fullPath: '/streak'
-      preLoaderRoute: typeof AuthenticatedStreakRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/shop': {
@@ -1304,20 +1111,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/rooms': {
-      id: '/_authenticated/rooms'
-      path: '/rooms'
-      fullPath: '/rooms'
-      preLoaderRoute: typeof AuthenticatedRoomsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/rivals': {
-      id: '/_authenticated/rivals'
-      path: '/rivals'
-      fullPath: '/rivals'
-      preLoaderRoute: typeof AuthenticatedRivalsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/requests': {
       id: '/_authenticated/requests'
       path: '/requests'
@@ -1339,25 +1132,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedQuestionsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/qa': {
-      id: '/_authenticated/qa'
-      path: '/qa'
-      fullPath: '/qa'
-      preLoaderRoute: typeof AuthenticatedQaRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/practice': {
       id: '/_authenticated/practice'
       path: '/practice'
       fullPath: '/practice'
       preLoaderRoute: typeof AuthenticatedPracticeRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/photolog': {
-      id: '/_authenticated/photolog'
-      path: '/photolog'
-      fullPath: '/photolog'
-      preLoaderRoute: typeof AuthenticatedPhotologRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/parent': {
@@ -1372,13 +1151,6 @@ declare module '@tanstack/react-router' {
       path: '/organizations'
       fullPath: '/organizations'
       preLoaderRoute: typeof AuthenticatedOrganizationsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/ocr': {
-      id: '/_authenticated/ocr'
-      path: '/ocr'
-      fullPath: '/ocr'
-      preLoaderRoute: typeof AuthenticatedOcrRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/notifications': {
@@ -1409,13 +1181,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMissionsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/micro': {
-      id: '/_authenticated/micro'
-      path: '/micro'
-      fullPath: '/micro'
-      preLoaderRoute: typeof AuthenticatedMicroRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/mentor': {
       id: '/_authenticated/mentor'
       path: '/mentor'
@@ -1437,13 +1202,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMakronRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/listen': {
-      id: '/_authenticated/listen'
-      path: '/listen'
-      fullPath: '/listen'
-      preLoaderRoute: typeof AuthenticatedListenRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/leaderboard': {
       id: '/_authenticated/leaderboard'
       path: '/leaderboard'
@@ -1463,13 +1221,6 @@ declare module '@tanstack/react-router' {
       path: '/heatmap'
       fullPath: '/heatmap'
       preLoaderRoute: typeof AuthenticatedHeatmapRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/habits': {
-      id: '/_authenticated/habits'
-      path: '/habits'
-      fullPath: '/habits'
-      preLoaderRoute: typeof AuthenticatedHabitsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/goals': {
@@ -1521,20 +1272,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/coedit': {
-      id: '/_authenticated/coedit'
-      path: '/coedit'
-      fullPath: '/coedit'
-      preLoaderRoute: typeof AuthenticatedCoeditRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/coach': {
-      id: '/_authenticated/coach'
-      path: '/coach'
-      fullPath: '/coach'
-      preLoaderRoute: typeof AuthenticatedCoachRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/classchat': {
       id: '/_authenticated/classchat'
       path: '/classchat'
@@ -1547,13 +1284,6 @@ declare module '@tanstack/react-router' {
       path: '/chat'
       fullPath: '/chat'
       preLoaderRoute: typeof AuthenticatedChatRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/challenges': {
-      id: '/_authenticated/challenges'
-      path: '/challenges'
-      fullPath: '/challenges'
-      preLoaderRoute: typeof AuthenticatedChallengesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/calendar': {
@@ -1576,13 +1306,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/rooms/': {
-      id: '/_authenticated/rooms/'
-      path: '/'
-      fullPath: '/rooms/'
-      preLoaderRoute: typeof AuthenticatedRoomsIndexRouteImport
-      parentRoute: typeof AuthenticatedRoomsRoute
     }
     '/_authenticated/organizations/': {
       id: '/_authenticated/organizations/'
@@ -1618,13 +1341,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/classroom/'
       preLoaderRoute: typeof AuthenticatedClassroomIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/rooms/$roomId': {
-      id: '/_authenticated/rooms/$roomId'
-      path: '/$roomId'
-      fullPath: '/rooms/$roomId'
-      preLoaderRoute: typeof AuthenticatedRoomsRoomIdRouteImport
-      parentRoute: typeof AuthenticatedRoomsRoute
     }
     '/_authenticated/organizations/$orgId': {
       id: '/_authenticated/organizations/$orgId'
@@ -1892,28 +1608,12 @@ const AuthenticatedOrganizationsRouteWithChildren =
     AuthenticatedOrganizationsRouteChildren,
   )
 
-interface AuthenticatedRoomsRouteChildren {
-  AuthenticatedRoomsRoomIdRoute: typeof AuthenticatedRoomsRoomIdRoute
-  AuthenticatedRoomsIndexRoute: typeof AuthenticatedRoomsIndexRoute
-}
-
-const AuthenticatedRoomsRouteChildren: AuthenticatedRoomsRouteChildren = {
-  AuthenticatedRoomsRoomIdRoute: AuthenticatedRoomsRoomIdRoute,
-  AuthenticatedRoomsIndexRoute: AuthenticatedRoomsIndexRoute,
-}
-
-const AuthenticatedRoomsRouteWithChildren =
-  AuthenticatedRoomsRoute._addFileChildren(AuthenticatedRoomsRouteChildren)
-
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
-  AuthenticatedChallengesRoute: typeof AuthenticatedChallengesRoute
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
   AuthenticatedClasschatRoute: typeof AuthenticatedClasschatRoute
-  AuthenticatedCoachRoute: typeof AuthenticatedCoachRoute
-  AuthenticatedCoeditRoute: typeof AuthenticatedCoeditRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExamsRoute: typeof AuthenticatedExamsRouteWithChildren
   AuthenticatedExportRoute: typeof AuthenticatedExportRoute
@@ -1921,38 +1621,28 @@ interface AuthenticatedRouteChildren {
   AuthenticatedFlashcardsRoute: typeof AuthenticatedFlashcardsRoute
   AuthenticatedFriendsRoute: typeof AuthenticatedFriendsRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
-  AuthenticatedHabitsRoute: typeof AuthenticatedHabitsRoute
   AuthenticatedHeatmapRoute: typeof AuthenticatedHeatmapRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
-  AuthenticatedListenRoute: typeof AuthenticatedListenRoute
   AuthenticatedMakronRoute: typeof AuthenticatedMakronRouteWithChildren
   AuthenticatedMaterialsRoute: typeof AuthenticatedMaterialsRouteWithChildren
   AuthenticatedMentorRoute: typeof AuthenticatedMentorRoute
-  AuthenticatedMicroRoute: typeof AuthenticatedMicroRoute
   AuthenticatedMissionsRoute: typeof AuthenticatedMissionsRoute
   AuthenticatedMistakesRoute: typeof AuthenticatedMistakesRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
-  AuthenticatedOcrRoute: typeof AuthenticatedOcrRoute
   AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRouteWithChildren
   AuthenticatedParentRoute: typeof AuthenticatedParentRoute
-  AuthenticatedPhotologRoute: typeof AuthenticatedPhotologRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
-  AuthenticatedQaRoute: typeof AuthenticatedQaRoute
   AuthenticatedQuestionsRoute: typeof AuthenticatedQuestionsRoute
   AuthenticatedRankRoute: typeof AuthenticatedRankRoute
   AuthenticatedRequestsRoute: typeof AuthenticatedRequestsRoute
-  AuthenticatedRivalsRoute: typeof AuthenticatedRivalsRoute
-  AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedShareRoute: typeof AuthenticatedShareRoute
   AuthenticatedShopRoute: typeof AuthenticatedShopRoute
-  AuthenticatedStreakRoute: typeof AuthenticatedStreakRoute
   AuthenticatedStudyRoute: typeof AuthenticatedStudyRoute
   AuthenticatedTimerRoute: typeof AuthenticatedTimerRoute
   AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
-  AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
   AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
   AuthenticatedUpdatesRoute: typeof AuthenticatedUpdatesRoute
   AuthenticatedClassroomClassIdRoute: typeof AuthenticatedClassroomClassIdRoute
@@ -1963,11 +1653,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
-  AuthenticatedChallengesRoute: AuthenticatedChallengesRoute,
   AuthenticatedChatRoute: AuthenticatedChatRoute,
   AuthenticatedClasschatRoute: AuthenticatedClasschatRoute,
-  AuthenticatedCoachRoute: AuthenticatedCoachRoute,
-  AuthenticatedCoeditRoute: AuthenticatedCoeditRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExamsRoute: AuthenticatedExamsRouteWithChildren,
   AuthenticatedExportRoute: AuthenticatedExportRoute,
@@ -1975,38 +1662,28 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedFlashcardsRoute: AuthenticatedFlashcardsRoute,
   AuthenticatedFriendsRoute: AuthenticatedFriendsRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
-  AuthenticatedHabitsRoute: AuthenticatedHabitsRoute,
   AuthenticatedHeatmapRoute: AuthenticatedHeatmapRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
-  AuthenticatedListenRoute: AuthenticatedListenRoute,
   AuthenticatedMakronRoute: AuthenticatedMakronRouteWithChildren,
   AuthenticatedMaterialsRoute: AuthenticatedMaterialsRouteWithChildren,
   AuthenticatedMentorRoute: AuthenticatedMentorRoute,
-  AuthenticatedMicroRoute: AuthenticatedMicroRoute,
   AuthenticatedMissionsRoute: AuthenticatedMissionsRoute,
   AuthenticatedMistakesRoute: AuthenticatedMistakesRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
-  AuthenticatedOcrRoute: AuthenticatedOcrRoute,
   AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRouteWithChildren,
   AuthenticatedParentRoute: AuthenticatedParentRoute,
-  AuthenticatedPhotologRoute: AuthenticatedPhotologRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
-  AuthenticatedQaRoute: AuthenticatedQaRoute,
   AuthenticatedQuestionsRoute: AuthenticatedQuestionsRoute,
   AuthenticatedRankRoute: AuthenticatedRankRoute,
   AuthenticatedRequestsRoute: AuthenticatedRequestsRoute,
-  AuthenticatedRivalsRoute: AuthenticatedRivalsRoute,
-  AuthenticatedRoomsRoute: AuthenticatedRoomsRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedShareRoute: AuthenticatedShareRoute,
   AuthenticatedShopRoute: AuthenticatedShopRoute,
-  AuthenticatedStreakRoute: AuthenticatedStreakRoute,
   AuthenticatedStudyRoute: AuthenticatedStudyRoute,
   AuthenticatedTimerRoute: AuthenticatedTimerRoute,
   AuthenticatedTodayRoute: AuthenticatedTodayRoute,
-  AuthenticatedToolsRoute: AuthenticatedToolsRoute,
   AuthenticatedTutorRoute: AuthenticatedTutorRoute,
   AuthenticatedUpdatesRoute: AuthenticatedUpdatesRoute,
   AuthenticatedClassroomClassIdRoute: AuthenticatedClassroomClassIdRoute,
