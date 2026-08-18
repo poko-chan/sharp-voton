@@ -2,9 +2,9 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Timer, CalendarDays, BookOpen, Brain,
   MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy,
-  Megaphone, GraduationCap, Zap, Headphones, Menu, X, MoreHorizontal,
+  Megaphone, GraduationCap, Menu, X, MoreHorizontal,
   StickyNote, Users, Ban, HelpCircle, ClipboardList,
-  CalendarClock, Stamp, Activity, Share2, ScanLine, Flame,
+  CalendarClock, Activity, Share2,
   ShoppingBag,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
