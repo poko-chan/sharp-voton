@@ -61,10 +61,10 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-const SITE_URL = "https://studyplus-voton.lovable.app";
+const SITE_URL = "https://study-plus-voton.lovable.app";
 const OG_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fd850e55-f433-466a-ae78-8f2f88319d43/id-preview-8ca241ff--70a80aa5-02cd-459f-845f-d642eaffb4f2.lovable.app-1778835357697.png";
-const DEFAULT_TITLE = "StudyΩ — 学習をもっと賢く、楽しく続けるためのオールインワン学習アプリ";
-const DEFAULT_DESC = "StudyΩ は勉強記録・集中タイマー・カレンダー・AI問題生成・AI家庭教師・学習目標管理をひとつにまとめた、毎日の学習を続けやすくするオールインワン学習プラットフォームです。";
+const DEFAULT_TITLE = "Voton Study Omega（StudyΩ）— オールインワン学習プラットフォーム";
+const DEFAULT_DESC = "Voton Study Omega（StudyΩ）は勉強記録・集中タイマー・カレンダー・Makron問題演習・AI家庭教師・組織/学校管理をひとつにまとめた、毎日の学習を続けやすくする学習プラットフォームです。";
 
 // Chrome Built-in AI (Prompt API) Origin Trial token.
 // 環境変数 VITE_CHROME_AI_OT_TOKEN にトークンを入れると <meta http-equiv="origin-trial"> が挿入される。
@@ -86,7 +86,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       ...(CHROME_AI_OT ? [{ httpEquiv: "origin-trial", content: CHROME_AI_OT } as any] : []),
       { title: DEFAULT_TITLE },
       { name: "description", content: DEFAULT_DESC },
-      { property: "og:site_name", content: "StudyΩ" },
+      { property: "og:site_name", content: "Voton Study Omega" },
       { property: "og:title", content: DEFAULT_TITLE },
       { name: "twitter:title", content: DEFAULT_TITLE },
       { property: "og:description", content: DEFAULT_DESC },
@@ -95,19 +95,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:image", content: OG_IMAGE },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
-      { title: "Voton Study Omega" },
-      { property: "og:title", content: "Voton Study Omega" },
-      { name: "twitter:title", content: "Voton Study Omega" },
-      { name: "description", content: "Voton Study Omega　学習をもっと賢く、楽しく" },
-      { property: "og:description", content: "Voton Study Omega　学習をもっと賢く、楽しく" },
-      { name: "twitter:description", content: "Voton Study Omega　学習をもっと賢く、楽しく" },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/6db7414f-a4f6-4093-891e-536a5edde1ce/id-preview-fdd67394--70a80aa5-02cd-459f-845f-d642eaffb4f2.lovable.app-1778981165224.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/6db7414f-a4f6-4093-891e-536a5edde1ce/id-preview-fdd67394--70a80aa5-02cd-459f-845f-d642eaffb4f2.lovable.app-1778981165224.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "manifest", href: "/manifest.json" },
-      { rel: "icon", href: "/icon-192.png", type: "image/png" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "apple-touch-icon", href: "/icon-192.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
@@ -119,7 +111,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Organization",
-          name: "StudyΩ",
+          name: "Voton Study Omega",
           url: SITE_URL,
           logo: `${SITE_URL}/icon-512.png`,
         }),
@@ -129,7 +121,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
-          name: "StudyΩ",
+          name: "Voton Study Omega（StudyΩ）",
           url: SITE_URL,
         }),
       },
