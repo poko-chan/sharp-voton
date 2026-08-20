@@ -1,13 +1,13 @@
 
 {
-  "name": "Voton Study+",
-  "short_name": "Study+",
+  "name": "Voton Study Omega",
+  "short_name": "StudyΩ",
   "display": "standalone",
   "background_color": "#d5e2d7",
   "icons": [
       {
-          "src": "./assets/logo-CVinFSFd.png",
-          "sizes": "1000x1000",
+          "src": "/icon-512.png",
+          "sizes": "512x512",
           "type": "image/png",
           "purpose": "any maskable monochrome"
       }
@@ -17,35 +17,35 @@
   "theme_color":"#008a39",
   "shortcuts":[
     {
-        "name": "ダッシュボード - Study+",
+        "name": "ダッシュボード - StudyΩ",
         "url":"./dashboard"
     },
     {
-        "name":"勉強記録 - Study+",
+        "name":"勉強記録 - StudyΩ",
         "url":"./study"
     },
     {
-        "name":"タイマー - Study+",
+        "name":"タイマー - StudyΩ",
         "url":"./timer"
     },
     {
-        "name":"通知 - Study+",
+        "name":"通知 - StudyΩ",
         "url":"./notifications"
     },
     {
-        "name":"学習目標 - Study+",
+        "name":"学習目標 - StudyΩ",
         "url":"./goals"
     },
     {
-        "name":"ユーザーチャット - Study+",
+        "name":"ユーザーチャット - StudyΩ",
         "url":"./chat"
     },
     {
-        "name":"カレンダー - Study+",
+        "name":"カレンダー - StudyΩ",
         "url":"./calendar"
     },
     {
-        "name":"Voton Classroom - Study+",
+        "name":"Voton Classroom - StudyΩ",
         "url":"./classroom"
     },
     {
@@ -53,7 +53,7 @@
         "url":"./admin"
     }
   ],
-  "description":"Voton Study+。\n学習をもっと賢く楽しく。\nAIを活用して、あなたの学習をサポート\n機能\n・[学習記録]今日やった勉強時間、教科、内容を記録。\n・[ストップウォッチ]ストップウォッチで勉強時間を測って、自動的に記録。\n[ポモドーロ]ハーバード大学の学生が利用している25分集中5分球形のサイクルであなたの集中力をきらさない。\n・[呼吸法]勉強の疲れをなくしましょう。\n・[AI家庭教師]AIにわからないことを質問しましょう。\n・[街]勉強をいっぱいして、あなたの街を成長させましょう。\n・[カレンダー]あなたの予定を整理しましょう。\n・[学習目標]試験などまでに勉強の時間を設定しましょう。\n[問題生成と苦手演習]練習問題、試験問題を生成して、問題を解きましょう。そして、間違えた問題をAIが分析してくれます。\n・[Voton classroom]あなたのクラスに課題を提出して、回収、採点しましょう。",
+  "description":"Voton Study Omega。\n学習をもっと賢く楽しく。\nAIを活用して、あなたの学習をサポート\n機能\n・[学習記録]今日やった勉強時間、教科、内容を記録。\n・[ストップウォッチ]ストップウォッチで勉強時間を測って、自動的に記録。\n[ポモドーロ]ハーバード大学の学生が利用している25分集中5分球形のサイクルであなたの集中力をきらさない。\n・[呼吸法]勉強の疲れをなくしましょう。\n・[AI家庭教師]AIにわからないことを質問しましょう。\n・[街]勉強をいっぱいして、あなたの街を成長させましょう。\n・[カレンダー]あなたの予定を整理しましょう。\n・[学習目標]試験などまでに勉強の時間を設定しましょう。\n[問題生成と苦手演習]練習問題、試験問題を生成して、問題を解きましょう。そして、間違えた問題をAIが分析してくれます。\n・[Voton classroom]あなたのクラスに課題を提出して、回収、採点しましょう。",
   "screenshot":[
     {
     "src":"https://i.imgur.com/cCPH4XU.png",

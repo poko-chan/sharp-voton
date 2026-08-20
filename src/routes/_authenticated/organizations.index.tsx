@@ -12,8 +12,8 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/organizations/")({
   head: () => {
-    const title = "組織｜Study+ — 学校・塾・チームで学習を管理";
-    const description = "Study+ の組織機能。参加コードでメンバーを集め、勉強時間の共有、組織専用のMakron問題集やクラスルーム管理ができます。";
+    const title = "組織｜StudyΩ — 学校・塾・チームで学習を管理";
+    const description = "StudyΩ の組織機能。参加コードでメンバーを集め、勉強時間の共有、組織専用のMakron問題集やクラスルーム管理ができます。";
     return {
       meta: [
         { title },

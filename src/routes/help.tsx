@@ -13,8 +13,8 @@ import {
 export const Route = createFileRoute("/help")({
   head: () => ({
     meta: [
-      { title: "ヘルプ・よくある質問 | Study+" },
-      { name: "description", content: "Study+ のよくある質問と回答をまとめたヘルプページです。" },
+      { title: "ヘルプ・よくある質問 | StudyΩ" },
+      { name: "description", content: "StudyΩ のよくある質問と回答をまとめたヘルプページです。" },
     ],
   }),
   component: HelpPage,

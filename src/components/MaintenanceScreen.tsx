@@ -11,7 +11,7 @@ export function MaintenanceScreen({
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background p-8">
       <div className="max-w-2xl text-center space-y-6">
-        <img src={logoUrl} alt="Study+" className="mx-auto h-24 w-24 rounded-2xl shadow-md" />
+        <img src={logoUrl} alt="StudyΩ" className="mx-auto h-24 w-24 rounded-2xl shadow-md" />
         <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-warning/20 text-warning">
           <Wrench className="h-6 w-6" />
         </div>

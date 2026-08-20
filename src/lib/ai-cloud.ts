@@ -21,7 +21,7 @@ export async function cloudAiDiagnostics() {
     status,
     reason:
       status === "available"
-        ? "クラウド AI（Study+ サーバー経由）。どの端末・ブラウザでも利用でき、ダウンロード不要です。"
+        ? "クラウド AI（StudyΩ サーバー経由）。どの端末・ブラウザでも利用でき、ダウンロード不要です。"
         : "オフラインのため利用できません。ネットワークに接続してください。",
   };
 }

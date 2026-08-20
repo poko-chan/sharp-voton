@@ -49,7 +49,7 @@ function SharePage() {
   const exportICS = async () => {
     if (!user) return;
     const { data } = await supabase.from("today_entries").select("*").eq("user_id", user.id).order("date");
-    const ics = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Study+//JP"];
+    const ics = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//StudyΩ//JP"];
     for (const e of (data ?? []) as any[]) {
       const dt = (d: string, t: string) => `${d.replace(/-/g,"")}T${t.replace(/:/g,"").slice(0,4)}00`;
       ics.push("BEGIN:VEVENT", `UID:${e.id}@studyplus`, `SUMMARY:${(e.label || e.category).replace(/\n/g," ")}`, `DTSTART:${dt(e.date, e.start_time)}`, `DTEND:${dt(e.date, e.end_time)}`, "END:VEVENT");

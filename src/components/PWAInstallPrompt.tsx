@@ -82,7 +82,7 @@ export function PWAInstallPrompt() {
           <Download className="h-5 w-5" />
         </div>
         <div className="flex-1 min-w-0 pr-4">
-          <div className="font-semibold">Study+ をホーム画面に追加</div>
+          <div className="font-semibold">StudyΩ をホーム画面に追加</div>
           {iosHint ? (
             <p className="text-xs text-muted-foreground mt-1">
               下の <Share className="inline h-3 w-3 align-text-bottom" /> 共有メニューから
