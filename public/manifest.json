@@ -6,8 +6,8 @@
   "background_color": "#d5e2d7",
   "icons": [
       {
-          "src": "./assets/logo-CVinFSFd.png",
-          "sizes": "1000x1000",
+          "src": "/icon-512.png",
+          "sizes": "512x512",
           "type": "image/png",
           "purpose": "any maskable monochrome"
       }
