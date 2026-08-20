@@ -11,8 +11,8 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin-login")({
   head: () => {
-    const title = "管理者ログイン｜Study+";
-    const description = "Study+ の管理者専用ログインページです。一般利用者のログインは通常のログインページから行ってください。";
+    const title = "管理者ログイン｜StudyΩ";
+    const description = "StudyΩ の管理者専用ログインページです。一般利用者のログインは通常のログインページから行ってください。";
     const url = "https://studyplus-voton.lovable.app/admin-login";
     return {
       meta: [

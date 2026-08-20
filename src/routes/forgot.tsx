@@ -16,8 +16,8 @@ import logoUrl from "@/assets/logo.png";
 export const Route = createFileRoute("/forgot")({
   head: () => ({
     meta: [
-      { title: "アカウントを復旧 | Study+" },
-      { name: "description", content: "Study+ のパスワードまたはメールアドレスを忘れた場合の復旧手続き。" },
+      { title: "アカウントを復旧 | StudyΩ" },
+      { name: "description", content: "StudyΩ のパスワードまたはメールアドレスを忘れた場合の復旧手続き。" },
     ],
   }),
   component: ForgotPage,

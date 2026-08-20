@@ -4,8 +4,8 @@ import { TERMS, LAST_UPDATED } from "@/content/legal";
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "利用規約｜Study+" },
-      { name: "description", content: "Study+ の利用規約。アカウント登録、禁止事項、AI機能の利用、免責事項などについて定めています。" },
+      { title: "利用規約｜StudyΩ" },
+      { name: "description", content: "StudyΩ の利用規約。アカウント登録、禁止事項、AI機能の利用、免責事項などについて定めています。" },
     ],
     links: [{ rel: "canonical", href: "https://studyplus-voton.lovable.app/terms" }],
   }),

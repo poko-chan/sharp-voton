@@ -15,8 +15,8 @@ import logoUrl from "@/assets/logo.png";
 
 export const Route = createFileRoute("/login")({
   head: () => {
-    const title = "ログイン｜Study+ — 学習を続けやすくする学習プラットフォーム";
-    const description = "Study+ にログインして、勉強記録・集中タイマー・AI問題生成・AI家庭教師・学習目標管理などの学習サポート機能を使い始めましょう。新規登録もこちらから。";
+    const title = "ログイン｜StudyΩ — 学習を続けやすくする学習プラットフォーム";
+    const description = "StudyΩ にログインして、勉強記録・集中タイマー・AI問題生成・AI家庭教師・学習目標管理などの学習サポート機能を使い始めましょう。新規登録もこちらから。";
     const url = "https://studyplus-voton.lovable.app/login";
     return {
       meta: [
@@ -157,14 +157,14 @@ function LoginPage() {
         <div className="text-center space-y-2">
           <img
             src={logoUrl}
-            alt="Study+ ロゴ"
+            alt="StudyΩ ロゴ"
             width={64}
             height={64}
             decoding="async"
             fetchPriority="high"
             className="mx-auto h-16 w-16 rounded-2xl shadow-md"
           />
-          <h1 className="text-3xl font-bold">Study+</h1>
+          <h1 className="text-3xl font-bold">StudyΩ</h1>
           <p className="text-sm text-muted-foreground">
             {mode === "signin" ? "ログイン" : "新規登録"}してはじめましょう
           </p>

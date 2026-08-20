@@ -4,8 +4,8 @@ import { PRIVACY, LAST_UPDATED } from "@/content/legal";
 export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
-      { title: "プライバシーポリシー｜Study+" },
-      { name: "description", content: "Study+ のプライバシーポリシー。取得する個人情報、利用目的、第三者提供、利用者の権利について説明します。" },
+      { title: "プライバシーポリシー｜StudyΩ" },
+      { name: "description", content: "StudyΩ のプライバシーポリシー。取得する個人情報、利用目的、第三者提供、利用者の権利について説明します。" },
     ],
     links: [{ rel: "canonical", href: "https://studyplus-voton.lovable.app/privacy" }],
   }),
