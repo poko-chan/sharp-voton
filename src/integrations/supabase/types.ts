@@ -1952,6 +1952,39 @@ export type Database = {
         }
         Relationships: []
       }
+      login_boards: {
+        Row: {
+          active: boolean
+          audience: string
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          target_user_id: string | null
+          title: string
+        }
+        Insert: {
+          active?: boolean
+          audience?: string
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          target_user_id?: string | null
+          title: string
+        }
+        Update: {
+          active?: boolean
+          audience?: string
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          target_user_id?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       makron_answers: {
         Row: {
           admin_override_note: string | null
@@ -5960,6 +5993,35 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_board_seen: {
+        Row: {
+          board_id: string
+          id: string
+          seen_at: string
+          user_id: string
+        }
+        Insert: {
+          board_id: string
+          id?: string
+          seen_at?: string
+          user_id: string
+        }
+        Update: {
+          board_id?: string
+          id?: string
+          seen_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_board_seen_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "login_boards"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_coins: {
         Row: {
