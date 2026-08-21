@@ -331,7 +331,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen bg-background">
       {/* Desktop sidebar */}
       {!isMobile && (
-        <aside className="w-64 shrink-0 border-r border-border/60 bg-sidebar/70 backdrop-blur-xl text-sidebar-foreground flex flex-col sticky top-0 h-screen self-start">
+        <aside className="w-64 shrink-0 border-r liquid-bar text-sidebar-foreground flex flex-col sticky top-0 h-screen self-start">
           {sidebarContent}
         </aside>
       )}
@@ -339,7 +339,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="flex-1 overflow-auto min-w-0">
         <TimerIndicator />
         {/* Account switcher top bar */}
-        <div className="flex justify-end items-center px-3 py-1 border-b border-border/40 bg-background/40">
+        <div className="sticky top-0 z-30 flex justify-end items-center px-3 py-1 border-b liquid-bar">
           <ChromeAiStatusBadge compact />
           <div className="mx-2 h-4 w-px bg-border" />
           <AccountSwitcher />
@@ -347,14 +347,14 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         {/* Mobile top bar (hamburger + clock) */}
         {isMobile && (
-          <header className="sticky top-0 z-40 flex items-center gap-2 px-3 py-2 bg-background/70 backdrop-blur-xl border-b border-border/50">
+          <header className="sticky top-0 z-40 flex items-center gap-2 px-3 py-2 liquid-bar border-b">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <button aria-label="メニュー" className="h-10 w-10 inline-flex items-center justify-center rounded-xl hover:bg-accent">
                   <Menu className="h-5 w-5" />
                 </button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[88vw] max-w-sm p-0 flex flex-col bg-sidebar/95 backdrop-blur-xl">
+              <SheetContent side="left" className="w-[88vw] max-w-sm p-0 flex flex-col liquid-bar">
                 <div className="flex items-center justify-end p-2">
                   <button onClick={() => setMobileOpen(false)} className="h-9 w-9 inline-flex items-center justify-center rounded-lg hover:bg-accent">
                     <X className="h-5 w-5" />
@@ -377,7 +377,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         {/* Mobile bottom bar */}
         {isMobile && (
-          <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/50 bg-background/80 backdrop-blur-xl">
+          <nav className="fixed bottom-0 left-0 right-0 z-40 border-t liquid-bar">
             <div className="flex items-stretch justify-around px-1 py-1">
               {BOTTOM_NAV.map((n) => {
                 const active = path === n.to || path.startsWith(n.to + "/");
