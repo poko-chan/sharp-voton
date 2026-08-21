@@ -5,7 +5,6 @@ import {
   Megaphone, GraduationCap, Menu, X, MoreHorizontal,
   StickyNote, Users, Ban, HelpCircle, ClipboardList,
   CalendarClock, Activity, Share2,
-  ShoppingBag,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -41,8 +40,6 @@ const NAV = [
   { to: "/flashcards", labelKey: "nav.flashcards" as const, icon: Brain },
   { to: "/feed", labelKey: "nav.dashboard" as const, icon: Users, override: "タイムライン" },
   { to: "/friends", labelKey: "nav.friends" as const, icon: Users },
-  { to: "/questions", labelKey: "nav.questions" as const, icon: Brain },
-  { to: "/practice", labelKey: "nav.practice" as const, icon: Target },
   { to: "/tutor", labelKey: "nav.tutor" as const, icon: Sparkles },
   { to: "/classroom", labelKey: "nav.classroom" as const, icon: GraduationCap },
   { to: "/chat", labelKey: "nav.chat" as const, icon: MessagesSquare },
@@ -52,10 +49,8 @@ const NAV = [
   { to: "/missions", labelKey: "nav.dashboard" as const, icon: Target, override: "ミッション" },
   { to: "/makron", labelKey: "nav.dashboard" as const, icon: Target, override: "Makron" },
   { to: "/organizations", labelKey: "nav.dashboard" as const, icon: Users, override: "組織" },
-  { to: "/shop", labelKey: "nav.dashboard" as const, icon: ShoppingBag, override: "コインショップ" },
   { to: "/settings", labelKey: "nav.settings" as const, icon: Settings, override: "設定" },
   { to: "/help", labelKey: "nav.dashboard" as const, icon: HelpCircle, override: "ヘルプ" },
- { to: "/mentor", labelKey: "nav.dashboard" as const, icon: Users, override: "メンター" },
  { to: "/mistakes", labelKey: "nav.dashboard" as const, icon: Brain, override: "間違い直し" },
 ] as const;
 
