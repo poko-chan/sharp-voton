@@ -136,25 +136,36 @@ function OrgsPage() {
         </section>
       )}
 
-      <section className="space-y-2">
+      <section className="space-y-3">
         <h2 className="text-sm font-bold">マイ組織</h2>
         {myOrgs.length === 0 && <Card className="p-6 text-sm text-muted-foreground">まだ所属組織はありません</Card>}
-        {myOrgs.map((m: any) => (
-          <Card key={m.organization?.id} className="p-3 flex items-center justify-between gap-2">
-            <div className="min-w-0">
-              <div className="font-bold truncate">
-                {m.organization?.name}
-                <span className="text-[10px] ml-2 px-2 py-0.5 rounded bg-muted">{ROLE_LABEL[m.role] ?? m.role}{m.suspended ? "・停止中" : ""}</span>
-                {m.organization?.status !== "approved" && <span className="text-[10px] ml-2 px-2 py-0.5 rounded bg-amber-500/20 text-amber-700">承認待ち</span>}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {myOrgs.map((m: any) => (
+            <Card key={m.organization?.id} className="glass p-4 flex flex-col gap-3 rounded-2xl transition hover:-translate-y-0.5 hover:shadow-lg">
+              <div className="flex items-start gap-3">
+                <div className="h-11 w-11 shrink-0 rounded-xl bg-primary/15 text-primary flex items-center justify-center font-bold">
+                  {(m.organization?.name ?? "?").slice(0, 2)}
+                </div>
+                <div className="min-w-0">
+                  <div className="font-bold truncate">{m.organization?.name}</div>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted">{ROLE_LABEL[m.role] ?? m.role}</span>
+                    {m.suspended && <span className="text-[10px] px-2 py-0.5 rounded-full bg-destructive/15 text-destructive">停止中</span>}
+                    {m.organization?.status !== "approved" && <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700">承認待ち</span>}
+                  </div>
+                </div>
               </div>
-              <div className="text-xs text-muted-foreground truncate">{m.organization?.description}</div>
-            </div>
-            <Link to="/organizations/$orgId" params={{ orgId: m.organization?.id }} className="text-sm underline shrink-0">
-              {["owner", "admin", "teacher"].includes(m.role) ? "管理 →" : "詳細 →"}
-            </Link>
-          </Card>
-        ))}
+              {m.organization?.description && (
+                <div className="text-xs text-muted-foreground line-clamp-2">{m.organization.description}</div>
+              )}
+              <Button asChild className="mt-auto w-full">
+                <Link to="/organizations/$orgId" params={{ orgId: m.organization?.id }}>開く</Link>
+              </Button>
+            </Card>
+          ))}
+        </div>
       </section>
+
 
       {requests.length > 0 && (
         <section className="space-y-2">
