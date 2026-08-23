@@ -84,7 +84,7 @@ export function UserRestrictionsTab() {
   const [selectedService, setSelectedService] = useState<string>(SERVICES[0].key);
 
   const load = async () => {
-    const { data: profiles } = await supabase.from("profiles").select("id, username, display_name, email").order("display_name");
+    const { data: profiles } = await supabase.from("profiles").select("id, username, display_name").order("display_name");
     setUsers(profiles ?? []);
     const { data: rs } = await supabase.from("user_service_restrictions").select("*");
     const map: Record<string, Record<string, any>> = {};

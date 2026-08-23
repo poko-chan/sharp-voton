@@ -202,8 +202,8 @@ function InvitePanel() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await (supabase as any).from("profiles").select("referral_code").eq("id", user.id).maybeSingle();
-      setCode(data?.referral_code ?? "");
+      const { data } = await (supabase as any).rpc("my_profile_private");
+      setCode((data as any)?.referral_code ?? "");
       const { count: c } = await (supabase as any).from("user_referrals").select("*", { count: "exact", head: true }).eq("referrer_id", user.id);
       setCount(c ?? 0);
     })();

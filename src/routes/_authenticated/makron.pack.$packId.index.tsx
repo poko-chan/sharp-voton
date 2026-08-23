@@ -1,3 +1,4 @@
+import { QUESTION_COLUMNS, loadQuestionKeys } from "@/lib/makron-questions";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,7 +41,7 @@ function PackPage() {
       setUnitMeta(u);
     }
     const { data: qs } = await (supabase as any).from("makron_questions")
-      .select("*").eq("pack_id", packId).order("order_idx").order("created_at");
+      .select(QUESTION_COLUMNS).eq("pack_id", packId).order("order_idx").order("created_at");
     setQuestions(qs ?? []);
   };
   useEffect(() => { load(); }, [packId]);
@@ -66,7 +67,7 @@ function PackPage() {
   });
 
   const uploadImage = async (file: File) => {
-    const path = `pack/${packId}/${Date.now()}-${file.name}`;
+    const path = `q/${user?.id}/${packId}-${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from("makron-files").upload(path, file);
     if (error) return toast.error(error.message);
     const { data } = await supabase.storage.from("makron-files").createSignedUrl(path, 60 * 60 * 24 * 365);
@@ -167,7 +168,7 @@ function PackPage() {
                       await (supabase as any).from("makron_questions").update({ is_active: q.is_active === false }).eq("id", q.id);
                       load();
                     }}><Power className={`h-4 w-4 ${q.is_active === false ? "text-muted-foreground" : "text-success"}`} /></Button>
-                    <Button size="sm" variant="ghost" onClick={() => setDraft({ ...q, options: q.options ?? [], correct_options: q.correct_options ?? [], accepted_answers: q.accepted_answers ?? [] })}>編集</Button>
+                    <Button size="sm" variant="ghost" onClick={async () => { try { const k = await loadQuestionKeys(q.id); setDraft({ ...q, options: q.options ?? [], ...k }); } catch (e: any) { toast.error(e.message); } }}>編集</Button>
                     <Button size="sm" variant="ghost" className="text-destructive" onClick={() => delQuestion(q.id)}><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 ))}

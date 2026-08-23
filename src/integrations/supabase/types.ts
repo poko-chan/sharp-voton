@@ -6523,6 +6523,10 @@ export type Database = {
       }
       join_class_by_code: { Args: { _code: string }; Returns: string }
       jst_today: { Args: never; Returns: string }
+      makron_correct_answer_text: {
+        Args: { _q: Database["public"]["Tables"]["makron_questions"]["Row"] }
+        Returns: string
+      }
       makron_daily_status: {
         Args: never
         Returns: {
@@ -6536,6 +6540,13 @@ export type Database = {
         }[]
       }
       makron_delete_answer: { Args: { _answer_id: string }; Returns: undefined }
+      makron_eval: {
+        Args: {
+          _answer: Json
+          _q: Database["public"]["Tables"]["makron_questions"]["Row"]
+        }
+        Returns: boolean
+      }
       makron_finalize_daily: {
         Args: { _session_id: string }
         Returns: {
@@ -6555,6 +6566,21 @@ export type Database = {
           question_ids: string[]
         }[]
       }
+      makron_grade_one: {
+        Args: { _answer: Json; _question_id: string; _session_id: string }
+        Returns: Json
+      }
+      makron_match_choices: {
+        Args: { _question_id: string }
+        Returns: string[]
+      }
+      makron_model_answers: {
+        Args: { _session_id: string }
+        Returns: {
+          model_answer: string
+          question_id: string
+        }[]
+      }
       makron_pack_attempters: {
         Args: { _pack_id: string }
         Returns: {
@@ -6570,11 +6596,42 @@ export type Database = {
         Returns: undefined
       }
       makron_pack_stats: { Args: { _pack_id: string }; Returns: Json }
+      makron_question_keys: {
+        Args: { _ids: string[] }
+        Returns: {
+          accepted_answers: Json
+          correct_options: Json
+          id: string
+          model_answer: string
+        }[]
+      }
+      makron_reveal: {
+        Args: { _session_id: string }
+        Returns: {
+          accepted_answers: Json
+          correct_answer: string
+          correct_options: Json
+          model_answer: string
+          question_id: string
+        }[]
+      }
+      makron_session_set_all_mode: {
+        Args: { _session_id: string }
+        Returns: undefined
+      }
+      makron_session_set_scratchpad: {
+        Args: { _data: string; _session_id: string }
+        Returns: undefined
+      }
       makron_start_daily_session: { Args: never; Returns: string }
       makron_start_pack_session: { Args: { _pack_id: string }; Returns: string }
       makron_start_weakness_session: {
         Args: { _limit?: number; _unit_id: string }
         Returns: string
+      }
+      makron_submit_session: {
+        Args: { _answers: Json; _session_id: string }
+        Returns: undefined
       }
       makron_update_answer_score: {
         Args: {
@@ -6645,6 +6702,7 @@ export type Database = {
         }[]
       }
       my_org_ids: { Args: never; Returns: string[] }
+      my_profile_private: { Args: never; Returns: Json }
       org_assignment_progress: {
         Args: { _assignment: string }
         Returns: {

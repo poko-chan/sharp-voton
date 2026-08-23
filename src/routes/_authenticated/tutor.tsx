@@ -101,8 +101,9 @@ function TutorPage() {
         const path = `${user.id}/${Date.now()}-${file.name}`;
         const { error } = await supabase.storage.from("tutor-files").upload(path, file);
         if (error) throw error;
-        const { data: { publicUrl } } = supabase.storage.from("tutor-files").getPublicUrl(path);
-        ups.push({ url: publicUrl, name: file.name, type: file.type });
+        const { signedUrl } = await import("@/lib/storage-url");
+        const url = await signedUrl("tutor-files", path);
+        ups.push({ url, name: file.name, type: file.type });
       }
       setPending((p) => [...p, ...ups]);
     } catch (err: any) { toast.error(err.message); }

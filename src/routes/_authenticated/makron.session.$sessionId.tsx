@@ -24,10 +24,13 @@ export const Route = createFileRoute("/_authenticated/makron/session/$sessionId"
 type Q = {
   id: string; prompt: string; image_url: string | null;
   type: "single"|"multi"|"text"|"written"|"file"|"ocr"|"numeric"|"long_text"|"fill_blank"|"ordering"|"matching";
-  options: string[]; correct_options: string[]; accepted_answers: string[];
-  model_answer: string | null; explanation: string | null; points: number; grading: "auto"|"manual";
+  options: string[]; explanation: string | null; points: number; grading: "auto"|"manual";
   hint_text: string | null;
 };
+
+// 正解データ（correct_options / accepted_answers / model_answer）はクライアントに配信しません。
+// 採点はサーバー側 RPC（makron_grade_one / makron_submit_session）で行います。
+const QCOLS = "id, prompt, image_url, type, options, explanation, points, grading, hint_text, order_idx, created_at, is_active, pack_id, unit_id, status";
 
 function shuffleArr<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -74,6 +77,7 @@ function SessionPage() {
   const [perQResult, setPerQResult] = useState<Record<string, { correct: boolean | null; explanation: string | null; correctAnswer: string }>>({});
   const startedAtRef = useRef<number>(Date.now());
   const [elapsed, setElapsed] = useState(0);
+  const [matchChoices, setMatchChoices] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     const id = setInterval(() => setElapsed(Math.floor((Date.now() - startedAtRef.current) / 1000)), 1000);
@@ -96,15 +100,15 @@ function SessionPage() {
       // 出題対象: question_ids（デイリー等）→ パック → 単元の順
       let qs: any[] | null = null;
       if (Array.isArray(s.question_ids) && s.question_ids.length > 0) {
-        const r = await (supabase as any).from("makron_questions").select("*").in("id", s.question_ids);
+        const r = await (supabase as any).from("makron_questions").select(QCOLS).in("id", s.question_ids);
         qs = r.data ?? [];
         // preserve given order
         const order = new Map<string, number>(s.question_ids.map((id: string, i: number) => [id, i]));
         qs!.sort((a: any, b: any) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
       } else {
         const baseQuery = p
-          ? (supabase as any).from("makron_questions").select("*").eq("pack_id", s.pack_id)
-          : (supabase as any).from("makron_questions").select("*").eq("unit_id", s.unit_id).eq("status", "approved");
+          ? (supabase as any).from("makron_questions").select(QCOLS).eq("pack_id", s.pack_id)
+          : (supabase as any).from("makron_questions").select(QCOLS).eq("unit_id", s.unit_id).eq("status", "approved");
         const r = await baseQuery.neq("is_active", false).order("order_idx").order("created_at");
         qs = r.data ?? [];
       }
@@ -131,6 +135,16 @@ function SessionPage() {
   }, [sessionId, user?.id]);
 
   const q = questions[idx];
+
+  // 組み合わせ問題の選択肢候補はサーバーから取得（対応関係は端末に渡さない）
+  useEffect(() => {
+    const target = questions.find((x) => x.type === "matching" && !matchChoices[x.id]);
+    if (!target) return;
+    (async () => {
+      const { data } = await (supabase as any).rpc("makron_match_choices", { _question_id: target.id });
+      setMatchChoices((p) => ({ ...p, [target.id]: (data as string[]) ?? [] }));
+    })();
+  }, [questions, matchChoices]);
   const setAns = (val: any) => setAnswers((p) => ({ ...p, [q.id]: val }));
   const perQMode = !!pack?.per_question_grading;
   const currentLocked = q ? locked.has(q.id) : false;
@@ -171,44 +185,6 @@ function SessionPage() {
     setHintConfirmOpen(false);
   };
 
-  // 単一問題の自動採点判定（ローカルのみ）
-  const computeAuto = (qq: Q, val: any): boolean | null => {
-    let auto: boolean | null = null;
-    if (qq.grading === "auto") {
-      if (qq.type === "single") auto = !!val && (qq.correct_options ?? [])[0] === val;
-      else if (qq.type === "multi") {
-        const v = Array.isArray(val) ? [...val].sort() : [];
-        const c = [...(qq.correct_options ?? [])].sort();
-        auto = v.length === c.length && v.every((x, i) => x === c[i]);
-      } else if (qq.type === "text" || qq.type === "ocr") {
-        const s = String(val ?? "").trim().toLowerCase();
-        auto = (qq.accepted_answers ?? []).some((a) => a.trim().toLowerCase() === s);
-      } else if (qq.type === "numeric") {
-        const n = Number(val);
-        auto = !isNaN(n) && (qq.accepted_answers ?? []).some((a) => Number(a) === n);
-      } else if (qq.type === "fill_blank") {
-        const arr = Array.isArray(val) ? val : [];
-        const correct = qq.accepted_answers ?? [];
-        auto = arr.length === correct.length &&
-          arr.every((v, i) => String(v ?? "").trim().toLowerCase() === String(correct[i] ?? "").trim().toLowerCase());
-      } else if (qq.type === "ordering") {
-        const arr = Array.isArray(val) ? val : [];
-        const correct = qq.correct_options ?? [];
-        auto = arr.length === correct.length && arr.every((v, i) => v === correct[i]);
-      } else if (qq.type === "matching") {
-        const obj = (val && typeof val === "object") ? val : {};
-        const map: Record<string, string> = {};
-        (qq.accepted_answers ?? []).forEach((p) => {
-          const [k, v] = p.split("=>");
-          if (k && v) map[k.trim()] = v.trim();
-        });
-        const keys = Object.keys(map);
-        auto = keys.length > 0 && keys.every((k) => String(obj[k] ?? "").trim() === map[k]);
-      }
-    }
-    return auto;
-  };
-
   // 問題間の移動は途中保存せず、ローカル state のみで切り替えます。
   const goto = (newIdx: number) => { setIdx(newIdx); };
 
@@ -234,35 +210,32 @@ function SessionPage() {
   // 現在の問題をその場で採点して確定（一問ごと採点モード）
   const gradeCurrent = async () => {
     if (!q) return;
-    const val = answers[q.id];
-    let correct: boolean | null = computeAuto(q, val);
-    let correctAnswer = "";
-    if (q.type === "single" || q.type === "multi" || q.type === "ordering") {
-      correctAnswer = (q.correct_options ?? []).join(", ");
-    } else if (q.type === "text" || q.type === "numeric" || q.type === "ocr" || q.type === "fill_blank") {
-      correctAnswer = (q.accepted_answers ?? []).join(" / ");
-    } else if (q.type === "matching") {
-      correctAnswer = (q.accepted_answers ?? []).join(" / ");
-    } else if (q.type === "written" || q.type === "long_text") {
-      // 記述系は AI 採点
-      const s = String(val ?? "").trim();
-      if (s) {
+    const val = answers[q.id] ?? null;
+    setGrading(true);
+    try {
+      const { data, error } = await (supabase as any).rpc("makron_grade_one", {
+        _session_id: sessionId, _question_id: q.id, _answer: val,
+      });
+      if (error) { toast.error(error.message); return; }
+      const r = (data ?? {}) as { correct: boolean | null; correct_answer: string | null; explanation: string | null; model_answer: string | null };
+      let correct = r.correct ?? null;
+      if ((q.type === "written" || q.type === "long_text") && String(val ?? "").trim()) {
         try {
-          setGrading(true);
-          const r = await gradeFn({ data: {
-            prompt: q.prompt, answer: s, model_answer: q.model_answer ?? undefined,
+          const g = await gradeFn({ data: {
+            prompt: q.prompt, answer: String(val).trim(),
+            model_answer: r.model_answer ?? undefined,
             max_points: q.points ?? 10,
             onProgress: (_p: string, chars: number) => setGradingProgress(`生成中… ${chars}文字`),
           }});
-          setAiGrades((p) => ({ ...p, [q.id]: r }));
-          correct = q.points > 0 ? r.score >= q.points * 0.6 : null;
+          setAiGrades((p) => ({ ...p, [q.id]: g }));
+          correct = q.points > 0 ? g.score >= q.points * 0.6 : null;
         } catch (e: any) { toast.error(e?.message ?? "採点失敗"); return; }
-        finally { setGrading(false); setGradingProgress(""); }
       }
-      correctAnswer = q.model_answer ?? "";
-    }
-    setPerQResult((p) => ({ ...p, [q.id]: { correct, explanation: q.explanation, correctAnswer } }));
-    setLocked((s) => new Set(s).add(q.id));
+      setPerQResult((p) => ({ ...p, [q.id]: {
+        correct, explanation: r.explanation ?? q.explanation, correctAnswer: r.correct_answer ?? "",
+      } }));
+      setLocked((s) => new Set(s).add(q.id));
+    } finally { setGrading(false); setGradingProgress(""); }
   };
 
   const nextOrSubmit = () => {
@@ -275,20 +248,22 @@ function SessionPage() {
   const confirmFinish = async () => {
     setSubmitting(true);
     try {
-      // 記述/長文で未採点の解答は、提出時にAIで自動採点して点数として確定させる
+      // 記述/長文の模範解答だけをサーバーから取得し、未採点分をAI採点する
       const graded: Record<string, { score: number; rate: number; feedback: string; good: string[]; improve: string[] }> = { ...aiGrades };
-      for (const qq of questions) {
-        if ((qq.type === "written" || qq.type === "long_text") && qq.grading === "auto") {
-          const val = String(answers[qq.id] ?? "").trim();
-          if (!val || graded[qq.id]) continue;
+      const needsAi = questions.filter((qq) =>
+        (qq.type === "written" || qq.type === "long_text") && qq.grading === "auto" &&
+        String(answers[qq.id] ?? "").trim() && !graded[qq.id]);
+      if (needsAi.length > 0) {
+        const { data: keys } = await (supabase as any).rpc("makron_model_answers", { _session_id: sessionId });
+        const modelMap = new Map<string, string>((keys ?? []).map((k: any) => [k.question_id, k.model_answer]));
+        for (const qq of needsAi) {
           try {
-            const r = await gradeFn({ data: {
+            graded[qq.id] = await gradeFn({ data: {
               prompt: qq.prompt,
-              answer: val,
-              model_answer: qq.model_answer ?? undefined,
+              answer: String(answers[qq.id]).trim(),
+              model_answer: modelMap.get(qq.id) ?? undefined,
               max_points: qq.points ?? 10,
             }});
-            graded[qq.id] = r;
           } catch (e: any) {
             toast.error(`AI採点失敗 (問${questions.indexOf(qq)+1}): ${e?.message ?? "unknown"}`);
           }
@@ -296,31 +271,20 @@ function SessionPage() {
       }
       setAiGrades(graded);
 
-      // 提出時にまとめてDBに書き込み、その後採点RPCを呼ぶ
-      const rows = questions.map((qq) => {
-        const val = answers[qq.id];
-        const auto = computeAuto(qq, val);
-        let pts: number | null = auto === true ? qq.points : (auto === false ? 0 : null);
-        let isCorrect: boolean | null = auto;
-        // 記述系: AI採点結果を正式点数として採用
-        const g = graded[qq.id];
-        if ((qq.type === "written" || qq.type === "long_text") && g) {
-          pts = g.score;
-          isCorrect = qq.points > 0 ? g.score >= qq.points * 0.6 : null;
-        }
-        return {
-          session_id: sessionId, question_id: qq.id,
-          answer: val ?? null, file_url: files[qq.id] ?? null,
-          auto_correct: auto, awarded_points: pts,
-          review_flag: reviewFlags.has(qq.id), is_correct: isCorrect,
-          manual_comment: g?.feedback ?? null,
-        };
+      // 採点と保存はサーバー側で実施（点数の改ざんを防止）
+      const payload = questions.map((qq) => ({
+        question_id: qq.id,
+        answer: answers[qq.id] ?? null,
+        file_url: files[qq.id] ?? null,
+        review_flag: reviewFlags.has(qq.id),
+        ai_score: graded[qq.id]?.score ?? null,
+        ai_comment: graded[qq.id]?.feedback ?? null,
+      }));
+      const { error: subErr } = await (supabase as any).rpc("makron_submit_session", {
+        _session_id: sessionId, _answers: payload,
       });
-      if (rows.length > 0) {
-        const { error: upErr } = await (supabase as any)
-          .from("makron_answers").upsert(rows, { onConflict: "session_id,question_id" });
-        if (upErr) { toast.error(upErr.message); return; }
-      }
+      if (subErr) { toast.error(subErr.message); return; }
+
       const rpcName = session?.kind === "daily" ? "makron_finalize_daily" : "finalize_makron_session";
       const { error } = await (supabase as any).rpc(rpcName, { _session_id: sessionId });
       if (error) { toast.error(error.message); return; }
@@ -352,15 +316,16 @@ function SessionPage() {
   };
 
   const saveScratchpad = async (dataUrl: string) => {
-    await (supabase as any).from("makron_sessions").update({ scratchpad: dataUrl }).eq("id", sessionId);
+    const { error } = await (supabase as any).rpc("makron_session_set_scratchpad", { _session_id: sessionId, _data: dataUrl });
+    if (error) return toast.error(error.message);
     toast.success("計算用紙を保存しました");
   };
 
   const switchAllMode = async () => {
     if (!pack) return;
-    await (supabase as any).from("makron_sessions").update({ all_mode: true }).eq("id", sessionId);
+    await (supabase as any).rpc("makron_session_set_all_mode", { _session_id: sessionId });
     setAllMode(true);
-    const { data: qs } = await (supabase as any).from("makron_questions").select("*").eq("pack_id", pack.id).neq("is_active", false).order("order_idx").order("created_at");
+    const { data: qs } = await (supabase as any).from("makron_questions").select(QCOLS).eq("pack_id", pack.id).neq("is_active", false).order("order_idx").order("created_at");
     let list = (qs ?? []) as Q[];
     if (pack.shuffle) list = shuffleArr(list);
     setQuestions(list);
@@ -501,10 +466,12 @@ function SessionPage() {
                     setGrading(true);
                     setGradingProgress("");
                     try {
+                      const { data: keys } = await (supabase as any).rpc("makron_model_answers", { _session_id: sessionId });
+                      const ma = (keys ?? []).find((k: any) => k.question_id === q.id)?.model_answer as string | undefined;
                       const r = await gradeFn({ data: {
                         prompt: q.prompt,
                         answer: String(answers[q.id] ?? ""),
-                        model_answer: q.model_answer ?? undefined,
+                        model_answer: ma ?? undefined,
                         max_points: q.points ?? 10,
                         onProgress: (_p: string, chars: number) => setGradingProgress(`生成中… ${chars}文字`),
                       }});
@@ -583,7 +550,7 @@ function SessionPage() {
           {q.type === "matching" && (() => {
             // options を "左|右1,右2,..." 形式と解釈（左側の選択肢に対し、右側候補から選ぶ）
             const lefts = q.options ?? [];
-            const rights = Array.from(new Set((q.accepted_answers ?? []).map((p) => p.split("=>")[1]?.trim()).filter(Boolean)));
+            const rights = matchChoices[q.id] ?? [];
             const cur: Record<string, string> = (answers[q.id] && typeof answers[q.id] === "object") ? answers[q.id] : {};
             return (
               <div className="space-y-2">

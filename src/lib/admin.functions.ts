@@ -166,40 +166,50 @@ export const selfDeleteAccount = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const adminEnsurePokochan = createServerFn({ method: "POST" }).handler(async () => {
-  // Idempotent admin seeder. Anyone can call this once to ensure pokochan exists.
-  const email = "pokochan@study-plus.local";
-  const password = "Udka7456";
-  const username = "pokochan";
+/**
+ * Idempotent system-admin seeder.
+ * SECURITY: admins only, and the password is never hardcoded — a new random
+ * password is generated and returned once to the calling admin.
+ */
+export const adminEnsurePokochan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    const email = "pokochan@study-plus.local";
+    const username = "pokochan";
+    const password = `Pk-${crypto.randomUUID()}`;
 
-  const { data: existing } = await supabaseAdmin
-    .from("profiles")
-    .select("id")
-    .eq("username", username)
-    .maybeSingle();
+    const { data: existing } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("username", username)
+      .maybeSingle();
 
-  let userId = existing?.id as string | undefined;
-  if (!userId) {
-    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
-      email, password, email_confirm: true,
-      user_metadata: { username, display_name: "ぽこちゃん（管理者）" },
-    });
-    if (error && !error.message.includes("already")) throw new Error(error.message);
-    userId = created?.user?.id;
+    let userId = existing?.id as string | undefined;
+    let createdPassword: string | null = null;
     if (!userId) {
-      // fallback: lookup via profile created by trigger
-      const { data: p } = await supabaseAdmin.from("profiles").select("id").eq("email", email).maybeSingle();
-      userId = p?.id;
+      const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
+        email, password, email_confirm: true,
+        user_metadata: { username, display_name: "ぽこちゃん（管理者）" },
+      });
+      if (error && !error.message.includes("already")) throw new Error(error.message);
+      userId = created?.user?.id;
+      createdPassword = password;
+      if (!userId) {
+        // fallback: lookup via profile created by trigger
+        const { data: p } = await supabaseAdmin.from("profiles").select("id").eq("email", email).maybeSingle();
+        userId = p?.id;
+        createdPassword = null;
+      }
     }
-  }
-  if (userId) {
-    await supabaseAdmin.from("profiles").upsert({
-      id: userId, email, username, display_name: "ぽこちゃん（管理者）",
-    });
-    await supabaseAdmin.from("user_roles").upsert({ user_id: userId, role: "admin" });
-  }
-  return { ok: true, username, email };
-});
+    if (userId) {
+      await supabaseAdmin.from("profiles").upsert({
+        id: userId, email, username, display_name: "ぽこちゃん（管理者）",
+      });
+      await supabaseAdmin.from("user_roles").upsert({ user_id: userId, role: "admin" });
+    }
+    return { ok: true, username, email, password: createdPassword };
+  });
 
 export const adminUpdateMaintenance = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
