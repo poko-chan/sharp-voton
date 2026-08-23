@@ -12,7 +12,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, Megaphone, Paperclip, Lock, MessageSquare, X } from "lucide-react";
 import { toast } from "sonner";
-import { toast } from "sonner";
 
 export function Stream({ classId, isTeacher, members }: { classId: string; isTeacher: boolean; members: any[] }) {
   const { user } = useAuth();

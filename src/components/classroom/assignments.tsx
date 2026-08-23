@@ -1,3 +1,4 @@
+import { FileUploader, AttachmentList } from "@/components/classroom/stream";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +14,6 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, FileText, ListChecks, X } from "lucide-react";
-import { toast } from "sonner";
 import { toast } from "sonner";
 
 export function CreateAssignment({ classId, onCreated }: { classId: string; onCreated: () => void }) {

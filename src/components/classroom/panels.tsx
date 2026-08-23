@@ -7,7 +7,6 @@ import { Send } from "lucide-react";
 import { toast } from "sonner";
 import { ClassFilesPanel } from "@/components/ClassFilesPanel";
 import { useMyClassPermissions } from "@/components/ClassPermissionsPanel";
-import { toast } from "sonner";
 
 export function StudentLogs({ members }: { members: any[] }) {
   const [logs, setLogs] = useState<Record<string, any[]>>({});
