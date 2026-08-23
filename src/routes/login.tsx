@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Shield, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import { resolveUsernameToEmail, checkUsernameAvailable } from "@/lib/username.functions";
+import { signInWithUsername, checkUsernameAvailable } from "@/lib/username.functions";
 import logoUrl from "@/assets/logo.png";
 
 export const Route = createFileRoute("/login")({
@@ -46,7 +46,7 @@ function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [announcements, setAnnouncements] = useState<Array<{ id: string; title: string; body: string; tag: string; publish_at: string }>>([]);
-  const resolveUsername = useServerFn(resolveUsernameToEmail);
+  const signInByUsername = useServerFn(signInWithUsername);
   const checkUsername = useServerFn(checkUsernameAvailable);
 
   useEffect(() => {
@@ -97,10 +97,10 @@ function LoginPage() {
       } else {
         const uname = username.trim();
         if (!uname) throw new Error("ユーザー名を入力してください");
-        const { email: resolvedEmail } = await resolveUsername({ data: { username: uname } });
-        const { error } = await supabase.auth.signInWithPassword({
-          email: resolvedEmail,
-          password,
+        const tokens = await signInByUsername({ data: { username: uname, password } });
+        const { error } = await supabase.auth.setSession({
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token,
         });
         if (error) throw error;
       }

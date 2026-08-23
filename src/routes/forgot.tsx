@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, KeyRound, Mail } from "lucide-react";
 import { toast } from "sonner";
-import { resolveUsernameToEmail } from "@/lib/username.functions";
+import { requestPasswordResetByUsername } from "@/lib/username.functions";
 import { getMaskedEmailByUsername } from "@/lib/account-recovery.functions";
 import logoUrl from "@/assets/logo.png";
 
@@ -52,17 +52,16 @@ function ForgotPassword() {
   const [username, setUsername] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
-  const resolve = useServerFn(resolveUsernameToEmail);
+  const requestReset = useServerFn(requestPasswordResetByUsername);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     try {
-      const { email } = await resolve({ data: { username: username.trim() } });
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      await requestReset({ data: {
+        username: username.trim(),
         redirectTo: `${window.location.origin}/reset-password`,
-      });
-      if (error) throw error;
+      } });
       setSent(true);
       toast.success("再設定メールを送信しました");
     } catch (e: any) {
