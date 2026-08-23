@@ -332,19 +332,21 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <main className="flex-1 overflow-auto min-w-0">
         <TimerIndicator />
-        {/* Account switcher top bar */}
-        <div className="sticky top-0 z-30 flex justify-end items-center px-3 py-1 border-b liquid-bar">
-          <ChromeAiStatusBadge compact />
-          <div className="mx-2 h-4 w-px bg-border" />
-          <AccountSwitcher />
-        </div>
+        {/* Desktop top bar */}
+        {!isMobile && (
+          <div className="sticky top-0 z-30 flex h-12 justify-end items-center gap-1 px-4 border-b liquid-bar">
+            <ChromeAiStatusBadge compact />
+            <div className="mx-2 h-4 w-px bg-border/70" />
+            <AccountSwitcher />
+          </div>
+        )}
 
         {/* Mobile top bar (hamburger + clock) */}
         {isMobile && (
           <header className="sticky top-0 z-40 flex items-center gap-2 px-3 py-2 liquid-bar border-b">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
-                <button aria-label="メニュー" className="h-10 w-10 inline-flex items-center justify-center rounded-xl hover:bg-accent">
+                <button aria-label="メニュー" className="h-10 w-10 inline-flex items-center justify-center rounded-xl transition hover:bg-accent active:scale-95">
                   <Menu className="h-5 w-5" />
                 </button>
               </SheetTrigger>
@@ -357,30 +359,33 @@ export function AppShell({ children }: { children: ReactNode }) {
                 {sidebarContent}
               </SheetContent>
             </Sheet>
-            <img src={logoUrl} alt="" className="h-8 w-8 rounded-lg" />
+            <img src={logoUrl} alt="" className="h-8 w-8 rounded-lg shadow-sm" />
             <ClockHeader version={version} compact />
-            <div className="ml-2"><SearchBar /></div>
-            <Avatar className="h-9 w-9 ml-auto">
-              {profile?.avatar_url ? <AvatarImage src={profile.avatar_url} alt={displayName} /> : null}
-              <AvatarFallback>{initial}</AvatarFallback>
-            </Avatar>
+            <div className="ml-auto flex items-center gap-1.5">
+              <SearchBar />
+              <AccountSwitcher />
+              <Avatar className="h-9 w-9 ring-2 ring-primary/25">
+                {profile?.avatar_url ? <AvatarImage src={profile.avatar_url} alt={displayName} /> : null}
+                <AvatarFallback>{initial}</AvatarFallback>
+              </Avatar>
+            </div>
           </header>
         )}
 
-        <div className={isMobile ? "pb-20" : ""}>{children}</div>
+        <div className={isMobile ? "pb-24" : ""}>{children}</div>
 
         {/* Mobile bottom bar */}
         {isMobile && (
-          <nav className="fixed bottom-0 left-0 right-0 z-40 border-t liquid-bar">
-            <div className="flex items-stretch justify-around px-1 py-1">
+          <nav className="fixed bottom-0 left-0 right-0 z-40 border-t liquid-bar safe-bottom">
+            <div className="flex items-stretch justify-around gap-0.5 px-1.5 py-1.5">
               {BOTTOM_NAV.map((n) => {
                 const active = path === n.to || path.startsWith(n.to + "/");
                 return (
                   <Link
                     key={n.to}
                     to={n.to}
-                    className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-lg text-[10px] font-medium ${
-                      active ? "text-primary" : "text-muted-foreground"
+                    className={`flex-1 flex flex-col items-center justify-center gap-1 py-1.5 rounded-2xl text-[10px] font-semibold transition active:scale-95 ${
+                      active ? "bg-primary/12 text-primary" : "text-muted-foreground"
                     }`}
                   >
                     <n.icon className="h-5 w-5" />
@@ -390,7 +395,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               })}
               <button
                 onClick={() => setMobileOpen(true)}
-                className="flex-1 flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-lg text-[10px] font-medium text-muted-foreground"
+                className="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 rounded-2xl text-[10px] font-semibold text-muted-foreground transition active:scale-95"
               >
                 <MoreHorizontal className="h-5 w-5" />
                 <span>その他</span>
