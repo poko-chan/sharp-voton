@@ -20,15 +20,12 @@ export function OrgEduReview({ orgId }: { orgId: string }) {
 
   const load = async () => {
     if (!user) return;
-    let q = (supabase as any).from("org_edu_attempts")
-      .select("*, org_edu_questions(body, answer, explanation), org_edu_units(title)")
-      .eq("organization_id", orgId).eq("user_id", user.id).eq("correct", false)
-      .order("created_at", { ascending: false }).limit(100);
-    if (!showDone) q = q.is("resolved_at", null);
-    const { data } = await q;
+    // 正解・解説は「自分が解答済みの誤答」だけをサーバー側で開示する RPC 経由で取得
+    const { data } = await (supabase as any).rpc("org_edu_review_rows", { _org: orgId, _include_done: showDone });
     setRows(data ?? []);
   };
   useEffect(() => { load(); }, [orgId, user?.id, showDone]);
+
 
   const explain = async (row: any) => {
     setBusy(row.id); setStream((s) => ({ ...s, [row.id]: "" }));
