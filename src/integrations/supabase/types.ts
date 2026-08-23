@@ -6570,6 +6570,10 @@ export type Database = {
         Args: { _answer: Json; _question_id: string; _session_id: string }
         Returns: Json
       }
+      makron_match_choices: {
+        Args: { _question_id: string }
+        Returns: string[]
+      }
       makron_model_answers: {
         Args: { _session_id: string }
         Returns: {
