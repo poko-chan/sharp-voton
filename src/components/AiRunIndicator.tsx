@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Loader2, CheckCircle2, AlertTriangle, X } from "lucide-react";
 import { getAiRunStatus, subscribeAiRunStatus, type AiRunStatus, aiRunIdle } from "@/lib/ai-status";
 import { AI_ENGINE_LABELS, type AiEngine } from "@/lib/ai-provider";
-import { Button } from "@/components/ui/button";
 
 /** すべての AI 機能で共通の「生成状況」表示 */
 export function useAiRunStatus(): AiRunStatus {

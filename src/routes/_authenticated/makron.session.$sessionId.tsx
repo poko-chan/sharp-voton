@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { MakronShell } from "@/components/makron/MakronShell";
@@ -17,10 +17,7 @@ import { ReportDialog } from "@/components/makron/ReportDialog";
 import { MakronHandwriteOCR } from "@/components/makron/MakronHandwriteOCR";
 import { nanoGradeWritten } from "@/lib/nano-tasks";
 import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/_authenticated/makron/session/$sessionId")({ component: SessionPage });
 

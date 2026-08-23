@@ -1,24 +1,19 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { useServerFn } from "@tanstack/react-start";
-import { gradeSubmission } from "@/lib/classroom.functions";
-import { createPost, deletePost, addComment, deleteComment, submitQuiz } from "@/lib/classroom-posts.functions";
-import { uploadClassroomFile, fileExt, type ClassroomAttachment } from "@/lib/classroom-files";
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Plus, GraduationCap, Crown, Trash2, BookOpen, ClipboardCheck, Users, Copy, Megaphone, Paperclip, Lock, MessageSquare, FileText, ListChecks, X, FolderOpen, ShieldCheck, Send } from "lucide-react";
+
+import { ArrowLeft, GraduationCap, Crown, Trash2, BookOpen, ClipboardCheck, Users, Copy, Megaphone, MessageSquare, FileText, ListChecks, FolderOpen, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
-import { ClassFilesPanel } from "@/components/ClassFilesPanel";
-import { ClassPermissionsPanel, useMyClassPermissions } from "@/components/ClassPermissionsPanel";
+
+import { ClassPermissionsPanel } from "@/components/ClassPermissionsPanel";
 
 export const Route = createFileRoute("/_authenticated/classroom/$classId")({ component: ClassDetail });
 
@@ -94,8 +89,6 @@ function ClassDetail() {
           {isTeacher && <TabsTrigger value="logs"><ClipboardCheck className="h-3 w-3 mr-1" />生徒の学習記録</TabsTrigger>}
           {isTeacher && <TabsTrigger value="permissions"><ShieldCheck className="h-3 w-3 mr-1" />権限</TabsTrigger>}
         </TabsList>
-
-
 
         <TabsContent value="stream" className="space-y-3 mt-4">
           <Stream classId={classId} isTeacher={isTeacher} members={members} />
@@ -183,7 +176,6 @@ function ClassDetail() {
           </TabsContent>
         )}
       </Tabs>
-
 
       {selectedAsg && (
         <AssignmentDialog

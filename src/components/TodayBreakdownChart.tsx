@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, PieChart, Pie, Cell } from "recharts";
 import { CalendarClock } from "lucide-react";
-import { addDaysStr, localDateStr } from "@/lib/date";
+import { addDaysStr } from "@/lib/date";
 
 const CATEGORIES: Record<string, { label: string; color: string }> = {
   school:   { label: "学校",     color: "#60a5fa" },
