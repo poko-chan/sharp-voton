@@ -1,3 +1,4 @@
+import { QUESTION_COLUMNS, loadQuestionKeys } from "@/lib/makron-questions";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,12 +53,12 @@ function AdminPage() {
     setFields(f ?? []);
   };
   const loadQuestions = async (unitId: string) => {
-    const { data } = await (supabase as any).from("makron_questions").select("*").eq("unit_id", unitId).order("order_idx").order("created_at");
+    const { data } = await (supabase as any).from("makron_questions").select(QUESTION_COLUMNS).eq("unit_id", unitId).order("order_idx").order("created_at");
     setQuestions(data ?? []);
   };
   const loadPendingQs = async () => {
     const { data } = await (supabase as any).from("makron_questions")
-      .select("*, unit:makron_units(title, subject, field, unit), profile:profiles!makron_questions_created_by_fkey(username, display_name)")
+      .select(`${QUESTION_COLUMNS}, unit:makron_units(title, subject, field, unit), profile:profiles!makron_questions_created_by_fkey(username, display_name)`)
       .eq("status", "pending").order("submitted_at", { ascending: false });
     setPendingQs(data ?? []);
   };
@@ -156,7 +157,7 @@ function AdminPage() {
   // Manual grading
   const loadSubmissionSession = async (sessionId: string) => {
     const { data } = await (supabase as any).from("makron_answers")
-      .select("*, question:makron_questions(prompt, points, grading, model_answer)").eq("session_id", sessionId);
+      .select("*, question:makron_questions(prompt, points, grading)").eq("session_id", sessionId);
     setSubmissions(data ?? []);
   };
   const submitGrade = async () => {
@@ -233,7 +234,7 @@ function AdminPage() {
                         await (supabase as any).from("makron_questions").update({ is_active: q.is_active === false }).eq("id", q.id);
                         loadQuestions(selUnit!);
                       }}><Power className={`h-4 w-4 ${q.is_active === false ? "text-muted-foreground" : "text-success"}`} /></Button>
-                      <Button size="sm" variant="ghost" onClick={() => setDraft({ ...q, options: q.options ?? [], correct_options: q.correct_options ?? [], accepted_answers: q.accepted_answers ?? [] })}>編集</Button>
+                      <Button size="sm" variant="ghost" onClick={async () => { try { const k = await loadQuestionKeys(q.id); setDraft({ ...q, options: q.options ?? [], ...k }); } catch (e: any) { toast.error(e.message); } }}>編集</Button>
                       <Button size="sm" variant="ghost" className="text-destructive" onClick={() => delQuestion(q.id)}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   ))}
@@ -350,7 +351,7 @@ function AdminPage() {
                 {(q.options ?? []).length > 0 && (
                   <ul className="text-xs pl-4 list-disc">
                     {q.options.map((o: string, i: number) => (
-                      <li key={i} className={q.correct_options?.includes(o) ? "text-success font-bold" : ""}>{o}{q.correct_options?.includes(o) && " ✓"}</li>
+                      <li key={i}>{o}</li>
                     ))}
                   </ul>
                 )}
