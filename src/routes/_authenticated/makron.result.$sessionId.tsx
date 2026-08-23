@@ -13,6 +13,8 @@ import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/_authenticated/makron/result/$sessionId")({ component: ResultPage });
 
+const QCOLS = "id, prompt, image_url, type, options, explanation, points, grading, hint_text, order_idx, unit_id, pack_id";
+
 function ResultPage() {
   const { sessionId } = Route.useParams();
   const { user } = useAuth();
@@ -20,6 +22,7 @@ function ResultPage() {
   const [questions, setQuestions] = useState<any[]>([]);
   const [answers, setAnswers] = useState<any[]>([]);
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
+  const [keys, setKeys] = useState<Record<string, string[]>>({});
   const [tone, setTone] = useState("優しく丁寧に、中学生にもわかるように");
   const [extra, setExtra] = useState("");
 
@@ -36,10 +39,20 @@ function ResultPage() {
         ? s.question_ids
         : Array.from(new Set((as ?? []).map((a: any) => a.question_id)));
       if (ids.length === 0) { setQuestions([]); return; }
-      const { data: qs } = await (supabase as any).from("makron_questions").select("*").in("id", ids);
+      const { data: qs } = await (supabase as any).from("makron_questions").select(QCOLS).in("id", ids);
       // preserve order
       const order = new Map(ids.map((id, i) => [id, i]));
       setQuestions((qs ?? []).slice().sort((a: any, b: any) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0)));
+      // 提出済みセッションの正解のみサーバーから開示
+      const { data: rev } = await (supabase as any).rpc("makron_reveal", { _session_id: sessionId });
+      const km: Record<string, string[]> = {};
+      (rev ?? []).forEach((r: any) => {
+        const list = (r.accepted_answers?.length ? r.accepted_answers
+          : (r.correct_options?.length ? r.correct_options
+          : [r.model_answer].filter(Boolean))) as string[];
+        km[r.question_id] = r.correct_answer ? [r.correct_answer] : list;
+      });
+      setKeys(km);
       if (user) {
         const { data: bm } = await (supabase as any).from("makron_bookmarks").select("question_id").eq("user_id", user.id).in("question_id", ids);
         setBookmarks(new Set((bm ?? []).map((x: any) => x.question_id)));
@@ -77,14 +90,14 @@ function ResultPage() {
       lines.push(`## 問${i+1} [${q.type}] ${mark} (${q.points}点)`);
       lines.push(`問題: ${q.prompt}`);
       lines.push(`生徒の解答: ${display(a?.answer)}`);
-      const model = (q.accepted_answers && q.accepted_answers.length ? q.accepted_answers : (q.correct_options && q.correct_options.length ? q.correct_options : [q.model_answer].filter(Boolean))) as string[];
+      const model = keys[q.id] ?? [];
       lines.push(`模範解答: ${model.join(" / ") || "(設定なし)"}`);
       if (q.explanation) lines.push(`解説: ${q.explanation}`);
       lines.push("");
     });
     lines.push(`各問題について、なぜ正解／不正解だったか、考え方のポイント、次に学習すべきことを${tone}でまとめてください。`);
     return lines.join("\n");
-  }, [questions, byQ, tone, extra]);
+  }, [questions, byQ, tone, extra, keys]);
 
   const copyPrompt = async () => { await navigator.clipboard.writeText(prompt); toast.success("プロンプトをコピーしました"); };
 
@@ -110,7 +123,7 @@ function ResultPage() {
             const isManual = q.grading === "manual";
             const noManual = isManual && a?.manual_score == null;
             const correct = isManual ? (a?.manual_score != null && a.manual_score >= q.points) : a?.auto_correct;
-            const models = (q.accepted_answers && q.accepted_answers.length ? q.accepted_answers : (q.correct_options && q.correct_options.length ? q.correct_options : [q.model_answer].filter(Boolean))) as string[];
+            const models = keys[q.id] ?? [];
             return (
               <Card key={q.id} className="p-4 space-y-2">
                 <div className="flex items-center justify-between gap-2">
