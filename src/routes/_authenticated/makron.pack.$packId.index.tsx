@@ -67,7 +67,7 @@ function PackPage() {
   });
 
   const uploadImage = async (file: File) => {
-    const path = `pack/${packId}/${Date.now()}-${file.name}`;
+    const path = `q/${user?.id}/${packId}-${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from("makron-files").upload(path, file);
     if (error) return toast.error(error.message);
     const { data } = await supabase.storage.from("makron-files").createSignedUrl(path, 60 * 60 * 24 * 365);
