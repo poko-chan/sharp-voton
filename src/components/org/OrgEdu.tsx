@@ -179,21 +179,22 @@ function Play({ orgId, unit, questions, onExit }: { orgId: string; unit: any; qu
   const [checked, setChecked] = useState<null | boolean>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const [showHint, setShowHint] = useState(false);
+  const [reveal, setReveal] = useState<{ answer: string; explanation: string } | null>(null);
   const q = questions[i];
 
   const check = async () => {
     if (!q || !answer.trim()) return;
-    const ok = answer.trim().replace(/\s+/g, "") === String(q.answer ?? "").trim().replace(/\s+/g, "");
+    // 採点はサーバー側（RPC）で行う。正解・解説は解答後にのみ返る。
+    const { data, error } = await (supabase as any).rpc("org_edu_check_answer", { _question: q.id, _answer: answer.trim() });
+    if (error) return toast.error(error.message);
+    const ok = !!data?.correct;
+    setReveal({ answer: data?.answer ?? "", explanation: data?.explanation ?? "" });
     setChecked(ok);
     if (ok) setCorrectCount((c) => c + 1);
-    await (supabase as any).from("org_edu_attempts").insert({
-      organization_id: orgId, unit_id: unit.id, question_id: q.id, user_id: user!.id,
-      correct: ok, user_answer: answer.trim(),
-    });
   };
 
   const next = async () => {
-    setChecked(null); setAnswer(""); setShowHint(false);
+    setChecked(null); setAnswer(""); setShowHint(false); setReveal(null);
     if (i + 1 < questions.length) return setI(i + 1);
     await (supabase as any).rpc("org_edu_record_result", { _org: orgId, _correct: correctCount, _xp: correctCount * 10 });
     toast.success(`終了！ ${correctCount}/${questions.length} 問正解（XP +${correctCount * 10}）`);
@@ -228,8 +229,8 @@ function Play({ orgId, unit, questions, onExit }: { orgId: string; unit: any; qu
         )}
         {checked !== null && (
           <div className={`rounded-xl p-3 text-sm ${checked ? "bg-emerald-500/10 text-emerald-600" : "bg-destructive/10 text-destructive"}`}>
-            <div className="font-bold">{checked ? "正解！" : `不正解（正解: ${q.answer}）`}</div>
-            {q.explanation && <div className="mt-1 whitespace-pre-wrap text-foreground/80">{q.explanation}</div>}
+            <div className="font-bold">{checked ? "正解！" : `不正解（正解: ${reveal?.answer ?? ""}）`}</div>
+            {reveal?.explanation && <div className="mt-1 whitespace-pre-wrap text-foreground/80">{reveal.explanation}</div>}
             {!checked && <div className="mt-1 text-[11px] text-muted-foreground">この問題は「間違い直しノート」に入ります。AIが解き方を教えてくれます。</div>}
           </div>
         )}
@@ -254,6 +255,16 @@ function Manage({ orgId, fields, subjects, units, questions, onDone }:
   const [unitAud, setUnitAud] = useState<Record<string, string[]>>({});
   const [unitId, setUnitId] = useState(units[0]?.id ?? "");
   const [draft, setDraft] = useState<any>(null);
+  const [keys, setKeys] = useState<Record<string, { answer: string; explanation: string }>>({});
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase as any).rpc("org_edu_question_keys", { _org: orgId });
+      const map: Record<string, { answer: string; explanation: string }> = {};
+      for (const r of data ?? []) map[r.id] = { answer: r.answer ?? "", explanation: r.explanation ?? "" };
+      setKeys(map);
+    })();
+  }, [orgId, questions.length]);
 
   const selectFields = fields.filter((f) => f.type === "select");
   const toggleAud = (setter: any, key: string, opt: string) => setter((s: any) => {
@@ -304,7 +315,8 @@ function Manage({ orgId, fields, subjects, units, questions, onDone }:
   const editDraft = (q: any) => setDraft({
     id: q.id, unit_id: q.unit_id, kind: q.kind, body: q.body,
     choices: Array.isArray(q.choices) && q.choices.length ? q.choices : ["", "", "", ""],
-    answer: q.answer ?? "", explanation: q.explanation ?? "", hint_text: q.hint_text ?? "", audience: q.audience ?? {},
+    answer: keys[q.id]?.answer ?? "", explanation: keys[q.id]?.explanation ?? "",
+    hint_text: q.hint_text ?? "", audience: q.audience ?? {},
   });
 
   const saveQuestion = async () => {

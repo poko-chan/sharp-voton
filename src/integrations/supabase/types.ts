@@ -334,6 +334,7 @@ export type Database = {
           id: string
           kind: string
           max_points: number
+          quiz_answer_key: Json | null
           quiz_questions: Json | null
           title: string
           updated_at: string
@@ -351,6 +352,7 @@ export type Database = {
           id?: string
           kind?: string
           max_points?: number
+          quiz_answer_key?: Json | null
           quiz_questions?: Json | null
           title: string
           updated_at?: string
@@ -368,6 +370,7 @@ export type Database = {
           id?: string
           kind?: string
           max_points?: number
+          quiz_answer_key?: Json | null
           quiz_questions?: Json | null
           title?: string
           updated_at?: string
@@ -6394,6 +6397,7 @@ export type Database = {
         Returns: string
       }
       are_mutual_friends: { Args: { _a: string; _b: string }; Returns: boolean }
+      assignment_quiz_key: { Args: { _assignment: string }; Returns: Json }
       can_create_questions: { Args: { _user_id: string }; Returns: boolean }
       can_moderate_chat: {
         Args: { _thread: string; _user: string }
@@ -6733,6 +6737,18 @@ export type Database = {
         }
         Returns: string
       }
+      org_edu_check_answer: {
+        Args: { _answer: string; _question: string }
+        Returns: Json
+      }
+      org_edu_question_keys: {
+        Args: { _org: string }
+        Returns: {
+          answer: string
+          explanation: string
+          id: string
+        }[]
+      }
       org_edu_record_result: {
         Args: { _correct: number; _org: string; _xp: number }
         Returns: {
@@ -6752,6 +6768,20 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      org_edu_review_rows: {
+        Args: { _include_done?: boolean; _org: string }
+        Returns: {
+          ai_review: string
+          answer: string
+          body: string
+          created_at: string
+          explanation: string
+          id: string
+          resolved_at: string
+          unit_title: string
+          user_answer: string
+        }[]
       }
       org_enroll_all: {
         Args: { _class: string; _org: string }

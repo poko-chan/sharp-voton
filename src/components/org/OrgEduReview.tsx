@@ -20,21 +20,18 @@ export function OrgEduReview({ orgId }: { orgId: string }) {
 
   const load = async () => {
     if (!user) return;
-    let q = (supabase as any).from("org_edu_attempts")
-      .select("*, org_edu_questions(body, answer, explanation), org_edu_units(title)")
-      .eq("organization_id", orgId).eq("user_id", user.id).eq("correct", false)
-      .order("created_at", { ascending: false }).limit(100);
-    if (!showDone) q = q.is("resolved_at", null);
-    const { data } = await q;
+    // 正解・解説は「自分が解答済みの誤答」だけをサーバー側で開示する RPC 経由で取得
+    const { data } = await (supabase as any).rpc("org_edu_review_rows", { _org: orgId, _include_done: showDone });
     setRows(data ?? []);
   };
   useEffect(() => { load(); }, [orgId, user?.id, showDone]);
+
 
   const explain = async (row: any) => {
     setBusy(row.id); setStream((s) => ({ ...s, [row.id]: "" }));
     try {
       const text = await aiStream(
-        `次の問題を間違えました。\n【単元】${row.org_edu_units?.title ?? ""}\n【問題】${row.org_edu_questions?.body ?? ""}\n【正解】${row.org_edu_questions?.answer ?? ""}\n【私の解答】${row.user_answer || "（無回答）"}\nどこで間違えたのか、どう考えれば解けるのかを教えてください。`,
+        `次の問題を間違えました。\n【単元】${row.unit_title ?? ""}\n【問題】${row.body ?? ""}\n【正解】${row.answer ?? ""}\n【私の解答】${row.user_answer || "（無回答）"}\nどこで間違えたのか、どう考えれば解けるのかを教えてください。`,
         (partial) => setStream((s) => ({ ...s, [row.id]: partial })),
         SYSTEM,
       );
@@ -69,14 +66,14 @@ export function OrgEduReview({ orgId }: { orgId: string }) {
         return (
           <Card key={r.id} className="p-4 space-y-1">
             <div className="text-xs text-muted-foreground">
-              #{i + 1} {r.org_edu_units?.title} ・ {new Date(r.created_at).toLocaleDateString("ja-JP")}
+              #{i + 1} {r.unit_title} ・ {new Date(r.created_at).toLocaleDateString("ja-JP")}
               {r.resolved_at && " ・ 直し完了"}
             </div>
-            <div className="text-sm"><b>Q:</b> {r.org_edu_questions?.body}</div>
+            <div className="text-sm"><b>Q:</b> {r.body}</div>
             <div className="text-sm text-destructive"><b>あなた:</b> {r.user_answer || "（無回答）"}</div>
-            <div className="text-sm text-emerald-600"><b>正解:</b> {r.org_edu_questions?.answer}</div>
-            {r.org_edu_questions?.explanation && (
-              <div className="text-xs text-muted-foreground whitespace-pre-wrap">{r.org_edu_questions.explanation}</div>
+            <div className="text-sm text-emerald-600"><b>正解:</b> {r.answer}</div>
+            {r.explanation && (
+              <div className="text-xs text-muted-foreground whitespace-pre-wrap">{r.explanation}</div>
             )}
             <div className="pt-1">
               {text
