@@ -192,7 +192,134 @@
     border-color: color-mix(in oklab, var(--border) 45%, transparent);
   }
 
+  /* ===== Refreshed design system helpers ===== */
+  .text-gradient {
+    background-image: linear-gradient(100deg,
+      var(--primary) 0%,
+      color-mix(in oklab, var(--primary) 55%, var(--accent)) 55%,
+      var(--accent) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 
+  .surface {
+    background-color: color-mix(in oklab, var(--card) 82%, transparent);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 1px 0 0 color-mix(in oklab, white 40%, transparent) inset,
+      0 12px 34px -22px oklch(0.3 0.06 275 / 0.55);
+  }
+  .dark .surface {
+    box-shadow: 0 1px 0 0 color-mix(in oklab, white 8%, transparent) inset,
+      0 16px 42px -24px oklch(0 0 0 / 0.8);
+  }
+
+  .surface-hover {
+    transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 260ms ease, border-color 260ms ease;
+  }
+  .surface-hover:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in oklab, var(--primary) 40%, transparent);
+    box-shadow: 0 22px 46px -24px oklch(0.35 0.12 285 / 0.5);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in oklab, var(--primary) 30%, transparent);
+    background: color-mix(in oklab, var(--primary) 10%, transparent);
+    padding: 0.3rem 0.75rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: color-mix(in oklab, var(--primary) 85%, var(--foreground));
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding: 0.85rem 1.6rem;
+    font-weight: 700;
+    color: var(--primary-foreground);
+    background-image: linear-gradient(100deg, var(--primary),
+      color-mix(in oklab, var(--primary) 55%, var(--accent)));
+    box-shadow: 0 14px 32px -16px color-mix(in oklab, var(--primary) 80%, transparent);
+    transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
+  }
+  .cta:hover { transform: translateY(-2px); filter: saturate(1.08); }
+  .cta:active { transform: translateY(0); }
+
+  .cta-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding: 0.85rem 1.6rem;
+    font-weight: 600;
+    border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+    background-color: color-mix(in oklab, var(--card) 70%, transparent);
+    backdrop-filter: blur(12px);
+    transition: background-color 200ms ease, transform 200ms ease;
+  }
+  .cta-ghost:hover { background-color: color-mix(in oklab, var(--card) 95%, transparent); transform: translateY(-2px); }
+
+  .section-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--primary) 80%, var(--muted-foreground));
+  }
+
+  .nav-pill {
+    position: relative;
+    border-radius: 0.85rem;
+    transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+  }
+  .nav-pill:hover { transform: translateX(2px); }
+  .nav-pill-active::before {
+    content: "";
+    position: absolute;
+    left: -0.55rem;
+    top: 22%;
+    bottom: 22%;
+    width: 3px;
+    border-radius: 9999px;
+    background: var(--primary);
+  }
+
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+}
+
+/* Smoother, quieter scrollbars */
+* { scrollbar-width: thin; scrollbar-color: color-mix(in oklab, var(--muted-foreground) 35%, transparent) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--muted-foreground) 30%, transparent);
+  border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-track { background: transparent; }
+
+:where(a, button, [role="button"], input, select, textarea):focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--primary) 70%, transparent);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 
 
