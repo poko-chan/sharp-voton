@@ -77,13 +77,22 @@ export const submitQuiz = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { data: asg, error: e1 } = await supabase.from("assignments")
-      .select("id, kind, quiz_questions, max_points, xp_mode, fixed_xp")
+    // 受講者であることを RLS 経由で確認してから、正解キーは管理クライアントで読む
+    const { data: visible, error: e1 } = await supabase.from("assignments")
+      .select("id, kind").eq("id", data.assignmentId).single();
+    if (e1 || !visible) throw new Error("課題が見つかりません");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: asg } = await supabaseAdmin.from("assignments")
+      .select("id, kind, quiz_questions, quiz_answer_key, max_points, xp_mode, fixed_xp")
       .eq("id", data.assignmentId).single();
-    if (e1 || !asg) throw new Error("課題が見つかりません");
+    if (!asg) throw new Error("課題が見つかりません");
     if (asg.kind !== "quiz" || !asg.quiz_questions) throw new Error("小テストではありません");
 
-    const questions = asg.quiz_questions as any[];
+    const keyMap = new Map<string, string>(
+      ((asg as any).quiz_answer_key as any[] ?? []).map((k: any) => [String(k.id), String(k.answer ?? "")]),
+    );
+    const questions = (asg.quiz_questions as any[]).map((q: any) => ({ ...q, answer: keyMap.get(String(q.id)) ?? q.answer }));
     let totalPts = 0;
     let earnedPts = 0;
     const detail: any[] = [];

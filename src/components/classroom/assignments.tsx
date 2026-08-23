@@ -50,7 +50,9 @@ export function CreateAssignment({ classId, onCreated }: { classId: string; onCr
       attachments,
       kind,
       allowed_file_types: allowedTypes.trim() ? allowedTypes.split(",").map((s) => s.trim().toLowerCase().replace(/^\./, "")).filter(Boolean) : null,
-      quiz_questions: kind === "quiz" ? quiz : null,
+      // 正解は quiz_answer_key（生徒からは読めない列）に分離して保存する
+      quiz_questions: kind === "quiz" ? quiz.map(({ answer, ...rest }: any) => rest) : null,
+      quiz_answer_key: kind === "quiz" ? quiz.map((q: any) => ({ id: q.id, answer: q.answer })) : null,
     };
     const { error } = await supabase.from("assignments").insert(payload);
     if (error) return toast.error(error.message);
