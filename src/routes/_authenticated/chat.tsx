@@ -160,7 +160,7 @@ function ChatPage() {
                 <span className="truncate">{p.display_name ?? "(no name)"}</span>
                 <RankBadge level={rankOf(p.id)} active={partnerId === p.id} />
               </div>
-              <div className="text-xs opacity-70 truncate">{p.email}</div>
+              <div className="text-xs opacity-70 truncate">{p.username ? "@" + p.username : ""}</div>
             </button>
           ))}
           {profiles.data?.length === 0 && <p className="px-3 py-2 text-sm text-muted-foreground">他のユーザーがいません</p>}
@@ -175,7 +175,7 @@ function ChatPage() {
         ) : (
           <>
             <div className="border-b p-3 font-medium flex items-center gap-2">
-              <span>{partner.display_name ?? partner.email}</span>
+              <span>{partner.display_name ?? partner.username}</span>
               <RankBadge level={rankOf(partner.id)} />
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
