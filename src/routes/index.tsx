@@ -1,4 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useAuth } from "@/lib/auth-context";
 import logoUrl from "@/assets/logo.png";
 
 const TITLE = "Voton Study Omega（StudyΩ）— 学習のすべてを、ひとつに。";
@@ -17,8 +19,33 @@ export const Route = createFileRoute("/")({
     ],
     links: [{ rel: "canonical", href: "https://study-plus-voton.lovable.app/" }],
   }),
-  component: LandingPage,
+  component: LandingRoute,
 });
+
+/**
+ * "/" は公開ランディングページだが、
+ * - ログイン済み → /dashboard
+ * - 認証コールバック（メール認証・OAuth の戻り先） → /login
+ * へ転送する。以前 "/" が /login に飛んでいた前提の導線を維持するため。
+ */
+function LandingRoute() {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (loading) return;
+    if (user) {
+      navigate({ to: "/dashboard", replace: true });
+      return;
+    }
+    const raw = window.location.hash.slice(1) + "&" + window.location.search.slice(1);
+    if (/(^|&)(access_token|refresh_token|code|token_hash|type|error|error_description)=/.test(raw)) {
+      navigate({ to: "/login", replace: true });
+    }
+  }, [user, loading, navigate]);
+
+  return <LandingPage />;
+}
 
 type Feature = {
   emoji: string;
