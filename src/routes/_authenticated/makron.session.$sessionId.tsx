@@ -77,6 +77,7 @@ function SessionPage() {
   const [perQResult, setPerQResult] = useState<Record<string, { correct: boolean | null; explanation: string | null; correctAnswer: string }>>({});
   const startedAtRef = useRef<number>(Date.now());
   const [elapsed, setElapsed] = useState(0);
+  const [matchChoices, setMatchChoices] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     const id = setInterval(() => setElapsed(Math.floor((Date.now() - startedAtRef.current) / 1000)), 1000);
@@ -134,6 +135,16 @@ function SessionPage() {
   }, [sessionId, user?.id]);
 
   const q = questions[idx];
+
+  // 組み合わせ問題の選択肢候補はサーバーから取得（対応関係は端末に渡さない）
+  useEffect(() => {
+    const target = questions.find((x) => x.type === "matching" && !matchChoices[x.id]);
+    if (!target) return;
+    (async () => {
+      const { data } = await (supabase as any).rpc("makron_match_choices", { _question_id: target.id });
+      setMatchChoices((p) => ({ ...p, [target.id]: (data as string[]) ?? [] }));
+    })();
+  }, [questions, matchChoices]);
   const setAns = (val: any) => setAnswers((p) => ({ ...p, [q.id]: val }));
   const perQMode = !!pack?.per_question_grading;
   const currentLocked = q ? locked.has(q.id) : false;
@@ -455,10 +466,12 @@ function SessionPage() {
                     setGrading(true);
                     setGradingProgress("");
                     try {
+                      const { data: keys } = await (supabase as any).rpc("makron_model_answers", { _session_id: sessionId });
+                      const ma = (keys ?? []).find((k: any) => k.question_id === q.id)?.model_answer as string | undefined;
                       const r = await gradeFn({ data: {
                         prompt: q.prompt,
                         answer: String(answers[q.id] ?? ""),
-                        model_answer: q.model_answer ?? undefined,
+                        model_answer: ma ?? undefined,
                         max_points: q.points ?? 10,
                         onProgress: (_p: string, chars: number) => setGradingProgress(`生成中… ${chars}文字`),
                       }});
@@ -537,7 +550,7 @@ function SessionPage() {
           {q.type === "matching" && (() => {
             // options を "左|右1,右2,..." 形式と解釈（左側の選択肢に対し、右側候補から選ぶ）
             const lefts = q.options ?? [];
-            const rights = Array.from(new Set((q.accepted_answers ?? []).map((p) => p.split("=>")[1]?.trim()).filter(Boolean)));
+            const rights = matchChoices[q.id] ?? [];
             const cur: Record<string, string> = (answers[q.id] && typeof answers[q.id] === "object") ? answers[q.id] : {};
             return (
               <div className="space-y-2">
