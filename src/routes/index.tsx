@@ -204,58 +204,58 @@ const FAQ = [
 
 function LandingPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2">
-            <img src={logoUrl} alt="Voton Study Omega ロゴ" width={36} height={36} className="h-9 w-9 rounded-xl" />
-            <span className="text-lg font-bold tracking-tight">Study<span className="text-primary">Ω</span></span>
+    <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
+      {/* Ambient background */}
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute -left-32 -top-40 h-[26rem] w-[26rem] rounded-full bg-primary/25 blur-[120px]" />
+        <div className="absolute -right-24 top-1/4 h-[22rem] w-[22rem] rounded-full bg-accent/25 blur-[120px]" />
+        <div className="absolute bottom-0 left-1/3 h-[20rem] w-[20rem] rounded-full bg-chart-4/20 blur-[130px]" />
+      </div>
+
+      <header className="sticky top-0 z-40 border-b liquid-bar">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <img src={logoUrl} alt="Voton Study Omega ロゴ" width={36} height={36} className="h-9 w-9 rounded-xl shadow-sm" />
+            <span className="font-display text-lg font-extrabold tracking-tight">
+              Study<span className="text-gradient">Ω</span>
+            </span>
           </div>
           <nav className="flex items-center gap-1 text-sm">
-            <a href="#features" className="hidden rounded-md px-3 py-2 hover:bg-muted sm:inline-block">機能</a>
-            <a href="#how" className="hidden rounded-md px-3 py-2 hover:bg-muted sm:inline-block">使い方</a>
-            <a href="#faq" className="hidden rounded-md px-3 py-2 hover:bg-muted sm:inline-block">FAQ</a>
-            <Link to="/login" className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground hover:opacity-90">
-              はじめる
-            </Link>
+            <a href="#features" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">機能</a>
+            <a href="#how" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">使い方</a>
+            <a href="#faq" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">FAQ</a>
+            <Link to="/login" className="cta px-5 py-2 text-sm">はじめる</Link>
           </nav>
         </div>
       </header>
 
       <main>
         {/* Hero */}
-        <section className="relative overflow-hidden border-b border-border/60">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,hsl(var(--primary)/0.18),transparent_70%)]" />
-          <div className="relative mx-auto max-w-6xl px-4 py-20 text-center sm:py-28">
-            <span className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-              Voton Study Omega — 旧 Voton Study+
-            </span>
-            <h1 className="mx-auto mt-6 max-w-4xl text-4xl font-black leading-tight tracking-tight sm:text-6xl">
-              学習のすべてを、<span className="text-primary">ひとつに</span>。<br className="hidden sm:block" />
-              StudyΩ
+        <section className="relative">
+          <div className="relative mx-auto max-w-6xl px-4 py-16 text-center sm:py-28">
+            <span className="chip">Voton Study Omega — 旧 Voton Study+</span>
+            <h1 className="mx-auto mt-6 max-w-4xl font-display text-[2.5rem] font-black leading-[1.1] tracking-tight sm:text-6xl lg:text-7xl">
+              学習のすべてを、<span className="text-gradient">ひとつに</span>。
+              <span className="mt-2 block text-2xl font-extrabold text-muted-foreground sm:text-3xl">StudyΩ</span>
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+            <p className="mx-auto mt-6 max-w-2xl text-[0.95rem] leading-relaxed text-muted-foreground sm:text-lg">
               記録する。集中する。解く。AIに聞く。仲間と続ける。学校や塾で運用する。
               バラバラだった学習の道具を、StudyΩ はひとつのプラットフォームにまとめました。
             </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Link to="/login" className="rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm hover:opacity-90">
-                無料ではじめる
-              </Link>
-              <a href="#features" className="rounded-lg border border-border bg-card px-6 py-3 text-sm font-semibold hover:bg-muted">
-                機能をぜんぶ見る
-              </a>
+            <div className="mt-9 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+              <Link to="/login" className="cta">無料ではじめる</Link>
+              <a href="#features" className="cta-ghost">機能をぜんぶ見る</a>
             </div>
-            <dl className="mx-auto mt-14 grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4">
+            <dl className="mx-auto mt-14 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
               {[
                 ["20+", "搭載サービス"],
                 ["10問", "毎日のデイリー演習"],
                 ["24h", "AI家庭教師"],
                 ["4段階", "組織の役割管理"],
               ].map(([v, l]) => (
-                <div key={l} className="rounded-xl border border-border bg-card p-4">
-                  <dt className="text-2xl font-bold text-primary">{v}</dt>
-                  <dd className="mt-1 text-xs text-muted-foreground">{l}</dd>
+                <div key={l} className="surface p-4 text-left sm:text-center">
+                  <dt className="font-display text-2xl font-black text-gradient sm:text-3xl">{v}</dt>
+                  <dd className="mt-1 text-[11px] text-muted-foreground sm:text-xs">{l}</dd>
                 </div>
               ))}
             </dl>
@@ -263,24 +263,25 @@ function LandingPage() {
         </section>
 
         {/* Core features */}
-        <section id="features" className="mx-auto max-w-6xl px-4 py-20">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">主要機能</h2>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
+        <section id="features" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:py-24">
+          <p className="section-eyebrow">Features</p>
+          <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">主要機能</h2>
+          <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
             毎日の学習を回すために必要なものを、最初からすべて用意しています。
           </p>
-          <div className="mt-10 grid gap-5 md:grid-cols-2">
+          <div className="mt-10 grid gap-4 sm:gap-5 md:grid-cols-2">
             {CORE.map((f) => (
-              <article key={f.name} className="rounded-2xl border border-border bg-card p-6 transition hover:shadow-md">
+              <article key={f.name} className="surface surface-hover p-6">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl" aria-hidden>{f.emoji}</span>
-                  <h3 className="text-xl font-bold">{f.name}</h3>
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-2xl" aria-hidden>{f.emoji}</span>
+                  <h3 className="font-display text-xl font-extrabold">{f.name}</h3>
                 </div>
-                <p className="mt-2 font-medium text-primary">{f.lead}</p>
+                <p className="mt-3 font-semibold text-primary">{f.lead}</p>
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{f.detail}</p>
                 <ul className="mt-4 space-y-1.5 text-sm">
                   {f.points.map((p) => (
                     <li key={p} className="flex gap-2">
-                      <span className="text-primary">✓</span>
+                      <span className="text-accent-foreground/70">✓</span>
                       <span className="text-muted-foreground">{p}</span>
                     </li>
                   ))}
@@ -289,15 +290,15 @@ function LandingPage() {
             ))}
           </div>
 
-          <h2 className="mt-20 text-3xl font-bold tracking-tight sm:text-4xl">さらに、こんなことも</h2>
-          <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <h2 className="mt-20 font-display text-3xl font-black tracking-tight sm:text-4xl">さらに、こんなことも</h2>
+          <div className="mt-10 grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
             {MORE.map((f) => (
-              <article key={f.name} className="rounded-2xl border border-border bg-card p-6">
+              <article key={f.name} className="surface surface-hover p-6">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl" aria-hidden>{f.emoji}</span>
-                  <h3 className="text-lg font-bold">{f.name}</h3>
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent/15 text-xl" aria-hidden>{f.emoji}</span>
+                  <h3 className="font-display text-lg font-extrabold">{f.name}</h3>
                 </div>
-                <p className="mt-2 text-sm font-medium text-primary">{f.lead}</p>
+                <p className="mt-2 text-sm font-semibold text-primary">{f.lead}</p>
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{f.detail}</p>
                 <ul className="mt-4 space-y-1 text-xs text-muted-foreground">
                   {f.points.map((p) => (
@@ -310,13 +311,14 @@ function LandingPage() {
         </section>
 
         {/* How it works */}
-        <section id="how" className="border-y border-border/60 bg-muted/30">
-          <div className="mx-auto max-w-6xl px-4 py-20">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">使い方は、5ステップ</h2>
-            <ol className="mt-10 grid gap-5 md:grid-cols-5">
+        <section id="how" className="scroll-mt-20 border-y border-border/50 bg-muted/20">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
+            <p className="section-eyebrow">How it works</p>
+            <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">使い方は、5ステップ</h2>
+            <ol className="mt-10 grid gap-4 sm:gap-5 md:grid-cols-5">
               {STEPS.map((s) => (
-                <li key={s.n} className="rounded-2xl border border-border bg-card p-5">
-                  <div className="text-sm font-black text-primary">{s.n}</div>
+                <li key={s.n} className="surface p-5">
+                  <div className="font-display text-2xl font-black text-gradient">{s.n}</div>
                   <h3 className="mt-2 font-bold">{s.t}</h3>
                   <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{s.d}</p>
                 </li>
@@ -326,16 +328,17 @@ function LandingPage() {
         </section>
 
         {/* Who */}
-        <section className="mx-auto max-w-6xl px-4 py-20">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">こんな人のために</h2>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
+          <p className="section-eyebrow">For you</p>
+          <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">こんな人のために</h2>
+          <div className="mt-10 grid gap-4 sm:gap-5 md:grid-cols-3">
             {[
               { t: "受験生・中高生", d: "試験日から逆算した目標設定、苦手単元の演習、記録の可視化まで。今日やるべきことが毎朝はっきりします。" },
               { t: "学校・塾の先生", d: "名簿・課題・お知らせ・アンケート・組織専用教材を一箇所で運用。生徒の学習量と提出状況を数字で把握できます。" },
               { t: "保護者", d: "保護者モードで、お子さまの学習ログを見守れます。過度な干渉なしに、続いているかどうかがわかります。" },
             ].map((c) => (
-              <div key={c.t} className="rounded-2xl border border-border bg-card p-6">
-                <h3 className="text-lg font-bold">{c.t}</h3>
+              <div key={c.t} className="surface surface-hover p-6">
+                <h3 className="font-display text-lg font-extrabold">{c.t}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{c.d}</p>
               </div>
             ))}
@@ -343,14 +346,17 @@ function LandingPage() {
         </section>
 
         {/* FAQ */}
-        <section id="faq" className="border-t border-border/60 bg-muted/30">
-          <div className="mx-auto max-w-3xl px-4 py-20">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">よくある質問</h2>
-            <div className="mt-8 divide-y divide-border rounded-2xl border border-border bg-card">
+        <section id="faq" className="scroll-mt-20 border-t border-border/50 bg-muted/20">
+          <div className="mx-auto max-w-3xl px-4 py-16 sm:py-24">
+            <p className="section-eyebrow">FAQ</p>
+            <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">よくある質問</h2>
+            <div className="surface mt-8 divide-y divide-border/60 overflow-hidden">
               {FAQ.map((f) => (
-                <details key={f.q} className="group p-5">
-                  <summary className="cursor-pointer list-none font-semibold">
-                    <span className="text-primary">Q. </span>{f.q}
+                <details key={f.q} className="group p-5 transition hover:bg-muted/40">
+                  <summary className="flex cursor-pointer list-none items-start gap-2 font-semibold">
+                    <span className="text-primary">Q.</span>
+                    <span className="flex-1">{f.q}</span>
+                    <span className="text-muted-foreground transition group-open:rotate-45">＋</span>
                   </summary>
                   <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{f.a}</p>
                 </details>
@@ -360,28 +366,31 @@ function LandingPage() {
         </section>
 
         {/* CTA */}
-        <section className="mx-auto max-w-6xl px-4 py-20 text-center">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">今日から、StudyΩ。</h2>
-          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            まずは1回、タイマーを回すところから。積み上がった記録が、次の自分を連れてきます。
-          </p>
-          <Link to="/login" className="mt-8 inline-block rounded-lg bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90">
-            無料ではじめる
-          </Link>
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
+          <div className="surface relative overflow-hidden px-6 py-14 text-center">
+            <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_120%_at_50%_0%,color-mix(in_oklab,var(--primary)_22%,transparent),transparent_70%)]" />
+            <div className="relative">
+              <h2 className="font-display text-3xl font-black tracking-tight sm:text-4xl">今日から、<span className="text-gradient">StudyΩ</span>。</h2>
+              <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:text-base">
+                まずは1回、タイマーを回すところから。積み上がった記録が、次の自分を連れてきます。
+              </p>
+              <Link to="/login" className="cta mt-8">無料ではじめる</Link>
+            </div>
+          </div>
         </section>
       </main>
 
-      <footer className="border-t border-border/60 py-10">
+      <footer className="border-t border-border/50 py-10">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 text-sm text-muted-foreground sm:flex-row sm:justify-between">
           <div className="flex items-center gap-2">
             <img src={logoUrl} alt="" width={24} height={24} loading="lazy" className="h-6 w-6 rounded-md" />
             <span>Voton Study Omega（StudyΩ）</span>
           </div>
           <nav className="flex flex-wrap items-center justify-center gap-4">
-            <Link to="/help" className="hover:text-foreground">ヘルプ</Link>
-            <Link to="/terms" className="hover:text-foreground">利用規約</Link>
-            <Link to="/privacy" className="hover:text-foreground">プライバシーポリシー</Link>
-            <Link to="/login" className="hover:text-foreground">ログイン</Link>
+            <Link to="/help" className="transition hover:text-foreground">ヘルプ</Link>
+            <Link to="/terms" className="transition hover:text-foreground">利用規約</Link>
+            <Link to="/privacy" className="transition hover:text-foreground">プライバシーポリシー</Link>
+            <Link to="/login" className="transition hover:text-foreground">ログイン</Link>
           </nav>
         </div>
       </footer>
