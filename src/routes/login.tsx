@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Shield, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { signInWithUsername, checkUsernameAvailable } from "@/lib/username.functions";
+import { EmailVerifyNotice } from "@/components/auth/EmailVerifyNotice";
 import logoUrl from "@/assets/logo.png";
 
 export const Route = createFileRoute("/login")({
@@ -42,9 +43,9 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showOther, setShowOther] = useState(false);
   const [busy, setBusy] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [announcements, setAnnouncements] = useState<Array<{ id: string; title: string; body: string; tag: string; publish_at: string }>>([]);
   const signInByUsername = useServerFn(signInWithUsername);
   const checkUsername = useServerFn(checkUsernameAvailable);
@@ -79,20 +80,22 @@ function LoginPage() {
         if (dname.length > 40) throw new Error("表示名は40文字以内で入力してください");
         const avail = await checkUsername({ data: { username: uname } });
         if (!avail.available) throw new Error("そのユーザー名はすでに使われています");
-        const { error } = await supabase.auth.signUp({
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: `${window.location.origin}/login`,
             data: { username: uname, display_name: dname, account_kind: accountKind },
           },
         });
         if (error) throw error;
-        // update kind (trigger may not honor metadata)
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          await supabase.from("profiles").update({ account_kind: accountKind } as any).eq("id", session.user.id);
+        if (!signUpData.session) {
+          // メール認証が必要。案内画面へ切り替える。
+          setPendingEmail(email);
+          return;
         }
+        // update kind (trigger may not honor metadata)
+        await supabase.from("profiles").update({ account_kind: accountKind } as any).eq("id", signUpData.session.user.id);
         toast.success("登録完了！自動ログインします");
       } else {
         const uname = username.trim();
@@ -113,29 +116,16 @@ function LoginPage() {
 
   const google = async () => {
     setBusy(true);
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/login` });
     if (r.error) toast.error("Googleログインに失敗しました");
     setBusy(false);
   };
   const apple = async () => {
     setBusy(true);
-    const r = await lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin });
+    const r = await lovable.auth.signInWithOAuth("apple", { redirect_uri: `${window.location.origin}/login` });
     if (r.error) toast.error("Appleログインに失敗しました");
     setBusy(false);
   };
-  const otherProvider = (name: string) => () => {
-    toast.info(`${name}ログインは準備中です`);
-  };
-  const OTHER_PROVIDERS = [
-    { name: "Microsoft", bg: "#00A4EF" },
-    { name: "GitHub", bg: "#181717" },
-    { name: "Facebook", bg: "#1877F2" },
-    { name: "LINE", bg: "#06C755" },
-    { name: "Yahoo", bg: "#6001D2" },
-    { name: "X", bg: "#000000" },
-    { name: "Amazon", bg: "#FF9900" },
-  ];
-
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
       <div className="w-full max-w-md space-y-4">
@@ -153,6 +143,12 @@ function LoginPage() {
             </div>
           </Card>
         )}
+        {pendingEmail ? (
+          <EmailVerifyNotice
+            email={pendingEmail}
+            onBack={() => { setPendingEmail(null); setMode("signin"); }}
+          />
+        ) : (
         <Card className="w-full p-8 space-y-6">
         <div className="text-center space-y-2">
           <img
@@ -179,32 +175,12 @@ function LoginPage() {
           </svg>
           Googleで{mode === "signin" ? "ログイン" : "登録"}
         </Button>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid gap-2">
           <Button onClick={apple} variant="outline" disabled={busy}>
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 12.04c-.03-2.6 2.13-3.86 2.23-3.92-1.21-1.77-3.1-2.02-3.77-2.05-1.6-.16-3.13.94-3.94.94-.83 0-2.07-.92-3.41-.9-1.75.03-3.37 1.02-4.27 2.59-1.82 3.16-.46 7.83 1.31 10.39.86 1.26 1.88 2.66 3.22 2.61 1.3-.05 1.79-.84 3.36-.84s2.01.84 3.39.81c1.4-.02 2.28-1.27 3.14-2.53.99-1.45 1.39-2.86 1.41-2.93-.03-.01-2.7-1.04-2.73-4.12zM14.62 4.39c.71-.87 1.2-2.06 1.07-3.27-1.03.04-2.29.69-3.03 1.55-.66.77-1.25 2-1.09 3.16 1.16.09 2.34-.59 3.05-1.44z"/></svg>
             Apple
           </Button>
-          <Button onClick={() => setShowOther((v) => !v)} variant="outline" disabled={busy}>
-            {showOther ? "閉じる" : "その他"}
-          </Button>
         </div>
-        {showOther && (
-          <div className="grid grid-cols-3 gap-2">
-            {OTHER_PROVIDERS.map((p) => (
-              <Button
-                key={p.name}
-                onClick={otherProvider(p.name)}
-                variant="outline"
-                size="sm"
-                disabled={busy}
-                className="text-xs"
-              >
-                <span className="inline-block h-2 w-2 rounded-full mr-1.5" style={{ background: p.bg }} />
-                {p.name}
-              </Button>
-            ))}
-          </div>
-        )}
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
@@ -259,9 +235,9 @@ function LoginPage() {
             <label className="flex items-start gap-2 text-xs text-muted-foreground">
               <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5" />
               <span>
-                <Link to="/terms" className="text-primary hover:underline">利用規約</Link>
+                <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">利用規約</a>
                 {" と "}
-                <Link to="/privacy" className="text-primary hover:underline">プライバシーポリシー</Link>
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">プライバシーポリシー</a>
                 {" に同意します"}
               </span>
             </label>
@@ -290,6 +266,7 @@ function LoginPage() {
           <Link to="/terms" className="hover:underline">利用規約</Link>
         </div>
       </Card>
+        )}
       </div>
 
       <Link to="/admin-login" className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-md border bg-background/80 backdrop-blur px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition">
