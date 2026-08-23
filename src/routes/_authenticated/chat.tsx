@@ -12,7 +12,7 @@ import { levelFromMinutes } from "@/lib/level";
 import { localDateStr, jstDateStr, jstDayLabel } from "@/lib/date";
 
 type Msg = { id: string; sender_id: string; recipient_id: string; content: string; created_at: string; edited_at: string | null; read_at: string | null; deleted_at: string | null };
-type Profile = { id: string; display_name: string | null; email: string | null };
+type Profile = { id: string; display_name: string | null; username: string | null };
 
 function ChatPage() {
   const { user } = useAuth();
@@ -36,7 +36,7 @@ function ChatPage() {
       const friendIds = out.filter((id) => incSet.has(id));
       if (friendIds.length === 0) return [] as Profile[];
       const { data, error } = await supabase
-        .from("profiles").select("id, display_name, email")
+        .from("profiles").select("id, display_name, username")
         .in("id", friendIds).order("display_name");
       if (error) throw error;
       return (data ?? []) as Profile[];

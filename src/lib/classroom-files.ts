@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { signedUrl } from "@/lib/storage-url";
 
 export type ClassroomAttachment = {
   name: string;
@@ -16,8 +17,8 @@ export async function uploadClassroomFile(userId: string, file: File): Promise<C
     contentType: file.type || undefined,
   });
   if (error) throw new Error(error.message);
-  const { data } = supabase.storage.from("classroom-files").getPublicUrl(path);
-  return { name: file.name, url: data.publicUrl, size: file.size, type: file.type };
+  const url = await signedUrl("classroom-files", path);
+  return { name: file.name, url, size: file.size, type: file.type };
 }
 
 export function fileExt(name: string) {
