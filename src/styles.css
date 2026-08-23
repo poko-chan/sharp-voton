@@ -151,11 +151,6 @@
     -webkit-backdrop-filter: blur(20px) saturate(170%);
     border: 1px solid color-mix(in oklab, var(--border) 55%, transparent);
   }
-  .glass-strong {
-    background-color: color-mix(in oklab, var(--card) 82%, transparent);
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
-  }
   .liquid-card {
     position: relative;
     background:
@@ -197,28 +192,7 @@
     border-color: color-mix(in oklab, var(--border) 45%, transparent);
   }
 
-  .text-gradient {
-    background: linear-gradient(100deg, var(--primary), var(--accent));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
 
-  .liquid-blob {
-    position: absolute;
-    border-radius: 9999px;
-    filter: blur(70px);
-    opacity: 0.55;
-    pointer-events: none;
-    animation: liquid-float 18s ease-in-out infinite;
-  }
-  @keyframes liquid-float {
-    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-    50% { transform: translate3d(0, -28px, 0) scale(1.08); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .liquid-blob { animation: none; }
-  }
 }
 
 

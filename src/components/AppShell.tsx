@@ -1,11 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import {
-  LayoutDashboard, Timer, CalendarDays, BookOpen, Brain,
-  MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy,
-  Megaphone, GraduationCap, Menu, X, MoreHorizontal,
-  StickyNote, Users, Ban, HelpCircle, ClipboardList,
-  CalendarClock, Activity, Share2,
-} from "lucide-react";
+import { LayoutDashboard, Timer, CalendarDays, BookOpen, Brain, MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy, Megaphone, GraduationCap, Menu, X, MoreHorizontal, StickyNote, Users, Ban, HelpCircle, ClipboardList, CalendarClock } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -15,7 +9,7 @@ import logoUrl from "@/assets/logo.png";
 import { levelFromMinutes } from "@/lib/level";
 import { onProfileChange } from "@/lib/profile-events";
 import { localDateStr } from "@/lib/date";
-import { useTimer } from "@/lib/timer-context";
+import { useTimer, fmtMs } from "@/lib/timer-context";
 import { useI18n } from "@/lib/i18n";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -448,14 +442,8 @@ function TimerIndicator() {
   return (
     <Link to="/timer" className="sticky top-0 z-30 block bg-primary/90 backdrop-blur-md text-primary-foreground px-4 py-1.5 text-xs font-mono flex items-center justify-center gap-3 shadow hover:bg-primary border-b border-white/10">
       <span>{label}</span>
-      <span className="font-bold tabular-nums">{fmtTime(ms)}</span>
+      <span className="font-bold tabular-nums">{fmtMs(ms)}</span>
       <span className="text-[10px] opacity-80 hidden sm:inline">タップでタイマー画面へ</span>
     </Link>
   );
-}
-
-function fmtTime(ms: number) {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
 }
