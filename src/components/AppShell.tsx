@@ -237,7 +237,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             const active = path === n.to || path.startsWith(n.to + "/");
             return (
               <Link key={"q-" + n.to} to={n.to} title={renderLabel(n)}
-                className={`h-8 w-8 inline-flex items-center justify-center rounded-md ${active ? "bg-sidebar-primary text-sidebar-primary-foreground" : "hover:bg-sidebar-accent/70 text-sidebar-foreground"}`}>
+                className={`h-9 w-9 inline-flex items-center justify-center rounded-xl transition ${active ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-sidebar-accent/70 text-sidebar-foreground"}`}>
                 {renderIcon(n, "h-4 w-4")}
               </Link>
             );
@@ -250,7 +250,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             const active = path === n.to || path.startsWith(n.to + "/");
             const Icon = n.icon;
             return (
-              <Link key={n.to} to={n.to as any} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${active ? "bg-sidebar-primary text-sidebar-primary-foreground font-medium shadow-sm" : "hover:bg-sidebar-accent/70 text-sidebar-foreground"}`}>
+              <Link key={n.to} to={n.to as any} className={`nav-pill flex items-center gap-3 px-3 py-2.5 text-sm ${active ? "nav-pill-active bg-primary/12 text-primary font-semibold" : "hover:bg-sidebar-accent/70 text-sidebar-foreground"}`}>
                 <Icon className="h-4 w-4" /> {n.label}
               </Link>
             );
@@ -261,9 +261,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link
               key={n.to}
               to={n.to}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
+              className={`nav-pill flex items-center gap-3 px-3 py-2.5 text-sm ${
                 active
-                  ? "bg-sidebar-primary text-sidebar-primary-foreground font-medium shadow-sm"
+                  ? "nav-pill-active bg-primary/12 text-primary font-semibold"
                   : "hover:bg-sidebar-accent/70 text-sidebar-foreground"
               }`}
             >
