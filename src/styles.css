@@ -6,7 +6,7 @@
 
 @theme inline {
   --font-sans: "Inter", "Noto Sans JP", system-ui, sans-serif;
-  --font-display: "Zen Kaku Gothic New", "Inter", "Noto Sans JP", sans-serif;
+  --font-display: "Outfit", "Zen Kaku Gothic New", "Inter", "Noto Sans JP", sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
