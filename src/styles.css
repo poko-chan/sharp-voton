@@ -482,23 +482,23 @@ body {
 }
 /* Style the pulldown rendered by Google Translate */
 .gt-widget .goog-te-combo {
-  appearance: none;
-  -webkit-appearance: none;
-  background-color: color-mix(in oklch, var(--background) 60%, transparent);
-  border: 1px solid color-mix(in oklch, var(--border) 45%, transparent);
-  border-radius: 9999px;
-  padding: 0.25rem 1.5rem 0.25rem 0.75rem;
-  color: var(--foreground);
-  font-size: 0.75rem;
-  line-height: 1.25;
-  cursor: pointer;
-  backdrop-filter: blur(8px);
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-color: color-mix(in oklch, var(--background) 60%, transparent) !important;
+  border: 1px solid color-mix(in oklch, var(--border) 45%, transparent) !important;
+  border-radius: 9999px !important;
+  padding: 0.25rem 1.5rem 0.25rem 0.75rem !important;
+  color: var(--foreground) !important;
+  font-size: 0.75rem !important;
+  line-height: 1.25 !important;
+  cursor: pointer !important;
+  backdrop-filter: blur(8px) !important;
 }
 .gt-widget .goog-te-combo:focus {
-  outline: none;
-  border-color: var(--primary);
+  outline: none !important;
+  border-color: var(--primary) !important;
 }
 .gt-widget .goog-te-combo option {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--background) !important;
+  color: var(--foreground) !important;
 }
