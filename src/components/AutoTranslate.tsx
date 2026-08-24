@@ -53,6 +53,10 @@ export function AutoTranslate() {
         },
       });
       const nodes: Text[] = [];
+      if (root.nodeType === Node.TEXT_NODE) {
+        const v = root.nodeValue ?? "";
+        if (v.trim() && JP.test(v)) nodes.push(root as Text);
+      }
       let n = walker.nextNode();
       while (n) {
         nodes.push(n as Text);
@@ -60,7 +64,7 @@ export function AutoTranslate() {
       }
       // placeholder / title / aria-label
       const attrTargets: Array<[Element, string]> = [];
-      const el = root instanceof Element ? root : document.body;
+      const el = root instanceof Element ? root : (root.parentElement ?? document.body);
       for (const attr of ["placeholder", "title", "aria-label"]) {
         el.querySelectorAll(`[${attr}]`).forEach((e) => {
           const v = e.getAttribute(attr) ?? "";
