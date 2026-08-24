@@ -27,6 +27,7 @@ import { useMemo } from "react";
 
 function UserSettingsPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [profile, setProfile] = useState({ display_name: "", avatar_url: "" as string | null });
   const [s, setS] = useState({
     notify_daily_reminder: true,
@@ -107,14 +108,16 @@ function UserSettingsPage() {
 
   if (loading) return <div className="p-8 text-muted-foreground">読み込み中…</div>;
 
+  const notifPermission = typeof window !== "undefined" && "Notification" in window ? Notification.permission : "unsupported";
+
   return (
     <div className="p-8 max-w-2xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold flex items-center gap-2"><Settings /> ユーザー設定</h1>
+      <h1 className="text-3xl font-bold flex items-center gap-2"><Settings /> {t("settings.title")}</h1>
       <AccessibilityPanel />
       <CustomizationPanel />
 
       <Card className="p-6 space-y-5">
-        <div className="flex items-center gap-2 font-semibold"><User className="h-4 w-4" /> プロフィール</div>
+        <div className="flex items-center gap-2 font-semibold"><User className="h-4 w-4" /> {t("settings.profile")}</div>
         <div className="flex items-center gap-4">
           <Avatar className="h-20 w-20">
             <AvatarImage src={profile.avatar_url ?? undefined} alt={profile.display_name} />
@@ -130,31 +133,35 @@ function UserSettingsPage() {
             />
             <Button variant="outline" size="sm" disabled={uploading} onClick={() => fileRef.current?.click()}>
               <Upload className="mr-2 h-4 w-4" />
-              {uploading ? "アップロード中…" : "アイコンを変更"}
+              {uploading ? t("settings.uploading") : t("settings.changeIcon")}
             </Button>
             <p className="text-xs text-muted-foreground">JPG/PNG・最大5MB</p>
           </div>
         </div>
         <div className="space-y-1">
-          <Label>表示名</Label>
+          <Label>{t("settings.displayName")}</Label>
           <Input value={profile.display_name} onChange={(e) => setProfile({ ...profile, display_name: e.target.value })} maxLength={40} />
         </div>
-        <Button onClick={saveProfile}>プロフィールを保存</Button>
+        <Button onClick={saveProfile}>{t("settings.saveProfile")}</Button>
       </Card>
 
       <Card className="p-6 space-y-5">
-        <div className="font-semibold">通知設定</div>
-        <Row label="毎日の学習リマインダー" desc="設定した時刻に学習を促します" checked={s.notify_daily_reminder} onChange={(v) => setS({ ...s, notify_daily_reminder: v })} />
-        <div className="pl-2"><Label className="text-xs">リマインダー時刻</Label>
+        <div className="font-semibold">{t("settings.notifications")}</div>
+        {notifPermission !== "granted" && (
+          <p className="text-xs text-warning-foreground bg-warning/10 border border-warning/30 rounded p-2">
+            {t("settings.notifPermissionNeeded")}
+          </p>
+        )}
+        <Row label={t("settings.dailyReminder")} desc={t("settings.dailyReminderDesc")} checked={s.notify_daily_reminder} onChange={(v) => setS({ ...s, notify_daily_reminder: v })} />
+        <div className="pl-2"><Label className="text-xs">{t("settings.reminderTime")}</Label>
           <Input type="time" value={s.reminder_time} onChange={(e) => setS({ ...s, reminder_time: e.target.value })} className="w-32" />
         </div>
-        <Row label="チャット通知" desc="新しいメッセージで通知" checked={s.notify_chat} onChange={(v) => setS({ ...s, notify_chat: v })} />
-        <Row label="お知らせ通知" desc="管理者からのお知らせを受け取る" checked={s.notify_announcements} onChange={(v) => setS({ ...s, notify_announcements: v })} />
-        <Row label="連続学習の途切れ警告" desc="streakが途切れそうな時にお知らせ" checked={s.notify_streak_break} onChange={(v) => setS({ ...s, notify_streak_break: v })} />
-        <Row label="メール通知も受け取る" desc="重要なお知らせをメールでも" checked={s.notify_email} onChange={(v) => setS({ ...s, notify_email: v })} />
+        <Row label={t("settings.chatNotif")} desc={t("settings.chatNotifDesc")} checked={s.notify_chat} onChange={(v) => setS({ ...s, notify_chat: v })} />
+        <Row label={t("settings.announcementNotif")} desc={t("settings.announcementNotifDesc")} checked={s.notify_announcements} onChange={(v) => setS({ ...s, notify_announcements: v })} />
+        <Row label={t("settings.streakNotif")} desc={t("settings.streakNotifDesc")} checked={s.notify_streak_break} onChange={(v) => setS({ ...s, notify_streak_break: v })} />
         <div className="flex gap-2 pt-2">
-          <Button onClick={saveNotifications}>保存</Button>
-          <Button variant="outline" onClick={requestBrowser}>ブラウザ通知を有効化</Button>
+          <Button onClick={saveNotifications}>{t("common.save")}</Button>
+          <Button variant="outline" onClick={requestBrowser}>{t("settings.enableBrowserNotif")}</Button>
         </div>
       </Card>
 
