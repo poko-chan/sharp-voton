@@ -83,7 +83,12 @@ function TutorPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const [canAi, setCanAi] = useState<boolean>(false);
+  const [thinkingSteps, setThinkingSteps] = useState<ThinkingStep[]>([]);
+  const [showThinking, setShowThinking] = useState(true);
   useEffect(() => { isAiUsable().then(setCanAi); }, []);
+
+  const addStep = (label: string) => setThinkingSteps((prev) => [...prev, { label, done: false }]);
+  const finishLastStep = () => setThinkingSteps((prev) => prev.map((s, i) => (i === prev.length - 1 ? { ...s, done: true } : s)));
 
   const loadThreads = useCallback(async () => {
     try {
@@ -136,6 +141,7 @@ function TutorPage() {
   const send = async () => {
     if (!user || (!input.trim() && pending.length === 0) || busy) return;
     setBusy(true);
+    setThinkingSteps([]);
     try {
       // 必要ならスレッド作成
       let tid = activeId;
@@ -156,23 +162,41 @@ function TutorPage() {
       if (ins) setMsgs(nextMsgs);
       setInput(""); setPending([]);
 
-      // 学習コンテキスト取得（毎送信時。重ければキャッシュ可）
-      let ctx: any = null;
-      try { ctx = await ctxFn(); } catch {}
-      const systemPrompt = baseSystem(ctx);
+      const displayName = user.user_metadata?.display_name ?? user.email?.split("@")[0] ?? "生徒";
 
-      // Chrome 内蔵 AI で生成（テキストのみ。画像は URL を会話に含めて参照させる）
+      // 会話履歴をテキストに変換（画像は URL を会話に含めて参照させる）
       const history = nextMsgs.map((m) => {
         const imgs = (m.attachments ?? []).filter((a) => a.type.startsWith("image/"));
         const imgNote = imgs.length ? `\n[添付画像: ${imgs.map((a) => a.name).join(", ")}]` : "";
         return `${m.role === "user" ? "ユーザー" : "アシスタント"}: ${m.content}${imgNote}`;
       }).join("\n\n");
-      const session = await createAiSession({ system: systemPrompt });
+
+      // 1) ツールが必要かどうかをモデルに判断させる（テキストプロトコル）
+      addStep("質問を確認しています…");
+      let ctx: any = null;
+      const detectSession = await createAiSession({ system: detectSystem() });
+      let decision = "";
+      try {
+        decision = await detectSession.prompt(history + "\n\nアシスタント:");
+      } finally { detectSession.destroy(); }
+      finishLastStep();
+
+      if (decision.trim().toUpperCase().startsWith(TOOL_MARKER.toUpperCase())) {
+        addStep("学習データを取得しています…");
+        try { ctx = await ctxFn(); } catch { /* ツール失敗時はデータなしで続行 */ }
+        finishLastStep();
+      }
+
+      // 2) 最終回答をストリーミング生成
+      addStep("回答を組み立てています…");
+      const answerSession = await createAiSession({ system: answerSystem(displayName, ctx) });
       let text = "";
       setStreaming("");
       try {
-        text = await session.promptStreaming(history + "\n\nアシスタント:", (partial) => setStreaming(partial));
-      } finally { session.destroy(); }
+        text = await answerSession.promptStreaming(history + "\n\nアシスタント:", (partial) => setStreaming(partial));
+      } finally { answerSession.destroy(); }
+      finishLastStep();
+
       await supabase.from("tutor_messages").insert({
         user_id: user.id, role: "assistant", content: text, attachments: [], thread_id: tid,
       });
@@ -184,7 +208,7 @@ function TutorPage() {
       await loadMsgs(tid);
       await loadThreads();
     } catch (e: any) { toast.error(e.message); }
-    finally { setBusy(false); setStreaming(""); }
+    finally { setBusy(false); setStreaming(""); setThinkingSteps([]); }
   };
 
   const submitRename = async (id: string) => {
