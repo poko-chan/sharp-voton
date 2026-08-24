@@ -91,7 +91,11 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
               バラバラだった学習の道具を、StudyΩ はひとつのプラットフォームにまとめました。
             </p>
             <div className="mt-9 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
-              <Link to="/login" className="cta">無料ではじめる</Link>
+              {isAuthed ? (
+                <Link to="/dashboard" className="cta">ダッシュボードへ移動</Link>
+              ) : (
+                <Link to="/login" className="cta">無料ではじめる</Link>
+              )}
               <Link to="/all-services" className="cta-ghost">機能をぜんぶ見る</Link>
             </div>
             <dl className="mx-auto mt-14 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
