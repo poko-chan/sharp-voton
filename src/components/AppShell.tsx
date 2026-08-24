@@ -19,10 +19,9 @@ import { useRestriction } from "@/lib/restriction-context";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAdminNavConfig } from "@/lib/admin-nav";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
-import { MikuCompanion } from "@/components/MikuCompanion";
 import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
 
-const NAV = [
+export const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
   { to: "/today", labelKey: "nav.today" as const, icon: CalendarClock },
   { to: "/study", labelKey: "nav.study" as const, icon: BookOpen },
@@ -75,6 +74,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<{ display_name: string | null; username: string | null; avatar_url: string | null } | null>(null);
   const [level, setLevel] = useState<number>(1);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [notifPrefs, setNotifPrefs] = useState<{ notify_daily_reminder: boolean; reminder_time: string } | null>(null);
 
   useEffect(() => {
     supabase.from("app_settings").select("app_version").eq("id", 1).maybeSingle()
@@ -85,9 +85,15 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (!user) return;
     const { data } = await supabase
       .from("profiles")
-      .select("display_name, username, avatar_url")
+      .select("display_name, username, avatar_url, notify_daily_reminder, reminder_time")
       .eq("id", user.id).maybeSingle();
     setProfile(data ?? null);
+    if (data) {
+      setNotifPrefs({
+        notify_daily_reminder: (data as any).notify_daily_reminder ?? true,
+        reminder_time: ((data as any).reminder_time ?? "20:00").slice(0, 5),
+      });
+    }
   }, [user]);
 
   const loadLevel = useCallback(async () => {
@@ -149,6 +155,31 @@ export function AppShell({ children }: { children: ReactNode }) {
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [user?.id]);
+
+  // Daily reminder: fire a local browser notification once at the configured time.
+  useEffect(() => {
+    if (!user || !notifPrefs) return;
+    if (!notifPrefs.notify_daily_reminder) return;
+    const check = () => {
+      if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mm = String(now.getMinutes()).padStart(2, "0");
+      const current = `${hh}:${mm}`;
+      if (current !== notifPrefs.reminder_time) return;
+      const todayKey = `studyplus.reminder.sent.${user.id}.${now.toDateString()}`;
+      try {
+        if (localStorage.getItem(todayKey)) return;
+        localStorage.setItem(todayKey, "1");
+      } catch { /* noop */ }
+      try {
+        new Notification("学習リマインダー", { body: "今日の学習を記録しましょう！", icon: "/favicon.ico", tag: "daily-reminder" });
+      } catch { /* noop */ }
+    };
+    check();
+    const id = setInterval(check, 20000);
+    return () => clearInterval(id);
+  }, [user, notifPrefs]);
 
   // Close drawer on route change
   useEffect(() => { setMobileOpen(false); }, [path]);
@@ -227,7 +258,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="text-[10px] text-muted-foreground truncate">{shortId}</div>
           <div className="text-[10px] text-muted-foreground truncate">{user?.email ?? ""}</div>
         </div>
-        <Button variant="ghost" size="icon" onClick={signOut} title="ログアウト" className="shrink-0">
+        <Button variant="ghost" size="icon" onClick={signOut} title={t("common.logout")} className="shrink-0">
           <LogOut className="h-4 w-4" />
         </Button>
       </div>
@@ -276,7 +307,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {!isParent && navHiddenByUser.length > 0 && (
           <Popover>
             <PopoverTrigger className="mt-2 w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm border border-border/60 hover:bg-accent">
-              <MoreHorizontal className="h-4 w-4" /> その他 ({navHiddenByUser.length})
+              <MoreHorizontal className="h-4 w-4" /> {t("common.more")} ({navHiddenByUser.length})
             </PopoverTrigger>
             <PopoverContent side="right" align="start" className="w-56 p-2">
               {navHiddenByUser.map((n) => (
@@ -291,7 +322,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {!isParent && navRestricted.length > 0 && (
           <Popover>
             <PopoverTrigger className="mt-2 w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm border border-red-500/30 text-red-600 hover:bg-red-500/10">
-              <Ban className="h-4 w-4" /> 利用停止中 ({navRestricted.length})
+              <Ban className="h-4 w-4" /> {t("common.restricted")} ({navRestricted.length})
             </PopoverTrigger>
             <PopoverContent side="right" align="start" className="w-56 p-2">
               {navRestricted.map((n) => (
@@ -346,7 +377,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <header className="sticky top-0 z-40 flex items-center gap-2 px-3 py-2 liquid-bar border-b">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
-                <button aria-label="メニュー" className="h-10 w-10 inline-flex items-center justify-center rounded-xl transition hover:bg-accent active:scale-95">
+                <button aria-label={t("common.menu")} className="h-10 w-10 inline-flex items-center justify-center rounded-xl transition hover:bg-accent active:scale-95">
                   <Menu className="h-5 w-5" />
                 </button>
               </SheetTrigger>
@@ -398,14 +429,13 @@ export function AppShell({ children }: { children: ReactNode }) {
                 className="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 rounded-2xl text-[10px] font-semibold text-muted-foreground transition active:scale-95"
               >
                 <MoreHorizontal className="h-5 w-5" />
-                <span>その他</span>
+                <span>{t("common.more")}</span>
               </button>
             </div>
           </nav>
         )}
       </main>
-      <MikuCompanion />
-    </div>
+      </div>
   );
 }
 

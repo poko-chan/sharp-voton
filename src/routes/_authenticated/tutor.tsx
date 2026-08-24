@@ -237,11 +237,11 @@ function TutorPage() {
     <div className="p-4 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2"><Sparkles className="text-primary" /> AI家庭教師</h1>
+          <h1 className="text-2xl font-bold flex items-center gap-2"><Sparkles className="text-primary" /> AIチャット</h1>
           <p className="text-sm text-muted-foreground">新しいチャットごとに会話が保存されます</p>
         </div>
       </div>
-      {!canAi && <div className="mb-3"><AiUnavailable feature="AI家庭教師" /></div>}
+      {!canAi && <div className="mb-3"><AiUnavailable feature="AIチャット" /></div>}
 
       <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-3 h-[calc(100vh-10rem)]">
         {/* スレッドサイドバー */}
@@ -316,15 +316,38 @@ function TutorPage() {
             ))}
             {busy && (
               <div className="flex justify-start">
-                <div className="max-w-[85%] bg-muted rounded-2xl px-4 py-2 prose prose-sm dark:prose-invert">
-                  {streaming ? (
-                    <>
-                      <ReactMarkdown>{streaming}</ReactMarkdown>
-                      <span className="inline-block w-2 h-4 align-middle bg-primary/70 animate-pulse rounded-sm" />
-                    </>
-                  ) : (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                <div className="max-w-[85%] bg-muted rounded-2xl px-4 py-2 space-y-2">
+                  {thinkingSteps.length > 0 && (
+                    <Collapsible open={showThinking} onOpenChange={setShowThinking}>
+                      <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground w-full">
+                        <Brain className="h-3.5 w-3.5" />
+                        <span>思考プロセス</span>
+                        <ChevronDown className={`h-3 w-3 ml-auto transition-transform ${showThinking ? "rotate-180" : ""}`} />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-1 space-y-1 border-l-2 border-primary/30 pl-2">
+                        {thinkingSteps.map((step, i) => (
+                          <div key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            {step.done ? (
+                              <Search className="h-3 w-3 text-primary" />
+                            ) : (
+                              <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                            )}
+                            <span>{step.label}</span>
+                          </div>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
                   )}
+                  <div className="prose prose-sm dark:prose-invert">
+                    {streaming ? (
+                      <>
+                        <ReactMarkdown>{streaming}</ReactMarkdown>
+                        <span className="inline-block w-2 h-4 align-middle bg-primary/70 animate-pulse rounded-sm" />
+                      </>
+                    ) : (
+                      thinkingSteps.length === 0 && <Loader2 className="h-4 w-4 animate-spin" />
+                    )}
+                  </div>
                 </div>
               </div>
             )}
