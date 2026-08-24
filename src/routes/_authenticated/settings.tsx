@@ -8,7 +8,6 @@ import { listTowns, createTown, updateTown, deleteTown } from "@/lib/town.functi
 import { MAX_STAGE, stageName } from "@/lib/town";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { useMikuEnabled } from "@/components/MikuCompanion";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -23,6 +22,8 @@ import { AccessibilityPanel } from "@/components/AccessibilityPanel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { THEMES, saveUserTheme, type ThemeName } from "@/lib/theme";
 import { useUserPrefs, FONT_OPTIONS } from "@/lib/user-prefs";
+import { NAV } from "@/components/AppShell";
+import { useMemo } from "react";
 
 function UserSettingsPage() {
   const { user } = useAuth();
@@ -31,7 +32,6 @@ function UserSettingsPage() {
     notify_daily_reminder: true,
     notify_chat: true,
     notify_streak_break: true,
-    notify_email: false,
     notify_announcements: true,
     reminder_time: "20:00",
   });
@@ -42,7 +42,7 @@ function UserSettingsPage() {
   useEffect(() => {
     if (!user) return;
     supabase.from("profiles")
-      .select("display_name, avatar_url, notify_daily_reminder, notify_chat, notify_streak_break, notify_email, notify_announcements, reminder_time")
+      .select("display_name, avatar_url, notify_daily_reminder, notify_chat, notify_streak_break, notify_announcements, reminder_time")
       .eq("id", user.id).maybeSingle().then(({ data }) => {
         if (data) {
           setProfile({ display_name: data.display_name ?? "", avatar_url: data.avatar_url });
@@ -50,7 +50,6 @@ function UserSettingsPage() {
             notify_daily_reminder: data.notify_daily_reminder ?? true,
             notify_chat: data.notify_chat ?? true,
             notify_streak_break: data.notify_streak_break ?? true,
-            notify_email: data.notify_email ?? false,
             notify_announcements: (data as any).notify_announcements ?? true,
             reminder_time: (data.reminder_time ?? "20:00").slice(0, 5),
           });
@@ -62,8 +61,8 @@ function UserSettingsPage() {
   const requestBrowser = async () => {
     if (!("Notification" in window)) return toast.error("このブラウザは通知に対応していません");
     const r = await Notification.requestPermission();
-    if (r === "granted") toast.success("ブラウザ通知を有効にしました");
-    else toast.error("通知が許可されませんでした");
+    if (r === "granted") toast.success("ブラウザ通知を有効にしました。リマインダーが届くようになります");
+    else toast.error("通知が許可されませんでした。ブラウザの設定から通知を許可してください");
   };
 
   const onAvatarPick = async (file: File) => {

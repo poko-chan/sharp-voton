@@ -49,9 +49,9 @@ ${
 【生徒の学習状況（直近30日・ツールで取得済み）】
 - 学習時間: ${ctx.totalMinutes30d ?? 0}分 / 活動日: ${ctx.activeDays30d ?? 0}日
 - 登録科目: ${(ctx.subjectsRegistered ?? []).join("、") || "なし"}
-- よく勉強: ${(ctx.topSubjects ?? []).map((s: any) => \`\${s.name}(\${s.minutes}分)\`).join("、") || "—"}
-- 苦手トピック: ${(ctx.weakTopics ?? []).map((w: any) => \`\${w.topic}(\${w.wrong}/\${w.total}誤)\`).join("、") || "—"}
-- 進行中の目標: ${(ctx.activeGoals ?? []).map((g: any) => \`\${g.title}(\${g.progress_minutes}/\${g.target_minutes}分)\`).join("、") || "—"}
+- よく勉強: ${(ctx.topSubjects ?? []).map((s: any) => `${s.name}(${s.minutes}分)`).join("、") || "—"}
+- 苦手トピック: ${(ctx.weakTopics ?? []).map((w: any) => `${w.topic}(${w.wrong}/${w.total}誤)`).join("、") || "—"}
+- 進行中の目標: ${(ctx.activeGoals ?? []).map((g: any) => `${g.title}(${g.progress_minutes}/${g.target_minutes}分)`).join("、") || "—"}
 - 直近の学習メモ:
 ${ctx.recentNotes ?? "—"}
 
