@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
+import { OrgApplyForm } from "@/components/org/OrgApplyForm";
 import logoUrl from "@/assets/logo.png";
 
 const TITLE = "学校・塾の方へ（組織機能） | StudyΩ";
