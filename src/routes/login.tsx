@@ -40,7 +40,6 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const { user, loading } = useAuth();
-  const { lang, setLang } = useI18n();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [accountKind, setAccountKind] = useState<"child" | "parent">("child");
