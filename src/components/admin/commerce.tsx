@@ -12,9 +12,18 @@ import { toast } from "sonner";
 export function OrgsAdminTab() {
   const [pending, setPending] = useState<any[]>([]);
   const [orgs, setOrgs] = useState<any[]>([]);
+  const [apps, setApps] = useState<any[]>([]);
+  const [openApp, setOpenApp] = useState<string | null>(null);
+  const [notes, setNotes] = useState<Record<string, string>>({});
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const load = async () => {
+    const { data: ap } = await (supabase as any)
+      .from("organization_applications")
+      .select("*, profile:profiles!organization_applications_applicant_id_fkey(username, display_name, email)")
+      .order("created_at", { ascending: false })
+      .limit(100);
+    setApps(ap ?? []);
     const { data: p } = await (supabase as any).from("organizations")
       .select("*, profile:profiles!organizations_created_by_fkey(username, display_name)")
       .eq("status", "pending").order("created_at", { ascending: false });
