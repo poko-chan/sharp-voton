@@ -2,13 +2,14 @@ import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router"
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Shield, Megaphone, ShoppingBag, Building2, Ticket, Coins } from "lucide-react";
+import { Shield, Megaphone, Building2, Coins, BookOpen } from "lucide-react";
 import { UsersTab } from "@/components/admin/users";
 import { RestrictionsHub } from "@/components/admin/restrictions";
 import { AnnouncementsTab, FaqTab, LoginBoardsTab } from "@/components/admin/content";
 import { CoinGrantAllTab, MaintenanceTab, VersionTab } from "@/components/admin/system";
 import { FeedbackTab } from "@/components/admin/feedback";
 import { OrgsAdminTab } from "@/components/admin/commerce";
+import { MaterialsReviewTab } from "@/components/admin/materials";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   validateSearch: (s: Record<string, unknown>) => ({ tab: (s.tab as string) || "users" }),
@@ -34,6 +35,7 @@ function AdminPage() {
           <TabsTrigger value="maintenance">メンテナンス</TabsTrigger>
           <TabsTrigger value="restrictions" className="data-[state=active]:bg-red-500/10 data-[state=active]:text-red-600">利用停止</TabsTrigger>
           <TabsTrigger value="orgs"><Building2 className="h-3 w-3 mr-1" />組織</TabsTrigger>
+          <TabsTrigger value="materials"><BookOpen className="h-3 w-3 mr-1" />教材承認</TabsTrigger>
           <TabsTrigger value="faq" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600">FAQ</TabsTrigger>
           <TabsTrigger value="version">バージョン</TabsTrigger>
           <TabsTrigger value="announcements">お知らせ</TabsTrigger>
@@ -45,6 +47,7 @@ function AdminPage() {
         <TabsContent value="maintenance"><MaintenanceTab /></TabsContent>
         <TabsContent value="restrictions"><RestrictionsHub /></TabsContent>
         <TabsContent value="orgs"><OrgsAdminTab /></TabsContent>
+        <TabsContent value="materials"><MaterialsReviewTab /></TabsContent>
         <TabsContent value="faq"><FaqTab /></TabsContent>
         <TabsContent value="version"><VersionTab /></TabsContent>
         <TabsContent value="announcements"><AnnouncementsTab /></TabsContent>
