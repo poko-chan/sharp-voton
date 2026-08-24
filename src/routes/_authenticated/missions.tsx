@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authenticated/missions")({ component: Mi
 
 // Templates come from DB (daily_mission_templates). Progress is computed live per category.
 // バトル/チャット/OCR系は廃止
-const HIDDEN_CATEGORIES = new Set(["battle", "ocr", "habit"]);
+const HIDDEN_CATEGORIES = new Set(["battle", "ocr", "habit", "reflect"]);
 const HIDDEN_CODES = new Set(["chat_send_1", "chat_send_10"]);
 const CATEGORY_LABELS: Record<string, string> = {
   all: "すべて", study: "学習", makron: "Makron", social: "ソーシャル",
