@@ -9,7 +9,6 @@ const ROUTES: Array<{ q: string; to: string; label: string }> = [
   { q: "タイマー timer", to: "/timer", label: "タイマー" },
   { q: "暗記カード flashcard srs", to: "/flashcards", label: "暗記カード" },
   { q: "友達 friends フォロー", to: "/friends", label: "フレンド" },
-  { q: "ショップ コイン shop", to: "/shop", label: "コインショップ" },
   { q: "通知", to: "/notifications", label: "通知" },
   { q: "設定 settings", to: "/settings", label: "設定" },
   { q: "ヘルプ help", to: "/help", label: "ヘルプ" },

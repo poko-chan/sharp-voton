@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { BookOpen, Trophy, Zap, History, Plus, Filter, ShoppingBag, CalendarDays, Flame } from "lucide-react";
+import { BookOpen, Trophy, Zap, History, Plus, Filter, CalendarDays, Flame } from "lucide-react";
 import { Link as RLink } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/makron/")({ component: MakronHome });
@@ -64,7 +64,6 @@ function MakronHome() {
           <MakronBadge icon={Trophy} label="順位" value={me && me.rank > 0 ? `${me.rank}位 / ${me.total_users}人` : "未参加"} />
           <MakronBadge icon={Flame} label="ストリーク" value={`${daily?.streak ?? 0}日`} />
           <div className="ml-auto flex gap-2">
-            <RLink to="/shop"><Button variant="outline" size="sm"><ShoppingBag className="h-4 w-4 mr-1" />ショップ</Button></RLink>
             <Link to="/makron/history"><Button variant="outline" size="sm"><History className="h-4 w-4 mr-1" />履歴</Button></Link>
             {isAdmin && <Link to="/makron/labels"><Button variant="outline" size="sm">ラベル管理</Button></Link>}
             {isAdmin && <Link to="/makron/admin"><Button size="sm"><Plus className="h-4 w-4 mr-1" />管理者画面</Button></Link>}
