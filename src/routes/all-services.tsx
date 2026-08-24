@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import logoUrl from "@/assets/logo.png";
 import { SERVICE_CATALOG, SERVICE_COUNT } from "@/content/services";
 
