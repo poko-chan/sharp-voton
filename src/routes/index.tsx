@@ -68,7 +68,11 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
             <Link to="/for-schools" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">学校・塾の方へ</Link>
             <Link to="/guide" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">使い方</Link>
             <a href="#faq" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">FAQ</a>
-            <Link to="/login" className="cta px-5 py-2 text-sm">はじめる</Link>
+            {isAuthed ? (
+              <Link to="/dashboard" className="cta px-5 py-2 text-sm">ダッシュボードへ</Link>
+            ) : (
+              <Link to="/login" className="cta px-5 py-2 text-sm">はじめる</Link>
+            )}
           </nav>
         </div>
       </header>
