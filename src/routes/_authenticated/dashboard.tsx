@@ -569,7 +569,12 @@ function Dashboard() {
                   <span className="h-8 w-1.5 rounded-full shrink-0" style={{ background: r.subjects?.color ?? "#94a3b8" }} />
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium truncate">{r.subjects?.name ?? "その他"}</div>
-                    <div className="text-[10px] text-muted-foreground truncate">{r.date}{r.memo ? ` ・ ${r.memo}` : ""}</div>
+                    <div className="text-[10px] text-muted-foreground truncate">
+                      {r.date}
+                      {r.materials?.title ? ` ・ 📗${r.materials.title}` : ""}
+                      {r.content ? ` ・ ${r.content}` : ""}
+                    </div>
+
                   </div>
                   <div className="text-sm font-bold tabular-nums shrink-0">{fmt(r.duration_minutes ?? 0)}</div>
                 </div>
