@@ -13,14 +13,25 @@ export function MaterialsReviewTab() {
 
   const load = async () => {
     const { data: pm } = await (supabase as any).from("materials")
-      .select("*, profile:profiles!materials_created_by_fkey(username, display_name)")
+      .select("*")
       .eq("status", "pending").order("created_at", { ascending: false });
-    setPendingMaterials(pm ?? []);
-
     const { data: pe } = await (supabase as any).from("material_edits")
-      .select("*, profile:profiles!material_edits_proposer_fkey(username, display_name)")
+      .select("*")
       .eq("status", "pending").order("created_at", { ascending: false });
-    setPendingEdits(pe ?? []);
+
+    // 投稿者プロフィールは埋め込みではなく別クエリで解決（FK未定義のため）
+    const userIds = [...new Set([
+      ...(pm ?? []).map((m: any) => m.created_by),
+      ...(pe ?? []).map((e: any) => e.proposer),
+    ].filter(Boolean))];
+    const profiles: Record<string, any> = {};
+    if (userIds.length) {
+      const { data: ps } = await (supabase as any).from("profiles")
+        .select("id, username, display_name").in("id", userIds);
+      (ps ?? []).forEach((p: any) => { profiles[p.id] = p; });
+    }
+    setPendingMaterials((pm ?? []).map((m: any) => ({ ...m, profile: profiles[m.created_by] ?? null })));
+    setPendingEdits((pe ?? []).map((e: any) => ({ ...e, profile: profiles[e.proposer] ?? null })));
 
     const ids = [...new Set((pe ?? []).map((e: any) => e.material_id))];
     if (ids.length) {
@@ -30,6 +41,7 @@ export function MaterialsReviewTab() {
       setMaterialsById(map);
     }
   };
+
   useEffect(() => { load(); }, []);
 
   const reviewMaterial = async (id: string, approve: boolean) => {
