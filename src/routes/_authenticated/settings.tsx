@@ -42,22 +42,21 @@ function UserSettingsPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles")
-      .select("display_name, avatar_url, notify_daily_reminder, notify_chat, notify_streak_break, notify_announcements, reminder_time")
-      .eq("id", user.id).maybeSingle().then(({ data }) => {
-        if (data) {
-          setProfile({ display_name: data.display_name ?? "", avatar_url: data.avatar_url });
-          setS({
-            notify_daily_reminder: data.notify_daily_reminder ?? true,
-            notify_chat: data.notify_chat ?? true,
-            notify_streak_break: data.notify_streak_break ?? true,
-            notify_announcements: (data as any).notify_announcements ?? true,
-            reminder_time: (data.reminder_time ?? "20:00").slice(0, 5),
-          });
-        }
-        setLoading(false);
-      });
+    (supabase as any).rpc("my_profile_private").then(({ data }: any) => {
+      if (data) {
+        setProfile({ display_name: data.display_name ?? "", avatar_url: data.avatar_url });
+        setS({
+          notify_daily_reminder: data.notify_daily_reminder ?? true,
+          notify_chat: data.notify_chat ?? true,
+          notify_streak_break: data.notify_streak_break ?? true,
+          notify_announcements: data.notify_announcements ?? true,
+          reminder_time: (data.reminder_time ?? "20:00").slice(0, 5),
+        });
+      }
+      setLoading(false);
+    });
   }, [user]);
+
 
   const requestBrowser = async () => {
     if (!("Notification" in window)) return toast.error("このブラウザは通知に対応していません");
@@ -186,8 +185,9 @@ function PlanPanel() {
   const [plan, setPlan] = useState<string>("free");
   useEffect(() => {
     if (!user) return;
-    (supabase as any).from("profiles").select("current_plan").eq("id", user.id).maybeSingle()
+    (supabase as any).rpc("my_profile_private")
       .then(({ data }: any) => setPlan(data?.current_plan ?? "free"));
+
   }, [user?.id]);
   return (
     <Card className="p-6 space-y-3">

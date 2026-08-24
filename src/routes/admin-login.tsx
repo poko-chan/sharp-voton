@@ -1,6 +1,8 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { signInWithUsername } from "@/lib/username.functions";
+
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,20 +47,20 @@ function AdminLoginPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      // Allow login by username OR email
-      let email = identifier;
+      // ユーザー名の場合はサーバー側で解決する（メールアドレスはクライアントに返さない）
       if (!identifier.includes("@")) {
-        const { data } = await supabase
-          .from("profiles")
-          .select("email")
-          .eq("username", identifier)
-          .maybeSingle();
-        if (!data?.email) throw new Error("ユーザーが見つかりません");
-        email = data.email;
+        const tokens = await signInWithUsername({ data: { username: identifier, password } });
+        const { error } = await supabase.auth.setSession({
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token,
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email: identifier, password });
+        if (error) throw error;
       }
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
       toast.success("ログイン成功");
+
     } catch (e: any) {
       toast.error(e.message ?? "ログイン失敗");
     } finally {
