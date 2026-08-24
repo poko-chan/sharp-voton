@@ -6700,6 +6700,10 @@ export type Database = {
         }
         Returns: string
       }
+      answer_mentor_session: {
+        Args: { _answer: string; _id: string }
+        Returns: Json
+      }
       are_mutual_friends: { Args: { _a: string; _b: string }; Returns: boolean }
       assignment_quiz_key: { Args: { _assignment: string }; Returns: Json }
       can_create_questions: { Args: { _user_id: string }; Returns: boolean }
@@ -6719,15 +6723,7 @@ export type Database = {
         Args: { _assignment_id: string; _user_id: string }
         Returns: boolean
       }
-      claim_daily_mission: {
-        Args: {
-          _date: string
-          _kind: string
-          _reward_coins: number
-          _target: number
-        }
-        Returns: Json
-      }
+      claim_daily_mission: { Args: { _kind: string }; Returns: Json }
       claim_referral: { Args: { _code: string }; Returns: Json }
       complete_exam_todo: { Args: { _id: string }; Returns: Json }
       consume_inventory: {
@@ -6860,6 +6856,7 @@ export type Database = {
         Returns: boolean
       }
       join_class_by_code: { Args: { _code: string }; Returns: string }
+      join_group_room_by_code: { Args: { _code: string }; Returns: string }
       jst_today: { Args: never; Returns: string }
       leave_chat_group: { Args: { _group: string }; Returns: undefined }
       list_chat_conversations: {
@@ -7184,6 +7181,13 @@ export type Database = {
       org_transfer_ownership: {
         Args: { _org: string; _user: string }
         Returns: undefined
+      }
+      poll_results: {
+        Args: { _poll_id: string }
+        Returns: {
+          option_index: number
+          votes: number
+        }[]
       }
       purchase_shop_item: { Args: { _item_id: string }; Returns: Json }
       remove_from_chat_group: {
