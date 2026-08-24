@@ -1,16 +1,26 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PRIVACY, LAST_UPDATED } from "@/content/legal";
 
+const PRIVACY_TITLE = "プライバシーポリシー｜StudyΩ";
+const PRIVACY_DESC = "StudyΩ のプライバシーポリシー。取得する個人情報、利用目的、第三者提供、利用者の権利について説明します。";
+const PRIVACY_URL = "https://omega-voton.lovable.app/privacy";
+
 export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
-      { title: "プライバシーポリシー｜StudyΩ" },
-      { name: "description", content: "StudyΩ のプライバシーポリシー。取得する個人情報、利用目的、第三者提供、利用者の権利について説明します。" },
+      { title: PRIVACY_TITLE },
+      { name: "description", content: PRIVACY_DESC },
+      { property: "og:title", content: PRIVACY_TITLE },
+      { property: "og:description", content: PRIVACY_DESC },
+      { property: "og:url", content: PRIVACY_URL },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "https://studyplus-voton.lovable.app/privacy" }],
+    links: [{ rel: "canonical", href: PRIVACY_URL }],
   }),
   component: PrivacyPage,
 });
+
 
 function PrivacyPage() {
   return (

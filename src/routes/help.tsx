@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { HelpCircle, ArrowLeft, Search } from "lucide-react";
@@ -9,31 +8,60 @@ import { Button } from "@/components/ui/button";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
+import { listPublicFaqs, type PublicFaq } from "@/lib/faq.functions";
+
+const HELP_URL = "https://omega-voton.lovable.app/help";
+const HELP_TITLE = "ヘルプ・よくある質問｜StudyΩ";
+const HELP_DESC = "Voton Study Omega（StudyΩ）のよくある質問と回答。ログイン・アカウント・勉強記録・演習・組織利用に関する疑問を解決できます。";
 
 export const Route = createFileRoute("/help")({
-  head: () => ({
+  loader: async () => ({ faqs: await listPublicFaqs() }),
+  head: ({ loaderData }) => ({
     meta: [
-      { title: "ヘルプ・よくある質問 | StudyΩ" },
-      { name: "description", content: "StudyΩ のよくある質問と回答をまとめたヘルプページです。" },
+      { title: HELP_TITLE },
+      { name: "description", content: HELP_DESC },
+      { property: "og:title", content: HELP_TITLE },
+      { property: "og:description", content: HELP_DESC },
+      { property: "og:url", content: HELP_URL },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: HELP_URL }],
+    scripts: (loaderData?.faqs?.length
+      ? [{
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: loaderData.faqs.map((f) => ({
+              "@type": "Question",
+              name: f.question,
+              acceptedAnswer: { "@type": "Answer", text: f.answer },
+            })),
+          }),
+        }]
+      : []),
   }),
   component: HelpPage,
+  errorComponent: () => (
+    <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
+      ヘルプを読み込めませんでした。時間をおいて再度お試しください。
+    </div>
+  ),
+  notFoundComponent: () => (
+    <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
+      ページが見つかりません。
+    </div>
+  ),
 });
 
-type Faq = { id: string; question: string; answer: string; order_index: number };
+type Faq = PublicFaq;
 
 function HelpPage() {
-  const [items, setItems] = useState<Faq[]>([]);
+  const { faqs } = Route.useLoaderData();
+  const items: Faq[] = faqs;
   const [q, setQ] = useState("");
 
-  useEffect(() => {
-    supabase
-      .from("faq_entries")
-      .select("id, question, answer, order_index")
-      .eq("published", true)
-      .order("order_index")
-      .then(({ data }) => setItems((data ?? []) as Faq[]));
-  }, []);
 
   const filtered = items.filter(
     (i) =>
@@ -46,7 +74,7 @@ function HelpPage() {
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 p-6">
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="flex items-center gap-3">
-          <img src={logoUrl} alt="" className="h-10 w-10 rounded-xl" />
+          <img src={logoUrl} alt="StudyΩ 学習プラットフォームのロゴ" className="h-10 w-10 rounded-xl" />
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <HelpCircle className="h-7 w-7 text-primary" /> ヘルプ
           </h1>

@@ -20,7 +20,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:title", content: TITLE },
       { name: "twitter:description", content: DESC },
     ],
-    links: [{ rel: "canonical", href: "https://study-plus-voton.lovable.app/" }],
+    links: [{ rel: "canonical", href: "https://omega-voton.lovable.app/" }],
   }),
   component: LandingRoute,
 });

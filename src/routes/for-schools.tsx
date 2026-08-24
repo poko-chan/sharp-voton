@@ -19,7 +19,7 @@ export const Route = createFileRoute("/for-schools")({
       { name: "twitter:title", content: TITLE },
       { name: "twitter:description", content: DESC },
     ],
-    links: [{ rel: "canonical", href: "https://study-plus-voton.lovable.app/for-schools" }],
+    links: [{ rel: "canonical", href: "https://omega-voton.lovable.app/for-schools" }],
   }),
   component: ForSchoolsPage,
 });

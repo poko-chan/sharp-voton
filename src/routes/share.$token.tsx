@@ -4,7 +4,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Share2 } from "lucide-react";
 
-export const Route = createFileRoute("/share/$token")({ component: SharedView });
+export const Route = createFileRoute("/share/$token")({
+  head: ({ params }) => {
+    const title = "共有された勉強記録｜StudyΩ";
+    const description = "StudyΩ で共有された勉強記録のサマリーです。学習時間と科目の内訳を閲覧できます。";
+    const url = `https://omega-voton.lovable.app/share/${params.token}`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "robots", content: "noindex,follow" },
+      ],
+      links: [{ rel: "canonical", href: url }],
+    };
+  },
+  component: SharedView,
+});
+
 
 function SharedView() {
   const { token } = useParams({ strict: false }) as { token: string };
