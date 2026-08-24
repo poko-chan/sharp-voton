@@ -39,7 +39,7 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, accountKind: myKind } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [accountKind, setAccountKind] = useState<"child" | "parent" | "org">("child");
