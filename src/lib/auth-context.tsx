@@ -8,7 +8,7 @@ interface AuthContextValue {
   session: Session | null;
   user: User | null;
   role: AppRole | null;
-  accountKind: "child" | "parent" | "adult" | null;
+  accountKind: "child" | "parent" | "adult" | "org" | null;
   loading: boolean;
   isAdmin: boolean;
   signOut: () => Promise<void>;
