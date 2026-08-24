@@ -17,7 +17,7 @@ import { Settings, Upload, User, AlertTriangle, Sparkles, Plus, Archive, Trash2 
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { emitProfileChange } from "@/lib/profile-events";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, LANGS, type Lang } from "@/lib/i18n";
 import { AccessibilityPanel } from "@/components/AccessibilityPanel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { THEMES, saveUserTheme, type ThemeName } from "@/lib/theme";
@@ -369,11 +369,12 @@ function LanguageSettings() {
     <Card className="p-6 space-y-3">
       <div className="font-semibold">{t("settings.language")}</div>
       <p className="text-xs text-muted-foreground">{t("settings.language.desc")}</p>
-      <Select value={lang} onValueChange={(v) => setLang(v as "ja" | "en")}>
+      <Select value={lang} onValueChange={(v) => setLang(v as Lang)}>
         <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
         <SelectContent>
-          <SelectItem value="ja">{t("lang.ja")}</SelectItem>
-          <SelectItem value="en">{t("lang.en")}</SelectItem>
+          {LANGS.map((l) => (
+            <SelectItem key={l.code} value={l.code}>{l.label}</SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </Card>

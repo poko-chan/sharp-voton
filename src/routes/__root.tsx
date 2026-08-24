@@ -204,6 +204,7 @@ function RootComponent() {
           <AmbientSound />
           <Toaster richColors position="top-center" />
         </MaintenanceProvider>
+        </I18nProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

@@ -12,7 +12,7 @@ import { Shield, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { signInWithUsername, checkUsernameAvailable } from "@/lib/username.functions";
 import { EmailVerifyNotice } from "@/components/auth/EmailVerifyNotice";
-import { I18nProvider, useI18n } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 import logoUrl from "@/assets/logo.png";
 import googleLogo from "@/assets/google-logo.svg.asset.json";
 
@@ -34,9 +34,7 @@ export const Route = createFileRoute("/login")({
     };
   },
   component: () => (
-    <I18nProvider>
       <LoginPage />
-    </I18nProvider>
   ),
 });
 

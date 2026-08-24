@@ -1,4 +1,4 @@
-import { I18nProvider, useI18n } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
@@ -43,9 +43,7 @@ function LandingRoute() {
   }, [user, loading, navigate]);
 
   return (
-    <I18nProvider>
       <LandingPage isAuthed={!!user} />
-    </I18nProvider>
   );
 }
 
