@@ -483,11 +483,11 @@ body {
 .gt-widget .goog-te-combo {
   appearance: none;
   -webkit-appearance: none;
-  background-color: hsl(var(--background) / 0.6);
-  border: 1px solid hsl(var(--border) / 0.45);
+  background-color: color-mix(in oklch, var(--background) 60%, transparent);
+  border: 1px solid color-mix(in oklch, var(--border) 45%, transparent);
   border-radius: 9999px;
   padding: 0.25rem 1.5rem 0.25rem 0.75rem;
-  color: hsl(var(--foreground));
+  color: var(--foreground);
   font-size: 0.75rem;
   line-height: 1.25;
   cursor: pointer;
@@ -495,9 +495,9 @@ body {
 }
 .gt-widget .goog-te-combo:focus {
   outline: none;
-  border-color: hsl(var(--primary));
+  border-color: var(--primary);
 }
 .gt-widget .goog-te-combo option {
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
+  background: var(--background);
+  color: var(--foreground);
 }
