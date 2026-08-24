@@ -14,7 +14,6 @@ export const SERVICES = [
   { key: "chat",      label: "メッセージ" },
   { key: "classchat", label: "クラスチャット" },
   { key: "notes",     label: "付箋" },
-  { key: "today",     label: "Today" },
   { key: "practice",  label: "AI問題演習" },
   { key: "questions", label: "AI問題作成" },
 ] as const;
