@@ -256,15 +256,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
             <Link to="/terms" className="transition hover:text-foreground">{t("landing.terms")}</Link>
             <Link to="/privacy" className="transition hover:text-foreground">{t("landing.privacy")}</Link>
             <Link to="/login" className="transition hover:text-foreground">{t("login.title")}</Link>
-            <select
-              value={lang}
-              onChange={(e) => setLang(e.target.value as Lang)}
-              aria-label="Language"
-              data-no-translate
-              className="ml-2 rounded-full border bg-muted/50 px-2 py-1 text-[10px] sm:text-xs text-foreground"
-            >
-              {LANGS.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
-            </select>
+            <GoogleTranslateWidget />
           </nav>
         </div>
       </footer>
