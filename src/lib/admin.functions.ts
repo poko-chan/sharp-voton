@@ -25,28 +25,6 @@ async function assertNotPokochan(userId: string, action = "操作") {
   }
 }
 
-export const adminListUsers = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    await assertAdmin(context.userId);
-    const { data: profiles } = await supabaseAdmin
-      .from("profiles")
-      .select("id, email, username, display_name, avatar_url, created_at")
-      .order("created_at", { ascending: false });
-    const { data: roles } = await supabaseAdmin.from("user_roles").select("user_id, role");
-    const roleMap = new Map<string, string[]>();
-    roles?.forEach((r) => {
-      const arr = roleMap.get(r.user_id) ?? [];
-      arr.push(r.role);
-      roleMap.set(r.user_id, arr);
-    });
-    return (profiles ?? []).map((p) => ({
-      ...p,
-      roles: roleMap.get(p.id) ?? ["user"],
-      isAdmin: (roleMap.get(p.id) ?? []).includes("admin"),
-    }));
-  });
-
 export const adminCreateUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
@@ -235,7 +213,7 @@ export const adminUpdateMaintenance = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const adminListUsers2 = createServerFn({ method: "POST" })
+export const adminListUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
     z.object({
