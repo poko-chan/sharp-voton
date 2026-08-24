@@ -416,6 +416,94 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_group_members: {
+        Row: {
+          group_id: string
+          joined_at: string
+          last_read_at: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          joined_at?: string
+          last_read_at?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          joined_at?: string
+          last_read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "chat_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_group_messages: {
+        Row: {
+          content: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          group_id: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          group_id: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          group_id?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_group_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "chat_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_groups: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           content: string
@@ -1298,6 +1386,24 @@ export type Database = {
         }
         Relationships: []
       }
+      dm_hidden_conversations: {
+        Row: {
+          hidden_at: string
+          other_user_id: string
+          user_id: string
+        }
+        Insert: {
+          hidden_at?: string
+          other_user_id: string
+          user_id: string
+        }
+        Update: {
+          hidden_at?: string
+          other_user_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string
@@ -1615,44 +1721,94 @@ export type Database = {
           },
         ]
       }
+      flashcard_decks: {
+        Row: {
+          color: string
+          created_at: string
+          description: string
+          id: string
+          name: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          description?: string
+          id?: string
+          name: string
+          subject?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       flashcards: {
         Row: {
           back: string
           created_at: string
           deck: string
+          deck_id: string | null
           ease: number
           front: string
           id: string
           interval_days: number
+          last_reviewed_at: string | null
           next_review_at: string
           reviews: number
+          updated_at: string
           user_id: string
         }
         Insert: {
           back: string
           created_at?: string
           deck?: string
+          deck_id?: string | null
           ease?: number
           front: string
           id?: string
           interval_days?: number
+          last_reviewed_at?: string | null
           next_review_at?: string
           reviews?: number
+          updated_at?: string
           user_id: string
         }
         Update: {
           back?: string
           created_at?: string
           deck?: string
+          deck_id?: string | null
           ease?: number
           front?: string
           id?: string
           interval_days?: number
+          last_reviewed_at?: string | null
           next_review_at?: string
           reviews?: number
+          updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "flashcards_deck_id_fkey"
+            columns: ["deck_id"]
+            isOneToOne: false
+            referencedRelation: "flashcard_decks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       focus_logs: {
         Row: {
@@ -5094,6 +5250,7 @@ export type Database = {
           subject: string | null
           updated_at: string
           user_id: string
+          visibility: string
         }
         Insert: {
           body: string
@@ -5104,6 +5261,7 @@ export type Database = {
           subject?: string | null
           updated_at?: string
           user_id: string
+          visibility?: string
         }
         Update: {
           body?: string
@@ -5114,6 +5272,7 @@ export type Database = {
           subject?: string | null
           updated_at?: string
           user_id?: string
+          visibility?: string
         }
         Relationships: [
           {
@@ -6413,6 +6572,10 @@ export type Database = {
         Args: { _post: string; _user: string }
         Returns: boolean
       }
+      can_view_social_post: {
+        Args: { _post_id: string; _uid: string }
+        Returns: boolean
+      }
       can_view_submission: {
         Args: { _assignment_id: string; _user_id: string }
         Returns: boolean
@@ -6431,6 +6594,10 @@ export type Database = {
       consume_inventory: {
         Args: { _item_code: string; _qty?: number }
         Returns: number
+      }
+      create_chat_group: {
+        Args: { _member_ids: string[]; _name: string }
+        Returns: string
       }
       current_jst_date: { Args: never; Returns: string }
       delete_makron_pack: { Args: { _pack_id: string }; Returns: undefined }
@@ -6513,6 +6680,19 @@ export type Database = {
         }
         Returns: boolean
       }
+      hide_dm_conversation: { Args: { _other: string }; Returns: undefined }
+      invite_to_chat_group: {
+        Args: { _group: string; _user_id: string }
+        Returns: undefined
+      }
+      is_chat_group_member: {
+        Args: { _group: string; _user: string }
+        Returns: boolean
+      }
+      is_chat_group_owner: {
+        Args: { _group: string; _user: string }
+        Returns: boolean
+      }
       is_chat_participant: {
         Args: { _thread: string; _user: string }
         Returns: boolean
@@ -6542,6 +6722,19 @@ export type Database = {
       }
       join_class_by_code: { Args: { _code: string }; Returns: string }
       jst_today: { Args: never; Returns: string }
+      leave_chat_group: { Args: { _group: string }; Returns: undefined }
+      list_chat_conversations: {
+        Args: never
+        Returns: {
+          conv_id: string
+          conv_type: string
+          display_name: string
+          last_message: string
+          last_message_at: string
+          member_count: number
+          unread_count: number
+        }[]
+      }
       makron_correct_answer_text: {
         Args: { _q: Database["public"]["Tables"]["makron_questions"]["Row"] }
         Returns: string
@@ -6699,6 +6892,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      mark_group_read: { Args: { _group: string }; Returns: undefined }
       material_global_usage: {
         Args: { _material_id: string }
         Returns: {
@@ -6852,6 +7046,10 @@ export type Database = {
         Returns: undefined
       }
       purchase_shop_item: { Args: { _item_id: string }; Returns: Json }
+      remove_from_chat_group: {
+        Args: { _group: string; _user_id: string }
+        Returns: undefined
+      }
       review_material_edit: {
         Args: { _approve: boolean; _edit_id: string; _note?: string }
         Returns: Json
@@ -6865,6 +7063,10 @@ export type Database = {
         Returns: Json
       }
       send_dm: { Args: { _content: string; _to: string }; Returns: string }
+      send_group_message: {
+        Args: { _content: string; _group: string }
+        Returns: string
+      }
       share_study_summary: {
         Args: { _token: string }
         Returns: {
