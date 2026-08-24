@@ -36,6 +36,13 @@ function AuthLayout() {
     const ok = allowed.some((p) => path === p || path.startsWith(p + "/"));
     if (!ok) navigate({ to: "/parent" });
   }, [accountKind, path, user, loading, navigate]);
+  // 組織アカウントは組織管理まわりのみ。学習機能は使えない。
+  useEffect(() => {
+    if (loading || !user || accountKind !== "org") return;
+    const allowed = ["/organizations", "/settings", "/notifications", "/help", "/announcements", "/updates"];
+    const ok = allowed.some((p) => path === p || path.startsWith(p + "/"));
+    if (!ok) navigate({ to: "/organizations" });
+  }, [accountKind, path, user, loading, navigate]);
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">読み込み中...</div>;
   }
