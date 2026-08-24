@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Timer, CalendarDays, BookOpen, Brain, MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy, Megaphone, GraduationCap, Menu, X, MoreHorizontal, StickyNote, Users, Ban, HelpCircle, ClipboardList, CalendarClock } from "lucide-react";
+import { LayoutDashboard, Timer, CalendarDays, BookOpen, Brain, MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy, Megaphone, GraduationCap, Menu, X, MoreHorizontal, StickyNote, Users, Ban, HelpCircle, ClipboardList } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -23,7 +23,6 @@ import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
 
 export const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
-  { to: "/today", labelKey: "nav.today" as const, icon: CalendarClock },
   { to: "/study", labelKey: "nav.study" as const, icon: BookOpen },
   { to: "/materials", labelKey: "nav.dashboard" as const, icon: BookOpen, override: "教材データベース" },
   { to: "/exams", labelKey: "nav.dashboard" as const, icon: ClipboardList, override: "試験" },
@@ -50,7 +49,7 @@ export const NAV = [
 const ROUTE_SERVICE: Record<string, string> = {
   "/timer": "timer", "/tutor": "tutor", "/classroom": "classroom",
   "/classchat": "classchat", "/chat": "chat", "/notes": "notes",
-  "/today": "today", "/practice": "practice", "/questions": "questions",
+  "/practice": "practice", "/questions": "questions",
 };
 
 // Bottom-bar mobile shortcuts (5 primary, last is "more")

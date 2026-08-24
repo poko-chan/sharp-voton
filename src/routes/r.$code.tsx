@@ -36,7 +36,7 @@ function ReferralPage() {
         {status === "idle" && <p>処理中…</p>}
         {status === "ok" && <p className="text-green-600">10コインを受け取りました！</p>}
         {status === "err" && <p className="text-destructive text-sm">{msg}</p>}
-        <Button onClick={() => navigate({ to: "/today" })}>ホームへ</Button>
+        <Button onClick={() => navigate({ to: "/dashboard" })}>ホームへ</Button>
       </Card>
     </div>
   );

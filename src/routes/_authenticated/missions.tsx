@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authenticated/missions")({ component: Mi
 
 // Templates come from DB (daily_mission_templates). Progress is computed live per category.
 // バトル/チャット/OCR系は廃止
-const HIDDEN_CATEGORIES = new Set(["battle", "ocr", "habit"]);
+const HIDDEN_CATEGORIES = new Set(["battle", "ocr", "habit", "reflect"]);
 const HIDDEN_CODES = new Set(["chat_send_1", "chat_send_10"]);
 const CATEGORY_LABELS: Record<string, string> = {
   all: "すべて", study: "学習", makron: "Makron", social: "ソーシャル",
@@ -33,30 +33,23 @@ function MissionsPage() {
   const today = jstDateStr();
 
   const computeProgress = async (uid: string): Promise<Record<string, number>> => {
-    const [{ data: logs }, { data: cards }, { data: ans }, { data: subs }, { data: refl }, { data: batt }] = await Promise.all([
+    const [{ data: logs }, { data: cards }, { data: ans }, { data: subs }] = await Promise.all([
       supabase.from("study_logs").select("duration_minutes").eq("user_id", uid).eq("date", today),
       supabase.from("flashcards").select("id, last_reviewed_at").eq("user_id", uid),
       (supabase as any).from("makron_answers").select("auto_correct, created_at").gte("created_at", today + "T00:00:00"),
       supabase.from("study_logs").select("subject_id").eq("user_id", uid).eq("date", today),
-      supabase.from("daily_reflections").select("id").eq("user_id", uid).gte("created_at", today + "T00:00:00"),
-      (supabase as any).from("quiz_battles").select("status, winner_id, created_at").gte("created_at", today + "T00:00:00").or(`challenger_id.eq.${uid},opponent_id.eq.${uid}`),
     ]);
     const studyMin = (logs ?? []).reduce((s: number, r: any) => s + (r.duration_minutes ?? 0), 0);
     const reviewed = (cards ?? []).filter((c: any) => c.last_reviewed_at && c.last_reviewed_at.slice(0, 10) === today).length;
     const mkAns = ans ?? [];
     const mkCorrect = mkAns.filter((a: any) => a.auto_correct).length;
     const subjects = new Set((subs ?? []).map((r: any) => r.subject_id).filter(Boolean)).size;
-    const battlesPlayed = (batt ?? []).length;
-    const battlesWon = (batt ?? []).filter((b: any) => b.winner_id === uid).length;
     return {
       study_10m: studyMin, study_30m: studyMin, study_60m: studyMin, study_120m: studyMin, study_180m: studyMin,
       makron_1q: mkAns.length, makron_5q: mkAns.length, makron_10q: mkAns.length, makron_20q: mkAns.length, makron_50q: mkAns.length,
       makron_correct_5: mkCorrect, makron_correct_20: mkCorrect,
       flashcard_10: reviewed, flashcard_50: reviewed,
-      reflection: (refl ?? []).length,
       all_subjects: subjects, login: 1,
-      battle_1: battlesPlayed, battle_3: battlesPlayed,
-      battle_win_1: battlesWon, battle_win_3: battlesWon,
     };
   };
 
@@ -109,7 +102,7 @@ function MissionsPage() {
       <h1 className="text-3xl font-bold mb-2 flex items-center gap-2"><Target /> デイリーミッション</h1>
       <p className="text-sm text-muted-foreground mb-4">
         毎日0時にリセット。{templates.length}個のミッションから自由に挑戦！<br />
-        <span className="text-xs">※「学習計画」=「学習」ページで作る今日のToDo / 「ふりかえり」=「Today」画面で今日の学習を一言まとめる機能です。</span>
+        <span className="text-xs">※「学習計画」=「学習」ページで作る今日のToDo / 「ふりかえり」=「ダッシュボード」で今日の学習をふりかえる機能です。</span>
       </p>
       <div className="flex gap-1 flex-wrap mb-4">
         <Filter className="h-4 w-4 self-center text-muted-foreground" />

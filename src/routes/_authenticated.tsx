@@ -15,7 +15,6 @@ const ROUTE_SERVICE: Array<[string, string]> = [
   ["/classchat", "classchat"],
   ["/chat", "chat"],
   ["/notes", "notes"],
-  ["/today", "today"],
   ["/practice", "practice"],
   ["/questions", "questions"],
 ];

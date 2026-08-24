@@ -6,7 +6,6 @@ const LS_KEY = "studyplus.lang";
 const dict = {
   ja: {
     "nav.dashboard": "ダッシュボード",
-    "nav.today": "Today",
     "nav.study": "勉強記録",
     "nav.timer": "タイマー",
     "nav.calendar": "カレンダー",
@@ -110,7 +109,6 @@ const dict = {
   },
   en: {
     "nav.dashboard": "Dashboard",
-    "nav.today": "Today",
     "nav.study": "Study Log",
     "nav.timer": "Timer",
     "nav.calendar": "Calendar",

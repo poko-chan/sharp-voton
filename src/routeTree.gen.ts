@@ -28,7 +28,6 @@ import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiAiStreamRouteImport } from './routes/api/ai-stream'
 import { Route as AuthenticatedUpdatesRouteImport } from './routes/_authenticated/updates'
 import { Route as AuthenticatedTutorRouteImport } from './routes/_authenticated/tutor'
-import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
 import { Route as AuthenticatedStudyRouteImport } from './routes/_authenticated/study'
 import { Route as AuthenticatedShareRouteImport } from './routes/_authenticated/share'
@@ -178,11 +177,6 @@ const AuthenticatedUpdatesRoute = AuthenticatedUpdatesRouteImport.update({
 const AuthenticatedTutorRoute = AuthenticatedTutorRouteImport.update({
   id: '/tutor',
   path: '/tutor',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedTodayRoute = AuthenticatedTodayRouteImport.update({
-  id: '/today',
-  path: '/today',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTimerRoute = AuthenticatedTimerRouteImport.update({
@@ -538,7 +532,6 @@ export interface FileRoutesByFullPath {
   '/share': typeof AuthenticatedShareRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
-  '/today': typeof AuthenticatedTodayRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/updates': typeof AuthenticatedUpdatesRoute
   '/api/ai-stream': typeof ApiAiStreamRoute
@@ -611,7 +604,6 @@ export interface FileRoutesByTo {
   '/share': typeof AuthenticatedShareRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
-  '/today': typeof AuthenticatedTodayRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/updates': typeof AuthenticatedUpdatesRoute
   '/api/ai-stream': typeof ApiAiStreamRoute
@@ -688,7 +680,6 @@ export interface FileRoutesById {
   '/_authenticated/share': typeof AuthenticatedShareRoute
   '/_authenticated/study': typeof AuthenticatedStudyRoute
   '/_authenticated/timer': typeof AuthenticatedTimerRoute
-  '/_authenticated/today': typeof AuthenticatedTodayRoute
   '/_authenticated/tutor': typeof AuthenticatedTutorRoute
   '/_authenticated/updates': typeof AuthenticatedUpdatesRoute
   '/api/ai-stream': typeof ApiAiStreamRoute
@@ -767,7 +758,6 @@ export interface FileRouteTypes {
     | '/share'
     | '/study'
     | '/timer'
-    | '/today'
     | '/tutor'
     | '/updates'
     | '/api/ai-stream'
@@ -840,7 +830,6 @@ export interface FileRouteTypes {
     | '/share'
     | '/study'
     | '/timer'
-    | '/today'
     | '/tutor'
     | '/updates'
     | '/api/ai-stream'
@@ -916,7 +905,6 @@ export interface FileRouteTypes {
     | '/_authenticated/share'
     | '/_authenticated/study'
     | '/_authenticated/timer'
-    | '/_authenticated/today'
     | '/_authenticated/tutor'
     | '/_authenticated/updates'
     | '/api/ai-stream'
@@ -1103,13 +1091,6 @@ declare module '@tanstack/react-router' {
       path: '/tutor'
       fullPath: '/tutor'
       preLoaderRoute: typeof AuthenticatedTutorRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/today': {
-      id: '/_authenticated/today'
-      path: '/today'
-      fullPath: '/today'
-      preLoaderRoute: typeof AuthenticatedTodayRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/timer': {
@@ -1662,7 +1643,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedShareRoute: typeof AuthenticatedShareRoute
   AuthenticatedStudyRoute: typeof AuthenticatedStudyRoute
   AuthenticatedTimerRoute: typeof AuthenticatedTimerRoute
-  AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
   AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
   AuthenticatedUpdatesRoute: typeof AuthenticatedUpdatesRoute
   AuthenticatedClassroomClassIdRoute: typeof AuthenticatedClassroomClassIdRoute
@@ -1701,7 +1681,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedShareRoute: AuthenticatedShareRoute,
   AuthenticatedStudyRoute: AuthenticatedStudyRoute,
   AuthenticatedTimerRoute: AuthenticatedTimerRoute,
-  AuthenticatedTodayRoute: AuthenticatedTodayRoute,
   AuthenticatedTutorRoute: AuthenticatedTutorRoute,
   AuthenticatedUpdatesRoute: AuthenticatedUpdatesRoute,
   AuthenticatedClassroomClassIdRoute: AuthenticatedClassroomClassIdRoute,

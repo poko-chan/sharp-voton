@@ -4,7 +4,6 @@ import { Search } from "lucide-react";
 
 const ROUTES: Array<{ q: string; to: string; label: string }> = [
   { q: "ダッシュボード dashboard", to: "/dashboard", label: "ダッシュボード" },
-  { q: "today 今日", to: "/today", label: "Today" },
   { q: "勉強記録 study", to: "/study", label: "勉強記録" },
   { q: "タイマー timer", to: "/timer", label: "タイマー" },
   { q: "暗記カード flashcard srs", to: "/flashcards", label: "暗記カード" },
