@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Users, UserPlus, Trophy, UserMinus, Coins, Gift } from "lucide-react";
+import { Users, UserPlus, Trophy, UserMinus, Coins, Gift, Search, Heart } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
@@ -19,7 +19,7 @@ function FriendsPage() {
   const { user } = useAuth();
   const [following, setFollowing] = useState<Profile[]>([]);
   const [followers, setFollowers] = useState<Profile[]>([]);
-  const [pending, setPending] = useState<Profile[]>([]);
+  const [incomingPending, setIncomingPending] = useState<Profile[]>([]);
   const [outgoingPending, setOutgoingPending] = useState<Profile[]>([]);
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<Profile[]>([]);
@@ -51,7 +51,7 @@ function FriendsPage() {
     const map = new Map((profs ?? []).map((p: any) => [p.id, p]));
     setFollowing(ids1.map((id) => map.get(id)).filter(Boolean) as Profile[]);
     setFollowers(ids2.map((id) => map.get(id)).filter(Boolean) as Profile[]);
-    setPending(ids2Pending.map((id) => map.get(id)).filter(Boolean) as Profile[]);
+    setIncomingPending(ids2Pending.map((id) => map.get(id)).filter(Boolean) as Profile[]);
     setOutgoingPending(ids1Pending.map((id) => map.get(id)).filter(Boolean) as Profile[]);
 
     // Leaderboard: me + following, last 7d study minutes
@@ -105,40 +105,101 @@ function FriendsPage() {
     load();
   };
 
-  const followingIds = new Set(following.map((p) => p.id));
+  const followingIds = useMemo(() => new Set(following.map((p) => p.id)), [following]);
+  const followerIds = useMemo(() => new Set(followers.map((p) => p.id)), [followers]);
+  const mutualFriends = useMemo(() => following.filter((p) => followerIds.has(p.id)), [following, followerIds]);
+  const pendingCount = incomingPending.length + outgoingPending.length;
 
   return (
     <div className="p-8 max-w-4xl mx-auto space-y-6">
       <div className="flex items-center gap-2">
         <Users className="h-7 w-7" /><h1 className="text-3xl font-bold">フレンド</h1>
       </div>
-      <Tabs defaultValue="board">
+
+      <Card className="p-4 space-y-3">
+        <div className="font-semibold flex items-center gap-1.5"><Search className="h-4 w-4" />ユーザーを探す</div>
+        <div className="flex gap-2">
+          <Input placeholder="ユーザー名で検索" value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => e.key === "Enter" && doSearch()} />
+          <Button onClick={doSearch}>検索</Button>
+        </div>
+        {results.length > 0 && (
+          <div className="space-y-2 pt-2">
+            {results.map((p) => (
+              <Card key={p.id} className="p-3 flex items-center gap-3">
+                <Avatar><AvatarImage src={p.avatar_url ?? undefined} /><AvatarFallback>{(p.display_name ?? "?").slice(0, 1)}</AvatarFallback></Avatar>
+                <div className="flex-1"><div className="font-medium">{p.display_name}</div><div className="text-xs text-muted-foreground">@{p.username}</div></div>
+                {followingIds.has(p.id)
+                  ? <Button size="sm" variant="outline" onClick={() => unfollow(p.id)}><UserMinus className="h-4 w-4 mr-1" />解除</Button>
+                  : outgoingPending.some((o) => o.id === p.id)
+                    ? <Button size="sm" variant="outline" disabled>承認待ち</Button>
+                    : <Button size="sm" onClick={() => follow(p.id)}><UserPlus className="h-4 w-4 mr-1" />フォロー</Button>}
+              </Card>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Card className="p-4 space-y-2">
+        <div className="font-semibold flex items-center gap-1.5"><Trophy className="h-4 w-4" />学習ランキング（過去7日・フォロー中）</div>
+        {board.map((p, i) => (
+          <div key={p.id} className="flex items-center gap-3 py-1">
+            <div className="w-6 text-center font-bold">{i + 1}</div>
+            <Avatar className="h-7 w-7"><AvatarImage src={p.avatar_url ?? undefined} /><AvatarFallback>{(p.display_name ?? "?").slice(0, 1)}</AvatarFallback></Avatar>
+            <div className="flex-1 text-sm">{p.display_name ?? p.username}</div>
+            <div className="font-mono text-sm">{p.minutes}分</div>
+          </div>
+        ))}
+        {board.length === 0 && <div className="text-muted-foreground text-sm">フォローするとランキングに表示されます</div>}
+      </Card>
+
+      <Tabs defaultValue="following">
         <TabsList>
-          <TabsTrigger value="board"><Trophy className="h-4 w-4 mr-1" />ランキング</TabsTrigger>
-          <TabsTrigger value="find"><UserPlus className="h-4 w-4 mr-1" />探す</TabsTrigger>
-          <TabsTrigger value="requests">承認待ち ({pending.length})</TabsTrigger>
           <TabsTrigger value="following">フォロー中 ({following.length})</TabsTrigger>
           <TabsTrigger value="followers">フォロワー ({followers.length})</TabsTrigger>
+          <TabsTrigger value="mutual"><Heart className="h-4 w-4 mr-1" />フレンド ({mutualFriends.length})</TabsTrigger>
+          <TabsTrigger value="pending">申請中 ({pendingCount})</TabsTrigger>
         </TabsList>
-        <TabsContent value="board" className="space-y-2 mt-4">
-          <p className="text-sm text-muted-foreground">過去7日間の学習時間ランキング</p>
-          {board.map((p, i) => (
+
+        <TabsContent value="following" className="space-y-2 mt-4">
+          {following.map((p) => (
             <Card key={p.id} className="p-3 flex items-center gap-3">
-              <div className="w-8 text-center font-bold text-xl">{i + 1}</div>
               <Avatar><AvatarImage src={p.avatar_url ?? undefined} /><AvatarFallback>{(p.display_name ?? "?").slice(0, 1)}</AvatarFallback></Avatar>
-              <div className="flex-1">
-                <div className="font-medium">{p.display_name ?? p.username}</div>
-                <div className="text-xs text-muted-foreground">@{p.username}</div>
-              </div>
-              <div className="font-mono text-lg">{p.minutes}分</div>
+              <div className="flex-1"><div className="font-medium">{p.display_name}</div><div className="text-xs text-muted-foreground">@{p.username}</div></div>
+              <Button size="sm" variant="outline" onClick={() => setGiftTarget(p)}><Gift className="h-4 w-4 mr-1" />コイン</Button>
+              <Button size="sm" variant="outline" onClick={() => unfollow(p.id)}>解除</Button>
             </Card>
           ))}
-          {board.length === 0 && <div className="text-muted-foreground text-sm">フォローするとランキングに表示されます</div>}
+          {following.length === 0 && <div className="text-xs text-muted-foreground">まだ誰もフォローしていません</div>}
         </TabsContent>
-        <TabsContent value="requests" className="space-y-2 mt-4">
+
+        <TabsContent value="followers" className="space-y-2 mt-4">
+          {followers.map((p) => (
+            <Card key={p.id} className="p-3 flex items-center gap-3">
+              <Avatar><AvatarImage src={p.avatar_url ?? undefined} /><AvatarFallback>{(p.display_name ?? "?").slice(0, 1)}</AvatarFallback></Avatar>
+              <div className="flex-1"><div className="font-medium">{p.display_name}</div><div className="text-xs text-muted-foreground">@{p.username}</div></div>
+              {!followingIds.has(p.id) && (
+                <Button size="sm" onClick={() => follow(p.id)}><UserPlus className="h-4 w-4 mr-1" />フォローする</Button>
+              )}
+            </Card>
+          ))}
+          {followers.length === 0 && <div className="text-xs text-muted-foreground">フォロワーはいません</div>}
+        </TabsContent>
+
+        <TabsContent value="mutual" className="space-y-2 mt-4">
+          {mutualFriends.map((p) => (
+            <Card key={p.id} className="p-3 flex items-center gap-3">
+              <Avatar><AvatarImage src={p.avatar_url ?? undefined} /><AvatarFallback>{(p.display_name ?? "?").slice(0, 1)}</AvatarFallback></Avatar>
+              <div className="flex-1"><div className="font-medium">{p.display_name}</div><div className="text-xs text-muted-foreground">@{p.username}</div></div>
+              <Button size="sm" variant="outline" onClick={() => setGiftTarget(p)}><Gift className="h-4 w-4 mr-1" />コイン</Button>
+            </Card>
+          ))}
+          {mutualFriends.length === 0 && <div className="text-xs text-muted-foreground">相互フォローのフレンドはまだいません</div>}
+        </TabsContent>
+
+        <TabsContent value="pending" className="space-y-2 mt-4">
           <div className="text-sm font-semibold">あなた宛のフレンドリクエスト</div>
-          {pending.length === 0 && <div className="text-xs text-muted-foreground">リクエストはありません</div>}
-          {pending.map((p) => (
+          {incomingPending.length === 0 && <div className="text-xs text-muted-foreground">リクエストはありません</div>}
+          {incomingPending.map((p) => (
             <Card key={p.id} className="p-3 flex items-center gap-3">
               <Avatar><AvatarImage src={p.avatar_url ?? undefined} /><AvatarFallback>{(p.display_name ?? "?").slice(0, 1)}</AvatarFallback></Avatar>
               <div className="flex-1"><div className="font-medium">{p.display_name}</div><div className="text-xs text-muted-foreground">@{p.username}</div></div>
@@ -159,40 +220,8 @@ function FriendsPage() {
             </>
           )}
         </TabsContent>
-        <TabsContent value="find" className="space-y-2 mt-4">
-          <div className="flex gap-2">
-            <Input placeholder="ユーザー名で検索" value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => e.key === "Enter" && doSearch()} />
-            <Button onClick={doSearch}>検索</Button>
-          </div>
-          {results.map((p) => (
-            <Card key={p.id} className="p-3 flex items-center gap-3">
-              <Avatar><AvatarImage src={p.avatar_url ?? undefined} /><AvatarFallback>{(p.display_name ?? "?").slice(0, 1)}</AvatarFallback></Avatar>
-              <div className="flex-1"><div className="font-medium">{p.display_name}</div><div className="text-xs text-muted-foreground">@{p.username}</div></div>
-              {followingIds.has(p.id)
-                ? <Button size="sm" variant="outline" onClick={() => unfollow(p.id)}><UserMinus className="h-4 w-4 mr-1" />解除</Button>
-                : <Button size="sm" onClick={() => follow(p.id)}><UserPlus className="h-4 w-4 mr-1" />フォロー</Button>}
-            </Card>
-          ))}
-        </TabsContent>
-        <TabsContent value="following" className="space-y-2 mt-4">
-          {following.map((p) => (
-            <Card key={p.id} className="p-3 flex items-center gap-3">
-              <Avatar><AvatarImage src={p.avatar_url ?? undefined} /><AvatarFallback>{(p.display_name ?? "?").slice(0, 1)}</AvatarFallback></Avatar>
-              <div className="flex-1"><div className="font-medium">{p.display_name}</div><div className="text-xs text-muted-foreground">@{p.username}</div></div>
-              <Button size="sm" variant="outline" onClick={() => setGiftTarget(p)}><Gift className="h-4 w-4 mr-1" />コイン</Button>
-              <Button size="sm" variant="outline" onClick={() => unfollow(p.id)}>解除</Button>
-            </Card>
-          ))}
-        </TabsContent>
-        <TabsContent value="followers" className="space-y-2 mt-4">
-          {followers.map((p) => (
-            <Card key={p.id} className="p-3 flex items-center gap-3">
-              <Avatar><AvatarImage src={p.avatar_url ?? undefined} /><AvatarFallback>{(p.display_name ?? "?").slice(0, 1)}</AvatarFallback></Avatar>
-              <div className="flex-1"><div className="font-medium">{p.display_name}</div><div className="text-xs text-muted-foreground">@{p.username}</div></div>
-            </Card>
-          ))}
-        </TabsContent>
       </Tabs>
+
       <Dialog open={!!giftTarget} onOpenChange={(v) => !v && setGiftTarget(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>{giftTarget?.display_name} にコインを贈る</DialogTitle></DialogHeader>

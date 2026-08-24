@@ -32,8 +32,7 @@ function MaterialsPage() {
 
   const load = async () => {
     let qry: any = (supabase as any).from("materials").select("*").order("created_at", { ascending: false }).limit(200);
-    if (!showMine) qry = qry.eq("status", "approved");
-    else qry = qry.eq("created_by", user!.id);
+    if (showMine) qry = qry.eq("created_by", user!.id);
     if (subject) qry = qry.eq("subject", subject);
     if (q) qry = qry.or(`title.ilike.%${q}%,author.ilike.%${q}%,publisher.ilike.%${q}%,isbn.eq.${q},barcode.eq.${q}`);
     const { data, error } = await qry;
@@ -132,7 +131,7 @@ function MaterialsPage() {
                 <div className="flex gap-1 flex-wrap mt-1">
                   {m.subject && <Badge variant="secondary" className="text-[10px]">{m.subject}</Badge>}
                   {m.level && <Badge variant="outline" className="text-[10px]">{m.level}</Badge>}
-                  {m.status !== "approved" && <Badge className="text-[10px] bg-amber-500">{m.status}</Badge>}
+                  {m.status === "pending" && <Badge className="text-[10px] bg-amber-500">非公式</Badge>}
                   {usage[m.id] && (
                     <Badge variant="outline" className="text-[10px] gap-1"><Clock className="h-2.5 w-2.5" />{usage[m.id].total_minutes}分 / {usage[m.id].daily_avg}分平均</Badge>
                   )}

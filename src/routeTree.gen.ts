@@ -31,10 +31,8 @@ import { Route as AuthenticatedTutorRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
 import { Route as AuthenticatedStudyRouteImport } from './routes/_authenticated/study'
-import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
 import { Route as AuthenticatedShareRouteImport } from './routes/_authenticated/share'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedRequestsRouteImport } from './routes/_authenticated/requests'
 import { Route as AuthenticatedRankRouteImport } from './routes/_authenticated/rank'
 import { Route as AuthenticatedQuestionsRouteImport } from './routes/_authenticated/questions'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
@@ -197,11 +195,6 @@ const AuthenticatedStudyRoute = AuthenticatedStudyRouteImport.update({
   path: '/study',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedShopRoute = AuthenticatedShopRouteImport.update({
-  id: '/shop',
-  path: '/shop',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedShareRoute = AuthenticatedShareRouteImport.update({
   id: '/share',
   path: '/share',
@@ -210,11 +203,6 @@ const AuthenticatedShareRoute = AuthenticatedShareRouteImport.update({
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedRequestsRoute = AuthenticatedRequestsRouteImport.update({
-  id: '/requests',
-  path: '/requests',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedRankRoute = AuthenticatedRankRouteImport.update({
@@ -546,10 +534,8 @@ export interface FileRoutesByFullPath {
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
   '/rank': typeof AuthenticatedRankRoute
-  '/requests': typeof AuthenticatedRequestsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
-  '/shop': typeof AuthenticatedShopRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
   '/today': typeof AuthenticatedTodayRoute
@@ -621,10 +607,8 @@ export interface FileRoutesByTo {
   '/practice': typeof AuthenticatedPracticeRoute
   '/questions': typeof AuthenticatedQuestionsRoute
   '/rank': typeof AuthenticatedRankRoute
-  '/requests': typeof AuthenticatedRequestsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
-  '/shop': typeof AuthenticatedShopRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
   '/today': typeof AuthenticatedTodayRoute
@@ -700,10 +684,8 @@ export interface FileRoutesById {
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
   '/_authenticated/rank': typeof AuthenticatedRankRoute
-  '/_authenticated/requests': typeof AuthenticatedRequestsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/share': typeof AuthenticatedShareRoute
-  '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/study': typeof AuthenticatedStudyRoute
   '/_authenticated/timer': typeof AuthenticatedTimerRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
@@ -781,10 +763,8 @@ export interface FileRouteTypes {
     | '/practice'
     | '/questions'
     | '/rank'
-    | '/requests'
     | '/settings'
     | '/share'
-    | '/shop'
     | '/study'
     | '/timer'
     | '/today'
@@ -856,10 +836,8 @@ export interface FileRouteTypes {
     | '/practice'
     | '/questions'
     | '/rank'
-    | '/requests'
     | '/settings'
     | '/share'
-    | '/shop'
     | '/study'
     | '/timer'
     | '/today'
@@ -934,10 +912,8 @@ export interface FileRouteTypes {
     | '/_authenticated/practice'
     | '/_authenticated/questions'
     | '/_authenticated/rank'
-    | '/_authenticated/requests'
     | '/_authenticated/settings'
     | '/_authenticated/share'
-    | '/_authenticated/shop'
     | '/_authenticated/study'
     | '/_authenticated/timer'
     | '/_authenticated/today'
@@ -1150,13 +1126,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudyRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/shop': {
-      id: '/_authenticated/shop'
-      path: '/shop'
-      fullPath: '/shop'
-      preLoaderRoute: typeof AuthenticatedShopRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/share': {
       id: '/_authenticated/share'
       path: '/share'
@@ -1169,13 +1138,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/requests': {
-      id: '/_authenticated/requests'
-      path: '/requests'
-      fullPath: '/requests'
-      preLoaderRoute: typeof AuthenticatedRequestsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/rank': {
@@ -1696,10 +1658,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedQuestionsRoute: typeof AuthenticatedQuestionsRoute
   AuthenticatedRankRoute: typeof AuthenticatedRankRoute
-  AuthenticatedRequestsRoute: typeof AuthenticatedRequestsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedShareRoute: typeof AuthenticatedShareRoute
-  AuthenticatedShopRoute: typeof AuthenticatedShopRoute
   AuthenticatedStudyRoute: typeof AuthenticatedStudyRoute
   AuthenticatedTimerRoute: typeof AuthenticatedTimerRoute
   AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
@@ -1737,10 +1697,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedQuestionsRoute: AuthenticatedQuestionsRoute,
   AuthenticatedRankRoute: AuthenticatedRankRoute,
-  AuthenticatedRequestsRoute: AuthenticatedRequestsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedShareRoute: AuthenticatedShareRoute,
-  AuthenticatedShopRoute: AuthenticatedShopRoute,
   AuthenticatedStudyRoute: AuthenticatedStudyRoute,
   AuthenticatedTimerRoute: AuthenticatedTimerRoute,
   AuthenticatedTodayRoute: AuthenticatedTodayRoute,

@@ -25,28 +25,6 @@ async function assertNotPokochan(userId: string, action = "操作") {
   }
 }
 
-export const adminListUsers = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    await assertAdmin(context.userId);
-    const { data: profiles } = await supabaseAdmin
-      .from("profiles")
-      .select("id, email, username, display_name, avatar_url, created_at")
-      .order("created_at", { ascending: false });
-    const { data: roles } = await supabaseAdmin.from("user_roles").select("user_id, role");
-    const roleMap = new Map<string, string[]>();
-    roles?.forEach((r) => {
-      const arr = roleMap.get(r.user_id) ?? [];
-      arr.push(r.role);
-      roleMap.set(r.user_id, arr);
-    });
-    return (profiles ?? []).map((p) => ({
-      ...p,
-      roles: roleMap.get(p.id) ?? ["user"],
-      isAdmin: (roleMap.get(p.id) ?? []).includes("admin"),
-    }));
-  });
-
 export const adminCreateUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
@@ -232,5 +210,78 @@ export const adminUpdateMaintenance = createServerFn({ method: "POST" })
     };
     if (data.appVersion !== undefined) patch.app_version = data.appVersion;
     await supabaseAdmin.from("app_settings").upsert(patch);
+    return { ok: true };
+  });
+
+export const adminListUsers = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      search: z.string().optional(),
+      page: z.number().int().min(0).default(0),
+      pageSize: z.number().int().min(1).max(200).default(25),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const page = data.page ?? 0;
+    const pageSize = data.pageSize ?? 25;
+    const from = page * pageSize;
+    const to = from + pageSize - 1;
+    let q = supabaseAdmin
+      .from("profiles")
+      .select("id, email, username, display_name, avatar_url, created_at", { count: "exact" })
+      .order("created_at", { ascending: false });
+    const search = data.search?.trim();
+    if (search) {
+      q = q.or(`username.ilike.%${search}%,display_name.ilike.%${search}%,email.ilike.%${search}%`);
+    }
+    const { data: profiles, count, error } = await q.range(from, to);
+    if (error) throw new Error(error.message);
+    const ids = (profiles ?? []).map((p) => p.id);
+    const { data: roles } = ids.length
+      ? await supabaseAdmin.from("user_roles").select("user_id, role").in("user_id", ids)
+      : { data: [] as any[] };
+    const roleMap = new Map<string, string[]>();
+    roles?.forEach((r) => {
+      const arr = roleMap.get(r.user_id) ?? [];
+      arr.push(r.role);
+      roleMap.set(r.user_id, arr);
+    });
+    const suspended = await Promise.all(
+      ids.map(async (id) => {
+        try {
+          const { data: u } = await supabaseAdmin.auth.admin.getUserById(id);
+          const bannedUntil = (u.user as any)?.banned_until as string | undefined;
+          const isSuspended = !!bannedUntil && (bannedUntil === "none" ? false : new Date(bannedUntil).getTime() > Date.now());
+          return [id, isSuspended] as const;
+        } catch {
+          return [id, false] as const;
+        }
+      }),
+    );
+    const suspendedMap = new Map(suspended);
+    const users = (profiles ?? []).map((p) => ({
+      ...p,
+      roles: roleMap.get(p.id) ?? ["user"],
+      isAdmin: (roleMap.get(p.id) ?? []).includes("admin"),
+      isSuspended: suspendedMap.get(p.id) ?? false,
+    }));
+    return { users, total: count ?? 0, page, pageSize };
+  });
+
+export const adminSetUserSuspended = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ userId: z.string().uuid(), suspended: z.boolean() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    await assertNotPokochan(data.userId, "利用停止");
+    if (data.userId === context.userId) throw new Error("自分自身は利用停止にできません");
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.userId, {
+      ban_duration: data.suspended ? "876000h" : "none",
+    } as any);
+    if (error) throw new Error(error.message);
     return { ok: true };
   });

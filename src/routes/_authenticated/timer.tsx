@@ -1,7 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useAuth } from "@/lib/auth-context";
-import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +12,7 @@ import { Play, Pause, Square, RotateCcw, Maximize2, Minimize2, Wind } from "luci
 import { cn } from "@/lib/utils";
 import { useTimer, fmtMs } from "@/lib/timer-context";
 import { MaterialPicker } from "@/components/MaterialPicker";
+import { useOrderedSubjects } from "@/lib/subjects";
 
 export const Route = createFileRoute("/_authenticated/timer")({
   component: TimerPage,
@@ -53,18 +52,8 @@ function TimerPage() {
   );
 }
 
-function useSubjects() {
-  const { user } = useAuth();
-  const [subjects, setSubjects] = useState<{ id: string; name: string }[]>([]);
-  useEffect(() => {
-    if (!user) return;
-    supabase.from("subjects").select("id,name").eq("user_id", user.id).then(({ data }) => setSubjects(data ?? []));
-  }, [user]);
-  return subjects;
-}
-
 function Stopwatch() {
-  const subjects = useSubjects();
+  const { subjects } = useOrderedSubjects();
   const { state, elapsedMs, start, pause, resume, finish, clear } = useTimer();
   const isThis = state?.kind === "stopwatch";
   const [subject, setSubject] = useState(isThis ? state?.subjectId ?? "" : "");
@@ -112,7 +101,7 @@ function Stopwatch() {
 }
 
 function CountdownTimer() {
-  const subjects = useSubjects();
+  const { subjects } = useOrderedSubjects();
   const { state, remainingMs, start, finish, clear } = useTimer();
   const isThis = state?.kind === "countdown";
   const [subject, setSubject] = useState(isThis ? state?.subjectId ?? "" : "");
@@ -164,7 +153,7 @@ function CountdownTimer() {
 }
 
 function Pomodoro() {
-  const subjects = useSubjects();
+  const { subjects } = useOrderedSubjects();
   const { state, remainingMs, start, pause, resume, clear } = useTimer();
   const isThis = state?.kind === "pomodoro";
   const [subject, setSubject] = useState(isThis ? state?.subjectId ?? "" : "");

@@ -103,6 +103,10 @@ const dict = {
     "landing.guide": "使い方",
     "landing.faq": "FAQ",
     "landing.start": "はじめる",
+    "landing.dashboard": "ダッシュボードへ",
+    "landing.help": "ヘルプ",
+    "landing.terms": "利用規約",
+    "landing.privacy": "プライバシーポリシー",
   },
   en: {
     "nav.dashboard": "Dashboard",
@@ -202,6 +206,10 @@ const dict = {
     "landing.forSchools": "For Schools",
     "landing.guide": "Guide",
     "landing.faq": "FAQ",
+    "landing.help": "Help",
+    "landing.terms": "Terms",
+    "landing.privacy": "Privacy Policy",
+    "landing.dashboard": "Dashboard",
     "landing.start": "Get Started",
   },
 } as const;

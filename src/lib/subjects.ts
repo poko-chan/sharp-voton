@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -8,21 +8,41 @@ export type SubjectLite = { id: string; name: string; color?: string; sort_order
 export function useOrderedSubjects() {
   const { user } = useAuth();
   const [subjects, setSubjects] = useState<SubjectLite[]>([]);
-  useEffect(() => {
+
+  const reload = useCallback(async () => {
     if (!user) return;
-    let active = true;
-    supabase
+    const { data } = await supabase
       .from("subjects")
       .select("id,name,color,sort_order")
       .eq("user_id", user.id)
       .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: true })
-      .then(({ data }) => {
-        if (active) setSubjects((data as SubjectLite[]) ?? []);
-      });
-    return () => {
-      active = false;
-    };
+      .order("created_at", { ascending: true });
+    setSubjects((data as SubjectLite[]) ?? []);
   }, [user]);
-  return subjects;
+
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
+  /** 指定した教科を上下に1つ移動し、sort_order をDBへ保存する */
+  const move = useCallback(
+    async (id: string, direction: "up" | "down") => {
+      setSubjects((prev) => {
+        const idx = prev.findIndex((s) => s.id === id);
+        if (idx < 0) return prev;
+        const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+        if (swapIdx < 0 || swapIdx >= prev.length) return prev;
+        const next = [...prev];
+        [next[idx], next[swapIdx]] = [next[swapIdx], next[idx]];
+        const updated = next.map((s, i) => ({ ...s, sort_order: i }));
+        Promise.all(
+          updated.map((s) => supabase.from("subjects").update({ sort_order: s.sort_order }).eq("id", s.id)),
+        );
+        return updated;
+      });
+    },
+    [],
+  );
+
+  return { subjects, reload, move };
 }

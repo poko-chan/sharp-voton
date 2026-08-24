@@ -1,3 +1,4 @@
+import { I18nProvider, useI18n } from "@/lib/i18n";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
@@ -41,10 +42,15 @@ function LandingRoute() {
     }
   }, [user, loading, navigate]);
 
-  return <LandingPage isAuthed={!!user} />;
+  return (
+    <I18nProvider>
+      <LandingPage isAuthed={!!user} />
+    </I18nProvider>
+  );
 }
 
 function LandingPage({ isAuthed }: { isAuthed: boolean }) {
+  const { lang, setLang, t } = useI18n();
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
       {/* Ambient background */}
@@ -63,16 +69,30 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
             </span>
           </div>
           <nav className="flex items-center gap-1 text-sm">
-            <a href="#features" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">機能</a>
-            <Link to="/all-services" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">全機能</Link>
-            <Link to="/for-schools" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">学校・塾の方へ</Link>
-            <Link to="/guide" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">使い方</Link>
-            <a href="#faq" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">FAQ</a>
+            <a href="#features" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">{t("landing.features")}</a>
+            <Link to="/all-services" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">{t("landing.allServices")}</Link>
+            <Link to="/for-schools" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">{t("landing.forSchools")}</Link>
+            <Link to="/guide" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">{t("landing.guide")}</Link>
+            <a href="#faq" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">{t("landing.faq")}</a>
             {isAuthed ? (
-              <Link to="/dashboard" className="cta px-5 py-2 text-sm">ダッシュボードへ</Link>
+              <Link to="/dashboard" className="cta px-5 py-2 text-sm">{t("landing.dashboard")}</Link>
             ) : (
-              <Link to="/login" className="cta px-5 py-2 text-sm">はじめる</Link>
+              <Link to="/login" className="cta px-5 py-2 text-sm">{t("landing.start")}</Link>
             )}
+            <div className="ml-2 flex items-center gap-1 rounded-full border bg-muted/50 p-1 text-[10px] sm:text-xs">
+              <button
+                onClick={() => setLang("ja")}
+                className={`rounded-full px-2 py-0.5 transition ${lang === "ja" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                JP
+              </button>
+              <button
+                onClick={() => setLang("en")}
+                className={`rounded-full px-2 py-0.5 transition ${lang === "en" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                EN
+              </button>
+            </div>
           </nav>
         </div>
       </header>
@@ -92,9 +112,9 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
             </p>
             <div className="mt-9 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
               {isAuthed ? (
-                <Link to="/dashboard" className="cta">ダッシュボードへ移動</Link>
+                <Link to="/dashboard" className="cta">{t("landing.dashboard")}</Link>
               ) : (
-                <Link to="/login" className="cta">無料ではじめる</Link>
+                <Link to="/login" className="cta">{t("landing.start")}</Link>
               )}
               <Link to="/all-services" className="cta-ghost">機能をぜんぶ見る</Link>
             </div>
@@ -227,9 +247,9 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
                 まずは1回、タイマーを回すところから。積み上がった記録が、次の自分を連れてきます。
               </p>
               {isAuthed ? (
-                <Link to="/dashboard" className="cta mt-8">ダッシュボードへ移動</Link>
+                <Link to="/dashboard" className="cta mt-8">{t("landing.dashboard")}</Link>
               ) : (
-                <Link to="/login" className="cta mt-8">無料ではじめる</Link>
+                <Link to="/login" className="cta mt-8">{t("landing.start")}</Link>
               )}
             </div>
           </div>
@@ -243,13 +263,27 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
             <span>Voton Study Omega（StudyΩ）</span>
           </div>
           <nav className="flex flex-wrap items-center justify-center gap-4">
-            <Link to="/all-services" className="transition hover:text-foreground">全機能</Link>
-            <Link to="/guide" className="transition hover:text-foreground">使い方</Link>
-            <Link to="/for-schools" className="transition hover:text-foreground">学校・塾の方へ</Link>
-            <Link to="/help" className="transition hover:text-foreground">ヘルプ</Link>
-            <Link to="/terms" className="transition hover:text-foreground">利用規約</Link>
-            <Link to="/privacy" className="transition hover:text-foreground">プライバシーポリシー</Link>
-            <Link to="/login" className="transition hover:text-foreground">ログイン</Link>
+            <Link to="/all-services" className="transition hover:text-foreground">{t("landing.allServices")}</Link>
+            <Link to="/guide" className="transition hover:text-foreground">{t("landing.guide")}</Link>
+            <Link to="/for-schools" className="transition hover:text-foreground">{t("landing.forSchools")}</Link>
+            <Link to="/help" className="transition hover:text-foreground">{t("landing.help")}</Link>
+            <Link to="/terms" className="transition hover:text-foreground">{t("landing.terms")}</Link>
+            <Link to="/privacy" className="transition hover:text-foreground">{t("landing.privacy")}</Link>
+            <Link to="/login" className="transition hover:text-foreground">{t("login.title")}</Link>
+            <div className="ml-2 flex items-center gap-1 rounded-full border bg-muted/50 p-1 text-[10px] sm:text-xs">
+              <button
+                onClick={() => setLang("ja")}
+                className={`rounded-full px-2 py-0.5 transition ${lang === "ja" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                JP
+              </button>
+              <button
+                onClick={() => setLang("en")}
+                className={`rounded-full px-2 py-0.5 transition ${lang === "en" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                EN
+              </button>
+            </div>
           </nav>
         </div>
       </footer>

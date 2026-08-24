@@ -95,7 +95,7 @@ function MaterialDetail() {
           <div className="flex gap-1 flex-wrap mt-2">
             {m.subject && <Badge>{m.subject}</Badge>}
             {m.level && <Badge variant="outline">{m.level}</Badge>}
-            {m.status !== "approved" && <Badge className="bg-amber-500">{m.status}</Badge>}
+            {m.status === "pending" && <Badge className="bg-amber-500">非公式</Badge>}
           </div>
           <div className="flex gap-2 mt-3">
             <Button size="sm" onClick={() => { setEditing((v) => !v); setEdit({}); }}>

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, BookOpen, Pencil, Save, X, ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, BookOpen, Pencil, Save, X, ChevronDown, ChevronRight, AlertTriangle, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 import { localDateStr } from "@/lib/date";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,16 +17,17 @@ import { emitProfileChange } from "@/lib/profile-events";
 import { Download, Upload } from "lucide-react";
 import { VoiceMicButton } from "@/components/VoiceMicButton";
 import { MaterialPicker } from "@/components/MaterialPicker";
+import { useOrderedSubjects, type SubjectLite } from "@/lib/subjects";
 
 export const Route = createFileRoute("/_authenticated/study")({
   component: StudyPage,
 });
 
-interface Subject { id: string; name: string; color: string; }
+interface Subject { id: string; name: string; color: string; sort_order?: number; }
 
 function StudyPage() {
   const { user } = useAuth();
-  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const { subjects: orderedSubjects, reload: reloadSubjects, move: moveSubject } = useOrderedSubjects();
   const [materialIds, setMaterialIds] = useState<string[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
   const [newSubject, setNewSubject] = useState("");
@@ -39,12 +40,13 @@ function StudyPage() {
 
   const load = async () => {
     if (!user) return;
-    const { data: s } = await supabase.from("subjects").select("*").eq("user_id", user.id).order("created_at");
-    setSubjects(s ?? []);
+    reloadSubjects();
     const { data: l } = await supabase.from("study_logs").select("*, subjects(id,name,color)").eq("user_id", user.id).order("date", { ascending: false }).order("start_time", { ascending: true }).limit(1000);
     setLogs(l ?? []);
     emitProfileChange();
   };
+
+  const subjects: Subject[] = orderedSubjects as Subject[];
 
   useEffect(() => { load(); }, [user]);
 
@@ -213,8 +215,17 @@ function StudyPage() {
             <Button onClick={addSubject}><Plus className="h-4 w-4" /></Button>
           </div>
           <div className="space-y-1">
-            {subjects.map((s) => (
-              <SubjectRow key={s.id} subject={s} onChanged={load} onDelete={() => delSubject(s.id)} />
+            {subjects.map((s, idx) => (
+              <SubjectRow
+                key={s.id}
+                subject={s}
+                onChanged={load}
+                onDelete={() => delSubject(s.id)}
+                onMoveUp={() => moveSubject(s.id, "up")}
+                onMoveDown={() => moveSubject(s.id, "down")}
+                canMoveUp={idx > 0}
+                canMoveDown={idx < subjects.length - 1}
+              />
             ))}
           </div>
         </Card>
@@ -482,7 +493,7 @@ function LogRow({ log, onChange }: { log: any; onChange: () => void }) {
   );
 }
 
-function SubjectRow({ subject, onChanged, onDelete }: { subject: Subject; onChanged: () => void; onDelete: () => void }) {
+function SubjectRow({ subject, onChanged, onDelete, onMoveUp, onMoveDown, canMoveUp, canMoveDown }: { subject: Subject; onChanged: () => void; onDelete: () => void; onMoveUp: () => void; onMoveDown: () => void; canMoveUp: boolean; canMoveDown: boolean }) {
   const [edit, setEdit] = useState(false);
   const [name, setName] = useState(subject.name);
   const [color, setColor] = useState(subject.color);
@@ -509,6 +520,8 @@ function SubjectRow({ subject, onChanged, onDelete }: { subject: Subject; onChan
         <span>{subject.name}</span>
       </div>
       <div className="flex items-center gap-1">
+        <button onClick={onMoveUp} disabled={!canMoveUp} className="text-muted-foreground hover:text-foreground p-1 disabled:opacity-30 disabled:cursor-not-allowed" title="上へ"><ArrowUp className="h-3.5 w-3.5" /></button>
+        <button onClick={onMoveDown} disabled={!canMoveDown} className="text-muted-foreground hover:text-foreground p-1 disabled:opacity-30 disabled:cursor-not-allowed" title="下へ"><ArrowDown className="h-3.5 w-3.5" /></button>
         <button onClick={() => setEdit(true)} className="text-muted-foreground hover:text-foreground p-1" title="編集"><Pencil className="h-3.5 w-3.5" /></button>
         <button onClick={onDelete} className="text-destructive hover:opacity-70 p-1" title="削除"><Trash2 className="h-4 w-4" /></button>
       </div>
