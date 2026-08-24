@@ -74,7 +74,7 @@ function HelpPage() {
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 p-6">
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="flex items-center gap-3">
-          <img src={logoUrl} alt="" className="h-10 w-10 rounded-xl" />
+          <img src={logoUrl} alt="StudyΩ 学習プラットフォームのロゴ" className="h-10 w-10 rounded-xl" />
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <HelpCircle className="h-7 w-7 text-primary" /> ヘルプ
           </h1>

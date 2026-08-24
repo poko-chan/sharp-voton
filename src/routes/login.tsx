@@ -185,14 +185,14 @@ function LoginPage() {
             <div className="text-center space-y-2">
               <img
                 src={logoUrl}
-                alt="StudyΩ ロゴ"
+                alt="StudyΩ 学習プラットフォームの公式ロゴ"
                 width={64}
                 height={64}
                 decoding="async"
                 fetchPriority="high"
                 className="mx-auto h-16 w-16 rounded-2xl shadow-md"
               />
-              <h1 className="text-3xl font-bold">StudyΩ</h1>
+              <h1 className="text-3xl font-bold">StudyΩ — 学習記録と演習をまとめる学習プラットフォーム</h1>
               <p className="text-sm text-muted-foreground">
                 {mode === "signin" ? "ログイン" : "新規登録"}してはじめましょう
               </p>
