@@ -226,7 +226,11 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
               <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:text-base">
                 まずは1回、タイマーを回すところから。積み上がった記録が、次の自分を連れてきます。
               </p>
-              <Link to="/login" className="cta mt-8">無料ではじめる</Link>
+              {isAuthed ? (
+                <Link to="/dashboard" className="cta mt-8">ダッシュボードへ移動</Link>
+              ) : (
+                <Link to="/login" className="cta mt-8">無料ではじめる</Link>
+              )}
             </div>
           </div>
         </section>
