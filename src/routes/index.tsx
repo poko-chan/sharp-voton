@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import logoUrl from "@/assets/logo.png";
 import { CORE, MORE, STEPS, FAQ, SERVICE_COUNT } from "@/content/services";
 
-const TITLE = "Voton Study Omega（StudyΩ）— 学習のすべてを、ひとつに。";
+const TITLE = "Voton Study Omega（StudyΩ）— 学習のすべてを、<br>ひとつに。";
 const DESC =
   "StudyΩ は勉強記録・タイマー・カレンダー・問題演習・AIチャット・目標管理・組織/学校運営までを1つにまとめたオールインワン学習プラットフォームです。";
 
