@@ -55,7 +55,7 @@ export function OrgsAdminTab() {
   };
   const reviewApp = async (id: string, approve: boolean) => {
     const { error } = await (supabase as any).rpc("admin_review_organization_application", {
-      _application_id: id,
+      _app_id: id,
       _approve: approve,
       _note: notes[id]?.trim() || null,
     });
