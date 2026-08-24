@@ -57,9 +57,26 @@ function LoginPage() {
   const signInByUsername = useServerFn(signInWithUsername);
   const checkUsername = useServerFn(checkUsernameAvailable);
 
+  // /login?kind=org&next=/for-schools のような遷移に対応する。
+  const [nextPath, setNextPath] = useState<string | null>(null);
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard" });
-  }, [user, loading, navigate]);
+    if (typeof window === "undefined") return;
+    const q = new URLSearchParams(window.location.search);
+    const kind = q.get("kind");
+    if (kind === "org" || kind === "parent" || kind === "child") {
+      setAccountKind(kind as any);
+      if (kind !== "child") setMode("signup");
+    }
+    const nx = q.get("next");
+    if (nx && nx.startsWith("/")) setNextPath(nx);
+  }, []);
+
+  useEffect(() => {
+    if (loading || !user) return;
+    if (nextPath) navigate({ to: nextPath as any });
+    else if (myKind === "org") navigate({ to: "/organizations" });
+    else if (myKind) navigate({ to: "/dashboard" });
+  }, [user, loading, navigate, nextPath, myKind]);
 
   useEffect(() => {
     supabase
