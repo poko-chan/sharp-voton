@@ -41,6 +41,7 @@ function AllServicesPage() {
             <Link to="/guide" className="hidden rounded-full px-3 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">使い方</Link>
             <Link to="/for-schools" className="hidden rounded-full px-3 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">学校・塾の方へ</Link>
             <Link to="/login" className="cta px-5 py-2 text-sm">はじめる</Link>
+            <GoogleTranslateWidget />
           </nav>
         </div>
       </header>
