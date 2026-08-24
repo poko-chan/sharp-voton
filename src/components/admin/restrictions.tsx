@@ -51,7 +51,7 @@ export function ServiceStopTab() {
     <div className="space-y-4 mt-4">
       <Card className="p-4 max-w-3xl space-y-2 border-red-500/30">
         <div className="flex items-center gap-2 text-red-600"><Ban className="h-5 w-5" /><h3 className="font-semibold">サービス別 利用停止（全ユーザー）</h3></div>
-        <p className="text-sm text-muted-foreground">特定のサービス（タイマー・AI家庭教師・Voton Classroom など）を全ユーザーに対して停止します。該当ページに入ると赤いオーバーレイが表示されます。</p>
+        <p className="text-sm text-muted-foreground">特定のサービス（タイマー・AIチャット・Voton Classroom など）を全ユーザーに対して停止します。該当ページに入ると赤いオーバーレイが表示されます。</p>
       </Card>
       <Card className="p-0 overflow-hidden max-w-5xl">
         <table className="w-full text-sm">

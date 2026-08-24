@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, ArrowLeft, Check, Coins } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Check } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/exams/$examId")({ component: ExamDetail });
@@ -156,16 +156,15 @@ function TodoList({ subjectId }: { subjectId: string }) {
     setText(""); load();
   };
   const toggle = async (id: string) => {
-    const { data, error } = await (supabase as any).rpc("complete_exam_todo", { _id: id });
+    const { error } = await (supabase as any).rpc("complete_exam_todo", { _id: id });
     if (error) return toast.error(error.message);
-    if (data?.awarded > 0) toast.success(`+${data.awarded} コイン`, { icon: "🪙" });
     load();
   };
   const del = async (id: string) => { await (supabase as any).from("exam_todos").delete().eq("id", id); load(); };
 
   return (
     <div className="border-t pt-3 space-y-2">
-      <div className="font-semibold flex items-center gap-2">やることリスト <span className="text-xs text-muted-foreground flex items-center gap-1">クリアで <Coins className="h-3 w-3" /> +10</span></div>
+      <div className="font-semibold">やることリスト</div>
       <div className="flex gap-2">
         <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="例：ワーク p.20-30" onKeyDown={(e) => e.key === "Enter" && add()} />
         <Button size="sm" onClick={add}><Plus className="h-4 w-4" /></Button>
@@ -175,7 +174,6 @@ function TodoList({ subjectId }: { subjectId: string }) {
           <li key={t.id} className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={t.done} onChange={() => toggle(t.id)} />
             <span className={t.done ? "line-through text-muted-foreground flex-1" : "flex-1"}>{t.text}</span>
-            {t.coin_awarded && <span className="text-[10px] text-amber-500">獲得済</span>}
             <button onClick={() => del(t.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-3 w-3" /></button>
           </li>
         ))}

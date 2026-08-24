@@ -6,7 +6,7 @@ import { CORE, MORE, STEPS, FAQ, SERVICE_COUNT } from "@/content/services";
 
 const TITLE = "Voton Study Omega（StudyΩ）— 学習のすべてを、ひとつに。";
 const DESC =
-  "StudyΩ は勉強記録・集中タイマー・カレンダー・Makron問題演習・AI家庭教師・目標管理・組織/学校運営までを1つにまとめたオールインワン学習プラットフォームです。";
+  "StudyΩ は勉強記録・集中タイマー・カレンダー・Makron問題演習・AIチャット・目標管理・組織/学校運営までを1つにまとめたオールインワン学習プラットフォームです。";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -35,20 +35,16 @@ function LandingRoute() {
 
   useEffect(() => {
     if (loading) return;
-    if (user) {
-      navigate({ to: "/dashboard", replace: true });
-      return;
-    }
     const raw = window.location.hash.slice(1) + "&" + window.location.search.slice(1);
     if (/(^|&)(access_token|refresh_token|code|token_hash|type|error|error_description)=/.test(raw)) {
       navigate({ to: "/login", replace: true });
     }
   }, [user, loading, navigate]);
 
-  return <LandingPage />;
+  return <LandingPage isAuthed={!!user} />;
 }
 
-function LandingPage() {
+function LandingPage({ isAuthed }: { isAuthed: boolean }) {
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
       {/* Ambient background */}
@@ -72,7 +68,11 @@ function LandingPage() {
             <Link to="/for-schools" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">学校・塾の方へ</Link>
             <Link to="/guide" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">使い方</Link>
             <a href="#faq" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">FAQ</a>
-            <Link to="/login" className="cta px-5 py-2 text-sm">はじめる</Link>
+            {isAuthed ? (
+              <Link to="/dashboard" className="cta px-5 py-2 text-sm">ダッシュボードへ</Link>
+            ) : (
+              <Link to="/login" className="cta px-5 py-2 text-sm">はじめる</Link>
+            )}
           </nav>
         </div>
       </header>
@@ -91,14 +91,18 @@ function LandingPage() {
               バラバラだった学習の道具を、StudyΩ はひとつのプラットフォームにまとめました。
             </p>
             <div className="mt-9 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
-              <Link to="/login" className="cta">無料ではじめる</Link>
+              {isAuthed ? (
+                <Link to="/dashboard" className="cta">ダッシュボードへ移動</Link>
+              ) : (
+                <Link to="/login" className="cta">無料ではじめる</Link>
+              )}
               <Link to="/all-services" className="cta-ghost">機能をぜんぶ見る</Link>
             </div>
             <dl className="mx-auto mt-14 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
               {[
                 [`${SERVICE_COUNT}+`, "搭載機能"],
                 ["10問", "毎日のデイリー演習"],
-                ["24h", "AI家庭教師"],
+                ["24h", "AIチャット"],
                 ["4段階", "組織の役割管理"],
               ].map(([v, l]) => (
                 <div key={l} className="surface p-4 text-left sm:text-center">
@@ -222,7 +226,11 @@ function LandingPage() {
               <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:text-base">
                 まずは1回、タイマーを回すところから。積み上がった記録が、次の自分を連れてきます。
               </p>
-              <Link to="/login" className="cta mt-8">無料ではじめる</Link>
+              {isAuthed ? (
+                <Link to="/dashboard" className="cta mt-8">ダッシュボードへ移動</Link>
+              ) : (
+                <Link to="/login" className="cta mt-8">無料ではじめる</Link>
+              )}
             </div>
           </div>
         </section>

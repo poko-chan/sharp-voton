@@ -8,7 +8,6 @@ import { listTowns, createTown, updateTown, deleteTown } from "@/lib/town.functi
 import { MAX_STAGE, stageName } from "@/lib/town";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { useMikuEnabled } from "@/components/MikuCompanion";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -23,15 +22,17 @@ import { AccessibilityPanel } from "@/components/AccessibilityPanel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { THEMES, saveUserTheme, type ThemeName } from "@/lib/theme";
 import { useUserPrefs, FONT_OPTIONS } from "@/lib/user-prefs";
+import { NAV } from "@/components/AppShell";
+import { useMemo } from "react";
 
 function UserSettingsPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [profile, setProfile] = useState({ display_name: "", avatar_url: "" as string | null });
   const [s, setS] = useState({
     notify_daily_reminder: true,
     notify_chat: true,
     notify_streak_break: true,
-    notify_email: false,
     notify_announcements: true,
     reminder_time: "20:00",
   });
@@ -42,7 +43,7 @@ function UserSettingsPage() {
   useEffect(() => {
     if (!user) return;
     supabase.from("profiles")
-      .select("display_name, avatar_url, notify_daily_reminder, notify_chat, notify_streak_break, notify_email, notify_announcements, reminder_time")
+      .select("display_name, avatar_url, notify_daily_reminder, notify_chat, notify_streak_break, notify_announcements, reminder_time")
       .eq("id", user.id).maybeSingle().then(({ data }) => {
         if (data) {
           setProfile({ display_name: data.display_name ?? "", avatar_url: data.avatar_url });
@@ -50,7 +51,6 @@ function UserSettingsPage() {
             notify_daily_reminder: data.notify_daily_reminder ?? true,
             notify_chat: data.notify_chat ?? true,
             notify_streak_break: data.notify_streak_break ?? true,
-            notify_email: data.notify_email ?? false,
             notify_announcements: (data as any).notify_announcements ?? true,
             reminder_time: (data.reminder_time ?? "20:00").slice(0, 5),
           });
@@ -62,8 +62,8 @@ function UserSettingsPage() {
   const requestBrowser = async () => {
     if (!("Notification" in window)) return toast.error("このブラウザは通知に対応していません");
     const r = await Notification.requestPermission();
-    if (r === "granted") toast.success("ブラウザ通知を有効にしました");
-    else toast.error("通知が許可されませんでした");
+    if (r === "granted") toast.success("ブラウザ通知を有効にしました。リマインダーが届くようになります");
+    else toast.error("通知が許可されませんでした。ブラウザの設定から通知を許可してください");
   };
 
   const onAvatarPick = async (file: File) => {
@@ -108,14 +108,16 @@ function UserSettingsPage() {
 
   if (loading) return <div className="p-8 text-muted-foreground">読み込み中…</div>;
 
+  const notifPermission = typeof window !== "undefined" && "Notification" in window ? Notification.permission : "unsupported";
+
   return (
     <div className="p-8 max-w-2xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold flex items-center gap-2"><Settings /> ユーザー設定</h1>
+      <h1 className="text-3xl font-bold flex items-center gap-2"><Settings /> {t("settings.title")}</h1>
       <AccessibilityPanel />
       <CustomizationPanel />
 
       <Card className="p-6 space-y-5">
-        <div className="flex items-center gap-2 font-semibold"><User className="h-4 w-4" /> プロフィール</div>
+        <div className="flex items-center gap-2 font-semibold"><User className="h-4 w-4" /> {t("settings.profile")}</div>
         <div className="flex items-center gap-4">
           <Avatar className="h-20 w-20">
             <AvatarImage src={profile.avatar_url ?? undefined} alt={profile.display_name} />
@@ -131,31 +133,35 @@ function UserSettingsPage() {
             />
             <Button variant="outline" size="sm" disabled={uploading} onClick={() => fileRef.current?.click()}>
               <Upload className="mr-2 h-4 w-4" />
-              {uploading ? "アップロード中…" : "アイコンを変更"}
+              {uploading ? t("settings.uploading") : t("settings.changeIcon")}
             </Button>
             <p className="text-xs text-muted-foreground">JPG/PNG・最大5MB</p>
           </div>
         </div>
         <div className="space-y-1">
-          <Label>表示名</Label>
+          <Label>{t("settings.displayName")}</Label>
           <Input value={profile.display_name} onChange={(e) => setProfile({ ...profile, display_name: e.target.value })} maxLength={40} />
         </div>
-        <Button onClick={saveProfile}>プロフィールを保存</Button>
+        <Button onClick={saveProfile}>{t("settings.saveProfile")}</Button>
       </Card>
 
       <Card className="p-6 space-y-5">
-        <div className="font-semibold">通知設定</div>
-        <Row label="毎日の学習リマインダー" desc="設定した時刻に学習を促します" checked={s.notify_daily_reminder} onChange={(v) => setS({ ...s, notify_daily_reminder: v })} />
-        <div className="pl-2"><Label className="text-xs">リマインダー時刻</Label>
+        <div className="font-semibold">{t("settings.notifications")}</div>
+        {notifPermission !== "granted" && (
+          <p className="text-xs text-warning-foreground bg-warning/10 border border-warning/30 rounded p-2">
+            {t("settings.notifPermissionNeeded")}
+          </p>
+        )}
+        <Row label={t("settings.dailyReminder")} desc={t("settings.dailyReminderDesc")} checked={s.notify_daily_reminder} onChange={(v) => setS({ ...s, notify_daily_reminder: v })} />
+        <div className="pl-2"><Label className="text-xs">{t("settings.reminderTime")}</Label>
           <Input type="time" value={s.reminder_time} onChange={(e) => setS({ ...s, reminder_time: e.target.value })} className="w-32" />
         </div>
-        <Row label="チャット通知" desc="新しいメッセージで通知" checked={s.notify_chat} onChange={(v) => setS({ ...s, notify_chat: v })} />
-        <Row label="お知らせ通知" desc="管理者からのお知らせを受け取る" checked={s.notify_announcements} onChange={(v) => setS({ ...s, notify_announcements: v })} />
-        <Row label="連続学習の途切れ警告" desc="streakが途切れそうな時にお知らせ" checked={s.notify_streak_break} onChange={(v) => setS({ ...s, notify_streak_break: v })} />
-        <Row label="メール通知も受け取る" desc="重要なお知らせをメールでも" checked={s.notify_email} onChange={(v) => setS({ ...s, notify_email: v })} />
+        <Row label={t("settings.chatNotif")} desc={t("settings.chatNotifDesc")} checked={s.notify_chat} onChange={(v) => setS({ ...s, notify_chat: v })} />
+        <Row label={t("settings.announcementNotif")} desc={t("settings.announcementNotifDesc")} checked={s.notify_announcements} onChange={(v) => setS({ ...s, notify_announcements: v })} />
+        <Row label={t("settings.streakNotif")} desc={t("settings.streakNotifDesc")} checked={s.notify_streak_break} onChange={(v) => setS({ ...s, notify_streak_break: v })} />
         <div className="flex gap-2 pt-2">
-          <Button onClick={saveNotifications}>保存</Button>
-          <Button variant="outline" onClick={requestBrowser}>ブラウザ通知を有効化</Button>
+          <Button onClick={saveNotifications}>{t("common.save")}</Button>
+          <Button variant="outline" onClick={requestBrowser}>{t("settings.enableBrowserNotif")}</Button>
         </div>
       </Card>
 
@@ -260,31 +266,17 @@ function ExportPanel() {
 function CustomizationPanel() {
   const { prefs, save } = useUserPrefs();
   const { isAdmin } = useAuth();
-  const NAV_ITEMS: { to: string; label: string }[] = [
-    { to: "/dashboard", label: "ダッシュボード" },
-    { to: "/today", label: "Today" },
-    { to: "/study", label: "勉強記録" },
-    { to: "/timer", label: "タイマー" },
-    { to: "/calendar", label: "カレンダー" },
-    { to: "/goals", label: "目標" },
-    { to: "/heatmap", label: "ヒートマップ" },
-    { to: "/flashcards", label: "暗記カード" },
-    { to: "/friends", label: "フレンド" },
-    { to: "/polls", label: "投票" },
-    { to: "/questions", label: "AI問題作成" },
-    { to: "/practice", label: "AI演習" },
-    { to: "/tutor", label: "AI家庭教師" },
-    { to: "/classroom", label: "Classroom" },
-    { to: "/chat", label: "チャット" },
-    { to: "/classchat", label: "クラスチャット" },
-    { to: "/notes", label: "付箋" },
-    { to: "/announcements", label: "お知らせ" },
-    { to: "/share", label: "共有" },
-    { to: "/missions", label: "デイリーミッション" },
-    { to: "/leaderboard", label: "ランキング" },
-    { to: "/rank", label: "段位・称号" },
-    { to: "/export", label: "データ出力" },
-  ];
+  const { t } = useI18n();
+  // 「左メニューに表示する項目」は実際のサイドバーのナビ定義(AppShell の NAV)から自動生成する。
+  // ナビに項目を追加/削除すればこの一覧も自動的に最新化される。「プロフィール」(設定)を先頭に固定。
+  const NAV_ITEMS = useMemo(() => {
+    const items = NAV.map((n) => ({
+      to: n.to,
+      label: n.to === "/settings" ? t("settings.profile") : ((n as any).override || t(n.labelKey)),
+    }));
+    items.sort((a, b) => (a.to === "/settings" ? -1 : b.to === "/settings" ? 1 : 0));
+    return items;
+  }, [t]);
   const hidden = new Set(prefs.sidebar_hidden ?? []);
   const toggleNav = (to: string) => {
     const next = new Set(hidden);
@@ -299,9 +291,9 @@ function CustomizationPanel() {
   };
   return (
     <Card className="p-6 space-y-4">
-      <div className="font-semibold">画面カスタマイズ</div>
+      <div className="font-semibold">{t("settings.customization")}</div>
       <div className="space-y-2">
-        <Label>フォント（Google Fonts）</Label>
+        <Label>{t("settings.font")}</Label>
         <Select value={prefs.font_family ?? "system"} onValueChange={(v) => save({ font_family: v })}>
           <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -312,10 +304,10 @@ function CustomizationPanel() {
             ))}
           </SelectContent>
         </Select>
-        <p className="text-[11px] text-muted-foreground">アプリ全体のフォントを変更します。選択時に Google Fonts から動的に読み込みます。</p>
+        <p className="text-[11px] text-muted-foreground">{t("settings.fontDesc")}</p>
       </div>
       <div className="space-y-2">
-        <Label>テーマカラー</Label>
+        <Label>{t("settings.themeColor")}</Label>
         <div className="flex items-center gap-3">
           <input
             type="color"
@@ -327,27 +319,26 @@ function CustomizationPanel() {
             }}
             className="h-10 w-16 rounded border"
           />
-          <span className="text-xs text-muted-foreground">アプリ全体のアクセントカラーを変更します。</span>
+          <span className="text-xs text-muted-foreground">{t("settings.themeColorDesc")}</span>
         </div>
       </div>
       <div className="space-y-2">
-        <Label>右下のフローティング機能</Label>
+        <Label>{t("settings.rightDock")}</Label>
         <div className="grid grid-cols-2 gap-2">
           <label className="flex items-center justify-between rounded border p-2 text-sm">
-            <span>サポート/フィードバック</span>
+            <span>{t("settings.support")}</span>
             <Switch checked={dock.has("feedback")} onCheckedChange={() => toggleDock("feedback")} />
           </label>
           <label className="flex items-center justify-between rounded border p-2 text-sm">
-            <span>環境音 (タイマーのみ)</span>
+            <span>{t("settings.ambient")}</span>
             <Switch checked={dock.has("ambient")} onCheckedChange={() => toggleDock("ambient")} />
           </label>
-          <MikuToggleRow />
         </div>
-        <p className="text-[11px] text-muted-foreground">※ 環境音ボタンはタイマー画面のみで表示されます。</p>
+        <p className="text-[11px] text-muted-foreground">{t("settings.ambientNote")}</p>
       </div>
       <div className="space-y-2">
-        <Label>左メニューに表示する項目</Label>
-        <p className="text-[11px] text-muted-foreground">OFFにした項目は「その他」メニューから引き続きアクセスできます。</p>
+        <Label>{t("settings.sidebarItems")}</Label>
+        <p className="text-[11px] text-muted-foreground">{t("settings.sidebarItemsDesc")}</p>
         <div className="grid grid-cols-2 gap-1.5 max-h-72 overflow-auto rounded border p-2">
           {NAV_ITEMS.map((n) => (
             <label key={n.to} className="flex items-center justify-between text-xs px-2 py-1 rounded hover:bg-accent">
@@ -369,16 +360,6 @@ function CustomizationPanel() {
         </div>
       )}
     </Card>
-  );
-}
-
-function MikuToggleRow() {
-  const { enabled, toggle } = useMikuEnabled();
-  return (
-    <label className="flex items-center justify-between rounded border p-2 text-sm">
-      <span>🎤 初音ミクが画面を歩く</span>
-      <Switch checked={enabled} onCheckedChange={(v) => toggle(!!v)} />
-    </label>
   );
 }
 

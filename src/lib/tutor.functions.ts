@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-// ユーザーの学習コンテキストを集約して返す（家庭教師AIに渡す）
+// ユーザーの学習コンテキストを集約して返す（AIチャットのツール呼び出しから使用）
 export const getStudyContext = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Sparkles, Send, Paperclip, Loader2, X, Trash2, Plus, MessageSquare, Pencil } from "lucide-react";
+import { Sparkles, Send, Paperclip, Loader2, X, Trash2, Plus, MessageSquare, Pencil, ChevronDown, Brain, Search } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import {
@@ -19,24 +19,47 @@ import {
 } from "@/lib/tutor.functions";
 import { isAiUsable, createAiSession } from "@/lib/ai-provider";
 import { AiUnavailable } from "@/components/AiUnavailable";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 type Attachment = { url: string; name: string; type: string };
 type Msg = { id: string; role: string; content: string; attachments: Attachment[]; created_at: string; thread_id: string | null };
 type Thread = { id: string; title: string; updated_at: string; created_at: string };
 
-const baseSystem = (ctx: any) =>
-  `あなたは${ctx?.displayName ?? "生徒"}さん専属の優しい家庭教師です。日本語で答え、まずヒントを与え段階的に解説してください。マークダウンを使い、画像が添付されていればその内容を読み取り解説します。
+const TOOL_MARKER = "TOOL: get_study_context";
+const NO_TOOL_MARKER = "TOOL: none";
 
-【生徒の学習状況（直近30日）】
-- 学習時間: ${ctx?.totalMinutes30d ?? 0}分 / 活動日: ${ctx?.activeDays30d ?? 0}日
-- 登録科目: ${(ctx?.subjectsRegistered ?? []).join("、") || "なし"}
-- よく勉強: ${(ctx?.topSubjects ?? []).map((s: any) => `${s.name}(${s.minutes}分)`).join("、") || "—"}
-- 苦手トピック: ${(ctx?.weakTopics ?? []).map((w: any) => `${w.topic}(${w.wrong}/${w.total}誤)`).join("、") || "—"}
-- 進行中の目標: ${(ctx?.activeGoals ?? []).map((g: any) => `${g.title}(${g.progress_minutes}/${g.target_minutes}分)`).join("、") || "—"}
+const detectSystem = () =>
+  `あなたはAIチャットのアシスタントです。次のツールが使えます。
+
+- get_study_context: ユーザーの学習時間・登録科目・進行中の目標・苦手トピック・直近の学習メモなど、学習データを取得します。
+
+ユーザーの直近の発言が、学習状況（勉強時間、進捗、苦手分野、目標の達成度など）に関する質問や、それを踏まえたアドバイスを求めるものであれば、説明を一切せず1行だけ次を出力してください:
+${TOOL_MARKER}
+
+そうでなければ、説明を一切せず1行だけ次を出力してください:
+${NO_TOOL_MARKER}
+
+他の文章は絶対に出力しないでください。`;
+
+const answerSystem = (displayName: string, ctx: any | null) =>
+  `あなたは${displayName}さん専属の優しいAIチャットアシスタントです。日本語で答え、まずヒントを与え段階的に解説してください。マークダウンを使い、画像が添付されていればその内容を読み取り解説します。
+${
+  ctx
+    ? `
+【生徒の学習状況（直近30日・ツールで取得済み）】
+- 学習時間: ${ctx.totalMinutes30d ?? 0}分 / 活動日: ${ctx.activeDays30d ?? 0}日
+- 登録科目: ${(ctx.subjectsRegistered ?? []).join("、") || "なし"}
+- よく勉強: ${(ctx.topSubjects ?? []).map((s: any) => `${s.name}(${s.minutes}分)`).join("、") || "—"}
+- 苦手トピック: ${(ctx.weakTopics ?? []).map((w: any) => `${w.topic}(${w.wrong}/${w.total}誤)`).join("、") || "—"}
+- 進行中の目標: ${(ctx.activeGoals ?? []).map((g: any) => `${g.title}(${g.progress_minutes}/${g.target_minutes}分)`).join("、") || "—"}
 - 直近の学習メモ:
-${ctx?.recentNotes ?? "—"}
+${ctx.recentNotes ?? "—"}
 
-これらを踏まえ、生徒の弱点に寄り添ったアドバイスをしてください。`;
+これらを踏まえ、生徒の弱点に寄り添ったアドバイスをしてください。`
+    : ""
+}`;
+
+type ThinkingStep = { label: string; done: boolean };
 
 function TutorPage() {
   const { user } = useAuth();
@@ -60,7 +83,12 @@ function TutorPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const [canAi, setCanAi] = useState<boolean>(false);
+  const [thinkingSteps, setThinkingSteps] = useState<ThinkingStep[]>([]);
+  const [showThinking, setShowThinking] = useState(true);
   useEffect(() => { isAiUsable().then(setCanAi); }, []);
+
+  const addStep = (label: string) => setThinkingSteps((prev) => [...prev, { label, done: false }]);
+  const finishLastStep = () => setThinkingSteps((prev) => prev.map((s, i) => (i === prev.length - 1 ? { ...s, done: true } : s)));
 
   const loadThreads = useCallback(async () => {
     try {
@@ -113,6 +141,7 @@ function TutorPage() {
   const send = async () => {
     if (!user || (!input.trim() && pending.length === 0) || busy) return;
     setBusy(true);
+    setThinkingSteps([]);
     try {
       // 必要ならスレッド作成
       let tid = activeId;
@@ -133,23 +162,41 @@ function TutorPage() {
       if (ins) setMsgs(nextMsgs);
       setInput(""); setPending([]);
 
-      // 学習コンテキスト取得（毎送信時。重ければキャッシュ可）
-      let ctx: any = null;
-      try { ctx = await ctxFn(); } catch {}
-      const systemPrompt = baseSystem(ctx);
+      const displayName = user.user_metadata?.display_name ?? user.email?.split("@")[0] ?? "生徒";
 
-      // Chrome 内蔵 AI で生成（テキストのみ。画像は URL を会話に含めて参照させる）
+      // 会話履歴をテキストに変換（画像は URL を会話に含めて参照させる）
       const history = nextMsgs.map((m) => {
         const imgs = (m.attachments ?? []).filter((a) => a.type.startsWith("image/"));
         const imgNote = imgs.length ? `\n[添付画像: ${imgs.map((a) => a.name).join(", ")}]` : "";
         return `${m.role === "user" ? "ユーザー" : "アシスタント"}: ${m.content}${imgNote}`;
       }).join("\n\n");
-      const session = await createAiSession({ system: systemPrompt });
+
+      // 1) ツールが必要かどうかをモデルに判断させる（テキストプロトコル）
+      addStep("質問を確認しています…");
+      let ctx: any = null;
+      const detectSession = await createAiSession({ system: detectSystem() });
+      let decision = "";
+      try {
+        decision = await detectSession.prompt(history + "\n\nアシスタント:");
+      } finally { detectSession.destroy(); }
+      finishLastStep();
+
+      if (decision.trim().toUpperCase().startsWith(TOOL_MARKER.toUpperCase())) {
+        addStep("学習データを取得しています…");
+        try { ctx = await ctxFn(); } catch { /* ツール失敗時はデータなしで続行 */ }
+        finishLastStep();
+      }
+
+      // 2) 最終回答をストリーミング生成
+      addStep("回答を組み立てています…");
+      const answerSession = await createAiSession({ system: answerSystem(displayName, ctx) });
       let text = "";
       setStreaming("");
       try {
-        text = await session.promptStreaming(history + "\n\nアシスタント:", (partial) => setStreaming(partial));
-      } finally { session.destroy(); }
+        text = await answerSession.promptStreaming(history + "\n\nアシスタント:", (partial) => setStreaming(partial));
+      } finally { answerSession.destroy(); }
+      finishLastStep();
+
       await supabase.from("tutor_messages").insert({
         user_id: user.id, role: "assistant", content: text, attachments: [], thread_id: tid,
       });
@@ -161,7 +208,7 @@ function TutorPage() {
       await loadMsgs(tid);
       await loadThreads();
     } catch (e: any) { toast.error(e.message); }
-    finally { setBusy(false); setStreaming(""); }
+    finally { setBusy(false); setStreaming(""); setThinkingSteps([]); }
   };
 
   const submitRename = async (id: string) => {
@@ -190,11 +237,11 @@ function TutorPage() {
     <div className="p-4 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2"><Sparkles className="text-primary" /> AI家庭教師</h1>
+          <h1 className="text-2xl font-bold flex items-center gap-2"><Sparkles className="text-primary" /> AIチャット</h1>
           <p className="text-sm text-muted-foreground">新しいチャットごとに会話が保存されます</p>
         </div>
       </div>
-      {!canAi && <div className="mb-3"><AiUnavailable feature="AI家庭教師" /></div>}
+      {!canAi && <div className="mb-3"><AiUnavailable feature="AIチャット" /></div>}
 
       <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-3 h-[calc(100vh-10rem)]">
         {/* スレッドサイドバー */}
@@ -269,15 +316,38 @@ function TutorPage() {
             ))}
             {busy && (
               <div className="flex justify-start">
-                <div className="max-w-[85%] bg-muted rounded-2xl px-4 py-2 prose prose-sm dark:prose-invert">
-                  {streaming ? (
-                    <>
-                      <ReactMarkdown>{streaming}</ReactMarkdown>
-                      <span className="inline-block w-2 h-4 align-middle bg-primary/70 animate-pulse rounded-sm" />
-                    </>
-                  ) : (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                <div className="max-w-[85%] bg-muted rounded-2xl px-4 py-2 space-y-2">
+                  {thinkingSteps.length > 0 && (
+                    <Collapsible open={showThinking} onOpenChange={setShowThinking}>
+                      <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground w-full">
+                        <Brain className="h-3.5 w-3.5" />
+                        <span>思考プロセス</span>
+                        <ChevronDown className={`h-3 w-3 ml-auto transition-transform ${showThinking ? "rotate-180" : ""}`} />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-1 space-y-1 border-l-2 border-primary/30 pl-2">
+                        {thinkingSteps.map((step, i) => (
+                          <div key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            {step.done ? (
+                              <Search className="h-3 w-3 text-primary" />
+                            ) : (
+                              <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                            )}
+                            <span>{step.label}</span>
+                          </div>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
                   )}
+                  <div className="prose prose-sm dark:prose-invert">
+                    {streaming ? (
+                      <>
+                        <ReactMarkdown>{streaming}</ReactMarkdown>
+                        <span className="inline-block w-2 h-4 align-middle bg-primary/70 animate-pulse rounded-sm" />
+                      </>
+                    ) : (
+                      thinkingSteps.length === 0 && <Loader2 className="h-4 w-4 animate-spin" />
+                    )}
+                  </div>
                 </div>
               </div>
             )}

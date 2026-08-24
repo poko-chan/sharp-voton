@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Card } from "@/components/ui/card";
@@ -24,6 +24,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 function MissionsPage() {
   const { user } = useAuth();
+  const claimingRef = useRef<Set<string>>(new Set());
   const [templates, setTemplates] = useState<any[]>([]);
   const [progress, setProgress] = useState<Record<string, number>>({});
   const [claimed, setClaimed] = useState<Set<string>>(new Set());
@@ -72,20 +73,32 @@ function MissionsPage() {
   useEffect(() => { load(); }, [user?.id]);
 
   const claim = async (t: any) => {
-    if (claimed.has(t.code)) return;
+    if (claimed.has(t.code) || claimingRef.current.has(t.code)) return;
     const cur = progress[t.code] ?? 0;
     if (cur < t.target) return toast.error("まだ達成していません");
-    await supabase.from("daily_missions").insert({
-      user_id: user!.id, date: today, kind: t.code, target_value: t.target,
-      reward_coins: t.reward_coins, progress: t.target, completed: true,
-    });
-    const { data: c } = await supabase.from("user_coins").select("balance, total_earned").eq("user_id", user!.id).maybeSingle();
-    const bal = (c?.balance ?? 0) + t.reward_coins;
-    const earned = (c?.total_earned ?? 0) + t.reward_coins;
-    await supabase.from("user_coins").upsert({ user_id: user!.id, balance: bal, total_earned: earned });
-    await (supabase as any).from("coin_transactions").insert({ user_id: user!.id, amount: t.reward_coins, reason: "mission:" + t.code });
-    toast.success(`+${t.reward_coins} コイン獲得！`);
-    load();
+    // クライアント側の二重送信防止
+    claimingRef.current.add(t.code);
+    setClaimed((prev) => new Set(prev).add(t.code));
+    try {
+      // サーバー側(DB)でも冪等: daily_missions の (user_id, date, kind) 一意制約により
+      // 既に受取済みなら再付与されない
+      const { data, error } = await (supabase as any).rpc("claim_daily_mission", {
+        _kind: t.code, _date: today, _target: t.target, _reward_coins: t.reward_coins,
+      });
+      if (error) {
+        toast.error(error.message);
+        setClaimed((prev) => { const n = new Set(prev); n.delete(t.code); return n; });
+        return;
+      }
+      if (data?.already_claimed) {
+        toast.info("既に受け取り済みです");
+      } else {
+        toast.success(`+${data?.awarded ?? t.reward_coins} コイン獲得！`);
+      }
+      load();
+    } finally {
+      claimingRef.current.delete(t.code);
+    }
   };
 
   const cats = ["all", ...Array.from(new Set(templates.map((t) => t.category)))];
