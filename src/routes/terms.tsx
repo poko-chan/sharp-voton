@@ -1,16 +1,26 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { TERMS, LAST_UPDATED } from "@/content/legal";
 
+const TERMS_TITLE = "利用規約｜StudyΩ";
+const TERMS_DESC = "StudyΩ の利用規約。アカウント登録、禁止事項、AI機能の利用、免責事項などについて定めています。";
+const TERMS_URL = "https://omega-voton.lovable.app/terms";
+
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "利用規約｜StudyΩ" },
-      { name: "description", content: "StudyΩ の利用規約。アカウント登録、禁止事項、AI機能の利用、免責事項などについて定めています。" },
+      { title: TERMS_TITLE },
+      { name: "description", content: TERMS_DESC },
+      { property: "og:title", content: TERMS_TITLE },
+      { property: "og:description", content: TERMS_DESC },
+      { property: "og:url", content: TERMS_URL },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "https://omega-voton.lovable.app/terms" }],
+    links: [{ rel: "canonical", href: TERMS_URL }],
   }),
   component: TermsPage,
 });
+
 
 function TermsPage() {
   return (
