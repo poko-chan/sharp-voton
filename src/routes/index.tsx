@@ -35,20 +35,16 @@ function LandingRoute() {
 
   useEffect(() => {
     if (loading) return;
-    if (user) {
-      navigate({ to: "/dashboard", replace: true });
-      return;
-    }
     const raw = window.location.hash.slice(1) + "&" + window.location.search.slice(1);
     if (/(^|&)(access_token|refresh_token|code|token_hash|type|error|error_description)=/.test(raw)) {
       navigate({ to: "/login", replace: true });
     }
   }, [user, loading, navigate]);
 
-  return <LandingPage />;
+  return <LandingPage isAuthed={!!user} />;
 }
 
-function LandingPage() {
+function LandingPage({ isAuthed }: { isAuthed: boolean }) {
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
       {/* Ambient background */}
