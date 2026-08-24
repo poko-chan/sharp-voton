@@ -62,7 +62,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-const SITE_URL = "https://study-plus-voton.lovable.app";
+const SITE_URL = "https://omega-voton.lovable.app";
 const OG_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fd850e55-f433-466a-ae78-8f2f88319d43/id-preview-8ca241ff--70a80aa5-02cd-459f-845f-d642eaffb4f2.lovable.app-1778835357697.png";
 const DEFAULT_TITLE = "Voton Study Omega（StudyΩ）— オールインワン学習プラットフォーム";
 const DEFAULT_DESC = "Voton Study Omega（StudyΩ）は勉強記録・集中タイマー・カレンダー・Makron問題演習・AIチャット・組織/学校管理をひとつにまとめた、毎日の学習を続けやすくする学習プラットフォームです。";

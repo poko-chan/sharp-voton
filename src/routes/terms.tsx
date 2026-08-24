@@ -7,7 +7,7 @@ export const Route = createFileRoute("/terms")({
       { title: "利用規約｜StudyΩ" },
       { name: "description", content: "StudyΩ の利用規約。アカウント登録、禁止事項、AI機能の利用、免責事項などについて定めています。" },
     ],
-    links: [{ rel: "canonical", href: "https://studyplus-voton.lovable.app/terms" }],
+    links: [{ rel: "canonical", href: "https://omega-voton.lovable.app/terms" }],
   }),
   component: TermsPage,
 });

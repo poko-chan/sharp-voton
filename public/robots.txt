@@ -14,4 +14,4 @@ Disallow: /chat
 Disallow: /notifications
 Disallow: /api/
 
-Sitemap: https://studyplus-voton.lovable.app/sitemap.xml
+Sitemap: https://omega-voton.lovable.app/sitemap.xml
