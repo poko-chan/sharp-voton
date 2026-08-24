@@ -185,8 +185,9 @@ function PlanPanel() {
   const [plan, setPlan] = useState<string>("free");
   useEffect(() => {
     if (!user) return;
-    (supabase as any).from("profiles").select("current_plan").eq("id", user.id).maybeSingle()
+    (supabase as any).rpc("my_profile_private")
       .then(({ data }: any) => setPlan(data?.current_plan ?? "free"));
+
   }, [user?.id]);
   return (
     <Card className="p-6 space-y-3">
