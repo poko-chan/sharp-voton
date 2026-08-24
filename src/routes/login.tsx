@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { signInWithUsername, checkUsernameAvailable } from "@/lib/username.functions";
 import { EmailVerifyNotice } from "@/components/auth/EmailVerifyNotice";
 import logoUrl from "@/assets/logo.png";
+import googleLogo from "@/assets/google-logo.svg.asset.json";
 
 export const Route = createFileRoute("/login")({
   head: () => {
