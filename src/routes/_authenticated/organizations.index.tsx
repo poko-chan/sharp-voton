@@ -35,14 +35,19 @@ function OrgsPage() {
   const [myOrgs, setMyOrgs] = useState<any[]>([]);
   const [invites, setInvites] = useState<any[]>([]);
   const [requests, setRequests] = useState<any[]>([]);
+  const [apps, setApps] = useState<any[]>([]);
+  const [openApp, setOpenApp] = useState<string | null>(null);
   const [code, setCode] = useState("");
-  const [name, setName] = useState("");
-  const [desc, setDesc] = useState("");
   const [busy, setBusy] = useState(false);
-  const [showCreate, setShowCreate] = useState(false);
 
   const load = async () => {
     if (!user) return;
+    const { data: myApps } = await (supabase as any)
+      .from("organization_applications")
+      .select("id, org_name, org_type, status, created_at, admin_note, organization_id")
+      .eq("applicant_id", user.id)
+      .order("created_at", { ascending: false });
+    setApps(myApps ?? []);
     const { data: mems, error } = await (supabase as any).from("organization_members")
       .select("role, suspended, organization:organizations(id, name, description, status, join_code, owner_id)")
       .eq("user_id", user.id);
