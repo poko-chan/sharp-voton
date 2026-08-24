@@ -215,14 +215,23 @@ export function AppShell({ children }: { children: ReactNode }) {
   const quickbarItems = decorated.filter((n) => n.adminQuickbar && !isRestricted(n.to) && !n.adminHidden);
 
   // 保護者アカウントは学習系ナビを一切見せない。保護者専用リンクのみ表示。
-  const isParent = accountKind === "parent";
-  const parentNav = [
-    { to: "/parent", label: "保護者ダッシュボード", icon: Users },
-    { to: "/settings", label: "設定", icon: Settings },
-    { to: "/notifications", label: "通知", icon: Megaphone },
-    { to: "/announcements", label: "お知らせ", icon: Megaphone },
-    { to: "/help", label: "ヘルプ", icon: HelpCircle },
-  ];
+  const isOrgAccount = accountKind === "org";
+  const isParent = accountKind === "parent" || isOrgAccount;
+  const parentNav = isOrgAccount
+    ? [
+        { to: "/organizations", label: "組織", icon: Users },
+        { to: "/settings", label: "設定", icon: Settings },
+        { to: "/notifications", label: "通知", icon: Megaphone },
+        { to: "/announcements", label: "お知らせ", icon: Megaphone },
+        { to: "/help", label: "ヘルプ", icon: HelpCircle },
+      ]
+    : [
+        { to: "/parent", label: "保護者ダッシュボード", icon: Users },
+        { to: "/settings", label: "設定", icon: Settings },
+        { to: "/notifications", label: "通知", icon: Megaphone },
+        { to: "/announcements", label: "お知らせ", icon: Megaphone },
+        { to: "/help", label: "ヘルプ", icon: HelpCircle },
+      ];
 
   const renderLabel = (n: any) => n.adminLabel || n.override || t(n.labelKey);
   const renderIcon = (n: any, cls = "h-4 w-4") =>

@@ -8,7 +8,7 @@ interface AuthContextValue {
   session: Session | null;
   user: User | null;
   role: AppRole | null;
-  accountKind: "child" | "parent" | "adult" | null;
+  accountKind: "child" | "parent" | "adult" | "org" | null;
   loading: boolean;
   isAdmin: boolean;
   signOut: () => Promise<void>;
@@ -20,7 +20,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
-  const [accountKind, setAccountKind] = useState<"child" | "parent" | "adult" | null>(null);
+  const [accountKind, setAccountKind] = useState<"child" | "parent" | "adult" | "org" | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchRole = async (userId: string) => {

@@ -39,10 +39,10 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, accountKind: myKind } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [accountKind, setAccountKind] = useState<"child" | "parent">("child");
+  const [accountKind, setAccountKind] = useState<"child" | "parent" | "org">("child");
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -57,9 +57,26 @@ function LoginPage() {
   const signInByUsername = useServerFn(signInWithUsername);
   const checkUsername = useServerFn(checkUsernameAvailable);
 
+  // /login?kind=org&next=/for-schools のような遷移に対応する。
+  const [nextPath, setNextPath] = useState<string | null>(null);
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard" });
-  }, [user, loading, navigate]);
+    if (typeof window === "undefined") return;
+    const q = new URLSearchParams(window.location.search);
+    const kind = q.get("kind");
+    if (kind === "org" || kind === "parent" || kind === "child") {
+      setAccountKind(kind as any);
+      if (kind !== "child") setMode("signup");
+    }
+    const nx = q.get("next");
+    if (nx && nx.startsWith("/")) setNextPath(nx);
+  }, []);
+
+  useEffect(() => {
+    if (loading || !user) return;
+    if (nextPath) navigate({ to: nextPath as any });
+    else if (myKind === "org") navigate({ to: "/organizations" });
+    else if (myKind) navigate({ to: "/dashboard" });
+  }, [user, loading, navigate, nextPath, myKind]);
 
   useEffect(() => {
     supabase
@@ -218,25 +235,37 @@ function LoginPage() {
                 <>
                   <div className="space-y-1">
                     <Label>アカウント種別</Label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <button
                         type="button"
                         onClick={() => setAccountKind("child")}
-                        className={`rounded-md border p-2 text-sm ${accountKind === "child" ? "border-primary bg-primary/10 font-semibold" : ""}`}
+                        className={`rounded-md border p-2 text-xs sm:text-sm ${accountKind === "child" ? "border-primary bg-primary/10 font-semibold" : ""}`}
                       >
-                        子供アカウント
+                        通常アカウント
                       </button>
                       <button
                         type="button"
                         onClick={() => setAccountKind("parent")}
-                        className={`rounded-md border p-2 text-sm ${accountKind === "parent" ? "border-primary bg-primary/10 font-semibold" : ""}`}
+                        className={`rounded-md border p-2 text-xs sm:text-sm ${accountKind === "parent" ? "border-primary bg-primary/10 font-semibold" : ""}`}
                       >
                         保護者アカウント
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAccountKind("org")}
+                        className={`rounded-md border p-2 text-xs sm:text-sm ${accountKind === "org" ? "border-primary bg-primary/10 font-semibold" : ""}`}
+                      >
+                        組織アカウント
                       </button>
                     </div>
                     {accountKind === "parent" && (
                       <p className="text-[11px] text-muted-foreground">
                         保護者アカウントは登録後「保護者ダッシュボード」から子供アカウントとリンクできます。
+                      </p>
+                    )}
+                    {accountKind === "org" && (
+                      <p className="text-[11px] text-muted-foreground">
+                        組織アカウントは学校・塾などの管理用です。学習機能は使えず、組織の管理・導入申請に必要な機能のみ利用できます。
                       </p>
                     )}
                   </div>

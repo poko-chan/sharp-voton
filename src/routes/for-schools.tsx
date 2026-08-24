@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
+import { OrgApplyForm } from "@/components/org/OrgApplyForm";
 import logoUrl from "@/assets/logo.png";
 
 const TITLE = "学校・塾の方へ（組織機能） | StudyΩ";
@@ -127,9 +128,9 @@ function ForSchoolsPage() {
           生徒は普段使っている学習アプリの中から、そのまま参加できます。
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Link to="/login" className="cta">
-            アカウントを作って申請する
-          </Link>
+          <a href="#apply" className="cta">
+            導入を申請する
+          </a>
           <Link to="/all-services" className="cta-ghost">
             全機能を見る
           </Link>
@@ -195,15 +196,17 @@ function ForSchoolsPage() {
           ))}
         </section>
 
-        <div className="surface mt-16 p-8 text-center">
-          <h2 className="font-display text-2xl font-black">まずは組織を申請してください。</h2>
-          <p className="mt-3 text-sm text-muted-foreground">
-            アカウント作成後、組織ページから申請できます。運営が内容を確認して承認します。
+        <section id="apply" className="mt-20 scroll-mt-24">
+          <p className="section-eyebrow">Contact &amp; apply</p>
+          <h2 className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">導入のお問い合わせ・申請</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            種別を選び、StudyΩ アカウントでログインのうえ必要事項をご入力ください。送信後、組織タブから運営とのやり取りができます。
+            承認されるまで組織の機能はご利用いただけません。
           </p>
-          <Link to="/login" className="cta mt-6">
-            はじめる
-          </Link>
-        </div>
+          <div className="mt-6">
+            <OrgApplyForm />
+          </div>
+        </section>
       </main>
 
       <footer className="border-t border-border/50 py-10 text-sm text-muted-foreground">
