@@ -85,7 +85,7 @@ function OrgsPage() {
     <div className="max-w-4xl mx-auto p-6 space-y-5">
       <h1 className="text-2xl font-bold flex items-center gap-2"><Building2 className="h-6 w-6 text-primary" />組織</h1>
       <p className="text-sm text-muted-foreground">
-        1つのアカウントに複数の組織を紐づけられます。組織は誰でも申請でき、運営の承認後にメンバーを追加できます。
+        1つのアカウントに複数の組織を紐づけられます。組織の作成は「学校・塾の方へ」ページの導入申請フォームからお申し込みください。
         {isAdmin && <> 審査は <Link to="/admin" search={{ tab: "orgs" } as any} className="underline">管理者ダッシュボード</Link> から。</>}
       </p>
 
@@ -100,22 +100,64 @@ function OrgsPage() {
         </Card>
 
         <Card className="p-4 space-y-2">
-          <div className="font-bold flex items-center gap-1"><Plus className="h-4 w-4" />組織を作る（申請制）</div>
-          {!showCreate ? (
-            <Button variant="outline" onClick={() => setShowCreate(true)}>組織を申請する</Button>
-          ) : (
-            <>
-              <Input placeholder="組織名" value={name} onChange={(e) => setName(e.target.value)} />
-              <Textarea placeholder="説明（任意）" rows={2} value={desc} onChange={(e) => setDesc(e.target.value)} />
-              <div className="flex gap-2">
-                <Button onClick={create} disabled={busy || !name.trim()}>申請する</Button>
-                <Button variant="ghost" onClick={() => setShowCreate(false)}>やめる</Button>
-              </div>
-              <p className="text-[11px] text-muted-foreground">申請者が経営者になります（経営者は1組織に1人）。</p>
-            </>
-          )}
+          <div className="font-bold flex items-center gap-1"><Plus className="h-4 w-4" />組織を新しく導入する</div>
+          <p className="text-[11px] text-muted-foreground">
+            学校・学習塾・企業などでの導入は、導入申請フォームからお申し込みください。運営が内容を確認して承認します。
+          </p>
+          <Button asChild variant="outline">
+            <a href="/for-schools#apply">導入申請フォームへ</a>
+          </Button>
         </Card>
       </div>
+
+      {apps.length > 0 && (
+        <section className="space-y-2">
+          <h2 className="text-sm font-bold flex items-center gap-1"><MessageSquare className="h-4 w-4" />導入申請 ({apps.length})</h2>
+          {apps.map((a: any) => (
+            <Card key={a.id} className="p-4 space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="font-bold">{a.org_name}</div>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted">{ORG_TYPE_LABEL[a.org_type] ?? a.org_type}</span>
+                <span
+                  className={`text-[10px] px-2 py-0.5 rounded-full ${
+                    a.status === "approved"
+                      ? "bg-primary/15 text-primary"
+                      : a.status === "rejected"
+                        ? "bg-destructive/15 text-destructive"
+                        : "bg-amber-500/20 text-amber-700"
+                  }`}
+                >
+                  {APP_STATUS_LABEL[a.status] ?? a.status}
+                </span>
+                <span className="ml-auto text-[11px] text-muted-foreground">
+                  {new Date(a.created_at).toLocaleDateString("ja-JP")}
+                </span>
+              </div>
+              {a.status === "pending" && (
+                <p className="text-xs text-muted-foreground">
+                  運営が審査中です。承認されるまで組織の機能はご利用いただけません。
+                </p>
+              )}
+              {a.admin_note && (
+                <p className="text-xs rounded-lg bg-muted/50 p-2">運営より: {a.admin_note}</p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={() => setOpenApp(openApp === a.id ? null : a.id)}>
+                  <MessageSquare className="h-4 w-4 mr-1" />
+                  {openApp === a.id ? "問い合わせを閉じる" : "運営に問い合わせる"}
+                </Button>
+                {a.organization_id && (
+                  <Button size="sm" asChild>
+                    <Link to="/organizations/$orgId" params={{ orgId: a.organization_id }}>組織を開く</Link>
+                  </Button>
+                )}
+              </div>
+              {openApp === a.id && <OrgApplicationThread applicationId={a.id} />}
+            </Card>
+          ))}
+        </section>
+      )}
+
 
       {invites.length > 0 && (
         <section className="space-y-2">
