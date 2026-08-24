@@ -5,7 +5,9 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus } from "lucide-react";
+import { Plus, MessageSquare, Check, X } from "lucide-react";
+import { APP_STATUS_LABEL, ORG_TYPE_LABEL } from "@/lib/org-application";
+import { OrgApplicationThread } from "@/components/org/OrgApplicationThread";
 import { toast } from "sonner";
 
 // ========== Organizations admin ==========
