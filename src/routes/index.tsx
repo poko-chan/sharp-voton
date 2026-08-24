@@ -8,7 +8,7 @@ import { CORE, MORE, STEPS, FAQ, SERVICE_COUNT } from "@/content/services";
 
 const TITLE = "Voton Study Omega（StudyΩ）— 学習のすべてを、ひとつに。";
 const DESC =
-  "StudyΩ は勉強記録・集中タイマー・カレンダー・Makron問題演習・AIチャット・目標管理・組織/学校運営までを1つにまとめたオールインワン学習プラットフォームです。";
+  "StudyΩ は勉強記録・タイマー・カレンダー・問題演習・AIチャット・目標管理・組織/学校運営までを1つにまとめたオールインワン学習プラットフォームです。";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -43,9 +43,7 @@ function LandingRoute() {
     }
   }, [user, loading, navigate]);
 
-  return (
-      <LandingPage isAuthed={!!user} />
-  );
+  return <LandingPage isAuthed={!!user} />;
 }
 
 function LandingPage({ isAuthed }: { isAuthed: boolean }) {
@@ -62,21 +60,56 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
       <header className="sticky top-0 z-40 border-b liquid-bar">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <img src={logoUrl} alt="Voton Study Omega ロゴ" width={36} height={36} className="h-9 w-9 rounded-xl shadow-sm" />
+            <img
+              src={logoUrl}
+              alt="Voton Study Omega ロゴ"
+              width={36}
+              height={36}
+              className="h-9 w-9 rounded-xl shadow-sm"
+            />
             <span className="font-display text-lg font-extrabold tracking-tight">
               Study<span className="text-gradient">Ω</span>
             </span>
           </div>
           <nav className="flex items-center gap-1 text-sm">
-            <a href="#features" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">{t("landing.features")}</a>
-            <Link to="/all-services" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">{t("landing.allServices")}</Link>
-            <Link to="/for-schools" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">{t("landing.forSchools")}</Link>
-            <Link to="/guide" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">{t("landing.guide")}</Link>
-            <a href="#faq" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">{t("landing.faq")}</a>
+            <a
+              href="#features"
+              className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block"
+            >
+              {t("landing.features")}
+            </a>
+            <Link
+              to="/all-services"
+              className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block"
+            >
+              {t("landing.allServices")}
+            </Link>
+            <Link
+              to="/for-schools"
+              className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block"
+            >
+              {t("landing.forSchools")}
+            </Link>
+            <Link
+              to="/guide"
+              className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block"
+            >
+              {t("landing.guide")}
+            </Link>
+            <a
+              href="#faq"
+              className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block"
+            >
+              {t("landing.faq")}
+            </a>
             {isAuthed ? (
-              <Link to="/dashboard" className="cta px-5 py-2 text-sm">{t("landing.dashboard")}</Link>
+              <Link to="/dashboard" className="cta px-5 py-2 text-sm">
+                {t("landing.dashboard")}
+              </Link>
             ) : (
-              <Link to="/login" className="cta px-5 py-2 text-sm">{t("landing.start")}</Link>
+              <Link to="/login" className="cta px-5 py-2 text-sm">
+                {t("landing.start")}
+              </Link>
             )}
             <GoogleTranslateWidget />
           </nav>
@@ -93,16 +126,22 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
               <span className="mt-2 block text-2xl font-extrabold text-muted-foreground sm:text-3xl">StudyΩ</span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-[0.95rem] leading-relaxed text-muted-foreground sm:text-lg">
-              記録する。集中する。解く。AIに聞く。仲間と続ける。学校や塾で運用する。
-              バラバラだった学習の道具を、StudyΩ はひとつのプラットフォームにまとめました。
+              記録する。集中する。解く。AIに聞く。仲間と続ける。学校や塾で運用する。 バラバラだった学習の道具を、StudyΩ
+              はひとつのプラットフォームにまとめました。
             </p>
             <div className="mt-9 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
               {isAuthed ? (
-                <Link to="/dashboard" className="cta">{t("landing.dashboard")}</Link>
+                <Link to="/dashboard" className="cta">
+                  {t("landing.dashboard")}
+                </Link>
               ) : (
-                <Link to="/login" className="cta">{t("landing.start")}</Link>
+                <Link to="/login" className="cta">
+                  {t("landing.start")}
+                </Link>
               )}
-              <Link to="/all-services" className="cta-ghost">機能をぜんぶ見る</Link>
+              <Link to="/all-services" className="cta-ghost">
+                機能をぜんぶ見る
+              </Link>
             </div>
             <dl className="mx-auto mt-14 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
               {[
@@ -131,7 +170,12 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
             {CORE.map((f) => (
               <article key={f.name} className="surface surface-hover p-6">
                 <div className="flex items-center gap-3">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-2xl" aria-hidden>{f.emoji}</span>
+                  <span
+                    className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-2xl"
+                    aria-hidden
+                  >
+                    {f.emoji}
+                  </span>
                   <h3 className="font-display text-xl font-extrabold">{f.name}</h3>
                 </div>
                 <p className="mt-3 font-semibold text-primary">{f.lead}</p>
@@ -153,7 +197,12 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
             {MORE.map((f) => (
               <article key={f.name} className="surface surface-hover p-6">
                 <div className="flex items-center gap-3">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent/15 text-xl" aria-hidden>{f.emoji}</span>
+                  <span
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent/15 text-xl"
+                    aria-hidden
+                  >
+                    {f.emoji}
+                  </span>
                   <h3 className="font-display text-lg font-extrabold">{f.name}</h3>
                 </div>
                 <p className="mt-2 text-sm font-semibold text-primary">{f.lead}</p>
@@ -191,9 +240,18 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
           <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">こんな人のために</h2>
           <div className="mt-10 grid gap-4 sm:gap-5 md:grid-cols-3">
             {[
-              { t: "受験生・中高生", d: "試験日から逆算した目標設定、苦手単元の演習、記録の可視化まで。今日やるべきことが毎朝はっきりします。" },
-              { t: "学校・塾の先生", d: "名簿・課題・お知らせ・アンケート・組織専用教材を一箇所で運用。生徒の学習量と提出状況を数字で把握できます。" },
-              { t: "保護者", d: "保護者モードで、お子さまの学習ログを見守れます。過度な干渉なしに、続いているかどうかがわかります。" },
+              {
+                t: "受験生・中高生",
+                d: "試験日から逆算した目標設定、苦手単元の演習、記録の可視化まで。今日やるべきことが毎朝はっきりします。",
+              },
+              {
+                t: "学校・塾の先生",
+                d: "生徒の勉強時間の管理、お知らせの配布、アンケートの配信を始めとする本格的な実装です。",
+              },
+              {
+                t: "保護者",
+                d: "保護者モードで、お子さまの学習ログを見守れます。過度な干渉なしに、続いているかどうかがわかります。",
+              },
             ].map((c) => (
               <div key={c.t} className="surface surface-hover p-6">
                 <h3 className="font-display text-lg font-extrabold">{c.t}</h3>
@@ -226,16 +284,25 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
         {/* CTA */}
         <section className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
           <div className="surface relative overflow-hidden px-6 py-14 text-center">
-            <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_120%_at_50%_0%,color-mix(in_oklab,var(--primary)_22%,transparent),transparent_70%)]" />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_120%_at_50%_0%,color-mix(in_oklab,var(--primary)_22%,transparent),transparent_70%)]"
+            />
             <div className="relative">
-              <h2 className="font-display text-3xl font-black tracking-tight sm:text-4xl">今日から、<span className="text-gradient">StudyΩ</span>。</h2>
+              <h2 className="font-display text-3xl font-black tracking-tight sm:text-4xl">
+                今日から、<span className="text-gradient">StudyΩ</span>。
+              </h2>
               <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:text-base">
                 まずは1回、タイマーを回すところから。積み上がった記録が、次の自分を連れてきます。
               </p>
               {isAuthed ? (
-                <Link to="/dashboard" className="cta mt-8">{t("landing.dashboard")}</Link>
+                <Link to="/dashboard" className="cta mt-8">
+                  {t("landing.dashboard")}
+                </Link>
               ) : (
-                <Link to="/login" className="cta mt-8">{t("landing.start")}</Link>
+                <Link to="/login" className="cta mt-8">
+                  {t("landing.start")}
+                </Link>
               )}
             </div>
           </div>
@@ -249,13 +316,27 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
             <span>Voton Study Omega（StudyΩ）</span>
           </div>
           <nav className="flex flex-wrap items-center justify-center gap-4">
-            <Link to="/all-services" className="transition hover:text-foreground">{t("landing.allServices")}</Link>
-            <Link to="/guide" className="transition hover:text-foreground">{t("landing.guide")}</Link>
-            <Link to="/for-schools" className="transition hover:text-foreground">{t("landing.forSchools")}</Link>
-            <Link to="/help" className="transition hover:text-foreground">{t("landing.help")}</Link>
-            <Link to="/terms" className="transition hover:text-foreground">{t("landing.terms")}</Link>
-            <Link to="/privacy" className="transition hover:text-foreground">{t("landing.privacy")}</Link>
-            <Link to="/login" className="transition hover:text-foreground">{t("login.title")}</Link>
+            <Link to="/all-services" className="transition hover:text-foreground">
+              {t("landing.allServices")}
+            </Link>
+            <Link to="/guide" className="transition hover:text-foreground">
+              {t("landing.guide")}
+            </Link>
+            <Link to="/for-schools" className="transition hover:text-foreground">
+              {t("landing.forSchools")}
+            </Link>
+            <Link to="/help" className="transition hover:text-foreground">
+              {t("landing.help")}
+            </Link>
+            <Link to="/terms" className="transition hover:text-foreground">
+              {t("landing.terms")}
+            </Link>
+            <Link to="/privacy" className="transition hover:text-foreground">
+              {t("landing.privacy")}
+            </Link>
+            <Link to="/login" className="transition hover:text-foreground">
+              {t("login.title")}
+            </Link>
             <GoogleTranslateWidget />
           </nav>
         </div>
