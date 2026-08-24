@@ -42,7 +42,7 @@ function LoginPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [accountKind, setAccountKind] = useState<"child" | "parent">("child");
+  const [accountKind, setAccountKind] = useState<"child" | "parent" | "org">("child");
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
