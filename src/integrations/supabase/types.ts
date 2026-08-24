@@ -6521,6 +6521,14 @@ export type Database = {
         Args: { _app_id: string; _approve: boolean; _days?: number }
         Returns: undefined
       }
+      admin_review_material: {
+        Args: { _approve: boolean; _id: string }
+        Returns: undefined
+      }
+      admin_review_material_edit: {
+        Args: { _approve: boolean; _id: string; _note?: string }
+        Returns: undefined
+      }
       admin_review_organization: {
         Args: { _approve: boolean; _org_id: string }
         Returns: undefined
