@@ -85,17 +85,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-title", content: "StudyΩ" },
       ...(CHROME_AI_OT ? [{ httpEquiv: "origin-trial", content: CHROME_AI_OT } as any] : []),
-      { title: DEFAULT_TITLE },
-      { name: "description", content: DEFAULT_DESC },
       { property: "og:site_name", content: "Voton Study Omega" },
-      { property: "og:title", content: DEFAULT_TITLE },
-      { name: "twitter:title", content: DEFAULT_TITLE },
-      { property: "og:description", content: DEFAULT_DESC },
-      { name: "twitter:description", content: DEFAULT_DESC },
       { property: "og:image", content: OG_IMAGE },
       { name: "twitter:image", content: OG_IMAGE },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
+
     ],
     links: [
       { rel: "stylesheet", href: appCss },
