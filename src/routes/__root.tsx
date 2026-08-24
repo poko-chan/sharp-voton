@@ -188,7 +188,6 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <I18nProvider>
-        <AutoTranslate />
         <MaintenanceProvider>
           <RestrictionProvider>
             <MaintenanceGate>
