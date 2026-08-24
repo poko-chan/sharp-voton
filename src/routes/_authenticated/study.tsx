@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, BookOpen, Pencil, Save, X, ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, BookOpen, Pencil, Save, X, ChevronDown, ChevronRight, AlertTriangle, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 import { localDateStr } from "@/lib/date";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,16 +17,18 @@ import { emitProfileChange } from "@/lib/profile-events";
 import { Download, Upload } from "lucide-react";
 import { VoiceMicButton } from "@/components/VoiceMicButton";
 import { MaterialPicker } from "@/components/MaterialPicker";
+import { useOrderedSubjects, type SubjectLite } from "@/lib/subjects";
 
 export const Route = createFileRoute("/_authenticated/study")({
   component: StudyPage,
 });
 
-interface Subject { id: string; name: string; color: string; }
+interface Subject { id: string; name: string; color: string; sort_order?: number; }
 
 function StudyPage() {
   const { user } = useAuth();
-  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const orderedSubjects = useOrderedSubjects();
+  const [subjectsVersion, setSubjectsVersion] = useState(0);
   const [materialIds, setMaterialIds] = useState<string[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
   const [newSubject, setNewSubject] = useState("");
@@ -39,12 +41,13 @@ function StudyPage() {
 
   const load = async () => {
     if (!user) return;
-    const { data: s } = await supabase.from("subjects").select("*").eq("user_id", user.id).order("created_at");
-    setSubjects(s ?? []);
+    setSubjectsVersion((v) => v + 1);
     const { data: l } = await supabase.from("study_logs").select("*, subjects(id,name,color)").eq("user_id", user.id).order("date", { ascending: false }).order("start_time", { ascending: true }).limit(1000);
     setLogs(l ?? []);
     emitProfileChange();
   };
+
+  const subjects: Subject[] = orderedSubjects as Subject[];
 
   useEffect(() => { load(); }, [user]);
 
