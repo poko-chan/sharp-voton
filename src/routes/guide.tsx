@@ -38,8 +38,6 @@ const TIPS = [
   { t: "組織のコードは先生から", d: "学校や塾で使う場合は、6桁の参加コードか招待を受け取ってから参加します。" },
 ];
 
-export default function _unused() { return null; }
-
 function GuidePage() {
   return (
     <div className="relative min-h-screen bg-background text-foreground">

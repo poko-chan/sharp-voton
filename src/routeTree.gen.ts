@@ -15,7 +15,9 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HelpRouteImport } from './routes/help'
+import { Route as GuideRouteImport } from './routes/guide'
 import { Route as ForgotRouteImport } from './routes/forgot'
+import { Route as ForSchoolsRouteImport } from './routes/for-schools'
 import { Route as AllServicesRouteImport } from './routes/all-services'
 import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -116,9 +118,19 @@ const HelpRoute = HelpRouteImport.update({
   path: '/help',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GuideRoute = GuideRouteImport.update({
+  id: '/guide',
+  path: '/guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForgotRoute = ForgotRouteImport.update({
   id: '/forgot',
   path: '/forgot',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForSchoolsRoute = ForSchoolsRouteImport.update({
+  id: '/for-schools',
+  path: '/for-schools',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AllServicesRoute = AllServicesRouteImport.update({
@@ -498,7 +510,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin-login': typeof AdminLoginRoute
   '/all-services': typeof AllServicesRoute
+  '/for-schools': typeof ForSchoolsRoute
   '/forgot': typeof ForgotRoute
+  '/guide': typeof GuideRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
@@ -575,7 +589,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin-login': typeof AdminLoginRoute
   '/all-services': typeof AllServicesRoute
+  '/for-schools': typeof ForSchoolsRoute
   '/forgot': typeof ForgotRoute
+  '/guide': typeof GuideRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
@@ -648,7 +664,9 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/admin-login': typeof AdminLoginRoute
   '/all-services': typeof AllServicesRoute
+  '/for-schools': typeof ForSchoolsRoute
   '/forgot': typeof ForgotRoute
+  '/guide': typeof GuideRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
@@ -727,7 +745,9 @@ export interface FileRouteTypes {
     | '/'
     | '/admin-login'
     | '/all-services'
+    | '/for-schools'
     | '/forgot'
+    | '/guide'
     | '/help'
     | '/login'
     | '/privacy'
@@ -804,7 +824,9 @@ export interface FileRouteTypes {
     | '/'
     | '/admin-login'
     | '/all-services'
+    | '/for-schools'
     | '/forgot'
+    | '/guide'
     | '/help'
     | '/login'
     | '/privacy'
@@ -876,7 +898,9 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/admin-login'
     | '/all-services'
+    | '/for-schools'
     | '/forgot'
+    | '/guide'
     | '/help'
     | '/login'
     | '/privacy'
@@ -955,7 +979,9 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
   AllServicesRoute: typeof AllServicesRoute
+  ForSchoolsRoute: typeof ForSchoolsRoute
   ForgotRoute: typeof ForgotRoute
+  GuideRoute: typeof GuideRoute
   HelpRoute: typeof HelpRoute
   LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -1012,11 +1038,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HelpRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/guide': {
+      id: '/guide'
+      path: '/guide'
+      fullPath: '/guide'
+      preLoaderRoute: typeof GuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/forgot': {
       id: '/forgot'
       path: '/forgot'
       fullPath: '/forgot'
       preLoaderRoute: typeof ForgotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-schools': {
+      id: '/for-schools'
+      path: '/for-schools'
+      fullPath: '/for-schools'
+      preLoaderRoute: typeof ForSchoolsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/all-services': {
@@ -1719,7 +1759,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   AllServicesRoute: AllServicesRoute,
+  ForSchoolsRoute: ForSchoolsRoute,
   ForgotRoute: ForgotRoute,
+  GuideRoute: GuideRoute,
   HelpRoute: HelpRoute,
   LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
