@@ -110,17 +110,30 @@ export function AutoTranslate() {
       }
       running = true;
       try {
-        for (let i = 0; i < keys.length; i += 60) {
-          const chunk = keys.slice(i, i + 60);
-          const { translations } = await translateBatch({ data: { texts: chunk, target: lang } });
-          chunk.forEach((k, idx) => {
-            const v = translations[idx];
-            if (v && v !== k) cache[k] = v;
+        const chunks: string[][] = [];
+        for (let i = 0; i < keys.length; i += 40) chunks.push(keys.slice(i, i + 40));
+        // 3チャンクずつ並列に投げて初回の待ち時間を短縮する
+        for (let g = 0; g < chunks.length; g += 3) {
+          const group = chunks.slice(g, g + 3);
+          const results = await Promise.all(
+            group.map((chunk) =>
+              translateBatch({ data: { texts: chunk, target: lang } })
+                .then((r) => r.translations)
+                .catch(() => chunk),
+            ),
+          );
+          group.forEach((chunk, ci) => {
+            chunk.forEach((k, idx) => {
+              const v = results[ci][idx];
+              if (v && v !== k) cache[k] = v;
+            });
           });
           saveCache(lang, cache);
-          for (const k of chunk) {
-            for (const fn of pending.get(k) ?? []) fn();
-            pending.delete(k);
+          for (const chunk of group) {
+            for (const k of chunk) {
+              for (const fn of pending.get(k) ?? []) fn();
+              pending.delete(k);
+            }
           }
           if (disposed) return;
         }
