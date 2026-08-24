@@ -128,9 +128,9 @@ function ForSchoolsPage() {
           生徒は普段使っている学習アプリの中から、そのまま参加できます。
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Link to="/login" className="cta">
-            アカウントを作って申請する
-          </Link>
+          <a href="#apply" className="cta">
+            導入を申請する
+          </a>
           <Link to="/all-services" className="cta-ghost">
             全機能を見る
           </Link>
