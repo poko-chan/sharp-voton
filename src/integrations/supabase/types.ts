@@ -4399,6 +4399,133 @@ export type Database = {
           },
         ]
       }
+      organization_application_messages: {
+        Row: {
+          application_id: string
+          body: string
+          created_at: string
+          id: string
+          is_admin: boolean
+          sender_id: string
+        }
+        Insert: {
+          application_id: string
+          body: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          sender_id: string
+        }
+        Update: {
+          application_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_application_messages_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "organization_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_applications: {
+        Row: {
+          address: string | null
+          admin_note: string | null
+          applicant_id: string
+          contact_email: string
+          contact_phone: string | null
+          country: string
+          created_at: string
+          department: string | null
+          expected_users: number | null
+          id: string
+          note: string | null
+          org_name: string
+          org_type: string
+          org_type_other: string | null
+          organization_id: string | null
+          prefecture: string | null
+          rep_first_kana: string | null
+          rep_first_name: string
+          rep_last_kana: string | null
+          rep_last_name: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["org_status"]
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          admin_note?: string | null
+          applicant_id: string
+          contact_email: string
+          contact_phone?: string | null
+          country?: string
+          created_at?: string
+          department?: string | null
+          expected_users?: number | null
+          id?: string
+          note?: string | null
+          org_name: string
+          org_type: string
+          org_type_other?: string | null
+          organization_id?: string | null
+          prefecture?: string | null
+          rep_first_kana?: string | null
+          rep_first_name: string
+          rep_last_kana?: string | null
+          rep_last_name: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["org_status"]
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          admin_note?: string | null
+          applicant_id?: string
+          contact_email?: string
+          contact_phone?: string | null
+          country?: string
+          created_at?: string
+          department?: string | null
+          expected_users?: number | null
+          id?: string
+          note?: string | null
+          org_name?: string
+          org_type?: string
+          org_type_other?: string | null
+          organization_id?: string | null
+          prefecture?: string | null
+          rep_first_kana?: string | null
+          rep_first_name?: string
+          rep_last_kana?: string | null
+          rep_last_name?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["org_status"]
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_applications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_invitations: {
         Row: {
           created_at: string
@@ -6533,6 +6660,10 @@ export type Database = {
         Args: { _approve: boolean; _org_id: string }
         Returns: undefined
       }
+      admin_review_organization_application: {
+        Args: { _app_id: string; _approve: boolean; _note?: string }
+        Returns: string
+      }
       admin_review_pack: {
         Args: { _approve: boolean; _pack_id: string }
         Returns: undefined
@@ -6924,6 +7055,7 @@ export type Database = {
       }
       my_org_ids: { Args: never; Returns: string[] }
       my_profile_private: { Args: never; Returns: Json }
+      org_application_submit: { Args: { _payload: Json }; Returns: string }
       org_assignment_progress: {
         Args: { _assignment: string }
         Returns: {
