@@ -436,8 +436,9 @@ html.high-contrast * { border-color: currentColor !important; }
 .gt-widget .goog-te-gadget-icon {
   display: none !important;
 }
-.gt-widget .goog-te-combo,
-.gt-widget .goog-te-combo * {
+/* Keep the actual language pulldown visible and readable */
+.gt-widget .goog-te-gadget .goog-te-combo,
+.gt-widget .goog-te-gadget .goog-te-combo * {
   color: var(--foreground) !important;
   font-size: 0.75rem !important;
 }
