@@ -5,9 +5,10 @@ import { useAuth } from "@/lib/auth-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { ROLE_LABEL } from "@/lib/org-roles";
-import { Building2, Check, X, Mail, Plus, KeyRound, Clock } from "lucide-react";
+import { APP_STATUS_LABEL, ORG_TYPE_LABEL } from "@/lib/org-application";
+import { OrgApplicationThread } from "@/components/org/OrgApplicationThread";
+import { Building2, Check, X, Mail, Plus, KeyRound, Clock, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/organizations/")({
