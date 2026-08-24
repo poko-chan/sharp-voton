@@ -1,4 +1,5 @@
-import { useI18n, LANGS, type Lang } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
+import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
