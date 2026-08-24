@@ -460,6 +460,7 @@ html.high-contrast * { border-color: currentColor !important; }
 }
 /* Hide Google top banner / tooltip chrome */
 .goog-te-banner-frame,
+.VIpgJd-ZVi9od-ORHb-OEVmcd,
 .goog-te-balloon-frame,
 .goog-tooltip,
 #goog-gt-tt {
@@ -467,4 +468,26 @@ html.high-contrast * { border-color: currentColor !important; }
 }
 body {
   top: 0 !important;
+}
+/* Style the pulldown rendered by Google Translate */
+.gt-widget .goog-te-combo {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: hsl(var(--background) / 0.6);
+  border: 1px solid hsl(var(--border) / 0.45);
+  border-radius: 9999px;
+  padding: 0.25rem 1.5rem 0.25rem 0.75rem;
+  color: hsl(var(--foreground));
+  font-size: 0.75rem;
+  line-height: 1.25;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+.gt-widget .goog-te-combo:focus {
+  outline: none;
+  border-color: hsl(var(--primary));
+}
+.gt-widget .goog-te-combo option {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
 }
