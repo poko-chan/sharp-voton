@@ -12,7 +12,7 @@ import { Shield, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { signInWithUsername, checkUsernameAvailable } from "@/lib/username.functions";
 import { EmailVerifyNotice } from "@/components/auth/EmailVerifyNotice";
-import { useI18n, LANGS, type Lang } from "@/lib/i18n";
+import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import logoUrl from "@/assets/logo.png";
 import googleLogo from "@/assets/google-logo.svg.asset.json";
 
