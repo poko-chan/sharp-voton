@@ -421,3 +421,50 @@ html.high-contrast * { border-color: currentColor !important; }
   aside, header, nav, .no-print { display: none !important; }
   body { background: white !important; color: black !important; }
 }
+
+/* Google Translate widget styling */
+.gt-widget {
+  display: inline-flex;
+  align-items: center;
+}
+.gt-widget .goog-te-gadget {
+  color: transparent !important;
+  font-size: 0 !important;
+}
+.gt-widget .goog-te-gadget-simple {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+  background: transparent !important;
+  border: 1px solid hsl(var(--border) / 0.45) !important;
+  border-radius: 9999px !important;
+  padding: 0.25rem 0.75rem !important;
+  color: hsl(var(--foreground)) !important;
+  font-size: 0.75rem !important;
+  line-height: 1 !important;
+  transition: background-color 0.15s ease;
+}
+.gt-widget .goog-te-gadget-simple:hover {
+  background: hsl(var(--accent) / 0.35) !important;
+}
+.gt-widget .goog-te-gadget-simple img,
+.gt-widget .goog-te-gadget-icon {
+  display: none !important;
+}
+.gt-widget .goog-te-menu-value {
+  color: hsl(var(--foreground)) !important;
+}
+.gt-widget .goog-te-menu-value span {
+  color: hsl(var(--foreground)) !important;
+  border-left-color: hsl(var(--border)) !important;
+}
+/* Hide Google top banner / tooltip chrome */
+.goog-te-banner-frame,
+.goog-te-balloon-frame,
+.goog-tooltip,
+#goog-gt-tt {
+  display: none !important;
+}
+body {
+  top: 0 !important;
+}
