@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/auth-context";
  */
 export const SERVICES = [
   { key: "timer",     label: "タイマー" },
-  { key: "tutor",     label: "AI家庭教師" },
+  { key: "tutor",     label: "AIチャット" },
   { key: "classroom", label: "Voton Classroom" },
   { key: "chat",      label: "メッセージ" },
   { key: "classchat", label: "クラスチャット" },

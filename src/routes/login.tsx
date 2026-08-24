@@ -19,7 +19,7 @@ export const Route = createFileRoute("/login")({
   head: () => {
     const title = "ログイン｜StudyΩ — 学習を続けやすくする学習プラットフォーム";
     const description =
-      "StudyΩ にログインして、勉強記録・集中タイマー・AI問題生成・AI家庭教師・学習目標管理などの学習サポート機能を使い始めましょう。新規登録もこちらから。";
+      "StudyΩ にログインして、勉強記録・集中タイマー・AI問題生成・AIチャット・学習目標管理などの学習サポート機能を使い始めましょう。新規登録もこちらから。";
     const url = "https://studyplus-voton.lovable.app/login";
     return {
       meta: [

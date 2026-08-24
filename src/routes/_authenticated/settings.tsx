@@ -273,7 +273,7 @@ function CustomizationPanel() {
     { to: "/polls", label: "投票" },
     { to: "/questions", label: "AI問題作成" },
     { to: "/practice", label: "AI演習" },
-    { to: "/tutor", label: "AI家庭教師" },
+    { to: "/tutor", label: "AIチャット" },
     { to: "/classroom", label: "Classroom" },
     { to: "/chat", label: "チャット" },
     { to: "/classchat", label: "クラスチャット" },

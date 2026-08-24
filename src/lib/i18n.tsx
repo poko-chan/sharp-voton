@@ -17,7 +17,7 @@ const dict = {
     "nav.polls": "投票",
     "nav.questions": "問題生成",
     "nav.practice": "苦手演習",
-    "nav.tutor": "AI家庭教師",
+    "nav.tutor": "AIチャット",
     "nav.classroom": "Voton Classroom",
     "nav.chat": "ユーザーチャット",
     "nav.classchat": "クラスチャット",

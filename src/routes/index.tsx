@@ -6,7 +6,7 @@ import { CORE, MORE, STEPS, FAQ, SERVICE_COUNT } from "@/content/services";
 
 const TITLE = "Voton Study Omega（StudyΩ）— 学習のすべてを、ひとつに。";
 const DESC =
-  "StudyΩ は勉強記録・集中タイマー・カレンダー・Makron問題演習・AI家庭教師・目標管理・組織/学校運営までを1つにまとめたオールインワン学習プラットフォームです。";
+  "StudyΩ は勉強記録・集中タイマー・カレンダー・Makron問題演習・AIチャット・目標管理・組織/学校運営までを1つにまとめたオールインワン学習プラットフォームです。";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -98,7 +98,7 @@ function LandingPage() {
               {[
                 [`${SERVICE_COUNT}+`, "搭載機能"],
                 ["10問", "毎日のデイリー演習"],
-                ["24h", "AI家庭教師"],
+                ["24h", "AIチャット"],
                 ["4段階", "組織の役割管理"],
               ].map(([v, l]) => (
                 <div key={l} className="surface p-4 text-left sm:text-center">
