@@ -1,6 +1,25 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-export type Lang = "ja" | "en";
+export const LANGS = [
+  { code: "ja", label: "日本語" },
+  { code: "en", label: "English" },
+  { code: "zh-CN", label: "简体中文" },
+  { code: "zh-TW", label: "繁體中文" },
+  { code: "ko", label: "한국어" },
+  { code: "es", label: "Español" },
+  { code: "fr", label: "Français" },
+  { code: "de", label: "Deutsch" },
+  { code: "pt", label: "Português" },
+  { code: "it", label: "Italiano" },
+  { code: "ru", label: "Русский" },
+  { code: "hi", label: "हिन्दी" },
+  { code: "ar", label: "العربية" },
+  { code: "id", label: "Bahasa Indonesia" },
+  { code: "vi", label: "Tiếng Việt" },
+  { code: "th", label: "ไทย" },
+] as const;
+
+export type Lang = (typeof LANGS)[number]["code"];
 const LS_KEY = "studyplus.lang";
 
 const dict = {
@@ -223,24 +242,25 @@ const Ctx = createContext<{ lang: Lang; setLang: (l: Lang) => void; t: (k: Key) 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => {
     if (typeof window === "undefined") return "ja";
-    const v = localStorage.getItem(LS_KEY);
-    return v === "en" ? "en" : "ja";
+    const v = localStorage.getItem(LS_KEY) as Lang | null;
+    return v && LANGS.some((l) => l.code === v) ? v : "ja";
   });
   useEffect(() => {
-    if (typeof document !== "undefined") document.documentElement.lang = lang;
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    }
   }, [lang]);
-  useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === LS_KEY && (e.newValue === "en" || e.newValue === "ja")) setLangState(e.newValue);
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
   const setLang = (l: Lang) => {
     setLangState(l);
     try { localStorage.setItem(LS_KEY, l); } catch { /* ignore */ }
+    // 自動翻訳レイヤーを確実に張り直すため、切替時は再読み込みする。
+    if (typeof window !== "undefined") window.location.reload();
   };
-  const t = (k: Key) => (dict[lang][k] ?? dict.ja[k] ?? k) as string;
+  const t = (k: Key) => {
+    const table = (dict as Record<string, Record<string, string>>)[lang];
+    return (table?.[k] ?? dict.ja[k] ?? k) as string;
+  };
   return <Ctx.Provider value={{ lang, setLang, t }}>{children}</Ctx.Provider>;
 }
 

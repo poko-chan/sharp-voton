@@ -1,4 +1,4 @@
-import { I18nProvider, useI18n } from "@/lib/i18n";
+import { useI18n, LANGS, type Lang } from "@/lib/i18n";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
@@ -43,9 +43,7 @@ function LandingRoute() {
   }, [user, loading, navigate]);
 
   return (
-    <I18nProvider>
       <LandingPage isAuthed={!!user} />
-    </I18nProvider>
   );
 }
 
@@ -79,20 +77,15 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
             ) : (
               <Link to="/login" className="cta px-5 py-2 text-sm">{t("landing.start")}</Link>
             )}
-            <div className="ml-2 flex items-center gap-1 rounded-full border bg-muted/50 p-1 text-[10px] sm:text-xs">
-              <button
-                onClick={() => setLang("ja")}
-                className={`rounded-full px-2 py-0.5 transition ${lang === "ja" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              >
-                JP
-              </button>
-              <button
-                onClick={() => setLang("en")}
-                className={`rounded-full px-2 py-0.5 transition ${lang === "en" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              >
-                EN
-              </button>
-            </div>
+            <select
+              value={lang}
+              onChange={(e) => setLang(e.target.value as Lang)}
+              aria-label="Language"
+              data-no-translate
+              className="ml-2 rounded-full border bg-muted/50 px-2 py-1 text-[10px] sm:text-xs text-foreground"
+            >
+              {LANGS.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
+            </select>
           </nav>
         </div>
       </header>
@@ -270,20 +263,15 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
             <Link to="/terms" className="transition hover:text-foreground">{t("landing.terms")}</Link>
             <Link to="/privacy" className="transition hover:text-foreground">{t("landing.privacy")}</Link>
             <Link to="/login" className="transition hover:text-foreground">{t("login.title")}</Link>
-            <div className="ml-2 flex items-center gap-1 rounded-full border bg-muted/50 p-1 text-[10px] sm:text-xs">
-              <button
-                onClick={() => setLang("ja")}
-                className={`rounded-full px-2 py-0.5 transition ${lang === "ja" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              >
-                JP
-              </button>
-              <button
-                onClick={() => setLang("en")}
-                className={`rounded-full px-2 py-0.5 transition ${lang === "en" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              >
-                EN
-              </button>
-            </div>
+            <select
+              value={lang}
+              onChange={(e) => setLang(e.target.value as Lang)}
+              aria-label="Language"
+              data-no-translate
+              className="ml-2 rounded-full border bg-muted/50 px-2 py-1 text-[10px] sm:text-xs text-foreground"
+            >
+              {LANGS.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
+            </select>
           </nav>
         </div>
       </footer>

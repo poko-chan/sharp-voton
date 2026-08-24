@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { AppShell } from "@/components/AppShell";
 import { TimerProvider } from "@/lib/timer-context";
-import { I18nProvider } from "@/lib/i18n";
 import { ServiceGate } from "@/components/ServiceGate";
 import { LoginWelcomeOverlay } from "@/components/LoginWelcomeOverlay";
 
@@ -49,20 +48,16 @@ function AuthLayout() {
   const isMakron = path === "/makron" || path.startsWith("/makron/");
   if (isMakron) {
     return (
-      <I18nProvider>
         <TimerProvider>
           {content}
           <LoginWelcomeOverlay />
         </TimerProvider>
-      </I18nProvider>
     );
   }
   return (
-    <I18nProvider>
       <TimerProvider>
         <AppShell>{content}</AppShell>
         <LoginWelcomeOverlay />
       </TimerProvider>
-    </I18nProvider>
   );
 }
