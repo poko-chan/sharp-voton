@@ -10,7 +10,9 @@ import {
   type AiDiagnostics,
   type AiEnginePref,
 } from "@/lib/ai-provider";
+import { WEBLLM_MODELS, setWebLlmModelId } from "@/lib/web-llm";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AiRunIndicator } from "@/components/AiRunIndicator";
 import { Progress } from "@/components/ui/progress";
