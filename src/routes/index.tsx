@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import logoUrl from "@/assets/logo.png";
+import { CORE, MORE, STEPS, FAQ, SERVICE_COUNT } from "@/content/services";
 
 const TITLE = "Voton Study Omega（StudyΩ）— 学習のすべてを、ひとつに。";
 const DESC =
@@ -47,161 +48,6 @@ function LandingRoute() {
   return <LandingPage />;
 }
 
-type Feature = {
-  emoji: string;
-  name: string;
-  lead: string;
-  detail: string;
-  points: string[];
-  path: string;
-};
-
-const CORE: Feature[] = [
-  {
-    emoji: "📊",
-    name: "ダッシュボード",
-    lead: "今日の自分が、5秒でわかる。",
-    detail:
-      "今日の学習時間、教科別の内訳、連続学習日数、レベルと経験値、コイン残高、直近のミッション達成状況をひとつの画面に集約します。ウィジェットは並び替え・表示/非表示を自由に設定でき、自分の学習スタイルに合わせた「司令塔」を作れます。",
-    points: ["教科別の円グラフと週次の増減比較", "連続記録（ストリーク）とレベル進捗", "ウィジェットのカスタマイズ"],
-    path: "/dashboard",
-  },
-  {
-    emoji: "⏱️",
-    name: "集中タイマー",
-    lead: "測るだけで、記録になる。",
-    detail:
-      "ストップウォッチ・ポモドーロ（25分集中＋5分休憩）・カウントダウンを切り替えて使えます。計測した時間はそのまま学習記録に保存され、使っていた教材を紐づけることも可能。環境音（雨・カフェ・ホワイトノイズ）や、自分でアップロードしたBGMを流しながら集中できます。",
-    points: ["ポモドーロ統計とセッション履歴", "環境音ミキサー／BGMアップロード", "計測から記録への自動保存"],
-    path: "/timer",
-  },
-  {
-    emoji: "📝",
-    name: "勉強記録",
-    lead: "続けるほど、データが味方になる。",
-    detail:
-      "教科・内容・時間・使用教材・振り返りメモをまとめて記録。過去の記録はヒートマップやグラフで可視化され、「どの教科をいつ、どれだけやったか」が一目でわかります。記録は共有リンクやCSVでの書き出しにも対応。",
-    points: ["ヒートマップ／週次・月次グラフ", "複数教材の紐づけ", "CSVエクスポートと共有リンク"],
-    path: "/study",
-  },
-  {
-    emoji: "🧠",
-    name: "Makron（問題演習）",
-    lead: "解く・間違える・直す、の完全サイクル。",
-    detail:
-      "教科 → 分野 → 単元 → パックの階層で整理された問題集を演習できます。選択式・記述式に対応し、記述はAIが観点別に採点。シャッフル、出題数制限、一問ごと採点モードなど演習設定も細かく選べます。毎日全員共通の「デイリー演習（10問）」もあり、連続記録を伸ばす習慣づくりに最適です。",
-    points: ["公式パックは報酬コイン付き（日次上限あり）", "デイリー演習とストリーク", "間違えた問題の復習・直しリスト"],
-    path: "/makron",
-  },
-  {
-    emoji: "🤖",
-    name: "AI家庭教師",
-    lead: "わからないを、その場で解消。",
-    detail:
-      "24時間いつでも質問できるAI家庭教師。回答は生成しながらリアルタイムで表示されるので、待たされる感覚がありません。端末内で動くGemini Nanoを優先的に使い、使えない環境ではブラウザ内モデル、さらにクラウドAIへと自動でフォールバックします。",
-    points: ["ストリーミング表示", "端末内AI優先でプライバシーに配慮", "誤答の原因分析と類題提案"],
-    path: "/tutor",
-  },
-  {
-    emoji: "🎯",
-    name: "学習目標・試験トラッカー",
-    lead: "ゴールから逆算して積み上げる。",
-    detail:
-      "「〇月〇日の試験まで、この教科を何時間」といった目標を設定し、達成率を自動計算。試験ごとに目標点・やることリストを作り、結果を入力すれば複数回の試験の推移をグラフで比較できます。やることリストを完了させるとコイン報酬も獲得できます。",
-    points: ["目標達成率の自動計算", "試験結果の推移グラフ", "タスク完了で報酬"],
-    path: "/goals",
-  },
-];
-
-const MORE: Feature[] = [
-  {
-    emoji: "🏫",
-    name: "組織（学校・塾・チーム）",
-    lead: "アプリランチャー型の組織ポータル。",
-    detail:
-      "参加コードや招待から組織に参加し、投稿・共有カレンダー・チャット・アンケート・課題・デジタル学生証・名簿などをアプリのように使えます。経営者／共同管理者／教師／一般の4段階の役割で権限を制御し、組織内だけの学年・クラスといったプロフィール項目を年度ごとに管理できます。",
-    points: ["役割ベースの管理メニュー", "期限つき課題と提出状況の統計", "組織内一括のサービス制限"],
-    path: "/organizations",
-  },
-  {
-    emoji: "🎓",
-    name: "Makron for education",
-    lead: "学校専用の教材を、学年別に。",
-    detail:
-      "組織の中だけで使う専用問題集。学年やクラスなど組織プロフィールの項目に応じて出題を切り替えられ、Duolingo風のカリキュラム・パスで進捗が見えます。間違えた問題は「AI復習」タブでつまずいた原因・解き方の手順・類題まで解説します。",
-    points: ["属性による出題フィルタ", "レベル制・進捗ダッシュボード", "AI復習タブ"],
-    path: "/organizations",
-  },
-  {
-    emoji: "📅",
-    name: "カレンダー",
-    lead: "予定と学習を、同じ地図の上に。",
-    detail: "月グリッドと時間単位のビューで予定・イベント・試験日を管理。学習計画と予定を同じ場所で確認できます。",
-    points: ["月／週／日ビュー", "試験日・課題期限の表示", "共有カレンダー（組織）"],
-    path: "/calendar",
-  },
-  {
-    emoji: "📚",
-    name: "教材データベース",
-    lead: "持っている参考書を、資産に変える。",
-    detail:
-      "バーコードスキャンやカメラから教材を登録し、進捗・お気に入り・利用時間を管理。どの教材にどれだけ時間を使ったかを分析できます。",
-    points: ["バーコード／カメラ登録", "教材別の利用時間分析", "お気に入りと進捗管理"],
-    path: "/materials",
-  },
-  {
-    emoji: "🪙",
-    name: "ゲーミフィケーション",
-    lead: "続けるほど、世界が育つ。",
-    detail:
-      "学習でXPとコインを獲得し、レベルアップ。ショップでアイテムやアバターフレームを購入し、インベントリで使う・売る・贈るができます。街づくりシミュレーションやランキング、ミッション、称号も用意しています。",
-    points: ["ショップ／インベントリ／ギフト", "ミッションと称号", "ランキングと街の成長"],
-    path: "/shop",
-  },
-  {
-    emoji: "💬",
-    name: "ソーシャル",
-    lead: "ひとりで頑張らない。",
-    detail:
-      "タイムラインに勉強記録をシェアして、いいねやコメントで励まし合えます。フレンド、ユーザー間チャット、リーダーボードで仲間と一緒に続けられます。",
-    points: ["勉強記録のシェアと反応", "フレンド／チャット", "ランキング"],
-    path: "/feed",
-  },
-  {
-    emoji: "👨‍👩‍👧",
-    name: "保護者モード",
-    lead: "見守る人のための、専用画面。",
-    detail: "保護者アカウントでは学習ページの代わりに、お子さまの直近90日の学習ログを詳細に確認できます。",
-    points: ["90日分の詳細ログ", "教科別の推移", "保護者専用のナビゲーション"],
-    path: "/parent",
-  },
-  {
-    emoji: "🔒",
-    name: "安心して使うために",
-    lead: "制限・メンテナンス・復旧まで。",
-    detail:
-      "管理者はサービスごとの利用制限やメンテナンスモードを設定でき、アカウント削除は7日間の猶予つき。パスワードを忘れた場合の復旧フローも用意しています。",
-    points: ["サービス単位の利用制限", "アカウント復旧フロー", "削除の7日間猶予"],
-    path: "/help",
-  },
-];
-
-const STEPS = [
-  { n: "01", t: "アカウントを作る", d: "ユーザー名とパスワード、またはGoogleで数十秒。組織に招待されている場合は参加コードでそのまま合流できます。" },
-  { n: "02", t: "測る・記録する", d: "タイマーを回して勉強するだけで、時間と教科が自動で記録に残ります。教材を紐づければ分析の精度も上がります。" },
-  { n: "03", t: "Makronで解く", d: "デイリー演習10問から始めて、苦手な単元のパックへ。間違えた問題は自動で復習リストに積み上がります。" },
-  { n: "04", t: "AIに聞く・直す", d: "わからない問題はAI家庭教師へ。つまずいた原因と手順、類題まで提示して次につなげます。" },
-  { n: "05", t: "積み上がりを見る", d: "ダッシュボードとヒートマップで進みを確認。XP・コイン・ストリークが、続ける理由になります。" },
-];
-
-const FAQ = [
-  { q: "無料で使えますか？", a: "主要な機能は無料で利用できます。一部の高負荷なクラウドAI機能には制限が設けられる場合があります。" },
-  { q: "スマートフォンでも使えますか？", a: "はい。レスポンシブ対応に加え、ホーム画面に追加してアプリのように使えるPWAに対応しています。" },
-  { q: "学校や塾で導入できますか？", a: "組織機能で名簿・課題・お知らせ・アンケート・組織専用教材まで運用できます。組織の作成は運営の承認制です。" },
-  { q: "AIは何を使っていますか？", a: "端末内で動作するGemini Nanoを優先し、利用できない環境ではブラウザ内モデル、さらにクラウドAIへ自動的に切り替えます。" },
-  { q: "データは削除できますか？", a: "設定画面からアカウント削除を申請でき、7日間の猶予期間中はキャンセルできます。詳しくはプライバシーポリシーをご覧ください。" },
-];
-
 function LandingPage() {
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
@@ -222,7 +68,9 @@ function LandingPage() {
           </div>
           <nav className="flex items-center gap-1 text-sm">
             <a href="#features" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">機能</a>
-            <a href="#how" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">使い方</a>
+            <Link to="/all-services" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">全機能</Link>
+            <Link to="/for-schools" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">学校・塾の方へ</Link>
+            <Link to="/guide" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">使い方</Link>
             <a href="#faq" className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">FAQ</a>
             <Link to="/login" className="cta px-5 py-2 text-sm">はじめる</Link>
           </nav>
@@ -244,11 +92,11 @@ function LandingPage() {
             </p>
             <div className="mt-9 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
               <Link to="/login" className="cta">無料ではじめる</Link>
-              <a href="#features" className="cta-ghost">機能をぜんぶ見る</a>
+              <Link to="/all-services" className="cta-ghost">機能をぜんぶ見る</Link>
             </div>
             <dl className="mx-auto mt-14 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
               {[
-                ["20+", "搭載サービス"],
+                [`${SERVICE_COUNT}+`, "搭載機能"],
                 ["10問", "毎日のデイリー演習"],
                 ["24h", "AI家庭教師"],
                 ["4段階", "組織の役割管理"],
@@ -387,6 +235,9 @@ function LandingPage() {
             <span>Voton Study Omega（StudyΩ）</span>
           </div>
           <nav className="flex flex-wrap items-center justify-center gap-4">
+            <Link to="/all-services" className="transition hover:text-foreground">全機能</Link>
+            <Link to="/guide" className="transition hover:text-foreground">使い方</Link>
+            <Link to="/for-schools" className="transition hover:text-foreground">学校・塾の方へ</Link>
             <Link to="/help" className="transition hover:text-foreground">ヘルプ</Link>
             <Link to="/terms" className="transition hover:text-foreground">利用規約</Link>
             <Link to="/privacy" className="transition hover:text-foreground">プライバシーポリシー</Link>
