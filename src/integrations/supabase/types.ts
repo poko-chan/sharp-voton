@@ -5171,6 +5171,7 @@ export type Database = {
           user_id: string
           x: number
           y: number
+          z_index: number
         }
         Insert: {
           color?: string
@@ -5181,6 +5182,7 @@ export type Database = {
           user_id: string
           x?: number
           y?: number
+          z_index?: number
         }
         Update: {
           color?: string
@@ -5191,6 +5193,7 @@ export type Database = {
           user_id?: string
           x?: number
           y?: number
+          z_index?: number
         }
         Relationships: []
       }
@@ -6413,6 +6416,15 @@ export type Database = {
       can_view_submission: {
         Args: { _assignment_id: string; _user_id: string }
         Returns: boolean
+      }
+      claim_daily_mission: {
+        Args: {
+          _date: string
+          _kind: string
+          _reward_coins: number
+          _target: number
+        }
+        Returns: Json
       }
       claim_referral: { Args: { _code: string }; Returns: Json }
       complete_exam_todo: { Args: { _id: string }; Returns: Json }
