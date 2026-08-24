@@ -12,6 +12,7 @@ import { Shield, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { signInWithUsername, checkUsernameAvailable } from "@/lib/username.functions";
 import { EmailVerifyNotice } from "@/components/auth/EmailVerifyNotice";
+import { I18nProvider, useI18n } from "@/lib/i18n";
 import logoUrl from "@/assets/logo.png";
 import googleLogo from "@/assets/google-logo.svg.asset.json";
 
@@ -32,11 +33,16 @@ export const Route = createFileRoute("/login")({
       links: [{ rel: "canonical", href: url }],
     };
   },
-  component: LoginPage,
+  component: () => (
+    <I18nProvider>
+      <LoginPage />
+    </I18nProvider>
+  ),
 });
 
 function LoginPage() {
   const { user, loading } = useAuth();
+  const { lang, setLang } = useI18n();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [accountKind, setAccountKind] = useState<"child" | "parent">("child");
@@ -335,6 +341,20 @@ function LoginPage() {
         )}
       </div>
 
+      <div className="absolute top-4 right-4 flex items-center gap-1 rounded-md border bg-background/80 backdrop-blur px-1 py-1 text-xs">
+        <button
+          onClick={() => setLang("ja")}
+          className={`rounded px-2 py-1 ${lang === "ja" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+        >
+          日本語
+        </button>
+        <button
+          onClick={() => setLang("en")}
+          className={`rounded px-2 py-1 ${lang === "en" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+        >
+          English
+        </button>
+      </div>
       <Link
         to="/admin-login"
         className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-md border bg-background/80 backdrop-blur px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition"

@@ -266,31 +266,17 @@ function ExportPanel() {
 function CustomizationPanel() {
   const { prefs, save } = useUserPrefs();
   const { isAdmin } = useAuth();
-  const NAV_ITEMS: { to: string; label: string }[] = [
-    { to: "/dashboard", label: "ダッシュボード" },
-    { to: "/today", label: "Today" },
-    { to: "/study", label: "勉強記録" },
-    { to: "/timer", label: "タイマー" },
-    { to: "/calendar", label: "カレンダー" },
-    { to: "/goals", label: "目標" },
-    { to: "/heatmap", label: "ヒートマップ" },
-    { to: "/flashcards", label: "暗記カード" },
-    { to: "/friends", label: "フレンド" },
-    { to: "/polls", label: "投票" },
-    { to: "/questions", label: "AI問題作成" },
-    { to: "/practice", label: "AI演習" },
-    { to: "/tutor", label: "AIチャット" },
-    { to: "/classroom", label: "Classroom" },
-    { to: "/chat", label: "チャット" },
-    { to: "/classchat", label: "クラスチャット" },
-    { to: "/notes", label: "付箋" },
-    { to: "/announcements", label: "お知らせ" },
-    { to: "/share", label: "共有" },
-    { to: "/missions", label: "デイリーミッション" },
-    { to: "/leaderboard", label: "ランキング" },
-    { to: "/rank", label: "段位・称号" },
-    { to: "/export", label: "データ出力" },
-  ];
+  const { t } = useI18n();
+  // 「左メニューに表示する項目」は実際のサイドバーのナビ定義(AppShell の NAV)から自動生成する。
+  // ナビに項目を追加/削除すればこの一覧も自動的に最新化される。「プロフィール」(設定)を先頭に固定。
+  const NAV_ITEMS = useMemo(() => {
+    const items = NAV.map((n) => ({
+      to: n.to,
+      label: n.to === "/settings" ? t("settings.profile") : ((n as any).override || t(n.labelKey)),
+    }));
+    items.sort((a, b) => (a.to === "/settings" ? -1 : b.to === "/settings" ? 1 : 0));
+    return items;
+  }, [t]);
   const hidden = new Set(prefs.sidebar_hidden ?? []);
   const toggleNav = (to: string) => {
     const next = new Set(hidden);
@@ -305,9 +291,9 @@ function CustomizationPanel() {
   };
   return (
     <Card className="p-6 space-y-4">
-      <div className="font-semibold">画面カスタマイズ</div>
+      <div className="font-semibold">{t("settings.customization")}</div>
       <div className="space-y-2">
-        <Label>フォント（Google Fonts）</Label>
+        <Label>{t("settings.font")}</Label>
         <Select value={prefs.font_family ?? "system"} onValueChange={(v) => save({ font_family: v })}>
           <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -318,10 +304,10 @@ function CustomizationPanel() {
             ))}
           </SelectContent>
         </Select>
-        <p className="text-[11px] text-muted-foreground">アプリ全体のフォントを変更します。選択時に Google Fonts から動的に読み込みます。</p>
+        <p className="text-[11px] text-muted-foreground">{t("settings.fontDesc")}</p>
       </div>
       <div className="space-y-2">
-        <Label>テーマカラー</Label>
+        <Label>{t("settings.themeColor")}</Label>
         <div className="flex items-center gap-3">
           <input
             type="color"
@@ -333,27 +319,26 @@ function CustomizationPanel() {
             }}
             className="h-10 w-16 rounded border"
           />
-          <span className="text-xs text-muted-foreground">アプリ全体のアクセントカラーを変更します。</span>
+          <span className="text-xs text-muted-foreground">{t("settings.themeColorDesc")}</span>
         </div>
       </div>
       <div className="space-y-2">
-        <Label>右下のフローティング機能</Label>
+        <Label>{t("settings.rightDock")}</Label>
         <div className="grid grid-cols-2 gap-2">
           <label className="flex items-center justify-between rounded border p-2 text-sm">
-            <span>サポート/フィードバック</span>
+            <span>{t("settings.support")}</span>
             <Switch checked={dock.has("feedback")} onCheckedChange={() => toggleDock("feedback")} />
           </label>
           <label className="flex items-center justify-between rounded border p-2 text-sm">
-            <span>環境音 (タイマーのみ)</span>
+            <span>{t("settings.ambient")}</span>
             <Switch checked={dock.has("ambient")} onCheckedChange={() => toggleDock("ambient")} />
           </label>
-          <MikuToggleRow />
         </div>
-        <p className="text-[11px] text-muted-foreground">※ 環境音ボタンはタイマー画面のみで表示されます。</p>
+        <p className="text-[11px] text-muted-foreground">{t("settings.ambientNote")}</p>
       </div>
       <div className="space-y-2">
-        <Label>左メニューに表示する項目</Label>
-        <p className="text-[11px] text-muted-foreground">OFFにした項目は「その他」メニューから引き続きアクセスできます。</p>
+        <Label>{t("settings.sidebarItems")}</Label>
+        <p className="text-[11px] text-muted-foreground">{t("settings.sidebarItemsDesc")}</p>
         <div className="grid grid-cols-2 gap-1.5 max-h-72 overflow-auto rounded border p-2">
           {NAV_ITEMS.map((n) => (
             <label key={n.to} className="flex items-center justify-between text-xs px-2 py-1 rounded hover:bg-accent">
@@ -375,16 +360,6 @@ function CustomizationPanel() {
         </div>
       )}
     </Card>
-  );
-}
-
-function MikuToggleRow() {
-  const { enabled, toggle } = useMikuEnabled();
-  return (
-    <label className="flex items-center justify-between rounded border p-2 text-sm">
-      <span>🎤 初音ミクが画面を歩く</span>
-      <Switch checked={enabled} onCheckedChange={(v) => toggle(!!v)} />
-    </label>
   );
 }
 
