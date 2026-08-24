@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trophy, Plus, Trash2, Check, Pencil, Save, X } from "lucide-react";
+import { RadialGauge, PowerBar } from "@/components/RadialGauge";
+import { Trophy, Plus, Trash2, Check, Pencil, Save, X, Sparkles, CalendarClock, Flame } from "lucide-react";
+
 import { toast } from "sonner";
 
 type Goal = {
@@ -162,27 +163,97 @@ function GoalCard({ g, cur, pct, onToggle, onRemove, onAddManual, onSaved }: {
     onSaved();
   };
 
+  const daysLeft = g.deadline
+    ? Math.ceil((new Date(g.deadline + "T23:59:59").getTime() - Date.now()) / 86400000)
+    : null;
+  const remain = Math.max(0, g.target_minutes - cur);
+  const needPerDay = daysLeft && daysLeft > 0 ? Math.ceil(remain / daysLeft) : null;
+  const complete = pct >= 100;
+
   return (
-    <Card className={`p-5 ${g.done ? "opacity-60" : ""}`}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1">
-          <div className="font-semibold flex items-center gap-2">
-            {g.title}
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-normal">
-              {g.scope === "manual" ? "個別記録" : "全学習記録"}
-            </span>
+    <Card className={`relative overflow-hidden p-5 liquid-card ${g.done ? "opacity-60" : ""}`}>
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.14]"
+        style={{
+          background: complete
+            ? "radial-gradient(600px 180px at 100% 0%, oklch(0.75 0.2 150), transparent 65%)"
+            : "radial-gradient(600px 180px at 100% 0%, oklch(0.62 0.22 275), transparent 65%)",
+        }}
+      />
+      <div className="relative flex flex-col sm:flex-row items-start gap-5">
+        <div className="shrink-0 mx-auto sm:mx-0">
+          <RadialGauge
+            value={pct}
+            size={124}
+            thickness={12}
+            ticks={10}
+            from={complete ? "oklch(0.78 0.19 150)" : "oklch(0.75 0.17 200)"}
+            to={complete ? "oklch(0.62 0.2 160)" : "oklch(0.6 0.22 275)"}
+            label={<span className="text-2xl">{pct}%</span>}
+            sub={complete ? "達成！" : `残り ${remain}分`}
+          />
+        </div>
+
+        <div className="flex-1 min-w-0 w-full">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <div className="font-bold text-lg flex items-center gap-2 flex-wrap">
+                <span className="truncate">{g.title}</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full border bg-muted/60 text-muted-foreground font-normal">
+                  {g.scope === "manual" ? "個別記録" : "全学習記録"}
+                </span>
+                {complete && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 font-bold inline-flex items-center gap-1">
+                    <Sparkles className="h-3 w-3" />達成
+                  </span>
+                )}
+              </div>
+              {g.description && <div className="text-sm text-muted-foreground mt-1">{g.description}</div>}
+            </div>
+            <div className="flex gap-1 shrink-0">
+              <Button size="sm" variant="ghost" onClick={() => setEditing((v) => !v)} title="編集"><Pencil className="h-4 w-4" /></Button>
+              <Button size="sm" variant={g.done ? "secondary" : "outline"} onClick={onToggle} title="完了にする"><Check className="h-4 w-4" /></Button>
+              <Button size="sm" variant="ghost" onClick={onRemove} title="削除"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+            </div>
           </div>
-          {g.description && <div className="text-sm text-muted-foreground mt-1">{g.description}</div>}
-          <div className="text-xs text-muted-foreground mt-2">
-            {cur} / {g.target_minutes} 分 ({pct}%) {g.deadline && `・期限 ${g.deadline}`}
+
+          <div className="mt-3">
+            <div className="flex justify-between text-xs mb-1.5">
+              <span className="font-semibold tabular-nums">{cur} / {g.target_minutes} 分</span>
+              <span className="text-muted-foreground tabular-nums">{pct}%</span>
+            </div>
+            <PowerBar
+              value={pct}
+              height={18}
+              from={complete ? "oklch(0.8 0.18 150)" : "oklch(0.78 0.16 200)"}
+              to={complete ? "oklch(0.62 0.2 160)" : "oklch(0.6 0.22 275)"}
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-2 mt-3 text-[11px]">
+            {daysLeft !== null && (
+              <span className={`px-2 py-1 rounded-full border inline-flex items-center gap-1 ${
+                daysLeft < 0 ? "bg-destructive/10 text-destructive border-destructive/30"
+                : daysLeft <= 3 ? "bg-amber-500/15 text-amber-700 border-amber-500/30"
+                : "bg-muted text-muted-foreground border-border"}`}>
+                <CalendarClock className="h-3 w-3" />
+                {daysLeft < 0 ? `期限を ${Math.abs(daysLeft)} 日超過` : `期限まで ${daysLeft} 日`}
+              </span>
+            )}
+            {needPerDay !== null && !complete && (
+              <span className="px-2 py-1 rounded-full border bg-primary/10 text-primary border-primary/25 inline-flex items-center gap-1">
+                <Flame className="h-3 w-3" />1日 {needPerDay} 分ペースで達成
+              </span>
+            )}
             {g.scope === "all" && g.count_from && (
-              <> ・ 開始 {new Date(g.count_from).toLocaleString()}</>
+              <span className="px-2 py-1 rounded-full border bg-muted text-muted-foreground">
+                開始 {new Date(g.count_from).toLocaleString("ja-JP")}
+              </span>
             )}
           </div>
-          <Progress value={pct} className="mt-2 h-2" />
 
           {editing && (
-            <div className="mt-3 grid grid-cols-2 gap-2 rounded-md border p-3 bg-muted/30">
+            <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl border p-3 bg-muted/30">
               <div><Label className="text-xs">目標時間(分)</Label><Input type="number" value={target} onChange={(e) => setTarget(+e.target.value)} /></div>
               <div><Label className="text-xs">期限</Label><Input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} /></div>
               <div className="col-span-2"><Label className="text-xs">計測開始日時</Label><Input type="datetime-local" value={countFrom} onChange={(e) => setCountFrom(e.target.value)} /></div>
@@ -197,15 +268,11 @@ function GoalCard({ g, cur, pct, onToggle, onRemove, onAddManual, onSaved }: {
             <ManualAdder onAdd={(m) => onAddManual(m)} />
           )}
         </div>
-        <div className="flex gap-1">
-          <Button size="sm" variant="ghost" onClick={() => setEditing((v) => !v)} title="編集"><Pencil className="h-4 w-4" /></Button>
-          <Button size="sm" variant={g.done ? "secondary" : "outline"} onClick={onToggle}><Check className="h-4 w-4" /></Button>
-          <Button size="sm" variant="ghost" onClick={onRemove}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-        </div>
       </div>
     </Card>
   );
 }
+
 
 function ManualAdder({ onAdd }: { onAdd: (m: number) => void }) {
   const [val, setVal] = useState(30);

@@ -10,7 +10,9 @@ import {
   type AiDiagnostics,
   type AiEnginePref,
 } from "@/lib/ai-provider";
+import { WEBLLM_MODELS, setWebLlmModelId } from "@/lib/web-llm";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AiRunIndicator } from "@/components/AiRunIndicator";
 import { Progress } from "@/components/ui/progress";
@@ -157,7 +159,26 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
             <span className="font-semibold">WebLLM: {statusLabel(d.webllm.status)}</span>
           </div>
           <div className="text-muted-foreground whitespace-pre-wrap text-[10px]">{d.webllm.reason}</div>
+          <div className="flex items-center gap-2 pt-1">
+            <span className="text-[10px] text-muted-foreground shrink-0">モデル:</span>
+            <Select
+              value={d.webllm.modelId}
+              onValueChange={(v) => { setWebLlmModelId(v); refresh(); }}
+            >
+              <SelectTrigger className="h-7 text-[11px] flex-1"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {WEBLLM_MODELS.map((m) => (
+                  <SelectItem key={m.id} value={m.id}>{m.label}・{m.sizeLabel}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="text-[10px] text-muted-foreground">
+            {WEBLLM_MODELS.find((m) => m.id === d.webllm.modelId)?.note}
+            <br />大きいモデルほど賢くなりますが、初回ダウンロードが重くなります。
+          </div>
         </div>
+
         <div className="rounded border p-2 space-y-1">
           <div className="flex items-center gap-2">
             <span className={`h-2 w-2 rounded-full ${statusColor(d.cpu.status)}`} />
