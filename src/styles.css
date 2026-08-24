@@ -438,7 +438,7 @@ html.high-contrast * { border-color: currentColor !important; }
 }
 .gt-widget .goog-te-combo,
 .gt-widget .goog-te-combo * {
-  color: hsl(var(--foreground)) !important;
+  color: var(--foreground) !important;
   font-size: 0.75rem !important;
 }
 .gt-widget .goog-te-gadget-simple {
