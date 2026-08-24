@@ -14,33 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      account_links: {
-        Row: {
-          created_at: string
-          id: string
-          kind: string
-          label: string | null
-          linked_user_id: string
-          owner_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          kind?: string
-          label?: string | null
-          linked_user_id: string
-          owner_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          kind?: string
-          label?: string | null
-          linked_user_id?: string
-          owner_id?: string
-        }
-        Relationships: []
-      }
       admin_audit_log: {
         Row: {
           action: string
