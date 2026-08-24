@@ -71,14 +71,6 @@ function OrgsPage() {
     load();
   };
 
-  const create = async () => {
-    setBusy(true);
-    const { error } = await (supabase as any).rpc("org_create", { _name: name, _description: desc || null });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success("組織を申請しました。運営の承認をお待ちください");
-    setName(""); setDesc(""); setShowCreate(false); load();
-  };
 
   const join = async () => {
     setBusy(true);
