@@ -16,6 +16,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as ForgotRouteImport } from './routes/forgot'
+import { Route as AllServicesRouteImport } from './routes/all-services'
 import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
@@ -118,6 +119,11 @@ const HelpRoute = HelpRouteImport.update({
 const ForgotRoute = ForgotRouteImport.update({
   id: '/forgot',
   path: '/forgot',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AllServicesRoute = AllServicesRouteImport.update({
+  id: '/all-services',
+  path: '/all-services',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
@@ -491,6 +497,7 @@ const AuthenticatedMakronPackPackIdDashboardRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin-login': typeof AdminLoginRoute
+  '/all-services': typeof AllServicesRoute
   '/forgot': typeof ForgotRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
@@ -567,6 +574,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin-login': typeof AdminLoginRoute
+  '/all-services': typeof AllServicesRoute
   '/forgot': typeof ForgotRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
@@ -639,6 +647,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/admin-login': typeof AdminLoginRoute
+  '/all-services': typeof AllServicesRoute
   '/forgot': typeof ForgotRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
@@ -717,6 +726,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin-login'
+    | '/all-services'
     | '/forgot'
     | '/help'
     | '/login'
@@ -793,6 +803,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin-login'
+    | '/all-services'
     | '/forgot'
     | '/help'
     | '/login'
@@ -864,6 +875,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/admin-login'
+    | '/all-services'
     | '/forgot'
     | '/help'
     | '/login'
@@ -942,6 +954,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
+  AllServicesRoute: typeof AllServicesRoute
   ForgotRoute: typeof ForgotRoute
   HelpRoute: typeof HelpRoute
   LoginRoute: typeof LoginRoute
@@ -1004,6 +1017,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot'
       fullPath: '/forgot'
       preLoaderRoute: typeof ForgotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/all-services': {
+      id: '/all-services'
+      path: '/all-services'
+      fullPath: '/all-services'
+      preLoaderRoute: typeof AllServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin-login': {
@@ -1698,6 +1718,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
+  AllServicesRoute: AllServicesRoute,
   ForgotRoute: ForgotRoute,
   HelpRoute: HelpRoute,
   LoginRoute: LoginRoute,
