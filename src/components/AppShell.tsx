@@ -20,6 +20,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useAdminNavConfig } from "@/lib/admin-nav";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
+import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 
 export const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
@@ -363,10 +364,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         <TimerIndicator />
         {/* Desktop top bar */}
         {!isMobile && (
-          <div className="sticky top-0 z-30 flex h-12 justify-end items-center gap-1 px-4 border-b liquid-bar">
+          <div className="sticky top-0 z-30 flex h-12 justify-end items-center gap-2 px-4 border-b liquid-bar">
             <ChromeAiStatusBadge compact />
             <div className="mx-2 h-4 w-px bg-border/70" />
             <AccountSwitcher />
+            <GoogleTranslateWidget />
           </div>
         )}
 
@@ -393,6 +395,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="ml-auto flex items-center gap-1.5">
               <SearchBar />
               <AccountSwitcher />
+              <GoogleTranslateWidget />
               <Avatar className="h-9 w-9 ring-2 ring-primary/25">
                 {profile?.avatar_url ? <AvatarImage src={profile.avatar_url} alt={displayName} /> : null}
                 <AvatarFallback>{initial}</AvatarFallback>

@@ -25,7 +25,6 @@ import { loadAndApplyUserTheme } from "@/lib/theme";
 import { useRouterState as useRS } from "@tanstack/react-router";
 import { useUserPrefs } from "@/lib/user-prefs";
 import { I18nProvider } from "@/lib/i18n";
-import { AutoTranslate } from "@/components/AutoTranslate";
 
 function NotFoundComponent() {
   return (
@@ -189,7 +188,6 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <I18nProvider>
-        <AutoTranslate />
         <MaintenanceProvider>
           <RestrictionProvider>
             <MaintenanceGate>

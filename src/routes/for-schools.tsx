@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import logoUrl from "@/assets/logo.png";
 
 const TITLE = "学校・塾の方へ（組織機能） | StudyΩ";
@@ -65,6 +66,7 @@ function ForSchoolsPage() {
             <Link to="/all-services" className="hidden rounded-full px-3 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">全機能</Link>
             <Link to="/guide" className="hidden rounded-full px-3 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">使い方</Link>
             <Link to="/login" className="cta px-5 py-2 text-sm">はじめる</Link>
+            <GoogleTranslateWidget />
           </nav>
         </div>
       </header>

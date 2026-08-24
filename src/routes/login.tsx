@@ -12,7 +12,7 @@ import { Shield, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { signInWithUsername, checkUsernameAvailable } from "@/lib/username.functions";
 import { EmailVerifyNotice } from "@/components/auth/EmailVerifyNotice";
-import { useI18n, LANGS, type Lang } from "@/lib/i18n";
+import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import logoUrl from "@/assets/logo.png";
 import googleLogo from "@/assets/google-logo.svg.asset.json";
 
@@ -40,7 +40,6 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const { user, loading } = useAuth();
-  const { lang, setLang } = useI18n();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [accountKind, setAccountKind] = useState<"child" | "parent">("child");
@@ -339,15 +338,9 @@ function LoginPage() {
         )}
       </div>
 
-      <select
-        value={lang}
-        onChange={(e) => setLang(e.target.value as Lang)}
-        aria-label="Language"
-        data-no-translate
-        className="absolute top-4 right-4 rounded-md border bg-background/80 backdrop-blur px-2 py-1.5 text-xs text-foreground"
-      >
-        {LANGS.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
-      </select>
+      <div className="absolute top-4 right-4">
+        <GoogleTranslateWidget />
+      </div>
       <Link
         to="/admin-login"
         className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-md border bg-background/80 backdrop-blur px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition"

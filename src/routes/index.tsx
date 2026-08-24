@@ -1,4 +1,5 @@
-import { useI18n, LANGS, type Lang } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
+import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
@@ -48,7 +49,7 @@ function LandingRoute() {
 }
 
 function LandingPage({ isAuthed }: { isAuthed: boolean }) {
-  const { lang, setLang, t } = useI18n();
+  const { t } = useI18n();
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
       {/* Ambient background */}
@@ -77,15 +78,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
             ) : (
               <Link to="/login" className="cta px-5 py-2 text-sm">{t("landing.start")}</Link>
             )}
-            <select
-              value={lang}
-              onChange={(e) => setLang(e.target.value as Lang)}
-              aria-label="Language"
-              data-no-translate
-              className="ml-2 rounded-full border bg-muted/50 px-2 py-1 text-[10px] sm:text-xs text-foreground"
-            >
-              {LANGS.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
-            </select>
+            <GoogleTranslateWidget />
           </nav>
         </div>
       </header>
@@ -263,15 +256,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
             <Link to="/terms" className="transition hover:text-foreground">{t("landing.terms")}</Link>
             <Link to="/privacy" className="transition hover:text-foreground">{t("landing.privacy")}</Link>
             <Link to="/login" className="transition hover:text-foreground">{t("login.title")}</Link>
-            <select
-              value={lang}
-              onChange={(e) => setLang(e.target.value as Lang)}
-              aria-label="Language"
-              data-no-translate
-              className="ml-2 rounded-full border bg-muted/50 px-2 py-1 text-[10px] sm:text-xs text-foreground"
-            >
-              {LANGS.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
-            </select>
+            <GoogleTranslateWidget />
           </nav>
         </div>
       </footer>
