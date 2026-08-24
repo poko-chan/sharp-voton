@@ -77,7 +77,8 @@ function Dashboard() {
   const loadDashboard = async (uid: string) => {
     const [logsRes, goalsAllRes, annRes, gradesRes, subsRes] = await Promise.all([
       supabase.from("study_logs")
-        .select("id, date, duration_minutes, subject_id, start_time, memo, subjects(name, color)")
+        .select("id, date, duration_minutes, subject_id, start_time, content, materials(title), subjects(name, color)")
+
         .eq("user_id", uid).order("date", { ascending: false }).limit(2000),
       supabase.from("goals").select("*").eq("user_id", uid).order("created_at", { ascending: false }),
       supabase.from("announcements").select("id, title, body, publish_at, tag")
