@@ -75,9 +75,7 @@ function MissionsPage() {
     try {
       // サーバー側(DB)でも冪等: daily_missions の (user_id, date, kind) 一意制約により
       // 既に受取済みなら再付与されない
-      const { data, error } = await (supabase as any).rpc("claim_daily_mission", {
-        _kind: t.code, _date: today, _target: t.target, _reward_coins: t.reward_coins,
-      });
+      const { data, error } = await (supabase as any).rpc("claim_daily_mission", { _kind: t.code });
       if (error) {
         toast.error(error.message);
         setClaimed((prev) => { const n = new Set(prev); n.delete(t.code); return n; });
