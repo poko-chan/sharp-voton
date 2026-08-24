@@ -20,7 +20,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
-  const [accountKind, setAccountKind] = useState<"child" | "parent" | "adult" | null>(null);
+  const [accountKind, setAccountKind] = useState<"child" | "parent" | "adult" | "org" | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchRole = async (userId: string) => {
