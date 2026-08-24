@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Sparkles, Send, Paperclip, Loader2, X, Trash2, Plus, MessageSquare, Pencil } from "lucide-react";
+import { Sparkles, Send, Paperclip, Loader2, X, Trash2, Plus, MessageSquare, Pencil, ChevronDown, Brain, Search } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import {
@@ -19,24 +19,47 @@ import {
 } from "@/lib/tutor.functions";
 import { isAiUsable, createAiSession } from "@/lib/ai-provider";
 import { AiUnavailable } from "@/components/AiUnavailable";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 type Attachment = { url: string; name: string; type: string };
 type Msg = { id: string; role: string; content: string; attachments: Attachment[]; created_at: string; thread_id: string | null };
 type Thread = { id: string; title: string; updated_at: string; created_at: string };
 
-const baseSystem = (ctx: any) =>
-  `あなたは${ctx?.displayName ?? "生徒"}さん専属の優しい家庭教師です。日本語で答え、まずヒントを与え段階的に解説してください。マークダウンを使い、画像が添付されていればその内容を読み取り解説します。
+const TOOL_MARKER = "TOOL: get_study_context";
+const NO_TOOL_MARKER = "TOOL: none";
 
-【生徒の学習状況（直近30日）】
-- 学習時間: ${ctx?.totalMinutes30d ?? 0}分 / 活動日: ${ctx?.activeDays30d ?? 0}日
-- 登録科目: ${(ctx?.subjectsRegistered ?? []).join("、") || "なし"}
-- よく勉強: ${(ctx?.topSubjects ?? []).map((s: any) => `${s.name}(${s.minutes}分)`).join("、") || "—"}
-- 苦手トピック: ${(ctx?.weakTopics ?? []).map((w: any) => `${w.topic}(${w.wrong}/${w.total}誤)`).join("、") || "—"}
-- 進行中の目標: ${(ctx?.activeGoals ?? []).map((g: any) => `${g.title}(${g.progress_minutes}/${g.target_minutes}分)`).join("、") || "—"}
+const detectSystem = () =>
+  `あなたはAIチャットのアシスタントです。次のツールが使えます。
+
+- get_study_context: ユーザーの学習時間・登録科目・進行中の目標・苦手トピック・直近の学習メモなど、学習データを取得します。
+
+ユーザーの直近の発言が、学習状況（勉強時間、進捗、苦手分野、目標の達成度など）に関する質問や、それを踏まえたアドバイスを求めるものであれば、説明を一切せず1行だけ次を出力してください:
+${TOOL_MARKER}
+
+そうでなければ、説明を一切せず1行だけ次を出力してください:
+${NO_TOOL_MARKER}
+
+他の文章は絶対に出力しないでください。`;
+
+const answerSystem = (displayName: string, ctx: any | null) =>
+  `あなたは${displayName}さん専属の優しいAIチャットアシスタントです。日本語で答え、まずヒントを与え段階的に解説してください。マークダウンを使い、画像が添付されていればその内容を読み取り解説します。
+${
+  ctx
+    ? `
+【生徒の学習状況（直近30日・ツールで取得済み）】
+- 学習時間: ${ctx.totalMinutes30d ?? 0}分 / 活動日: ${ctx.activeDays30d ?? 0}日
+- 登録科目: ${(ctx.subjectsRegistered ?? []).join("、") || "なし"}
+- よく勉強: ${(ctx.topSubjects ?? []).map((s: any) => \`\${s.name}(\${s.minutes}分)\`).join("、") || "—"}
+- 苦手トピック: ${(ctx.weakTopics ?? []).map((w: any) => \`\${w.topic}(\${w.wrong}/\${w.total}誤)\`).join("、") || "—"}
+- 進行中の目標: ${(ctx.activeGoals ?? []).map((g: any) => \`\${g.title}(\${g.progress_minutes}/\${g.target_minutes}分)\`).join("、") || "—"}
 - 直近の学習メモ:
-${ctx?.recentNotes ?? "—"}
+${ctx.recentNotes ?? "—"}
 
-これらを踏まえ、生徒の弱点に寄り添ったアドバイスをしてください。`;
+これらを踏まえ、生徒の弱点に寄り添ったアドバイスをしてください。`
+    : ""
+}`;
+
+type ThinkingStep = { label: string; done: boolean };
 
 function TutorPage() {
   const { user } = useAuth();
