@@ -82,10 +82,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const loadProfile = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from("profiles")
-      .select("display_name, username, avatar_url, notify_daily_reminder, reminder_time")
-      .eq("id", user.id).maybeSingle();
+    const { data } = await (supabase as any).rpc("my_profile_private");
     setProfile(data ?? null);
     if (data) {
       setNotifPrefs({
@@ -93,6 +90,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         reminder_time: ((data as any).reminder_time ?? "20:00").slice(0, 5),
       });
     }
+
   }, [user]);
 
   const loadLevel = useCallback(async () => {
