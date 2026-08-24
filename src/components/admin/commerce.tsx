@@ -20,10 +20,18 @@ export function OrgsAdminTab() {
   const load = async () => {
     const { data: ap } = await (supabase as any)
       .from("organization_applications")
-      .select("*, profile:profiles!organization_applications_applicant_id_fkey(username, display_name, email)")
+      .select("*")
       .order("created_at", { ascending: false })
       .limit(100);
-    setApps(ap ?? []);
+    const rows = (ap ?? []) as any[];
+    const ids = [...new Set(rows.map((r) => r.applicant_id))];
+    let profByUser: Record<string, any> = {};
+    if (ids.length > 0) {
+      const { data: profs } = await (supabase as any)
+        .from("profiles").select("id, username, display_name").in("id", ids);
+      profByUser = Object.fromEntries(((profs ?? []) as any[]).map((p) => [p.id, p]));
+    }
+    setApps(rows.map((r) => ({ ...r, profile: profByUser[r.applicant_id] ?? null })));
     const { data: p } = await (supabase as any).from("organizations")
       .select("*, profile:profiles!organizations_created_by_fkey(username, display_name)")
       .eq("status", "pending").order("created_at", { ascending: false });
