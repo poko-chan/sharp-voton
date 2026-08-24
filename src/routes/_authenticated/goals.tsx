@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trophy, Plus, Trash2, Check, Pencil, Save, X } from "lucide-react";
+import { RadialGauge, PowerBar } from "@/components/RadialGauge";
+import { Trophy, Plus, Trash2, Check, Pencil, Save, X, Sparkles, CalendarClock, Flame } from "lucide-react";
+
 import { toast } from "sonner";
 
 type Goal = {
