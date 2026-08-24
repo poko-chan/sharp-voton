@@ -49,7 +49,7 @@ function LandingRoute() {
 }
 
 function LandingPage({ isAuthed }: { isAuthed: boolean }) {
-  const { lang, setLang, t } = useI18n();
+  const { t } = useI18n();
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
       {/* Ambient background */}
