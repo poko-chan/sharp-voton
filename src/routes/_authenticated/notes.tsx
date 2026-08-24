@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ type Note = {
   color: string;
   x: number;
   y: number;
+  z_index: number;
 };
 
 const COLORS: { key: string; bg: string; ring: string }[] = [
@@ -36,22 +37,28 @@ function NotesPage() {
     if (!user) return;
     const { data } = await supabase
       .from("sticky_notes")
-      .select("id, content, color, x, y")
+      .select("id, content, color, x, y, z_index")
       .eq("user_id", user.id)
-      .order("created_at");
+      .order("z_index", { ascending: true });
     setNotes((data as Note[]) ?? []);
   };
   useEffect(() => {
     load();
   }, [user]);
 
+  const nextZIndex = () => {
+    const max = notes.reduce((m, n) => Math.max(m, n.z_index ?? 0), 0);
+    return max + 1;
+  };
+
   const addNote = async (color = "yellow") => {
     if (!user) return;
     const x = Math.floor(40 + Math.random() * 200);
     const y = Math.floor(40 + Math.random() * 200);
+    const z_index = nextZIndex();
     const { data, error } = await supabase
       .from("sticky_notes")
-      .insert({ user_id: user.id, content: "", color, x, y })
+      .insert({ user_id: user.id, content: "", color, x, y, z_index })
       .select()
       .single();
     if (error) return toast.error(error.message);
@@ -68,18 +75,27 @@ function NotesPage() {
     await supabase.from("sticky_notes").delete().eq("id", id);
   };
 
+  /** 付箋を最前面に持ち上げる（z_indexをDBに保存） */
+  const bringToFront = (note: Note) => {
+    const z = nextZIndex();
+    if (note.z_index === z - 1 && Math.max(0, ...notes.map((n) => n.z_index ?? 0)) === note.z_index) return;
+    updateNote(note.id, { z_index: z });
+  };
+
   const onDragStart = (e: React.PointerEvent, note: Note) => {
     const target = e.currentTarget as HTMLElement;
     target.setPointerCapture(e.pointerId);
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const origX = note.x;
-    const origY = note.y;
-    let lastX = origX;
-    let lastY = origY;
+    bringToFront(note);
+    // ポインタと付箋左上との相対オフセットを保持し、位置ずれを防ぐ
+    const boardRect = boardRef.current?.getBoundingClientRect();
+    const offsetX = e.clientX - (boardRect ? boardRect.left + note.x : note.x);
+    const offsetY = e.clientY - (boardRect ? boardRect.top + note.y : note.y);
+    let lastX = note.x;
+    let lastY = note.y;
     const onMove = (ev: PointerEvent) => {
-      lastX = Math.max(0, origX + (ev.clientX - startX));
-      lastY = Math.max(0, origY + (ev.clientY - startY));
+      const rect = boardRef.current?.getBoundingClientRect();
+      lastX = Math.max(0, ev.clientX - offsetX - (rect ? rect.left : 0));
+      lastY = Math.max(0, ev.clientY - offsetY - (rect ? rect.top : 0));
       setNotes((p) => p.map((n) => (n.id === note.id ? { ...n, x: lastX, y: lastY } : n)));
     };
     const onUp = () => {
@@ -90,6 +106,8 @@ function NotesPage() {
     target.addEventListener("pointermove", onMove);
     target.addEventListener("pointerup", onUp);
   };
+
+  const orderedNotes = [...notes].sort((a, b) => (a.z_index ?? 0) - (b.z_index ?? 0));
 
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-4">
@@ -122,15 +140,17 @@ function NotesPage() {
             右上から色を選んで付箋を追加
           </p>
         )}
-        {notes.map((n) => {
+        {orderedNotes.map((n) => {
           const c = colorOf(n.color);
           return (
             <div
               key={n.id}
               className="absolute w-52 h-52 rounded-lg shadow-lg flex flex-col"
+              onPointerDown={() => bringToFront(n)}
               style={{
                 left: n.x,
                 top: n.y,
+                zIndex: n.z_index ?? 0,
                 background: c.bg,
                 border: `2px solid ${c.ring}`,
               }}
@@ -152,6 +172,7 @@ function NotesPage() {
               <textarea
                 value={n.content}
                 onChange={(e) => updateNote(n.id, { content: e.target.value })}
+                onPointerDown={() => bringToFront(n)}
                 placeholder="メモを入力..."
                 className="flex-1 bg-transparent p-2 text-sm resize-none focus:outline-none"
               />

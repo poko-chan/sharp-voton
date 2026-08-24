@@ -27,8 +27,7 @@ interface Subject { id: string; name: string; color: string; sort_order?: number
 
 function StudyPage() {
   const { user } = useAuth();
-  const orderedSubjects = useOrderedSubjects();
-  const [subjectsVersion, setSubjectsVersion] = useState(0);
+  const { subjects: orderedSubjects, reload: reloadSubjects, move: moveSubject } = useOrderedSubjects();
   const [materialIds, setMaterialIds] = useState<string[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
   const [newSubject, setNewSubject] = useState("");
@@ -41,7 +40,7 @@ function StudyPage() {
 
   const load = async () => {
     if (!user) return;
-    setSubjectsVersion((v) => v + 1);
+    reloadSubjects();
     const { data: l } = await supabase.from("study_logs").select("*, subjects(id,name,color)").eq("user_id", user.id).order("date", { ascending: false }).order("start_time", { ascending: true }).limit(1000);
     setLogs(l ?? []);
     emitProfileChange();
@@ -216,8 +215,17 @@ function StudyPage() {
             <Button onClick={addSubject}><Plus className="h-4 w-4" /></Button>
           </div>
           <div className="space-y-1">
-            {subjects.map((s) => (
-              <SubjectRow key={s.id} subject={s} onChanged={load} onDelete={() => delSubject(s.id)} />
+            {subjects.map((s, idx) => (
+              <SubjectRow
+                key={s.id}
+                subject={s}
+                onChanged={load}
+                onDelete={() => delSubject(s.id)}
+                onMoveUp={() => moveSubject(s.id, "up")}
+                onMoveDown={() => moveSubject(s.id, "down")}
+                canMoveUp={idx > 0}
+                canMoveDown={idx < subjects.length - 1}
+              />
             ))}
           </div>
         </Card>
@@ -485,7 +493,7 @@ function LogRow({ log, onChange }: { log: any; onChange: () => void }) {
   );
 }
 
-function SubjectRow({ subject, onChanged, onDelete }: { subject: Subject; onChanged: () => void; onDelete: () => void }) {
+function SubjectRow({ subject, onChanged, onDelete, onMoveUp, onMoveDown, canMoveUp, canMoveDown }: { subject: Subject; onChanged: () => void; onDelete: () => void; onMoveUp: () => void; onMoveDown: () => void; canMoveUp: boolean; canMoveDown: boolean }) {
   const [edit, setEdit] = useState(false);
   const [name, setName] = useState(subject.name);
   const [color, setColor] = useState(subject.color);
@@ -512,6 +520,8 @@ function SubjectRow({ subject, onChanged, onDelete }: { subject: Subject; onChan
         <span>{subject.name}</span>
       </div>
       <div className="flex items-center gap-1">
+        <button onClick={onMoveUp} disabled={!canMoveUp} className="text-muted-foreground hover:text-foreground p-1 disabled:opacity-30 disabled:cursor-not-allowed" title="上へ"><ArrowUp className="h-3.5 w-3.5" /></button>
+        <button onClick={onMoveDown} disabled={!canMoveDown} className="text-muted-foreground hover:text-foreground p-1 disabled:opacity-30 disabled:cursor-not-allowed" title="下へ"><ArrowDown className="h-3.5 w-3.5" /></button>
         <button onClick={() => setEdit(true)} className="text-muted-foreground hover:text-foreground p-1" title="編集"><Pencil className="h-3.5 w-3.5" /></button>
         <button onClick={onDelete} className="text-destructive hover:opacity-70 p-1" title="削除"><Trash2 className="h-4 w-4" /></button>
       </div>
