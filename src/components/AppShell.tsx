@@ -20,6 +20,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useAdminNavConfig } from "@/lib/admin-nav";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
+import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 
 export const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
