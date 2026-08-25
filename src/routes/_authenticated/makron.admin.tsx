@@ -60,10 +60,11 @@ function AdminPage() {
     const { data: f } = await (supabase as any).from("makron_fields").select("*").order("order_idx").order("name");
     setFields(f ?? []);
   };
-  const loadQuestions = async (unitId: string) => {
-    const { data } = await (supabase as any).from("makron_questions").select(QUESTION_COLUMNS).eq("unit_id", unitId).order("order_idx").order("created_at");
+  const loadQuestions = async (packId: string) => {
+    const { data } = await (supabase as any).from("makron_questions").select(QUESTION_COLUMNS).eq("pack_id", packId).order("order_idx").order("created_at");
     setQuestions(data ?? []);
   };
+
   const loadReports = async () => {
     const { data } = await (supabase as any).from("makron_reports")
       .select("*, question:makron_questions(id, prompt, type, options, explanation, unit_id, pack_id, image_url)")
@@ -366,10 +367,11 @@ function AdminPage() {
           {/* ---------------- 問題一覧 ---------------- */}
           <TabsContent value="questions" className="space-y-3">
             <Card className="p-3 flex flex-wrap items-center gap-2">
-              <span className="text-sm font-bold">単元:</span>
+              <span className="text-sm font-bold">パック:</span>
               <Select value={selUnit ?? ""} onValueChange={(v) => setSelUnit(v)}>
-                <SelectTrigger className="w-72"><SelectValue placeholder="単元を選択" /></SelectTrigger>
-                <SelectContent>{units.map((u) => <SelectItem key={u.id} value={u.id}>{u.title}</SelectItem>)}</SelectContent>
+                <SelectTrigger className="w-72"><SelectValue placeholder="パックを選択" /></SelectTrigger>
+                <SelectContent>{packs.map((p) => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}</SelectContent>
+
               </Select>
               <span className="text-[11px] text-muted-foreground ml-auto">問題の追加はパック画面から行います。</span>
             </Card>
