@@ -229,6 +229,13 @@ export async function webLlmEnsureLoaded(
 
   enginePromise = (async () => {
     try {
+      // 事前チェック: 保存容量が足りないと途中で Quota exceeded になる
+      await requestPersistentStorage();
+      const info = await storageInfo();
+      const need = estimateModelBytes(modelId);
+      if (info && info.quota > 0 && info.free < need) {
+        throw new Error(friendlyStorageError(new Error("QuotaExceededError"), info, modelId));
+      }
       const mod = await loadModule();
       const loadPromise = mod.CreateMLCEngine(modelId, {
         initProgressCallback: (p: any) => {
@@ -250,9 +257,11 @@ export async function webLlmEnsureLoaded(
     } catch (err: any) {
       engineDownloading = false;
       enginePromise = null;
-      throw err;
+      const info = await storageInfo();
+      throw new Error(friendlyStorageError(err, info, modelId));
     }
   })();
+
 
   return enginePromise;
 }
