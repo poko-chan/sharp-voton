@@ -25,6 +25,7 @@ export function AppearanceSection() {
 
 function ThemeSettings() {
   const { user } = useAuth();
+  const { save } = useUserPrefs();
   const [theme, setTheme] = useState<ThemeName>("default");
   useEffect(() => {
     if (!user) return;
@@ -33,6 +34,8 @@ function ThemeSettings() {
   }, [user]);
   const onPick = async (t: ThemeName) => {
     setTheme(t);
+    // カスタムアクセント色を解除して、テーマ本来の配色を反映させる
+    await save({ theme_color: undefined });
     if (user) await saveUserTheme(user.id, t);
   };
   return (
