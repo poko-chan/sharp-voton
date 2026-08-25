@@ -70,8 +70,9 @@ export function GroupChatPanel({
   });
   const readCount = (m: GroupMessage) =>
     (readers.data ?? []).filter(
-      (r) => r.user_id !== m.sender_id && r.last_read_at && new Date(r.last_read_at) >= new Date(m.created_at),
+      (r: GroupMember) => r.user_id !== m.sender_id && r.last_read_at && new Date(r.last_read_at) >= new Date(m.created_at),
     ).length;
+
 
   useEffect(() => {
 
