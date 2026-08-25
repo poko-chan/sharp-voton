@@ -184,15 +184,97 @@ function AdminPage() {
   const subjFields = fields.filter((f) => f.subject_id === selSubj);
   const visibleReports = reports.filter((r) => reportFilter === "all" || r.status === "open");
 
+  const createPack = async () => {
+    if (!pTitle.trim()) return;
+    const { error } = await (supabase as any).from("makron_packs").insert({
+      title: pTitle.trim(),
+      description: pDesc.trim() || null,
+      grade: pGrade || null,
+      subject_id: pSubj || null,
+      field_id: pField || null,
+      unit_id: pUnit || null,
+      created_by: user!.id,
+    });
+    if (error) return toast.error(error.message);
+    setPTitle(""); setPDesc(""); setPGrade(""); setPSubj(""); setPField(""); setPUnit("");
+    toast.success("パックを作成しました");
+    loadPacks();
+  };
+  const delPack = async (id: string) => {
+    if (!confirm("このパックと中の問題・履歴をすべて削除しますか？")) return;
+    const { error } = await (supabase as any).rpc("delete_makron_pack", { _pack_id: id });
+    if (error) return toast.error(error.message);
+    loadPacks();
+  };
+
   return (
     <MakronShell back="/makron/units" title="管理者画面">
       <div className="max-w-6xl mx-auto p-6">
-        <Tabs defaultValue="labels">
+        <Tabs defaultValue="packs">
           <TabsList>
+            <TabsTrigger value="packs"><Package className="h-3 w-3 mr-1" />パック管理</TabsTrigger>
             <TabsTrigger value="labels"><Tags className="h-3 w-3 mr-1" />ラベル管理</TabsTrigger>
             <TabsTrigger value="questions">問題一覧</TabsTrigger>
             <TabsTrigger value="reports"><Flag className="h-3 w-3 mr-1" />報告 ({reports.filter((r) => r.status === "open").length})</TabsTrigger>
           </TabsList>
+
+          {/* ---------------- パック管理 ---------------- */}
+          <TabsContent value="packs" className="space-y-4">
+            <Card className="p-4 space-y-2">
+              <div className="font-bold flex items-center gap-1"><Plus className="h-4 w-4" />新しい問題パック</div>
+              <div className="text-[11px] text-muted-foreground">学年・教科・分野・単元はすべて任意です。何も選ばずに単体のパックとして作成できます。</div>
+              <Input placeholder="パック名（例：中1 一次方程式 基礎）" value={pTitle} onChange={(e) => setPTitle(e.target.value)} />
+              <div className="grid sm:grid-cols-4 gap-2">
+                <Select value={pGrade} onValueChange={setPGrade}>
+                  <SelectTrigger><SelectValue placeholder="学年（任意）" /></SelectTrigger>
+                  <SelectContent>{GRADES.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={pSubj} onValueChange={(v) => { setPSubj(v); setPField(""); setPUnit(""); }}>
+                  <SelectTrigger><SelectValue placeholder="教科（任意）" /></SelectTrigger>
+                  <SelectContent>{subjects.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={pField} onValueChange={(v) => { setPField(v); setPUnit(""); }} disabled={!pSubj}>
+                  <SelectTrigger><SelectValue placeholder="分野（任意）" /></SelectTrigger>
+                  <SelectContent>{fields.filter((f) => f.subject_id === pSubj).map((f) => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={pUnit} onValueChange={setPUnit}>
+                  <SelectTrigger><SelectValue placeholder="単元（任意）" /></SelectTrigger>
+                  <SelectContent>
+                    {units
+                      .filter((u) => (!pSubj || u.subject_id === pSubj) && (!pField || u.field_id === pField))
+                      .map((u) => <SelectItem key={u.id} value={u.id}>{u.title}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Textarea rows={2} placeholder="説明（任意）" value={pDesc} onChange={(e) => setPDesc(e.target.value)} />
+              <Button onClick={createPack} disabled={!pTitle.trim()}>作成</Button>
+            </Card>
+
+            <Card className="p-4 space-y-1">
+              <div className="font-bold">パック一覧 ({packs.length})</div>
+              {packs.length === 0 && <div className="text-xs text-muted-foreground">まだパックがありません</div>}
+              {packs.map((p) => (
+                <div key={p.id} className="flex items-center gap-1 p-2 rounded hover:bg-accent">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{p.title}</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      {[p.grade,
+                        subjects.find((s) => s.id === (p.subject_id ?? units.find((u) => u.id === p.unit_id)?.subject_id))?.name,
+                        fields.find((f) => f.id === (p.field_id ?? units.find((u) => u.id === p.unit_id)?.field_id))?.name,
+                        units.find((u) => u.id === p.unit_id)?.title,
+                      ].filter(Boolean).join(" / ") || "未分類"} ・ {p.qcount?.[0]?.count ?? 0}問
+                    </div>
+                  </div>
+                  <Link to="/makron/pack/$packId" params={{ packId: p.id }}>
+                    <Button size="sm" variant="outline">問題を編集<ChevronRight className="h-3 w-3" /></Button>
+                  </Link>
+                  <Button size="sm" variant="ghost" className="text-destructive" onClick={() => delPack(p.id)}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+              ))}
+            </Card>
+          </TabsContent>
+
+
 
           {/* ---------------- ラベル管理 ---------------- */}
           <TabsContent value="labels" className="space-y-4">
