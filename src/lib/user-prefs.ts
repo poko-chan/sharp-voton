@@ -89,3 +89,85 @@ export function useUserPrefs() {
   };
   return { prefs, save };
 }
+// ============================================================================
+// ローカル保存の追加設定（DBカラムを持たないもの）。localStorage に保存する。
+// ============================================================================
+export type LocalPrefs = {
+  week_start_day: 0 | 1; // 0=日曜, 1=月曜
+  default_subject_id: string | null;
+  timer_default_minutes: number;
+  timer_auto_break: boolean;
+  timer_break_minutes: number;
+  sound_enabled: boolean;
+  dashboard_cards: string[];
+  list_page_size: number;
+  reduce_motion: boolean;
+  compact_mode: boolean;
+};
+
+export const DASHBOARD_CARD_OPTIONS: { value: string; label: string }[] = [
+  { value: "streak", label: "連続記録" },
+  { value: "today-chart", label: "今日のグラフ" },
+  { value: "weekly-diff", label: "週間の変化" },
+  { value: "goals", label: "目標" },
+  { value: "calendar", label: "カレンダー" },
+  { value: "ai-tips", label: "AIからのヒント" },
+];
+
+export const DEFAULT_LOCAL_PREFS: LocalPrefs = {
+  week_start_day: 1,
+  default_subject_id: null,
+  timer_default_minutes: 25,
+  timer_auto_break: false,
+  timer_break_minutes: 5,
+  sound_enabled: true,
+  dashboard_cards: ["streak", "today-chart", "weekly-diff"],
+  list_page_size: 20,
+  reduce_motion: false,
+  compact_mode: false,
+};
+
+const LOCAL_PREFS_KEY = "voton_local_prefs_v1";
+const localPrefsListeners = new Set<() => void>();
+
+function readLocalPrefs(): LocalPrefs {
+  if (typeof window === "undefined") return DEFAULT_LOCAL_PREFS;
+  try {
+    const raw = window.localStorage.getItem(LOCAL_PREFS_KEY);
+    if (!raw) return DEFAULT_LOCAL_PREFS;
+    return { ...DEFAULT_LOCAL_PREFS, ...JSON.parse(raw) };
+  } catch {
+    return DEFAULT_LOCAL_PREFS;
+  }
+}
+
+function applyLocalPrefsEffects(prefs: LocalPrefs) {
+  if (typeof document === "undefined") return;
+  document.documentElement.classList.toggle("reduce-motion", prefs.reduce_motion);
+  document.documentElement.classList.toggle("compact-mode", prefs.compact_mode);
+}
+
+export function useLocalPrefs() {
+  const [prefs, setPrefs] = useState<LocalPrefs>(() => readLocalPrefs());
+
+  useEffect(() => {
+    applyLocalPrefsEffects(prefs);
+  }, [prefs.reduce_motion, prefs.compact_mode]);
+
+  useEffect(() => {
+    const listener = () => setPrefs(readLocalPrefs());
+    localPrefsListeners.add(listener);
+    return () => { localPrefsListeners.delete(listener); };
+  }, []);
+
+  const save = (patch: Partial<LocalPrefs>) => {
+    const next = { ...readLocalPrefs(), ...patch };
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(LOCAL_PREFS_KEY, JSON.stringify(next));
+    }
+    setPrefs(next);
+    localPrefsListeners.forEach((l) => l());
+  };
+
+  return { prefs, save };
+}
