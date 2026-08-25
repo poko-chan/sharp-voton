@@ -11,9 +11,12 @@ import {
   sendGroupMessage,
   markGroupRead,
   fetchProfilesByIds,
+  fetchGroupMembers,
   type GroupMessage,
+  type GroupMember,
   type Profile,
 } from "@/lib/chat.functions";
+
 
 export function GroupChatPanel({
   userId,
