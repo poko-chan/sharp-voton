@@ -151,10 +151,16 @@ export function DmChatPanel({
                       </div>
                     )}
                   </Card>
-                  <span className="text-[10px] text-muted-foreground px-1">
+                  <span className="text-[10px] text-muted-foreground px-1 flex items-center gap-1">
+                    {mine && !isDeleted && (
+                      <span className={m.read_at ? "text-primary font-medium" : "opacity-60"}>
+                        {m.read_at ? "既読" : "未読"}
+                      </span>
+                    )}
                     {new Date(m.created_at).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}
                     {m.edited_at && !isDeleted ? " (編集済み)" : ""}
                   </span>
+
                 </div>
               </div>
             );
