@@ -78,7 +78,9 @@ export function useUserPrefs() {
     if (typeof document === "undefined") return;
     document.documentElement.style.fontSize = `${prefs.font_scale * 16}px`;
     document.documentElement.classList.toggle("high-contrast", prefs.high_contrast);
+    // カスタム色が未設定のときはインラインスタイルを外し、テーマ側の配色を有効にする
     if (prefs.theme_color) document.documentElement.style.setProperty("--primary", prefs.theme_color);
+    else document.documentElement.style.removeProperty("--primary");
     applyFontFamily(prefs.font_family);
   }, [prefs.font_scale, prefs.high_contrast, prefs.theme_color, prefs.font_family]);
   const save = async (patch: Partial<UserPrefs>) => {
