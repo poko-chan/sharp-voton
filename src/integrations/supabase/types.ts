@@ -6828,6 +6828,10 @@ export type Database = {
         Args: { _child: string; _parent: string }
         Returns: boolean
       }
+      is_study_room_member: {
+        Args: { _room: string; _user: string }
+        Returns: boolean
+      }
       join_class_by_code: { Args: { _code: string }; Returns: string }
       join_group_room_by_code: { Args: { _code: string }; Returns: string }
       jst_today: { Args: never; Returns: string }
