@@ -3,9 +3,9 @@ import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import { OrgApplyForm } from "@/components/org/OrgApplyForm";
 import logoUrl from "@/assets/logo.png";
 
-const TITLE = "学校・塾の方へ（組織機能） | StudyΩ";
+const TITLE = "学校・塾の方へ（組織機能） | Study#";
 const DESC =
-  "StudyΩ の組織機能なら、お知らせ・アンケート・チャット・共有カレンダーまでを1つのポータルで運用できます。学年やクラスは年度単位で管理。";
+  "Study# の組織機能なら、お知らせ・アンケート・チャット・共有カレンダーまでを1つのポータルで運用できます。学年やクラスは年度単位で管理。";
 
 export const Route = createFileRoute("/for-schools")({
   head: () => ({
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/for-schools")({
       { name: "twitter:title", content: TITLE },
       { name: "twitter:description", content: DESC },
     ],
-    links: [{ rel: "canonical", href: "https://omega-voton.lovable.app/for-schools" }],
+    links: [{ rel: "canonical", href: "https://sharp-voton.lovable.app/for-schools" }],
   }),
   component: ForSchoolsPage,
 });
@@ -92,7 +92,7 @@ function ForSchoolsPage() {
       <header className="sticky top-0 z-40 border-b liquid-bar">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <Link to="/" className="flex items-center gap-2.5">
-            <img src={logoUrl} alt="StudyΩ" width={32} height={32} className="h-8 w-8 rounded-xl" />
+            <img src={logoUrl} alt="Study#" width={32} height={32} className="h-8 w-8 rounded-xl" />
             <span className="font-display font-extrabold tracking-tight">
               Study<span className="text-gradient">Ω</span>
             </span>
@@ -124,7 +124,7 @@ function ForSchoolsPage() {
           教室の運営を、<span className="text-gradient">ひとつのポータル</span>に。
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-          プリント、連絡、集計、教材配布。バラバラに動いていた作業を、StudyΩ の組織機能でまとめます。
+          プリント、連絡、集計、教材配布。バラバラに動いていた作業を、Study# の組織機能でまとめます。
           生徒は普段使っている学習アプリの中から、そのまま参加できます。
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -200,7 +200,7 @@ function ForSchoolsPage() {
           <p className="section-eyebrow">Contact &amp; apply</p>
           <h2 className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">導入のお問い合わせ・申請</h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            種別を選び、StudyΩ アカウントでログインのうえ必要事項をご入力ください。送信後、組織タブから運営とのやり取りができます。
+            種別を選び、Study# アカウントでログインのうえ必要事項をご入力ください。送信後、組織タブから運営とのやり取りができます。
             承認されるまで組織の機能はご利用いただけません。
           </p>
           <div className="mt-6">

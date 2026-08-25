@@ -6,9 +6,9 @@ import { useAuth } from "@/lib/auth-context";
 import logoUrl from "@/assets/logo.png";
 import { CORE, MORE, STEPS, FAQ, SERVICE_COUNT } from "@/content/services";
 
-const TITLE = "Voton Study Omega（StudyΩ）— 学習のすべてを、ひとつに。";
+const TITLE = "Study#（Study#）— 学習のすべてを、ひとつに。";
 const DESC =
-  "StudyΩ は勉強記録・タイマー・カレンダー・問題演習・AIチャット・目標管理・組織/学校運営までを1つにまとめたオールインワン学習プラットフォームです。";
+  "Study# は勉強記録・タイマー・カレンダー・問題演習・AIチャット・目標管理・組織/学校運営までを1つにまとめたオールインワン学習プラットフォームです。";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:title", content: TITLE },
       { name: "twitter:description", content: DESC },
     ],
-    links: [{ rel: "canonical", href: "https://omega-voton.lovable.app/" }],
+    links: [{ rel: "canonical", href: "https://sharp-voton.lovable.app/" }],
   }),
   component: LandingRoute,
 });
@@ -62,7 +62,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
           <div className="flex items-center gap-2.5">
             <img
               src={logoUrl}
-              alt="Voton Study Omega ロゴ"
+              alt="Study# ロゴ"
               width={36}
               height={36}
               className="h-9 w-9 rounded-xl shadow-sm"
@@ -120,13 +120,13 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
         {/* Hero */}
         <section className="relative">
           <div className="relative mx-auto max-w-6xl px-4 py-16 text-center sm:py-28">
-            <span className="chip">Voton Study Omega — 旧 Voton Study+</span>
+            <span className="chip">Study# — 旧 Voton Study+</span>
             <h1 className="mx-auto mt-6 max-w-4xl font-display text-[2.5rem] font-black leading-[1.1] tracking-tight sm:text-6xl lg:text-7xl">
               学習のすべてを、<span className="text-gradient">ひとつに</span>。
-              <span className="mt-2 block text-2xl font-extrabold text-muted-foreground sm:text-3xl">StudyΩ</span>
+              <span className="mt-2 block text-2xl font-extrabold text-muted-foreground sm:text-3xl">Study#</span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-[0.95rem] leading-relaxed text-muted-foreground sm:text-lg">
-              記録する。集中する。解く。AIに聞く。仲間と続ける。学校や塾で運用する。 バラバラだった学習の道具を、StudyΩ
+              記録する。集中する。解く。AIに聞く。仲間と続ける。学校や塾で運用する。 バラバラだった学習の道具を、Study#
               はひとつのプラットフォームにまとめました。
             </p>
             <div className="mt-9 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
@@ -290,7 +290,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
             />
             <div className="relative">
               <h2 className="font-display text-3xl font-black tracking-tight sm:text-4xl">
-                今日から、<span className="text-gradient">StudyΩ</span>。
+                今日から、<span className="text-gradient">Study#</span>。
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:text-base">
                 まずは1回、タイマーを回すところから。積み上がった記録が、次の自分を連れてきます。
@@ -313,7 +313,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 text-sm text-muted-foreground sm:flex-row sm:justify-between">
           <div className="flex items-center gap-2">
             <img src={logoUrl} alt="" width={24} height={24} loading="lazy" className="h-6 w-6 rounded-md" />
-            <span>Voton Study Omega（StudyΩ）</span>
+            <span>Study#（Study#）</span>
           </div>
           <nav className="flex flex-wrap items-center justify-center gap-4">
             <Link to="/all-services" className="transition hover:text-foreground">

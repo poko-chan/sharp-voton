@@ -239,7 +239,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const sidebarContent = (
     <>
       <div className="p-5 flex items-center gap-3">
-        <img src={logoUrl} alt="StudyΩ ロゴ" className="h-12 w-12 rounded-2xl object-cover shadow-sm" />
+        <img src={logoUrl} alt="Study# ロゴ" className="h-12 w-12 rounded-2xl object-cover shadow-sm" />
         <div className="min-w-0">
           <ClockHeader version={version} />
         </div>
@@ -458,7 +458,7 @@ function ClockHeader({ version, compact }: { version: string; compact?: boolean 
     return (
       <div className="flex flex-col leading-none">
         <span className="text-[9px] text-muted-foreground">{date}</span>
-        <span className="text-sm font-bold tabular-nums">StudyΩ <span className="text-primary">{hh}:{mm}</span></span>
+        <span className="text-sm font-bold tabular-nums">Study# <span className="text-primary">{hh}:{mm}</span></span>
       </div>
     );
   }
@@ -466,7 +466,7 @@ function ClockHeader({ version, compact }: { version: string; compact?: boolean 
     <>
       <div className="text-[10px] text-muted-foreground leading-tight">{date}</div>
       <div className="font-bold text-lg leading-tight flex items-baseline gap-2">
-        <span>StudyΩ</span>
+        <span>Study#</span>
         <span className="text-sm tabular-nums text-primary font-semibold">{hh}:{mm}</span>
       </div>
       <div className="text-[10px] text-muted-foreground truncate">{version || "v1.0.0"}</div>

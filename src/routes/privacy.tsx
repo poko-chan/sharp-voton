@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PRIVACY, LAST_UPDATED } from "@/content/legal";
 
-const PRIVACY_TITLE = "プライバシーポリシー｜StudyΩ";
-const PRIVACY_DESC = "StudyΩ のプライバシーポリシー。取得する個人情報、利用目的、第三者提供、利用者の権利について説明します。";
-const PRIVACY_URL = "https://omega-voton.lovable.app/privacy";
+const PRIVACY_TITLE = "プライバシーポリシー｜Study#";
+const PRIVACY_DESC = "Study# のプライバシーポリシー。取得する個人情報、利用目的、第三者提供、利用者の権利について説明します。";
+const PRIVACY_URL = "https://sharp-voton.lovable.app/privacy";
 
 export const Route = createFileRoute("/privacy")({
   head: () => ({

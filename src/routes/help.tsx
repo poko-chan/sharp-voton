@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/accordion";
 import { listPublicFaqs, type PublicFaq } from "@/lib/faq.functions";
 
-const HELP_URL = "https://omega-voton.lovable.app/help";
-const HELP_TITLE = "ヘルプ・よくある質問｜StudyΩ";
-const HELP_DESC = "Voton Study Omega（StudyΩ）のよくある質問と回答。ログイン・アカウント・勉強記録・演習・組織利用に関する疑問を解決できます。";
+const HELP_URL = "https://sharp-voton.lovable.app/help";
+const HELP_TITLE = "ヘルプ・よくある質問｜Study#";
+const HELP_DESC = "Study#（Study#）のよくある質問と回答。ログイン・アカウント・勉強記録・演習・組織利用に関する疑問を解決できます。";
 
 export const Route = createFileRoute("/help")({
   loader: async () => ({ faqs: await listPublicFaqs() }),
@@ -74,7 +74,7 @@ function HelpPage() {
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 p-6">
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="flex items-center gap-3">
-          <img src={logoUrl} alt="StudyΩ 学習プラットフォームのロゴ" className="h-10 w-10 rounded-xl" />
+          <img src={logoUrl} alt="Study# 学習プラットフォームのロゴ" className="h-10 w-10 rounded-xl" />
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <HelpCircle className="h-7 w-7 text-primary" /> ヘルプ
           </h1>

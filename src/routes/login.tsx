@@ -18,10 +18,10 @@ import googleLogo from "@/assets/google-logo.svg.asset.json";
 
 export const Route = createFileRoute("/login")({
   head: () => {
-    const title = "ログイン｜StudyΩ — 学習を続けやすくする学習プラットフォーム";
+    const title = "ログイン｜Study# — 学習を続けやすくする学習プラットフォーム";
     const description =
-      "StudyΩ にログインして、勉強記録・集中タイマー・AI問題生成・AIチャット・学習目標管理などの学習サポート機能を使い始めましょう。新規登録もこちらから。";
-    const url = "https://omega-voton.lovable.app/login";
+      "Study# にログインして、勉強記録・集中タイマー・AI問題生成・AIチャット・学習目標管理などの学習サポート機能を使い始めましょう。新規登録もこちらから。";
+    const url = "https://sharp-voton.lovable.app/login";
     return {
       meta: [
         { title },
@@ -185,14 +185,14 @@ function LoginPage() {
             <div className="text-center space-y-2">
               <img
                 src={logoUrl}
-                alt="StudyΩ 学習プラットフォームの公式ロゴ"
+                alt="Study# 学習プラットフォームの公式ロゴ"
                 width={64}
                 height={64}
                 decoding="async"
                 fetchPriority="high"
                 className="mx-auto h-16 w-16 rounded-2xl shadow-md"
               />
-              <h1 className="text-3xl font-bold">StudyΩ — 学習記録と演習をまとめる学習プラットフォーム</h1>
+              <h1 className="text-3xl font-bold">Study# — 学習記録と演習をまとめる学習プラットフォーム</h1>
               <p className="text-sm text-muted-foreground">
                 {mode === "signin" ? "ログイン" : "新規登録"}してはじめましょう
               </p>

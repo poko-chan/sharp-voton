@@ -18,8 +18,8 @@ import { createSocialPost, listFeedPosts } from "@/lib/social.functions";
 
 export const Route = createFileRoute("/_authenticated/feed")({
   head: () => {
-    const title = "タイムライン｜StudyΩ — 勉強記録をシェア";
-    const description = "StudyΩ のタイムライン。勉強記録を投稿して、いいねやコメントで仲間とモチベーションを高め合えます。";
+    const title = "タイムライン｜Study# — 勉強記録をシェア";
+    const description = "Study# のタイムライン。勉強記録を投稿して、いいねやコメントで仲間とモチベーションを高め合えます。";
     return {
       meta: [
         { title },

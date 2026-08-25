@@ -59,7 +59,7 @@ function OrgProfilePage() {
     <div className="max-w-xl mx-auto p-6 space-y-3">
       <Link to="/organizations/$orgId" params={{ orgId }} className="text-sm underline text-muted-foreground">← 組織ホームへ</Link>
       <h1 className="text-xl font-bold flex items-center gap-2"><UserCircle className="h-5 w-5 text-primary" />組織内プロフィール</h1>
-      <p className="text-xs text-muted-foreground">この情報は組織の中でのみ表示されます（通常のStudyΩプロフィールとは別です）。</p>
+      <p className="text-xs text-muted-foreground">この情報は組織の中でのみ表示されます（通常のStudy#プロフィールとは別です）。</p>
       <Card className="p-4 space-y-3">
         <div>
           <div className="text-xs text-muted-foreground mb-1">組織内での表示名</div>

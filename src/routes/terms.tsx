@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { TERMS, LAST_UPDATED } from "@/content/legal";
 
-const TERMS_TITLE = "利用規約｜StudyΩ";
-const TERMS_DESC = "StudyΩ の利用規約。アカウント登録、禁止事項、AI機能の利用、免責事項などについて定めています。";
-const TERMS_URL = "https://omega-voton.lovable.app/terms";
+const TERMS_TITLE = "利用規約｜Study#";
+const TERMS_DESC = "Study# の利用規約。アカウント登録、禁止事項、AI機能の利用、免責事項などについて定めています。";
+const TERMS_URL = "https://sharp-voton.lovable.app/terms";
 
 export const Route = createFileRoute("/terms")({
   head: () => ({

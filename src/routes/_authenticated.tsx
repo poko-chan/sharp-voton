@@ -21,8 +21,8 @@ const ROUTE_SERVICE: Array<[string, string]> = [
 export const Route = createFileRoute("/_authenticated")({
   head: () => ({
     meta: [
-      { title: "マイページ｜Voton Study Omega（StudyΩ）" },
-      { name: "description", content: "Voton Study Omega（StudyΩ）のアプリ画面。勉強記録・タイマー・演習・組織管理をここから利用します。" },
+      { title: "マイページ｜Study#（Study#）" },
+      { name: "description", content: "Study#（Study#）のアプリ画面。勉強記録・タイマー・演習・組織管理をここから利用します。" },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),

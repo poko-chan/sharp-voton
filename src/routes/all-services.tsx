@@ -3,8 +3,8 @@ import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import logoUrl from "@/assets/logo.png";
 import { SERVICE_CATALOG, SERVICE_COUNT } from "@/content/services";
 
-const TITLE = "全サービス一覧 | StudyΩ（Voton Study Omega）";
-const DESC = `StudyΩ が備える${SERVICE_COUNT}以上の機能を、記録・集中・問題演習・AI・計画・組織運営・ソーシャル・安心運用のカテゴリ別にすべて掲載しています。`;
+const TITLE = "全サービス一覧 | Study#（Study#）";
+const DESC = `Study# が備える${SERVICE_COUNT}以上の機能を、記録・集中・問題演習・AI・計画・組織運営・ソーシャル・安心運用のカテゴリ別にすべて掲載しています。`;
 
 export const Route = createFileRoute("/all-services")({
   head: () => ({
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/all-services")({
       { name: "twitter:title", content: TITLE },
       { name: "twitter:description", content: DESC },
     ],
-    links: [{ rel: "canonical", href: "https://omega-voton.lovable.app/all-services" }],
+    links: [{ rel: "canonical", href: "https://sharp-voton.lovable.app/all-services" }],
   }),
   component: AllServicesPage,
 });
@@ -34,7 +34,7 @@ function AllServicesPage() {
       <header className="sticky top-0 z-40 border-b liquid-bar">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <Link to="/" className="flex items-center gap-2.5">
-            <img src={logoUrl} alt="StudyΩ" width={32} height={32} className="h-8 w-8 rounded-xl" />
+            <img src={logoUrl} alt="Study#" width={32} height={32} className="h-8 w-8 rounded-xl" />
             <span className="font-display font-extrabold tracking-tight">Study<span className="text-gradient">Ω</span></span>
           </Link>
           <nav className="flex items-center gap-1 text-sm">
@@ -49,7 +49,7 @@ function AllServicesPage() {
       <main className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
         <p className="section-eyebrow">All services</p>
         <h1 className="mt-2 font-display text-4xl font-black tracking-tight sm:text-5xl">
-          StudyΩ の<span className="text-gradient">全機能</span>
+          Study# の<span className="text-gradient">全機能</span>
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
           大小あわせて {SERVICE_COUNT} 以上の機能を搭載しています。ここでは、すべてをカテゴリ別に洗いざらい掲載します。

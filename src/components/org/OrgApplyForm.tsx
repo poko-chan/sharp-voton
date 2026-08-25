@@ -155,7 +155,7 @@ export function OrgApplyForm() {
 
       {step === 1 && (
         <div className="space-y-4">
-          <h3 className="font-bold">2. StudyΩ アカウントでログイン</h3>
+          <h3 className="font-bold">2. Study# アカウントでログイン</h3>
           {loading ? (
             <p className="text-sm text-muted-foreground">確認中...</p>
           ) : user ? (
@@ -179,8 +179,8 @@ export function OrgApplyForm() {
           ) : (
             <div className="space-y-3 text-sm text-muted-foreground">
               <p>
-                申請には StudyΩ アカウントが必要です。通常アカウント（学習用）でも、組織の管理だけに使う
-                「StudyΩ 組織アカウント」でも申請できます。
+                申請には Study# アカウントが必要です。通常アカウント（学習用）でも、組織の管理だけに使う
+                「Study# 組織アカウント」でも申請できます。
               </p>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Link to="/login" search={{ next: "/for-schools" } as any} className="cta">

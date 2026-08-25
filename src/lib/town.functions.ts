@@ -122,7 +122,7 @@ export const judgeTown = createServerFn({ method: "POST" })
       : 999;
     const recentHistory = (historyRes.data ?? []).map((h) => `${h.created_at.slice(0, 10)}: Δ${h.delta} (${h.reason ?? ""})`).join(" / ");
 
-    const systemPrompt = `あなたは学習ゲーム「StudyΩ」の町の発展を判定するAI裁定者です。
+    const systemPrompt = `あなたは学習ゲーム「Study#」の町の発展を判定するAI裁定者です。
 ユーザーが設定した「町の目標」と、過去30日の学習データを見て、町のステージ(stage)をどう変化させるか決めます。
 
 - stage は 0(廃墟) から無限大の整数。
