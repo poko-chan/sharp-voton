@@ -144,7 +144,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
                   )}
                   <Link
                     to="/all-services"
-                    className="cta-ghost border-white/25 bg-white/5 text-white hover:bg-white/10"
+                    className="cta-ghost cta-ghost-ink"
                   >
                     機能をぜんぶ見る
                   </Link>

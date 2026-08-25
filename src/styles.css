@@ -267,6 +267,13 @@
     transform: translateY(-2px);
   }
 
+  .cta-ghost-ink {
+    color: oklch(0.97 0.005 250);
+    border-color: color-mix(in oklab, white 26%, transparent);
+    background-color: color-mix(in oklab, white 7%, transparent);
+  }
+  .cta-ghost-ink:hover { background-color: color-mix(in oklab, white 14%, transparent); }
+
   .section-eyebrow {
     font-family: var(--font-display);
     font-size: 0.7rem;
