@@ -6595,27 +6595,6 @@ export type Database = {
       }
     }
     Views: {
-      public_profiles: {
-        Row: {
-          avatar_url: string | null
-          display_name: string | null
-          id: string | null
-          username: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          display_name?: string | null
-          id?: string | null
-          username?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          display_name?: string | null
-          id?: string | null
-          username?: string | null
-        }
-        Relationships: []
-      }
       weekly_coin_leaderboard: {
         Row: {
           avatar_url: string | null
@@ -7213,6 +7192,15 @@ export type Database = {
           votes: number
         }[]
       }
+      public_profiles_by_ids: {
+        Args: { _ids: string[] }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+          username: string
+        }[]
+      }
       purchase_shop_item: { Args: { _item_id: string }; Returns: Json }
       remove_from_chat_group: {
         Args: { _group: string; _user_id: string }
@@ -7221,6 +7209,15 @@ export type Database = {
       review_material_edit: {
         Args: { _approve: boolean; _edit_id: string; _note?: string }
         Returns: Json
+      }
+      search_public_profiles: {
+        Args: { _q: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+          username: string
+        }[]
       }
       sell_inventory_item: {
         Args: { _item_code: string; _qty?: number }
