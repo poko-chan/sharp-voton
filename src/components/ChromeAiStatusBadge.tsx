@@ -39,6 +39,9 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
   const [progressText, setProgressText] = useState<string>("");
   const [pref, setPref] = useState<AiEnginePref>("auto");
   const [diagnosticsError, setDiagnosticsError] = useState(false);
+  const [storage, setStorage] = useState<StorageInfo | null>(null);
+  const [clearing, setClearing] = useState(false);
+
 
   const refresh = async () => {
     try {
