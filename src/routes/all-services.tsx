@@ -3,7 +3,7 @@ import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import logoUrl from "@/assets/logo.png";
 import { SERVICE_CATALOG, SERVICE_COUNT } from "@/content/services";
 
-const TITLE = "全サービス一覧 | Study#（Study#）";
+const TITLE = "全サービス一覧 | Study#";
 const DESC = `Study# が備える${SERVICE_COUNT}以上の機能を、記録・集中・問題演習・AI・計画・組織運営・ソーシャル・安心運用のカテゴリ別にすべて掲載しています。`;
 
 export const Route = createFileRoute("/all-services")({

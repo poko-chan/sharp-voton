@@ -12,7 +12,7 @@ import { listPublicFaqs, type PublicFaq } from "@/lib/faq.functions";
 
 const HELP_URL = "https://sharp-voton.lovable.app/help";
 const HELP_TITLE = "ヘルプ・よくある質問｜Study#";
-const HELP_DESC = "Study#（Study#）のよくある質問と回答。ログイン・アカウント・勉強記録・演習・組織利用に関する疑問を解決できます。";
+const HELP_DESC = "Study#のよくある質問と回答。ログイン・アカウント・勉強記録・演習・組織利用に関する疑問を解決できます。";
 
 export const Route = createFileRoute("/help")({
   loader: async () => ({ faqs: await listPublicFaqs() }),

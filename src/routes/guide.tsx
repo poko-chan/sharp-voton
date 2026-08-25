@@ -3,7 +3,7 @@ import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import logoUrl from "@/assets/logo.png";
 import { STEPS, FAQ } from "@/content/services";
 
-const TITLE = "使い方ガイド | Study#（Study#）";
+const TITLE = "使い方ガイド | Study#";
 const DESC =
   "Study# のはじめ方を、アカウント作成から記録・Makron演習・AI復習・振り返りまでステップごとに解説。1日の使い方の例やよくある質問もまとめています。";
 

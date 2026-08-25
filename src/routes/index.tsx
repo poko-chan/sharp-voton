@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import logoUrl from "@/assets/logo.png";
 import { CORE, MORE, STEPS, FAQ, SERVICE_COUNT } from "@/content/services";
 
-const TITLE = "Study#（Study#）— 学習のすべてを、ひとつに。";
+const TITLE = "Study#— 学習のすべてを、ひとつに。";
 const DESC =
   "Study# は勉強記録・タイマー・カレンダー・問題演習・AIチャット・目標管理・組織/学校運営までを1つにまとめたオールインワン学習プラットフォームです。";
 
@@ -313,7 +313,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 text-sm text-muted-foreground sm:flex-row sm:justify-between">
           <div className="flex items-center gap-2">
             <img src={logoUrl} alt="" width={24} height={24} loading="lazy" className="h-6 w-6 rounded-md" />
-            <span>Study#（Study#）</span>
+            <span>Study#</span>
           </div>
           <nav className="flex flex-wrap items-center justify-center gap-4">
             <Link to="/all-services" className="transition hover:text-foreground">

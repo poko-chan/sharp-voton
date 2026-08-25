@@ -107,7 +107,7 @@ function UserSettingsPage() {
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
     meta: [
-      { title: "設定｜Study#（Study#）" },
+      { title: "設定｜Study#" },
       { name: "description", content: "アカウント・表示・通知・学習・AI・プライバシーなど、Study# の各種設定を管理します。" },
       { name: "robots", content: "noindex,nofollow" },
     ],
