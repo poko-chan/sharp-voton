@@ -47,8 +47,9 @@ export function OrgEdu({ orgId, ctx }: { orgId: string; ctx: any }) {
     let qs = (q ?? []) as any[];
     if (isStaff) {
       const { data: keys } = await (supabase as any).rpc("org_edu_question_keys", { _org: orgId });
-      const km = new Map<string, any>(((keys ?? []) as any[]).map((k) => [k.id, k]));
-      qs = qs.map((x) => ({ ...x, answer: km.get(x.id)?.answer ?? "", explanation: km.get(x.id)?.explanation ?? "" }));
+      const km: Record<string, any> = {};
+      for (const k of ((keys ?? []) as any[])) km[k.id] = k;
+      qs = qs.map((x) => ({ ...x, answer: km[x.id]?.answer ?? "", explanation: km[x.id]?.explanation ?? "" }));
     }
     setQuestions(qs);
     if (!subjectId && (s ?? []).length) setSubjectId(s![0].id);
