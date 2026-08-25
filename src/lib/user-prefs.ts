@@ -48,7 +48,8 @@ const DEFAULT: UserPrefs = {
   right_dock: ["ambient", "feedback"],
   sidebar_hidden: [],
   act_as_admin: false,
-  theme_color: "#3B82F6",
+  // 未設定＝テーマ（data-theme / high-contrast）の配色をそのまま使う
+  theme_color: undefined,
   font_family: "system",
   notif_settings: {},
 };
@@ -77,7 +78,9 @@ export function useUserPrefs() {
     if (typeof document === "undefined") return;
     document.documentElement.style.fontSize = `${prefs.font_scale * 16}px`;
     document.documentElement.classList.toggle("high-contrast", prefs.high_contrast);
+    // カスタム色が未設定のときはインラインスタイルを外し、テーマ側の配色を有効にする
     if (prefs.theme_color) document.documentElement.style.setProperty("--primary", prefs.theme_color);
+    else document.documentElement.style.removeProperty("--primary");
     applyFontFamily(prefs.font_family);
   }, [prefs.font_scale, prefs.high_contrast, prefs.theme_color, prefs.font_family]);
   const save = async (patch: Partial<UserPrefs>) => {
@@ -85,7 +88,7 @@ export function useUserPrefs() {
     setPrefs(next);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    await (supabase as any).from("user_prefs").upsert({ user_id: user.id, ...next });
+    await (supabase as any).from("user_prefs").upsert({ user_id: user.id, ...next, theme_color: next.theme_color ?? null });
   };
   return { prefs, save };
 }

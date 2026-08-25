@@ -36,9 +36,8 @@ const FIELDS: [string,string][] = [
 
 function MaterialDetail() {
   const { id } = useParams({ from: "/_authenticated/materials/$id" });
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [m, setM] = useState<any>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [edit, setEdit] = useState<Record<string, string>>({});
   const [editing, setEditing] = useState(false);
   const [report, setReport] = useState("");
@@ -49,8 +48,6 @@ function MaterialDetail() {
     const { data } = await (supabase as any).from("materials").select("*").eq("id", id).maybeSingle();
     setM(data);
     if (user) {
-      const { data: r } = await (supabase as any).rpc("has_role", { _user_id: user.id, _role: "admin" });
-      setIsAdmin(!!r);
       const { data: mu } = await (supabase as any).rpc("my_material_usage");
       setMyUse((mu ?? []).find((r: any) => r.material_id === id) ?? null);
       const { data: gu } = await (supabase as any).rpc("material_global_usage", { _material_id: id });
