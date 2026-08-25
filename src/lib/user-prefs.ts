@@ -88,7 +88,7 @@ export function useUserPrefs() {
     setPrefs(next);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    await (supabase as any).from("user_prefs").upsert({ user_id: user.id, ...next });
+    await (supabase as any).from("user_prefs").upsert({ user_id: user.id, ...next, theme_color: next.theme_color ?? null });
   };
   return { prefs, save };
 }
