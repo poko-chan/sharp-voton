@@ -105,15 +105,27 @@ function CustomizationPanel() {
         <div className="flex items-center gap-3">
           <input
             type="color"
-            value={(prefs as any).theme_color ?? "#3B82F6"}
+            value={prefs.theme_color ?? "#3B82F6"}
             onChange={(e) => {
               const v = e.target.value;
-              save({ ...(prefs as any), theme_color: v } as any);
+              save({ theme_color: v });
               document.documentElement.style.setProperty("--primary", v);
             }}
             className="h-10 w-16 rounded border"
           />
           <span className="text-xs text-muted-foreground">{t("settings.themeColorDesc")}</span>
+          {prefs.theme_color ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                save({ theme_color: undefined });
+                document.documentElement.style.removeProperty("--primary");
+              }}
+            >
+              テーマ配色に戻す
+            </Button>
+          ) : null}
         </div>
       </div>
       <div className="space-y-2">
