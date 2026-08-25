@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Play, ListChecks, Plus, Package, Settings, BarChart3, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { AiPackImportDialog } from "@/components/makron/AiPackImportDialog";
+import { fetchPackCounts } from "@/lib/makron-questions";
 
 export const Route = createFileRoute("/_authenticated/makron/unit/$unitId")({ component: UnitPage });
 
@@ -19,6 +20,7 @@ function UnitPage() {
   const nav = useNavigate();
   const [unit, setUnit] = useState<any>(null);
   const [packs, setPacks] = useState<any[]>([]);
+  const [counts, setCounts] = useState<Record<string, number>>({});
   const [creating, setCreating] = useState(false);
   const [pTitle, setPTitle] = useState("");
   const [pDesc, setPDesc] = useState("");
@@ -28,10 +30,11 @@ function UnitPage() {
     const { data: u } = await (supabase as any).from("makron_units").select("*").eq("id", unitId).maybeSingle();
     setUnit(u);
     const { data: ps } = await (supabase as any).from("makron_packs")
-      .select("*, qcount:makron_questions(count)")
+      .select("*")
       .eq("unit_id", unitId).eq("is_active", true)
       .order("order_idx").order("created_at");
     setPacks(ps ?? []);
+    setCounts(await fetchPackCounts((ps ?? []).map((x: any) => x.id)));
   };
   useEffect(() => { load(); }, [unitId]);
 
@@ -89,7 +92,7 @@ function UnitPage() {
         <div className="grid sm:grid-cols-2 gap-3">
           {visible.map((p) => {
             const isOwner = isAdmin;
-            const qCount = p.qcount?.[0]?.count ?? 0;
+            const qCount = counts[p.id] ?? 0;
             return (
               <Card key={p.id} className="p-4 space-y-2">
                 <div className="flex items-center gap-2">

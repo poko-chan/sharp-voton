@@ -1,4 +1,4 @@
-import { QUESTION_COLUMNS, loadQuestionKeys } from "@/lib/makron-questions";
+import { fetchPackCounts, QUESTION_COLUMNS, loadQuestionKeys } from "@/lib/makron-questions";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,9 +74,10 @@ function AdminPage() {
 
   const loadPacks = async () => {
     const { data } = await (supabase as any).from("makron_packs")
-      .select("*, qcount:makron_questions(count)")
+      .select("*")
       .order("created_at", { ascending: false });
     setPacks(data ?? []);
+    setPackCounts(await fetchPackCounts((data ?? []).map((x: any) => x.id)));
   };
 
   useEffect(() => { loadLabels(); loadReports(); loadPacks(); }, []);
@@ -263,7 +264,7 @@ function AdminPage() {
                         subjects.find((s) => s.id === (p.subject_id ?? units.find((u) => u.id === p.unit_id)?.subject_id))?.name,
                         fields.find((f) => f.id === (p.field_id ?? units.find((u) => u.id === p.unit_id)?.field_id))?.name,
                         units.find((u) => u.id === p.unit_id)?.title,
-                      ].filter(Boolean).join(" / ") || "未分類"} ・ {p.qcount?.[0]?.count ?? 0}問
+                      ].filter(Boolean).join(" / ") || "未分類"} ・ {packCounts[p.id] ?? 0}問
                     </div>
                   </div>
                   <Link to="/makron/pack/$packId" params={{ packId: p.id }}>
