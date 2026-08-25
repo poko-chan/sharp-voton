@@ -29,7 +29,7 @@ const CATEGORIES: SettingsCategory[] = [
   { id: "danger", label: "危険な操作", icon: AlertTriangle, keywords: ["削除", "退会", "リセット", "ログアウト", "danger", "delete"], danger: true },
 ];
 
-const SECTIONS: Record<SettingsCategoryId, () => JSX.Element> = {
+const SECTIONS: Record<SettingsCategoryId, () => React.ReactElement> = {
   account: AccountSection,
   appearance: AppearanceSection,
   notifications: NotificationsSection,
