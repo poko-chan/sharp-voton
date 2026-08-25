@@ -24,3 +24,21 @@ export async function loadQuestionKeys(questionId: string): Promise<QuestionKeys
     model_answer: (row?.model_answer as string | null) ?? "",
   };
 }
+
+/**
+ * パックごとの問題数。makron_questions はテーブル単位の SELECT 権限がない
+ * （正解カラムを隠すため列単位付与）ので、PostgREST の埋め込み count は使えません。
+ */
+export async function fetchPackCounts(packIds: string[]): Promise<Record<string, number>> {
+  if (packIds.length === 0) return {};
+  const { data } = await (supabase as any)
+    .from("makron_questions")
+    .select("id, pack_id")
+    .in("pack_id", packIds);
+  const map: Record<string, number> = {};
+  for (const r of (data ?? []) as { pack_id: string | null }[]) {
+    if (!r.pack_id) continue;
+    map[r.pack_id] = (map[r.pack_id] ?? 0) + 1;
+  }
+  return map;
+}
