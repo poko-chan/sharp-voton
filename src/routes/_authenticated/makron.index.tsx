@@ -7,8 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { BookOpen, Trophy, Zap, History, Plus, Filter, CalendarDays, Flame } from "lucide-react";
-import { Link as RLink } from "@tanstack/react-router";
+import { BookOpen, Trophy, Zap, History, Plus, Filter } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/makron/")({ component: MakronHome });
 
@@ -25,7 +24,6 @@ function MakronHome() {
   const [fField, setFField] = useState<string>("__all");
   const [fUnit, setFUnit] = useState<string>("__all");
   const [canCreate, setCanCreate] = useState(false);
-  const [daily, setDaily] = useState<{ date: string; completed: boolean; streak: number; total_questions: number } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -38,8 +36,6 @@ function MakronHome() {
       // 問題作成は誰でも可能（一般ユーザーの投稿は pending として扱われる）
       // 問題作成は管理者のみ
       setCanCreate(!!isAdmin);
-      const { data: ds } = await (supabase as any).rpc("makron_daily_status");
-      if (ds && ds[0]) setDaily(ds[0]);
     })();
   }, [user?.id, isAdmin]);
 
@@ -62,7 +58,6 @@ function MakronHome() {
           <MakronBadge icon={Zap} label="XP" value={me?.xp ?? 0} />
           <MakronBadge icon={Trophy} label="レベル" value={`Lv${me?.level ?? 1}`} />
           <MakronBadge icon={Trophy} label="順位" value={me && me.rank > 0 ? `${me.rank}位 / ${me.total_users}人` : "未参加"} />
-          <MakronBadge icon={Flame} label="ストリーク" value={`${daily?.streak ?? 0}日`} />
           <div className="ml-auto flex gap-2">
             <Link to="/makron/history"><Button variant="outline" size="sm"><History className="h-4 w-4 mr-1" />履歴</Button></Link>
             {isAdmin && <Link to="/makron/labels"><Button variant="outline" size="sm">ラベル管理</Button></Link>}
