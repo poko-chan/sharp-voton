@@ -88,7 +88,7 @@ function PackPage() {
       : await (supabase as any).from("makron_questions").insert(payload);
     if (error) return toast.error(error.message);
     setDraft(null); load();
-    toast.success(isAdmin ? "保存しました（公式）" : "保存しました（承認待ち）");
+    toast.success("保存しました");
   };
 
   const delQuestion = async (id: string) => {
@@ -100,21 +100,18 @@ function PackPage() {
   if (!pack) return <MakronShell back="/makron/units"><div className="p-8 text-muted-foreground">読み込み中…</div></MakronShell>;
 
   return (
-    <MakronShell back="/makron/units" title={pack.title} subtitle={pack.is_official ? "公式パック" : pack.status === "pending" ? "申請中" : "非公式"}>
+    <MakronShell back="/makron/units" title={pack.title} subtitle={[pack.grade, unitMeta?.title].filter(Boolean).join(" / ") || undefined}>
       <div className="max-w-5xl mx-auto p-6 space-y-4">
         <Card className="p-4 flex flex-wrap items-center gap-3">
           <div className="flex-1 min-w-[200px]">
-            <div className="font-bold text-lg flex items-center gap-2">
-              {pack.is_official && <Crown className="h-4 w-4 text-amber-500" />}
-              {pack.title}
-            </div>
+            <div className="font-bold text-lg flex items-center gap-2">{pack.title}</div>
             {pack.description && <div className="text-xs text-muted-foreground mt-0.5">{pack.description}</div>}
             <div className="text-[11px] text-muted-foreground mt-1 flex flex-wrap gap-x-3">
               <span><ListChecks className="h-3 w-3 inline mr-0.5" />{questions.length}問</span>
+              {pack.grade && <span>{pack.grade}</span>}
               {pack.shuffle && <span>シャッフル</span>}
               {pack.question_limit && <span>{pack.question_limit}問出題</span>}
               {pack.max_attempts && <span>最大{pack.max_attempts}回</span>}
-              {!pack.is_official && <span className="text-amber-600">演習可・報酬なし</span>}
             </div>
           </div>
           <Button onClick={startSession} disabled={questions.length === 0}><Play className="h-4 w-4 mr-1" />演習開始</Button>
@@ -123,15 +120,7 @@ function PackPage() {
               <Button variant="outline"><BarChart3 className="h-4 w-4 mr-1" />ダッシュボード</Button>
             </Link>
           )}
-          {isOwner && !pack.is_official && pack.status !== "pending" && (
-            <Button variant="outline" onClick={async () => {
-              if (!confirm("このパックを公式パックとして申請しますか？管理者の審査後、報酬付き演習として公開されます。")) return;
-              const { error } = await (supabase as any).rpc("submit_official_request", { _pack_id: packId, _note: null });
-              if (error) return toast.error(error.message);
-              toast.success("公式申請を送信しました");
-              load();
-            }}><Crown className="h-4 w-4 mr-1" />公式申請</Button>
-          )}
+
           {isOwner && (
             <Button variant="ghost" className="text-destructive" onClick={async () => {
               if (!confirm(`「${pack.title}」を完全に削除します。問題・履歴・回答もすべて消えます。よろしいですか？`)) return;
@@ -306,7 +295,7 @@ function PackPage() {
 
               {isAdmin && (
                 <Card className="p-4 space-y-3 border-amber-500/40">
-                  <div className="font-bold flex items-center gap-1"><Crown className="h-4 w-4 text-amber-500" />報酬設定（管理者のみ・公式パックのみ有効）</div>
+                  <div className="font-bold flex items-center gap-1"><Crown className="h-4 w-4 text-amber-500" />報酬設定（管理者のみ）</div>
                   <div className="grid sm:grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs">1問あたりXP</label>
@@ -329,10 +318,8 @@ function PackPage() {
                       <Input type="number" value={pack.reward_attempts_cap ?? ""} onChange={(e) => setPack({ ...pack, reward_attempts_cap: e.target.value ? Number(e.target.value) : null })} onBlur={() => saveSettings({ reward_attempts_cap: pack.reward_attempts_cap })} />
                     </div>
                   </div>
-                  <label className="flex items-center gap-2 text-sm">
-                    <Switch checked={!!pack.is_official} onCheckedChange={(v) => saveSettings({ is_official: v, status: v ? 'approved' : pack.status })} />
-                    公式パックとして承認（チェックでXP/コイン付与対象）
-                  </label>
+
+
                 </Card>
               )}
             </TabsContent>
