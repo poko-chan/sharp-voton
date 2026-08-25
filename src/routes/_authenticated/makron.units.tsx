@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Package, Trophy, Zap, History, Shield, Filter, Play, ListChecks, Settings, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import { GRADES } from "@/lib/makron-grades";
+import { fetchPackCounts } from "@/lib/makron-questions";
 
 export const Route = createFileRoute("/_authenticated/makron/units")({ component: MakronUnits });
 
@@ -20,6 +21,7 @@ function MakronUnits() {
   const { user, isAdmin } = useAuth();
   const nav = useNavigate();
   const [packs, setPacks] = useState<any[]>([]);
+  const [counts, setCounts] = useState<Record<string, number>>({});
   const [units, setUnits] = useState<any[]>([]);
   const [subjects, setSubjects] = useState<any[]>([]);
   const [fields, setFields] = useState<any[]>([]);
@@ -34,13 +36,13 @@ function MakronUnits() {
     (async () => {
       const [{ data: ps }, { data: us }, { data: ss }, { data: fs }] = await Promise.all([
         (supabase as any).from("makron_packs")
-          .select("*, qcount:makron_questions(count)")
+          .select("*")
           .eq("is_active", true).order("order_idx").order("created_at", { ascending: false }),
         (supabase as any).from("makron_units").select("*").order("order_idx"),
         (supabase as any).from("makron_subjects").select("*").order("order_idx").order("name"),
         (supabase as any).from("makron_fields").select("*").order("order_idx").order("name"),
       ]);
-      setPacks(ps ?? []); setUnits(us ?? []); setSubjects(ss ?? []); setFields(fs ?? []);
+      setPacks(ps ?? []); setCounts(await fetchPackCounts((ps ?? []).map((x: any) => x.id))); setUnits(us ?? []); setSubjects(ss ?? []); setFields(fs ?? []);
       const { data: lb } = await (supabase as any).rpc("get_makron_leaderboard", { _limit: 20 });
       setBoard((lb ?? []) as Row[]);
       const { data: meRow } = await (supabase as any).rpc("get_my_makron_rank");
@@ -125,7 +127,7 @@ function MakronUnits() {
 
             <div className="grid sm:grid-cols-2 gap-3">
               {filtered.map((p) => {
-                const qCount = p.qcount?.[0]?.count ?? 0;
+                const qCount = counts[p.id] ?? 0;
                 return (
                   <Card key={p.id} className="p-4 space-y-2">
                     <div className="flex items-center gap-2">
