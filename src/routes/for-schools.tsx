@@ -94,7 +94,7 @@ function ForSchoolsPage() {
           <Link to="/" className="flex items-center gap-2.5">
             <img src={logoUrl} alt="Study#" width={32} height={32} className="h-8 w-8 rounded-xl" />
             <span className="font-display font-extrabold tracking-tight">
-              Study<span className="text-gradient">Ω</span>
+              Study<span className="text-gradient">#</span>
             </span>
           </Link>
           <nav className="flex items-center gap-1 text-sm">

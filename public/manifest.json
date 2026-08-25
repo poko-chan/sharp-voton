@@ -3,7 +3,7 @@
   "name": "Study#",
   "short_name": "Study#",
   "display": "standalone",
-  "background_color": "#d5e2d7",
+  "background_color": "#0B1020",
   "icons": [
       {
           "src": "/icon-512.png",
@@ -14,7 +14,7 @@
   ],
   "id":"vtn-studyplus",
   "start_url":"./login/",
-  "theme_color":"#008a39",
+  "theme_color":"#0B1020",
   "shortcuts":[
     {
         "name": "ダッシュボード - Study#",

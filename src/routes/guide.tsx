@@ -51,7 +51,7 @@ function GuidePage() {
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
           <Link to="/" className="flex items-center gap-2.5">
             <img src={logoUrl} alt="Study#" width={32} height={32} className="h-8 w-8 rounded-xl" />
-            <span className="font-display font-extrabold tracking-tight">Study<span className="text-gradient">Ω</span></span>
+            <span className="font-display font-extrabold tracking-tight">Study<span className="text-gradient">#</span></span>
           </Link>
           <nav className="flex items-center gap-1 text-sm">
             <Link to="/all-services" className="hidden rounded-full px-3 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block">全機能</Link>
