@@ -42,6 +42,15 @@ function AdminPage() {
   const [uFieldId, setUFieldId] = useState<string>("");
   const [uDesc, setUDesc] = useState("");
   const [draft, setDraft] = useState<any | null>(null);
+  // パック管理
+  const [packs, setPacks] = useState<any[]>([]);
+  const [pTitle, setPTitle] = useState("");
+  const [pDesc, setPDesc] = useState("");
+  const [pGrade, setPGrade] = useState("");
+  const [pSubj, setPSubj] = useState("");
+  const [pField, setPField] = useState("");
+  const [pUnit, setPUnit] = useState("");
+
 
   const loadLabels = async () => {
     const { data } = await (supabase as any).from("makron_units").select("*").order("order_idx").order("created_at");
@@ -62,8 +71,16 @@ function AdminPage() {
     setReports(data ?? []);
   };
 
-  useEffect(() => { loadLabels(); loadReports(); }, []);
+  const loadPacks = async () => {
+    const { data } = await (supabase as any).from("makron_packs")
+      .select("*, qcount:makron_questions(count)")
+      .order("created_at", { ascending: false });
+    setPacks(data ?? []);
+  };
+
+  useEffect(() => { loadLabels(); loadReports(); loadPacks(); }, []);
   useEffect(() => { if (selUnit) loadQuestions(selUnit); }, [selUnit]);
+
 
   if (!user) {
     return <MakronShell back="/makron/units" title="管理者画面"><div className="p-6 text-sm">ログインしてください</div></MakronShell>;
