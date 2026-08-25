@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Sparkles, AlertTriangle, Download, Cpu, Cloud } from "lucide-react";
+import { Loader2, Sparkles, AlertTriangle, Download, Cpu, Cloud, HardDrive, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -10,7 +10,7 @@ import {
   type AiDiagnostics,
   type AiEnginePref,
 } from "@/lib/ai-provider";
-import { WEBLLM_MODELS, setWebLlmModelId } from "@/lib/web-llm";
+import { WEBLLM_MODELS, setWebLlmModelId, storageInfo, clearWebLlmCache, estimateModelBytes, type StorageInfo } from "@/lib/web-llm";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -39,6 +39,9 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
   const [progressText, setProgressText] = useState<string>("");
   const [pref, setPref] = useState<AiEnginePref>("auto");
   const [diagnosticsError, setDiagnosticsError] = useState(false);
+  const [storage, setStorage] = useState<StorageInfo | null>(null);
+  const [clearing, setClearing] = useState(false);
+
 
   const refresh = async () => {
     try {
@@ -51,6 +54,7 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
       setDiagnosticsError(true);
       setPref(getStoredPref());
     }
+    setStorage(await storageInfo());
   };
   const getStoredPref = (): AiEnginePref => {
     const value = window.localStorage.getItem("ai.engine.pref");
@@ -73,10 +77,22 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
       await refresh();
       toast.success("AIモデルの準備が完了しました");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "AIモデルの取得に失敗しました");
+      toast.error(error instanceof Error ? error.message : "AIモデルの取得に失敗しました", { duration: 12000 });
       await refresh();
     } finally { setBusy(false); }
   };
+
+  const clearCache = async () => {
+    setClearing(true);
+    try {
+      await clearWebLlmCache();
+      toast.success("ダウンロード済みモデルを削除しました。空き容量が増えました。");
+      await refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "削除に失敗しました");
+    } finally { setClearing(false); }
+  };
+
 
   const onChangePref = (v: string) => {
     const p = v as AiEnginePref;
@@ -188,6 +204,37 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
           <div className="text-muted-foreground whitespace-pre-wrap text-[10px]">{d.cpu.reason}</div>
         </div>
       </div>
+
+      {/* 保存容量（Quota exceeded 対策） */}
+      {(() => {
+        const gb = (n: number) => `${(n / 1024 ** 3).toFixed(1)}GB`;
+        const need = estimateModelBytes(d.webllm.modelId);
+        const short = storage ? storage.free < need : false;
+        return (
+          <div className={`rounded border p-2 space-y-1.5 ${short ? "border-amber-400 bg-amber-50/60" : ""}`}>
+            <div className="flex items-center gap-2">
+              <HardDrive className="h-3 w-3" />
+              <span className="font-semibold">ブラウザ保存容量</span>
+              <span className="ml-auto text-[10px] text-muted-foreground">
+                {storage ? `空き ${gb(storage.free)} / 上限 ${gb(storage.quota)}` : "取得できません"}
+              </span>
+            </div>
+            {storage && storage.quota > 0 && (
+              <Progress value={Math.min(100, Math.round((storage.usage / storage.quota) * 100))} className="h-1" />
+            )}
+            <div className="text-[10px] text-muted-foreground">
+              選択中モデルに必要な容量: 約 {gb(need)}
+              {short && <span className="block text-amber-700 font-medium">空き容量が不足しています。軽いモデルを選ぶか、下のボタンで古いモデルを削除してください。</span>}
+            </div>
+            <Button size="sm" variant="outline" className="h-7 text-[10px]" onClick={clearCache} disabled={clearing}>
+              {clearing ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Trash2 className="h-3 w-3 mr-1" />}
+              ダウンロード済みモデルを削除
+            </Button>
+          </div>
+        );
+      })()}
+
+
 
       {(d.nano.status === "downloadable" || d.webllm.status === "downloadable" || d.cpu.status === "downloadable" || d.nano.status === "downloading" || d.webllm.status === "downloading" || d.cpu.status === "downloading") && (
         <div className="space-y-2 pt-1 border-t">

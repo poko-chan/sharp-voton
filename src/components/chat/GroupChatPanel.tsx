@@ -11,9 +11,12 @@ import {
   sendGroupMessage,
   markGroupRead,
   fetchProfilesByIds,
+  fetchGroupMembers,
   type GroupMessage,
+  type GroupMember,
   type Profile,
 } from "@/lib/chat.functions";
+
 
 export function GroupChatPanel({
   userId,
@@ -59,7 +62,20 @@ export function GroupChatPanel({
     return p?.display_name ?? p?.username ?? "不明";
   };
 
+  // 既読管理: メンバーの last_read_at からメッセージごとの既読人数を計算
+  const readers = useQuery({
+    queryKey: ["chat-group-reads", groupId],
+    queryFn: () => fetchGroupMembers(groupId),
+    refetchInterval: 20000,
+  });
+  const readCount = (m: GroupMessage) =>
+    (readers.data ?? []).filter(
+      (r: GroupMember) => r.user_id !== m.sender_id && r.last_read_at && new Date(r.last_read_at) >= new Date(m.created_at),
+    ).length;
+
+
   useEffect(() => {
+
     const ch = supabase
       .channel(`chat-group-${groupId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "chat_group_messages", filter: `group_id=eq.${groupId}` }, () => {
@@ -162,10 +178,14 @@ export function GroupChatPanel({
                       </div>
                     )}
                   </Card>
-                  <span className="text-[10px] text-muted-foreground px-1">
+                  <span className="text-[10px] text-muted-foreground px-1 flex items-center gap-1">
+                    {mine && !isDeleted && readCount(m) > 0 && (
+                      <span className="text-primary font-medium">既読 {readCount(m)}</span>
+                    )}
                     {new Date(m.created_at).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}
                     {m.edited_at && !isDeleted ? " (編集済み)" : ""}
                   </span>
+
                 </div>
               </div>
             );

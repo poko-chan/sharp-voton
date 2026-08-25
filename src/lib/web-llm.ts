@@ -14,22 +14,28 @@ export type WebLlmModel = {
 /** 大きいほど賢いが、初回ダウンロードと VRAM 消費が増える。 */
 export const WEBLLM_MODELS: WebLlmModel[] = [
   {
+    id: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
+    label: "標準（Qwen2.5 1.5B）",
+    sizeLabel: "約 1.1GB",
+    note: "容量が小さく失敗しにくい。まずはこれを推奨。",
+  },
+  {
+    id: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
+    label: "最軽量（Qwen2.5 0.5B）",
+    sizeLabel: "約 0.4GB",
+    note: "空き容量が少ない端末向け。品質は落ちるが確実に動く。",
+  },
+  {
     id: "Qwen2.5-3B-Instruct-q4f16_1-MLC",
-    label: "標準（Qwen2.5 3B）",
+    label: "高品質（Qwen2.5 3B）",
     sizeLabel: "約 1.9GB",
-    note: "日本語の品質と速度のバランスが最も良い。推奨。",
+    note: "日本語の品質と速度のバランスが良い。空き容量 4GB 以上推奨。",
   },
   {
     id: "Qwen2.5-7B-Instruct-q4f16_1-MLC",
-    label: "高品質（Qwen2.5 7B）",
+    label: "最高品質（Qwen2.5 7B）",
     sizeLabel: "約 4.4GB",
-    note: "最も賢い。VRAM 6GB 以上の PC 向け。",
-  },
-  {
-    id: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
-    label: "軽量（Qwen2.5 1.5B）",
-    sizeLabel: "約 1.1GB",
-    note: "非力な端末向け。品質は落ちる。",
+    note: "最も賢い。VRAM 6GB 以上・空き容量 10GB 以上の PC 向け。",
   },
   {
     id: "Llama-3.2-3B-Instruct-q4f16_1-MLC",
@@ -39,9 +45,87 @@ export const WEBLLM_MODELS: WebLlmModel[] = [
   },
 ];
 
+/** モデル ID からおおよその必要バイト数を推定する（空き容量チェック用） */
+export function estimateModelBytes(id: string): number {
+  const m = /(\d+(?:\.\d+)?)B-/.exec(id);
+  const params = m ? Number(m[1]) : 1.5;
+  // q4 量子化 ≒ 0.6GB / 1B パラメータ + 展開作業領域の余裕 25%
+  return Math.round(params * 0.6 * 1024 ** 3 * 1.25);
+}
+
+export type StorageInfo = { usage: number; quota: number; free: number; persisted: boolean };
+
+/** ブラウザのストレージ空き状況（Quota exceeded の原因調査用） */
+export async function storageInfo(): Promise<StorageInfo | null> {
+  if (typeof navigator === "undefined" || !navigator.storage?.estimate) return null;
+  try {
+    const est = await navigator.storage.estimate();
+    const usage = est.usage ?? 0;
+    const quota = est.quota ?? 0;
+    let persisted = false;
+    try { persisted = (await navigator.storage.persisted?.()) ?? false; } catch { /* noop */ }
+    return { usage, quota, free: Math.max(0, quota - usage), persisted };
+  } catch {
+    return null;
+  }
+}
+
+/** 永続ストレージを要求して、モデルが勝手に消されるのを防ぐ */
+export async function requestPersistentStorage(): Promise<boolean> {
+  if (typeof navigator === "undefined" || !navigator.storage?.persist) return false;
+  try { return await navigator.storage.persist(); } catch { return false; }
+}
+
+/** ダウンロード済みモデルキャッシュを削除して容量を空ける */
+export async function clearWebLlmCache(): Promise<void> {
+  if (typeof caches !== "undefined") {
+    const keys = await caches.keys();
+    await Promise.all(
+      keys.filter((k) => /webllm|mlc|model|wasm/i.test(k)).map((k) => caches.delete(k)),
+    );
+  }
+  if (typeof indexedDB !== "undefined" && (indexedDB as any).databases) {
+    try {
+      const dbs = await (indexedDB as any).databases();
+      await Promise.all(
+        (dbs ?? [])
+          .filter((db: any) => db?.name && /webllm|mlc|tvmjs/i.test(db.name))
+          .map((db: any) => new Promise((res) => {
+            const req = indexedDB.deleteDatabase(db.name);
+            req.onsuccess = req.onerror = req.onblocked = () => res(null);
+          })),
+      );
+    } catch { /* noop */ }
+  }
+  if (typeof window !== "undefined") {
+    for (const m of WEBLLM_MODELS) window.localStorage.removeItem(cacheKeyFor(m.id));
+  }
+  enginePromise = null;
+  engineReady = false;
+  engineDownloading = false;
+  lastProgress = 0;
+  lastProgressText = "";
+}
+
+/** ストレージ不足系のエラーを日本語の具体的な案内に変換する */
+export function friendlyStorageError(err: unknown, info: StorageInfo | null, modelId: string): string {
+  const msg = err instanceof Error ? err.message : String(err);
+  const isQuota = /quota|QuotaExceeded|storage|space|容量/i.test(msg);
+  if (!isQuota) return msg;
+  const gb = (n: number) => `${(n / 1024 ** 3).toFixed(1)}GB`;
+  const need = estimateModelBytes(modelId);
+  const freeText = info ? `空き ${gb(info.free)} / 上限 ${gb(info.quota)}` : "空き容量を取得できませんでした";
+  return [
+    "ブラウザの保存容量が足りずダウンロードできませんでした（Quota exceeded）。",
+    `必要: 約 ${gb(need)} ／ 現在: ${freeText}`,
+    "対処: ①「キャッシュを削除」で古いモデルを消す ②より軽いモデルを選ぶ ③シークレットウィンドウでは容量制限が厳しいので通常ウィンドウを使う ④端末の空き容量を増やす",
+  ].join("\n");
+}
+
 export const DEFAULT_WEBLLM_MODEL = WEBLLM_MODELS[0].id;
 const MODEL_KEY = "ai.webllm.model";
 const WEBLLM_CDN = "https://esm.run/@mlc-ai/web-llm@0.2.84";
+
 
 export function getWebLlmModelId(): string {
   if (typeof window === "undefined") return DEFAULT_WEBLLM_MODEL;
@@ -145,6 +229,13 @@ export async function webLlmEnsureLoaded(
 
   enginePromise = (async () => {
     try {
+      // 事前チェック: 保存容量が足りないと途中で Quota exceeded になる
+      await requestPersistentStorage();
+      const info = await storageInfo();
+      const need = estimateModelBytes(modelId);
+      if (info && info.quota > 0 && info.free < need) {
+        throw new Error(friendlyStorageError(new Error("QuotaExceededError"), info, modelId));
+      }
       const mod = await loadModule();
       const loadPromise = mod.CreateMLCEngine(modelId, {
         initProgressCallback: (p: any) => {
@@ -166,9 +257,11 @@ export async function webLlmEnsureLoaded(
     } catch (err: any) {
       engineDownloading = false;
       enginePromise = null;
-      throw err;
+      const info = await storageInfo();
+      throw new Error(friendlyStorageError(err, info, modelId));
     }
   })();
+
 
   return enginePromise;
 }
