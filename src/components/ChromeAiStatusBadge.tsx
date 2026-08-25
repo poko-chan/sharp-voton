@@ -54,6 +54,7 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
       setDiagnosticsError(true);
       setPref(getStoredPref());
     }
+    setStorage(await storageInfo());
   };
   const getStoredPref = (): AiEnginePref => {
     const value = window.localStorage.getItem("ai.engine.pref");
@@ -76,10 +77,22 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
       await refresh();
       toast.success("AIモデルの準備が完了しました");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "AIモデルの取得に失敗しました");
+      toast.error(error instanceof Error ? error.message : "AIモデルの取得に失敗しました", { duration: 12000 });
       await refresh();
     } finally { setBusy(false); }
   };
+
+  const clearCache = async () => {
+    setClearing(true);
+    try {
+      await clearWebLlmCache();
+      toast.success("ダウンロード済みモデルを削除しました。空き容量が増えました。");
+      await refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "削除に失敗しました");
+    } finally { setClearing(false); }
+  };
+
 
   const onChangePref = (v: string) => {
     const p = v as AiEnginePref;
