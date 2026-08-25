@@ -70,22 +70,8 @@ function MakronHome() {
           </div>
         </div>
 
-        <Link to="/makron/daily">
-          <Card className={`p-4 cursor-pointer transition border ${daily?.completed ? "bg-green-500/10 border-green-500/40" : "bg-gradient-to-r from-primary/15 to-amber-500/10 border-primary/40 hover:border-primary"}`}>
-            <div className="flex items-center gap-3">
-              <CalendarDays className="h-8 w-8 text-primary" />
-              <div className="flex-1">
-                <div className="font-bold">デイリー演習</div>
-                <div className="text-xs text-muted-foreground">
-                  {daily?.completed ? "今日は完了済み！ また明日" : `毎日${daily?.total_questions ?? 10}問・完了で +50XP / +20コイン`}
-                </div>
-              </div>
-              <div className="flex items-center gap-1 text-amber-600">
-                <Flame className="h-4 w-4" /><span className="font-bold tabular-nums">{daily?.streak ?? 0}</span>
-              </div>
-            </div>
-          </Card>
-        </Link>
+
+
 
         <div className="grid lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2 space-y-3">
