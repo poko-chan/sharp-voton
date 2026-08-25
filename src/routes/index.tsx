@@ -68,7 +68,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
               className="h-9 w-9 rounded-xl shadow-sm"
             />
             <span className="font-display text-lg font-extrabold tracking-tight">
-              Study<span className="text-gradient">Ω</span>
+              Study<span className="text-gradient">#</span>
             </span>
           </div>
           <nav className="flex items-center gap-1 text-sm">
