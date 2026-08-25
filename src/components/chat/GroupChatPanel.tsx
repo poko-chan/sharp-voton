@@ -59,7 +59,19 @@ export function GroupChatPanel({
     return p?.display_name ?? p?.username ?? "不明";
   };
 
+  // 既読管理: メンバーの last_read_at からメッセージごとの既読人数を計算
+  const readers = useQuery({
+    queryKey: ["chat-group-reads", groupId],
+    queryFn: () => fetchGroupMembers(groupId),
+    refetchInterval: 20000,
+  });
+  const readCount = (m: GroupMessage) =>
+    (readers.data ?? []).filter(
+      (r) => r.user_id !== m.sender_id && r.last_read_at && new Date(r.last_read_at) >= new Date(m.created_at),
+    ).length;
+
   useEffect(() => {
+
     const ch = supabase
       .channel(`chat-group-${groupId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "chat_group_messages", filter: `group_id=eq.${groupId}` }, () => {
