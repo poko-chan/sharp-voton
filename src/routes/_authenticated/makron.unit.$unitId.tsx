@@ -7,8 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Play, ListChecks, Plus, Package, Crown, Settings, BarChart3, Sparkles } from "lucide-react";
+import { Play, ListChecks, Plus, Package, Settings, BarChart3, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { AiPackImportDialog } from "@/components/makron/AiPackImportDialog";
 
@@ -20,7 +19,6 @@ function UnitPage() {
   const nav = useNavigate();
   const [unit, setUnit] = useState<any>(null);
   const [packs, setPacks] = useState<any[]>([]);
-  const [includePending, setIncludePending] = useState(false);
   const [creating, setCreating] = useState(false);
   const [pTitle, setPTitle] = useState("");
   const [pDesc, setPDesc] = useState("");
@@ -32,7 +30,7 @@ function UnitPage() {
     const { data: ps } = await (supabase as any).from("makron_packs")
       .select("*, qcount:makron_questions(count)")
       .eq("unit_id", unitId).eq("is_active", true)
-      .order("is_official", { ascending: false }).order("order_idx").order("created_at");
+      .order("order_idx").order("created_at");
     setPacks(ps ?? []);
   };
   useEffect(() => { load(); }, [unitId]);
