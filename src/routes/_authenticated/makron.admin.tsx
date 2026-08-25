@@ -44,6 +44,7 @@ function AdminPage() {
   const [draft, setDraft] = useState<any | null>(null);
   // パック管理
   const [packs, setPacks] = useState<any[]>([]);
+  const [packCounts, setPackCounts] = useState<Record<string, number>>({});
   const [pTitle, setPTitle] = useState("");
   const [pDesc, setPDesc] = useState("");
   const [pGrade, setPGrade] = useState("");
