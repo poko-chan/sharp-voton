@@ -37,12 +37,20 @@ export function OrgEdu({ orgId, ctx }: { orgId: string; ctx: any }) {
       loadOrgYearValues(orgId, year, user ? [user.id] : []),
       (supabase as any).from("org_edu_subjects").select("*").eq("organization_id", orgId).order("sort_order"),
       (supabase as any).from("org_edu_units").select("*").eq("organization_id", orgId).order("level").order("sort_order"),
-      (supabase as any).from("org_edu_questions").select("*").eq("organization_id", orgId).order("sort_order"),
+      (supabase as any).from("org_edu_questions").select("id, organization_id, unit_id, kind, body, choices, hint_text, audience, level, sort_order, created_by, created_at, updated_at").eq("organization_id", orgId).order("sort_order"),
       (supabase as any).from("org_edu_attempts").select("*").eq("organization_id", orgId).eq("user_id", user!.id),
       (supabase as any).from("org_edu_streaks").select("*").eq("organization_id", orgId).eq("user_id", user!.id).maybeSingle(),
     ]);
     setFields(f); setMyValues(vals[user!.id] ?? {});
-    setSubjects(s ?? []); setUnits(u ?? []); setQuestions(q ?? []); setAttempts(at ?? []); setStreak(st ?? null);
+    setSubjects(s ?? []); setUnits(u ?? []); setAttempts(at ?? []); setStreak(st ?? null);
+    // 正解・解説はスタッフのみ RPC 経由で取得（生徒は列レベルで読めない）
+    let qs = (q ?? []) as any[];
+    if (isStaff) {
+      const { data: keys } = await (supabase as any).rpc("org_edu_question_keys", { _org: orgId });
+      const km = new Map<string, any>(((keys ?? []) as any[]).map((k) => [k.id, k]));
+      qs = qs.map((x) => ({ ...x, answer: km.get(x.id)?.answer ?? "", explanation: km.get(x.id)?.explanation ?? "" }));
+    }
+    setQuestions(qs);
     if (!subjectId && (s ?? []).length) setSubjectId(s![0].id);
   };
   useEffect(() => { if (user) load(); }, [orgId, user?.id, ctx.org?.current_year]);
