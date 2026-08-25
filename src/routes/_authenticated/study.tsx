@@ -37,12 +37,18 @@ function StudyPage() {
   const [subjectId, setSubjectId] = useState<string>("");
   const [duration, setDuration] = useState(30);
   const [content, setContent] = useState("");
+  const [materialMap, setMaterialMap] = useState<Record<string, { title: string; publisher: string | null }>>({});
 
   const load = async () => {
     if (!user) return;
     reloadSubjects();
     const { data: l } = await supabase.from("study_logs").select("*, subjects(id,name,color)").eq("user_id", user.id).order("date", { ascending: false }).order("start_time", { ascending: true }).limit(1000);
     setLogs(l ?? []);
+    const ids = Array.from(new Set((l ?? []).flatMap((x: any) => [...(x.material_ids ?? []), x.material_id]).filter(Boolean))) as string[];
+    if (ids.length) {
+      const { data: mats } = await (supabase as any).from("materials").select("id,title,publisher").in("id", ids);
+      setMaterialMap(Object.fromEntries((mats ?? []).map((m: any) => [m.id, { title: m.title, publisher: m.publisher }])));
+    }
     emitProfileChange();
   };
 
@@ -214,7 +220,7 @@ function StudyPage() {
             <input type="color" value={newColor} onChange={(e) => setNewColor(e.target.value)} className="h-10 w-12 rounded border" />
             <Button onClick={addSubject}><Plus className="h-4 w-4" /></Button>
           </div>
-          <div className="space-y-1">
+          <div className={`space-y-1 ${subjects.length > 8 ? "max-h-[420px] overflow-y-auto pr-1" : ""}`}>
             {subjects.map((s, idx) => (
               <SubjectRow
                 key={s.id}
@@ -275,12 +281,12 @@ function StudyPage() {
         </Card>
       </div>
 
-      <DailyLogs logs={logs} onChange={load} onBulkDelete={bulkDelete} />
+      <DailyLogs logs={logs} onChange={load} onBulkDelete={bulkDelete} materialMap={materialMap} />
     </div>
   );
 }
 
-function DailyLogs({ logs, onChange, onBulkDelete }: { logs: any[]; onChange: () => void; onBulkDelete: (ids: string[]) => Promise<void> }) {
+function DailyLogs({ logs, onChange, onBulkDelete, materialMap }: { logs: any[]; onChange: () => void; onBulkDelete: (ids: string[]) => Promise<void>; materialMap: Record<string, { title: string; publisher: string | null }> }) {
   // 日付ごとにグルーピング
   const byDate = new Map<string, any[]>();
   logs.forEach((l) => {
@@ -402,7 +408,7 @@ function DailyLogs({ logs, onChange, onBulkDelete }: { logs: any[]; onChange: ()
                       onCheckedChange={() => toggle(l.id)}
                     />
                     <div className="flex-1">
-                      <LogRow log={l} onChange={onChange} />
+                      <LogRow log={l} onChange={onChange} materialMap={materialMap} />
                     </div>
                   </div>
                 ))}
@@ -415,19 +421,24 @@ function DailyLogs({ logs, onChange, onBulkDelete }: { logs: any[]; onChange: ()
   );
 }
 
-function LogRow({ log, onChange }: { log: any; onChange: () => void }) {
+function LogRow({ log, onChange, materialMap }: { log: any; onChange: () => void; materialMap: Record<string, { title: string; publisher: string | null }> }) {
   const [edit, setEdit] = useState(false);
   const [duration, setDuration] = useState(log.duration_minutes ?? 0);
   const [content, setContent] = useState(log.content ?? "");
   const [date, setDate] = useState(log.date);
   const [startTime, setStartTime] = useState(log.start_time ? String(log.start_time).slice(0, 5) : "");
   const [addMin, setAddMin] = useState(0);
+  const [mats, setMats] = useState<string[]>(
+    (log.material_ids ?? (log.material_id ? [log.material_id] : [])) as string[],
+  );
 
   const save = async () => {
     const { error } = await supabase.from("study_logs").update({
       duration_minutes: duration, content, date,
       start_time: startTime || null,
-    }).eq("id", log.id);
+      material_id: mats[0] ?? null,
+      material_ids: mats,
+    } as never).eq("id", log.id);
     if (error) return toast.error(error.message);
     toast.success("更新しました");
     setEdit(false); onChange();
@@ -457,6 +468,7 @@ function LogRow({ log, onChange }: { log: any; onChange: () => void }) {
           <div><Label className="text-xs">時間(分)</Label><Input type="number" value={duration} onChange={(e) => setDuration(+e.target.value)} /></div>
         </div>
         <div><Label className="text-xs">内容</Label><Textarea value={content} onChange={(e) => setContent(e.target.value)} rows={2} /></div>
+        <div><Label className="text-xs">使った教材</Label><MaterialPicker value={mats} onChange={setMats} /></div>
         <div className="flex gap-2">
           <Button size="sm" onClick={save}><Save className="h-3.5 w-3.5 mr-1" />保存</Button>
           <Button size="sm" variant="ghost" onClick={() => setEdit(false)}><X className="h-3.5 w-3.5" /></Button>
@@ -478,6 +490,20 @@ function LogRow({ log, onChange }: { log: any; onChange: () => void }) {
           <span className="text-muted-foreground">{log.duration_minutes}分</span>
         </div>
         {log.content && <p className="mt-1 text-sm whitespace-pre-wrap">{log.content}</p>}
+        {(() => {
+          const ids: string[] = (log.material_ids ?? (log.material_id ? [log.material_id] : [])) as string[];
+          if (!ids.length) return null;
+          return (
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              {ids.map((id) => (
+                <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-[11px]">
+                  <BookOpen className="h-3 w-3" />
+                  {materialMap[id]?.title ?? "教材"}
+                </span>
+              ))}
+            </div>
+          );
+        })()}
         <div className="flex items-center gap-2 mt-2">
           <Input type="number" value={addMin} onChange={(e) => setAddMin(+e.target.value)} className="h-7 w-20 text-xs" />
           <Button size="sm" variant="outline" className="h-7 text-xs" onClick={addMinutes}>
