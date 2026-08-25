@@ -60,9 +60,7 @@ function ClassChatPage() {
     const ids = Array.from(new Set(list.map((m) => m.sender_id)));
     if (ids.length) {
       const { data: pf } = await supabase
-        .from("profiles")
-        .select("id, display_name, username, avatar_url")
-        .in("id", ids);
+        .rpc("public_profiles_by_ids", { _ids: ids });
       const map: Record<string, Profile> = {};
       (pf ?? []).forEach((p: Profile) => (map[p.id] = p));
       setProfiles(map);

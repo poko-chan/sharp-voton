@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, Megaphone, Paperclip, Lock, MessageSquare, X } from "lucide-react";
 import { toast } from "sonner";
+import { fetchPublicProfiles } from "@/lib/public-profiles";
 
 export function Stream({ classId, isTeacher, members }: { classId: string; isTeacher: boolean; members: any[] }) {
   const { user } = useAuth();
@@ -35,7 +36,7 @@ export function Stream({ classId, isTeacher, members }: { classId: string; isTea
       const authorIds = new Set<string>();
       (ps ?? []).forEach((p) => authorIds.add(p.author_id));
       (cs ?? []).forEach((c) => authorIds.add(c.author_id));
-      const { data: profs } = await supabase.from("profiles").select("id, display_name, username, avatar_url").in("id", Array.from(authorIds));
+      const profs = await fetchPublicProfiles(Array.from(authorIds));
       setProfMap(new Map((profs ?? []).map((p: any) => [p.id, p])));
     } else {
       setComments({}); setProfMap(new Map());

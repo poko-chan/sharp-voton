@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Package, Coins, Gift, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { fetchPublicProfiles } from "@/lib/public-profiles";
 
 export const Route = createFileRoute("/_authenticated/inventory")({ component: InventoryPage });
 
@@ -37,7 +38,7 @@ function InventoryPage() {
     const b = new Set((f2 ?? []).map((r: any) => r.follower_id));
     const mutualIds = [...a].filter((id) => b.has(id));
     if (mutualIds.length) {
-      const { data: profs } = await supabase.from("profiles").select("id, display_name, username").in("id", mutualIds);
+      const profs = await fetchPublicProfiles(mutualIds);
       setFriends(profs ?? []);
     } else setFriends([]);
   };

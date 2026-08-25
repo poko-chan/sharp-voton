@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { fetchPublicProfiles, type PublicProfile } from "@/lib/public-profiles";
 
 export type ConvType = "dm" | "group";
 
@@ -59,21 +60,15 @@ export async function fetchFriends(userId: string): Promise<Profile[]> {
   const incSet = new Set((f2 ?? []).map((r: any) => r.follower_id));
   const friendIds = out.filter((id) => incSet.has(id));
   if (friendIds.length === 0) return [];
-  const { data, error } = await supabase
-    .from("profiles").select("id, display_name, username")
-    .in("id", friendIds).order("display_name");
-  if (error) throw error;
-  return (data ?? []) as Profile[];
+  const profs = await fetchPublicProfiles(friendIds);
+  return profs.sort((a: PublicProfile, b: PublicProfile) => (a.display_name ?? "").localeCompare(b.display_name ?? "")) as Profile[];
 }
 
 export async function fetchProfilesByIds(ids: string[]): Promise<Profile[]> {
   if (ids.length === 0) return [];
-  const { data, error } = await supabase
-    .from("profiles").select("id, display_name, username")
-    .in("id", ids);
-  if (error) throw error;
-  return (data ?? []) as Profile[];
+  return (await fetchPublicProfiles(ids)) as Profile[];
 }
+
 
 export async function hideDmConversation(otherId: string) {
   const { error } = await (supabase as any).rpc("hide_dm_conversation", { _other: otherId });

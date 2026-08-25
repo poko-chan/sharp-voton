@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RotateCcw, BarChart3, Users, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { fetchPublicProfiles } from "@/lib/public-profiles";
 
 export const Route = createFileRoute("/_authenticated/makron/pack/$packId/dashboard")({ component: PackDashboard });
 
@@ -50,8 +51,7 @@ function PackDashboard() {
     const uids = Array.from(new Set(list.map((r: any) => r.user_id).filter(Boolean)));
     let profMap: Record<string, any> = {};
     if (uids.length > 0) {
-      const { data: profs } = await (supabase as any).from("profiles")
-        .select("id, display_name, username").in("id", uids);
+      const profs = await fetchPublicProfiles(uids as string[]);
       (profs ?? []).forEach((p: any) => { profMap[p.id] = p; });
     }
     setSessions(list.map((r: any) => ({ ...r, profile: profMap[r.user_id] })));

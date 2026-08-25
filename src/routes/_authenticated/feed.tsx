@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { PostComposer, type Draft } from "@/components/feed/PostComposer";
 import { PostCard, type FeedPost } from "@/components/feed/PostCard";
 import { createSocialPost, listFeedPosts } from "@/lib/social.functions";
+import { fetchPublicProfiles } from "@/lib/public-profiles";
 
 export const Route = createFileRoute("/_authenticated/feed")({
   head: () => {
@@ -66,7 +67,7 @@ function FeedPage() {
     const ids = rows.map((p) => p.id);
     const uids = [...new Set(rows.map((p) => p.user_id))];
     if (uids.length) {
-      const { data: pr } = await (supabase as any).from("profiles").select("id, display_name, username, avatar_url").in("id", uids);
+      const pr = await fetchPublicProfiles(uids);
       setProfiles((prev) => ({ ...prev, ...Object.fromEntries((pr ?? []).map((p: any) => [p.id, p])) }));
     }
     if (ids.length) {
@@ -172,7 +173,7 @@ function FeedPage() {
     const { data } = await (supabase as any).from("social_comments").select("*").eq("post_id", id).order("created_at");
     const uids = [...new Set((data ?? []).map((c: any) => c.user_id))] as string[];
     if (uids.length) {
-      const { data: pr } = await (supabase as any).from("profiles").select("id, display_name, username").in("id", uids);
+      const pr = await fetchPublicProfiles(uids);
       setProfiles((prev) => ({ ...prev, ...Object.fromEntries((pr ?? []).map((p: any) => [p.id, p])) }));
     }
     setComments((c) => ({ ...c, [id]: data ?? [] }));

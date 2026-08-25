@@ -2421,6 +2421,8 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          field_id: string | null
+          grade: string | null
           id: string
           is_active: boolean
           is_official: boolean
@@ -2434,8 +2436,9 @@ export type Database = {
           shuffle: boolean
           skip_preview: boolean
           status: string
+          subject_id: string | null
           title: string
-          unit_id: string
+          unit_id: string | null
           updated_at: string
           xp_cap_per_user: number | null
           xp_per_question: number
@@ -2447,6 +2450,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          field_id?: string | null
+          grade?: string | null
           id?: string
           is_active?: boolean
           is_official?: boolean
@@ -2460,8 +2465,9 @@ export type Database = {
           shuffle?: boolean
           skip_preview?: boolean
           status?: string
+          subject_id?: string | null
           title: string
-          unit_id: string
+          unit_id?: string | null
           updated_at?: string
           xp_cap_per_user?: number | null
           xp_per_question?: number
@@ -2473,6 +2479,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          field_id?: string | null
+          grade?: string | null
           id?: string
           is_active?: boolean
           is_official?: boolean
@@ -2486,18 +2494,33 @@ export type Database = {
           shuffle?: boolean
           skip_preview?: boolean
           status?: string
+          subject_id?: string | null
           title?: string
-          unit_id?: string
+          unit_id?: string | null
           updated_at?: string
           xp_cap_per_user?: number | null
           xp_per_question?: number
         }
         Relationships: [
           {
+            foreignKeyName: "makron_packs_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "makron_fields"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "makron_packs_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "makron_packs_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "makron_subjects"
             referencedColumns: ["id"]
           },
           {
@@ -2567,7 +2590,7 @@ export type Database = {
           status: string
           submitted_at: string | null
           type: string
-          unit_id: string
+          unit_id: string | null
           updated_at: string
         }
         Insert: {
@@ -2592,7 +2615,7 @@ export type Database = {
           status?: string
           submitted_at?: string | null
           type: string
-          unit_id: string
+          unit_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -2617,7 +2640,7 @@ export type Database = {
           status?: string
           submitted_at?: string | null
           type?: string
-          unit_id?: string
+          unit_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -2793,6 +2816,7 @@ export type Database = {
           description: string | null
           field: string | null
           field_id: string | null
+          grade: string | null
           id: string
           order_idx: number
           organization_id: string | null
@@ -2808,6 +2832,7 @@ export type Database = {
           description?: string | null
           field?: string | null
           field_id?: string | null
+          grade?: string | null
           id?: string
           order_idx?: number
           organization_id?: string | null
@@ -2823,6 +2848,7 @@ export type Database = {
           description?: string | null
           field?: string | null
           field_id?: string | null
+          grade?: string | null
           id?: string
           order_idx?: number
           organization_id?: string | null
@@ -6995,7 +7021,7 @@ export type Database = {
           status: string
           submitted_at: string | null
           type: string
-          unit_id: string
+          unit_id: string | null
           updated_at: string
         }[]
         SetofOptions: {
@@ -7166,6 +7192,15 @@ export type Database = {
           votes: number
         }[]
       }
+      public_profiles_by_ids: {
+        Args: { _ids: string[] }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+          username: string
+        }[]
+      }
       purchase_shop_item: { Args: { _item_id: string }; Returns: Json }
       remove_from_chat_group: {
         Args: { _group: string; _user_id: string }
@@ -7174,6 +7209,15 @@ export type Database = {
       review_material_edit: {
         Args: { _approve: boolean; _edit_id: string; _note?: string }
         Returns: Json
+      }
+      search_public_profiles: {
+        Args: { _q: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+          username: string
+        }[]
       }
       sell_inventory_item: {
         Args: { _item_code: string; _qty?: number }
