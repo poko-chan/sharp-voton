@@ -1,5 +1,5 @@
 import { QUESTION_COLUMNS, loadQuestionKeys } from "@/lib/makron-questions";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Trash2, Save, FileText, ChevronRight, FlagOff, Image as ImageIcon, Power, Download, BarChart3, Check, X, CalendarDays } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Plus, Trash2, Save, FileText, ChevronRight, FlagOff, Image as ImageIcon, Power, Tags, Pencil, Flag, ExternalLink } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
@@ -26,25 +27,21 @@ function AdminPage() {
   const [units, setUnits] = useState<any[]>([]);
   const [subjects, setSubjects] = useState<any[]>([]);
   const [fields, setFields] = useState<any[]>([]);
+  const [selSubj, setSelSubj] = useState<string | null>(null);
+  const [newSubj, setNewSubj] = useState("");
+  const [newField, setNewField] = useState("");
   const [selUnit, setSelUnit] = useState<string | null>(null);
   const [questions, setQuestions] = useState<any[]>([]);
-  const [pending, setPending] = useState<any[]>([]);
-  const [submissions, setSubmissions] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
-  const [analytics, setAnalytics] = useState<any[]>([]);
-  const [pendingQs, setPendingQs] = useState<any[]>([]);
-  // NOTE: ALL hooks must be declared BEFORE any early return to keep hook order
-  // stable across renders (React error #310 otherwise).
+  const [reportDetail, setReportDetail] = useState<any | null>(null);
+  const [reportFilter, setReportFilter] = useState<"open" | "all">("open");
   const [uTitle, setUTitle] = useState("");
   const [uSubjectId, setUSubjectId] = useState<string>("");
   const [uFieldId, setUFieldId] = useState<string>("");
   const [uDesc, setUDesc] = useState("");
   const [draft, setDraft] = useState<any | null>(null);
-  const [gradeFor, setGradeFor] = useState<any | null>(null);
-  const [gradeScore, setGradeScore] = useState<number>(0);
-  const [gradeComment, setGradeComment] = useState("");
 
-  const loadUnits = async () => {
+  const loadLabels = async () => {
     const { data } = await (supabase as any).from("makron_units").select("*").order("order_idx").order("created_at");
     setUnits(data ?? []);
     const { data: s } = await (supabase as any).from("makron_subjects").select("*").order("order_idx").order("name");
@@ -56,41 +53,61 @@ function AdminPage() {
     const { data } = await (supabase as any).from("makron_questions").select(QUESTION_COLUMNS).eq("unit_id", unitId).order("order_idx").order("created_at");
     setQuestions(data ?? []);
   };
-  const loadPendingQs = async () => {
-    const { data } = await (supabase as any).from("makron_questions")
-      .select(`${QUESTION_COLUMNS}, unit:makron_units(title, subject, field, unit), profile:profiles!makron_questions_created_by_fkey(username, display_name)`)
-      .eq("status", "pending").order("submitted_at", { ascending: false });
-    setPendingQs(data ?? []);
-  };
-  const loadPending = async () => {
-    const { data } = await (supabase as any).from("makron_answers")
-      .select("*, question:makron_questions(prompt, points, grading), session:makron_sessions(user_id, started_at)")
-      .is("manual_score", null);
-    setPending((data ?? []).filter((r: any) => r.question?.grading === "manual"));
-  };
   const loadReports = async () => {
     const { data } = await (supabase as any).from("makron_reports")
-      .select("*, question:makron_questions(prompt)").order("created_at", { ascending: false }).limit(100);
+      .select("*, question:makron_questions(id, prompt, type, options, explanation, unit_id, pack_id, image_url)")
+      .order("created_at", { ascending: false }).limit(200);
     setReports(data ?? []);
   };
 
-  useEffect(() => { loadUnits(); loadPending(); loadReports(); loadPendingQs(); }, []);
+  useEffect(() => { loadLabels(); loadReports(); }, []);
   useEffect(() => { if (selUnit) loadQuestions(selUnit); }, [selUnit]);
 
-  const loadAnalytics = async () => {
-    const { data } = await (supabase as any).rpc("admin_makron_analytics");
-    setAnalytics(data ?? []);
-  };
-
-  // 問題作成・編集は管理者のみ
   if (!user) {
-    return <MakronShell back="/makron" title="管理者画面"><div className="p-6 text-sm">ログインしてください</div></MakronShell>;
+    return <MakronShell back="/makron/units" title="管理者画面"><div className="p-6 text-sm">ログインしてください</div></MakronShell>;
   }
   if (!isAdmin) {
-    return <MakronShell back="/makron" title="管理者画面"><div className="p-6 text-sm text-muted-foreground">この画面は管理者のみ利用できます。</div></MakronShell>;
+    return <MakronShell back="/makron/units" title="管理者画面"><div className="p-6 text-sm text-muted-foreground">この画面は管理者のみ利用できます。</div></MakronShell>;
   }
 
-  // Create unit (admin only)
+  // ---- ラベル管理（教科 / 分野 / 単元） ----
+  const addSubject = async () => {
+    if (!newSubj.trim()) return;
+    const { error } = await (supabase as any).from("makron_subjects").insert({ name: newSubj.trim() });
+    if (error) return toast.error(error.message);
+    setNewSubj(""); loadLabels();
+  };
+  const renameSubject = async (id: string, current: string) => {
+    const name = prompt("教科の新しい名前", current);
+    if (!name || name === current) return;
+    const { error } = await (supabase as any).from("makron_subjects").update({ name }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("更新しました"); loadLabels();
+  };
+  const delSubject = async (id: string) => {
+    if (!confirm("教科を削除すると関連分野も削除されます")) return;
+    await (supabase as any).from("makron_subjects").delete().eq("id", id);
+    if (selSubj === id) setSelSubj(null);
+    loadLabels();
+  };
+  const addField = async () => {
+    if (!newField.trim() || !selSubj) return;
+    const { error } = await (supabase as any).from("makron_fields").insert({ name: newField.trim(), subject_id: selSubj });
+    if (error) return toast.error(error.message);
+    setNewField(""); loadLabels();
+  };
+  const renameField = async (id: string, current: string) => {
+    const name = prompt("分野の新しい名前", current);
+    if (!name || name === current) return;
+    const { error } = await (supabase as any).from("makron_fields").update({ name }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("更新しました"); loadLabels();
+  };
+  const delField = async (id: string) => {
+    if (!confirm("削除しますか？")) return;
+    await (supabase as any).from("makron_fields").delete().eq("id", id);
+    loadLabels();
+  };
   const createUnit = async () => {
     if (!uTitle.trim()) return;
     const sub = subjects.find((s) => s.id === uSubjectId);
@@ -107,23 +124,17 @@ function AdminPage() {
     });
     if (error) return toast.error(error.message);
     setUTitle(""); setUSubjectId(""); setUFieldId(""); setUDesc("");
-    toast.success("単元を作成しました"); loadUnits();
+    toast.success("単元を作成しました"); loadLabels();
   };
   const deleteUnit = async (id: string) => {
     if (!confirm("この単元と中の問題をすべて削除しますか？")) return;
     const { error } = await (supabase as any).from("makron_units").delete().eq("id", id);
     if (error) return toast.error(error.message);
     if (selUnit === id) setSelUnit(null);
-    loadUnits();
+    loadLabels();
   };
 
-  // Question editor
-  const blank = () => ({
-    unit_id: selUnit, prompt: "", image_url: "", type: "single",
-    options: ["", "", "", ""], correct_options: [], accepted_answers: [],
-    model_answer: "", explanation: "", hint_text: "", is_active: true, points: 10, grading: "auto", order_idx: 100,
-  });
-
+  // ---- 問題編集（追加はパック画面から） ----
   const uploadImage = async (file: File) => {
     const path = `q/${user?.id}/${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from("makron-files").upload(path, file);
@@ -131,7 +142,6 @@ function AdminPage() {
     const { data } = await supabase.storage.from("makron-files").createSignedUrl(path, 60 * 60 * 24 * 365);
     setDraft((d: any) => ({ ...d, image_url: data?.signedUrl ?? path }));
   };
-
   const saveQuestion = async () => {
     if (!draft || !draft.prompt.trim()) return toast.error("問題文を入力してください");
     const { id, created_at, updated_at, status, created_by, submitted_at, reviewed_at, reviewed_by, unit, profile, ...rest } = draft;
@@ -141,12 +151,10 @@ function AdminPage() {
       correct_options: rest.correct_options ?? [],
       accepted_answers: (rest.accepted_answers ?? []).filter((s: string) => s && s.trim()),
     };
-    const { error } = id
-      ? await (supabase as any).from("makron_questions").update(payload).eq("id", id)
-      : await (supabase as any).from("makron_questions").insert(payload);
+    const { error } = await (supabase as any).from("makron_questions").update(payload).eq("id", id);
     if (error) return toast.error(error.message);
-    setDraft(null); loadQuestions(selUnit!); loadPendingQs();
-    toast.success(isAdmin ? "保存しました（公式）" : "申請しました。管理者の承認をお待ちください");
+    setDraft(null); loadQuestions(selUnit!);
+    toast.success("保存しました");
   };
   const delQuestion = async (id: string) => {
     if (!confirm("削除しますか？")) return;
@@ -154,38 +162,73 @@ function AdminPage() {
     loadQuestions(selUnit!);
   };
 
-  // Manual grading
-  const loadSubmissionSession = async (sessionId: string) => {
-    const { data } = await (supabase as any).from("makron_answers")
-      .select("*, question:makron_questions(prompt, points, grading)").eq("session_id", sessionId);
-    setSubmissions(data ?? []);
-  };
-  const submitGrade = async () => {
-    if (!gradeFor) return;
-    await (supabase as any).from("makron_answers").update({
-      manual_score: gradeScore, manual_comment: gradeComment || null, awarded_points: gradeScore,
-    }).eq("id", gradeFor.id);
-    toast.success("採点しました"); setGradeFor(null); loadPending();
-  };
+  const subjFields = fields.filter((f) => f.subject_id === selSubj);
+  const visibleReports = reports.filter((r) => reportFilter === "all" || r.status === "open");
 
   return (
-    <MakronShell back="/makron" title="管理者画面">
+    <MakronShell back="/makron/units" title="管理者画面">
       <div className="max-w-6xl mx-auto p-6">
-        <Tabs defaultValue="units" onValueChange={(v) => { if (v === "analytics") loadAnalytics(); if (v === "approve") loadPendingQs(); }}>
+        <Tabs defaultValue="labels">
           <TabsList>
-            <TabsTrigger value="units">単元・問題</TabsTrigger>
-            <TabsTrigger value="approve">問題承認 ({pendingQs.length})</TabsTrigger>
-            <TabsTrigger value="grading">手動採点 ({pending.length})</TabsTrigger>
-            <TabsTrigger value="reports">報告 ({reports.filter(r => r.status === "open").length})</TabsTrigger>
-            <TabsTrigger value="analytics"><BarChart3 className="h-3 w-3 mr-1" />分析</TabsTrigger>
-            <TabsTrigger value="daily"><CalendarDays className="h-3 w-3 mr-1" />デイリー</TabsTrigger>
+            <TabsTrigger value="labels"><Tags className="h-3 w-3 mr-1" />ラベル管理</TabsTrigger>
+            <TabsTrigger value="questions">問題一覧</TabsTrigger>
+            <TabsTrigger value="reports"><Flag className="h-3 w-3 mr-1" />報告 ({reports.filter((r) => r.status === "open").length})</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="units" className="space-y-4">
+          {/* ---------------- ラベル管理 ---------------- */}
+          <TabsContent value="labels" className="space-y-4">
+            <div className="text-xs text-muted-foreground flex items-center gap-1">
+              <Tags className="h-3 w-3" />教科 → 分野 → 単元 の順に作成します。単元を開くとパック（問題のまとまり）を追加できます。
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <Card className="p-4 space-y-2">
+                <div className="font-bold flex items-center gap-1"><Plus className="h-4 w-4" />教科</div>
+                <div className="flex gap-1">
+                  <Input placeholder="例：数学" value={newSubj} onChange={(e) => setNewSubj(e.target.value)} />
+                  <Button onClick={addSubject}><Plus className="h-4 w-4" /></Button>
+                </div>
+                <div className="space-y-1 max-h-80 overflow-auto">
+                  {subjects.map((s) => (
+                    <div key={s.id} className={`flex items-center gap-1 p-2 rounded cursor-pointer ${selSubj === s.id ? "bg-primary/10" : "hover:bg-accent"}`} onClick={() => setSelSubj(s.id)}>
+                      <span className="flex-1 truncate">{s.name}</span>
+                      <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); renameSubject(s.id, s.name); }}><Pencil className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="ghost" className="text-destructive" onClick={(e) => { e.stopPropagation(); delSubject(s.id); }}><Trash2 className="h-4 w-4" /></Button>
+                    </div>
+                  ))}
+                  {subjects.length === 0 && <div className="text-xs text-muted-foreground">教科がまだありません</div>}
+                </div>
+              </Card>
+
+              <Card className="p-4 space-y-2">
+                <div className="font-bold flex items-center gap-1"><Plus className="h-4 w-4" />分野
+                  {selSubj && <span className="text-[10px] text-muted-foreground">（{subjects.find((s) => s.id === selSubj)?.name}）</span>}
+                </div>
+                {!selSubj && <div className="text-xs text-muted-foreground">左から教科を選択してください</div>}
+                {selSubj && (
+                  <>
+                    <div className="flex gap-1">
+                      <Input placeholder="例：代数" value={newField} onChange={(e) => setNewField(e.target.value)} />
+                      <Button onClick={addField}><Plus className="h-4 w-4" /></Button>
+                    </div>
+                    <div className="space-y-1 max-h-80 overflow-auto">
+                      {subjFields.map((f) => (
+                        <div key={f.id} className="flex items-center gap-1 p-2 rounded hover:bg-accent">
+                          <span className="flex-1 truncate">{f.name}</span>
+                          <Button size="sm" variant="ghost" onClick={() => renameField(f.id, f.name)}><Pencil className="h-4 w-4" /></Button>
+                          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => delField(f.id)}><Trash2 className="h-4 w-4" /></Button>
+                        </div>
+                      ))}
+                      {subjFields.length === 0 && <div className="text-xs text-muted-foreground">この教科にはまだ分野がありません</div>}
+                    </div>
+                  </>
+                )}
+              </Card>
+            </div>
+
             <div className="grid md:grid-cols-2 gap-4">
               <Card className="p-4 space-y-2">
                 <div className="font-bold flex items-center gap-1"><Plus className="h-4 w-4" />新しい単元</div>
-                <Input placeholder="タイトル（ユニット名）" value={uTitle} onChange={(e) => setUTitle(e.target.value)} />
+                <Input placeholder="タイトル（単元名）" value={uTitle} onChange={(e) => setUTitle(e.target.value)} />
                 <div className="grid grid-cols-2 gap-1">
                   <Select value={uSubjectId} onValueChange={(v) => { setUSubjectId(v); setUFieldId(""); }}>
                     <SelectTrigger><SelectValue placeholder="教科を選択" /></SelectTrigger>
@@ -196,39 +239,49 @@ function AdminPage() {
                     <SelectContent>{fields.filter((f: any) => f.subject_id === uSubjectId).map((f: any) => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <div className="text-[10px] text-muted-foreground">教科・分野ラベルは <a href="/makron/labels" className="underline">ラベル管理</a> から追加してください。</div>
                 <Textarea rows={2} placeholder="説明（任意）" value={uDesc} onChange={(e) => setUDesc(e.target.value)} />
                 <Button onClick={createUnit} className="w-full" disabled={!uTitle.trim()}>作成</Button>
               </Card>
+
               <Card className="p-4 space-y-2 max-h-96 overflow-auto">
                 <div className="font-bold">単元一覧</div>
                 {units.map((u) => (
-                  <div key={u.id} className={`flex items-center gap-1 p-2 rounded ${selUnit === u.id ? "bg-primary/10" : "hover:bg-accent"} cursor-pointer`}>
-                    <button className="flex-1 min-w-0 text-left" onClick={() => setSelUnit(u.id)}>
-                      <div className="font-medium truncate flex items-center gap-1">{u.title} <ChevronRight className="h-3 w-3" /></div>
-                      <div className="text-[10px] text-muted-foreground">{[u.subject, u.field, u.unit].filter(Boolean).join(" / ")}</div>
-                    </button>
+                  <div key={u.id} className="flex items-center gap-1 p-2 rounded hover:bg-accent">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">{u.title}</div>
+                      <div className="text-[10px] text-muted-foreground">{[u.subject, u.field].filter(Boolean).join(" / ") || "未分類"}</div>
+                    </div>
+                    <Link to="/makron/unit/$unitId" params={{ unitId: u.id }}>
+                      <Button size="sm" variant="outline" title="パックを管理">パック<ChevronRight className="h-3 w-3" /></Button>
+                    </Link>
                     <Button size="sm" variant="ghost" onClick={() => deleteUnit(u.id)} className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 ))}
                 {units.length === 0 && <div className="text-xs text-muted-foreground">まだ単元がありません</div>}
               </Card>
             </div>
+          </TabsContent>
+
+          {/* ---------------- 問題一覧 ---------------- */}
+          <TabsContent value="questions" className="space-y-3">
+            <Card className="p-3 flex flex-wrap items-center gap-2">
+              <span className="text-sm font-bold">単元:</span>
+              <Select value={selUnit ?? ""} onValueChange={(v) => setSelUnit(v)}>
+                <SelectTrigger className="w-72"><SelectValue placeholder="単元を選択" /></SelectTrigger>
+                <SelectContent>{units.map((u) => <SelectItem key={u.id} value={u.id}>{u.title}</SelectItem>)}</SelectContent>
+              </Select>
+              <span className="text-[11px] text-muted-foreground ml-auto">問題の追加はパック画面から行います。</span>
+            </Card>
 
             {selUnit && (
               <Card className="p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="font-bold">問題一覧 ({questions.length})</div>
-                  <Button size="sm" onClick={() => setDraft(blank())}><Plus className="h-4 w-4 mr-1" />問題を追加</Button>
-                </div>
-                <div className="space-y-1 max-h-72 overflow-auto">
+                <div className="font-bold">問題一覧 ({questions.length})</div>
+                <div className="space-y-1 max-h-[50vh] overflow-auto">
+                  {questions.length === 0 && <div className="text-xs text-muted-foreground">この単元にはまだ問題がありません</div>}
                   {questions.map((q) => (
                     <div key={q.id} className={`flex items-center gap-1 border rounded p-2 text-sm ${q.is_active === false ? "opacity-50 line-through" : ""}`}>
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">{q.type}</span>
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10">{q.points}点</span>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${q.status === 'approved' ? 'bg-success/15 text-success' : q.status === 'rejected' ? 'bg-destructive/15 text-destructive' : 'bg-amber-500/15 text-amber-600'}`}>
-                        {q.status === 'approved' ? '公式' : q.status === 'rejected' ? '却下' : '申請中'}
-                      </span>
                       <span className="flex-1 min-w-0 truncate">{q.prompt}</span>
                       <Button size="sm" variant="ghost" title={q.is_active === false ? "有効化" : "停止"} onClick={async () => {
                         await (supabase as any).from("makron_questions").update({ is_active: q.is_active === false }).eq("id", q.id);
@@ -326,7 +379,7 @@ function AdminPage() {
                     </label>
 
                     <div className="flex gap-2">
-                      <Button onClick={saveQuestion}><Save className="h-4 w-4 mr-1" />{draft.id ? "更新" : "作成"}</Button>
+                      <Button onClick={saveQuestion}><Save className="h-4 w-4 mr-1" />更新</Button>
                       <Button variant="ghost" onClick={() => setDraft(null)}>キャンセル</Button>
                     </div>
                   </Card>
@@ -335,201 +388,107 @@ function AdminPage() {
             )}
           </TabsContent>
 
-          {isAdmin && (
-          <TabsContent value="approve" className="space-y-3">
-            {pendingQs.length === 0 && <Card className="p-6 text-center text-muted-foreground text-sm">承認待ちの問題はありません</Card>}
-            {pendingQs.map((q: any) => (
-              <Card key={q.id} className="p-3 space-y-2">
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600">申請中</span>
-                  <span className="text-muted-foreground">単元: {q.unit?.title}</span>
-                  <span className="text-muted-foreground">作成者: {q.profile?.display_name ?? q.profile?.username ?? q.created_by?.slice(0,8)}</span>
-                  <span className="text-muted-foreground ml-auto">{q.submitted_at ? new Date(q.submitted_at).toLocaleString("ja-JP") : ""}</span>
-                </div>
-                <div className="text-sm whitespace-pre-wrap">{q.prompt}</div>
-                {q.image_url && <img src={q.image_url} alt="" className="max-h-32 border rounded" />}
-                {(q.options ?? []).length > 0 && (
-                  <ul className="text-xs pl-4 list-disc">
-                    {q.options.map((o: string, i: number) => (
-                      <li key={i}>{o}</li>
-                    ))}
-                  </ul>
-                )}
-                {q.explanation && <div className="text-xs text-muted-foreground">解説: {q.explanation}</div>}
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={async () => {
-                    const { error } = await (supabase as any).rpc("admin_review_question", { _question_id: q.id, _approve: true });
-                    if (error) return toast.error(error.message);
-                    toast.success("公式承認しました"); loadPendingQs(); if (selUnit && selUnit === q.unit_id) loadQuestions(selUnit);
-                  }}><Check className="h-3 w-3 mr-1" />承認</Button>
-                  <Button size="sm" variant="outline" onClick={async () => {
-                    const { error } = await (supabase as any).rpc("admin_review_question", { _question_id: q.id, _approve: false });
-                    if (error) return toast.error(error.message);
-                    toast.success("却下しました"); loadPendingQs(); if (selUnit && selUnit === q.unit_id) loadQuestions(selUnit);
-                  }}><X className="h-3 w-3 mr-1" />却下</Button>
-                </div>
-              </Card>
-            ))}
-          </TabsContent>
-          )}
-
-          <TabsContent value="grading" className="space-y-3">
-            {pending.length === 0 && <Card className="p-6 text-center text-muted-foreground text-sm">採点待ちはありません</Card>}
-            {pending.map((p) => (
-              <Card key={p.id} className="p-3 flex items-center gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{p.question?.prompt}</div>
-                  <div className="text-[10px] text-muted-foreground">配点 {p.question?.points} 点</div>
-                </div>
-                <Button size="sm" onClick={() => { setGradeFor(p); setGradeScore(0); setGradeComment(""); }}>採点</Button>
-              </Card>
-            ))}
-            {gradeFor && (
-              <Card className="p-4 space-y-2 border-primary/40">
-                <div className="font-bold">採点: {gradeFor.question?.prompt}</div>
-                <div className="text-xs">生徒の解答: <span className="whitespace-pre-wrap">{JSON.stringify(gradeFor.answer)}</span></div>
-                {gradeFor.file_url && <div className="text-xs">提出ファイル: {gradeFor.file_url}</div>}
-                <div className="flex gap-2 items-center">
-                  <label className="text-xs">点数</label>
-                  <Input type="number" value={gradeScore} onChange={(e) => setGradeScore(Number(e.target.value) || 0)} className="w-24" />
-                  <span className="text-xs">/ {gradeFor.question?.points}</span>
-                </div>
-                <Textarea placeholder="講評（任意）" value={gradeComment} onChange={(e) => setGradeComment(e.target.value)} />
-                <div className="flex gap-2">
-                  <Button onClick={submitGrade}>確定</Button>
-                  <Button variant="ghost" onClick={() => setGradeFor(null)}>キャンセル</Button>
-                </div>
-              </Card>
-            )}
-          </TabsContent>
-
+          {/* ---------------- 報告 ---------------- */}
           <TabsContent value="reports" className="space-y-2">
-            {reports.length === 0 && <Card className="p-6 text-center text-muted-foreground text-sm">報告はありません</Card>}
-            {reports.map((r) => (
+            <Card className="p-3 flex items-center gap-2">
+              <span className="text-sm font-bold">表示:</span>
+              <Select value={reportFilter} onValueChange={(v) => setReportFilter(v as any)}>
+                <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="open">未対応のみ</SelectItem>
+                  <SelectItem value="all">すべて</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="text-xs text-muted-foreground ml-auto">{visibleReports.length} 件</span>
+            </Card>
+            {visibleReports.length === 0 && <Card className="p-6 text-center text-muted-foreground text-sm">報告はありません</Card>}
+            {visibleReports.map((r) => (
               <Card key={r.id} className={`p-3 ${r.status === "open" ? "" : "opacity-60"}`}>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs px-2 py-0.5 rounded bg-amber-500/15 text-amber-600">{r.category}</span>
                   <span className="text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleString("ja-JP")}</span>
-                  {r.status === "open" ? (
-                    <Button size="sm" variant="ghost" className="ml-auto" onClick={async () => {
-                      await (supabase as any).from("makron_reports").update({ status: "closed" }).eq("id", r.id); loadReports();
-                    }}><FlagOff className="h-3 w-3 mr-1" />対応済み</Button>
-                  ) : <span className="ml-auto text-[10px] text-muted-foreground">対応済</span>}
+                  <div className="ml-auto flex gap-1">
+                    <Button size="sm" variant="outline" onClick={() => setReportDetail(r)}>詳細</Button>
+                    {r.status === "open" ? (
+                      <Button size="sm" variant="ghost" onClick={async () => {
+                        await (supabase as any).from("makron_reports").update({ status: "closed" }).eq("id", r.id); loadReports();
+                      }}><FlagOff className="h-3 w-3 mr-1" />対応済みにする</Button>
+                    ) : <span className="text-[10px] text-muted-foreground self-center px-2">対応済</span>}
+                  </div>
                 </div>
                 <div className="text-sm mt-1 truncate">{r.question?.prompt ?? "(問題が削除されました)"}</div>
-                {r.suggested_answer && <div className="text-xs mt-1"><FileText className="inline h-3 w-3 mr-0.5" />提案: {r.suggested_answer}</div>}
-                {r.note && <div className="text-xs text-muted-foreground mt-0.5 whitespace-pre-wrap">{r.note}</div>}
               </Card>
             ))}
-          </TabsContent>
 
-          <TabsContent value="analytics" className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">問題別の挑戦数・正答率・いいね・平均難易度。CSV出力可能。</div>
-                <Button size="sm" variant="outline" onClick={() => {
-                  const header = ["問題ID","問題文","挑戦数","正解数","正答率%","いいね","平均難易度"];
-                  const rows = analytics.map((r) => [r.question_id, (r.prompt ?? "").replace(/\n/g, " "), r.attempts, r.correct, r.accuracy, r.likes, r.avg_difficulty]);
-                  const csv = [header, ...rows].map((r) => r.map((c) => `"${String(c ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
-                  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
-                  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `makron-analytics-${Date.now()}.csv`; a.click();
-                }}><Download className="h-3 w-3 mr-1" />CSV出力</Button>
-              </div>
-              <Card className="divide-y max-h-[60vh] overflow-auto">
-                {analytics.length === 0 && <div className="p-6 text-center text-sm text-muted-foreground">データがありません</div>}
-                {analytics.map((r: any) => (
-                  <div key={r.question_id} className="p-3 text-sm">
-                    <div className="font-medium truncate">{r.prompt}</div>
-                    <div className="text-xs text-muted-foreground flex gap-3 mt-1">
-                      <span>挑戦 {r.attempts}</span>
-                      <span>正解 {r.correct}</span>
-                      <span className={Number(r.accuracy) < 30 ? "text-destructive font-bold" : ""}>正答率 {r.accuracy}%</span>
-                      <span>👍 {r.likes}</span>
-                      <span>難度 {Number(r.avg_difficulty).toFixed(1)}/5</span>
+            <Dialog open={!!reportDetail} onOpenChange={(v) => !v && setReportDetail(null)}>
+              <DialogContent className="max-w-2xl max-h-[85vh] overflow-auto">
+                <DialogHeader><DialogTitle>報告の詳細</DialogTitle></DialogHeader>
+                {reportDetail && (
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs px-2 py-0.5 rounded bg-amber-500/15 text-amber-600">{reportDetail.category}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded ${reportDetail.status === "open" ? "bg-destructive/10 text-destructive" : "bg-success/15 text-success"}`}>
+                        {reportDetail.status === "open" ? "未対応" : "対応済"}
+                      </span>
+                      <span className="text-[11px] text-muted-foreground ml-auto">{new Date(reportDetail.created_at).toLocaleString("ja-JP")}</span>
+                    </div>
+
+                    <Card className="p-3 space-y-1">
+                      <div className="text-[11px] text-muted-foreground">対象の問題</div>
+                      <div className="whitespace-pre-wrap">{reportDetail.question?.prompt ?? "(削除済み)"}</div>
+                      {reportDetail.question?.image_url && <img src={reportDetail.question.image_url} alt="" className="max-h-40 border rounded" />}
+                      {(reportDetail.question?.options ?? []).length > 0 && (
+                        <ul className="text-xs pl-4 list-disc">
+                          {reportDetail.question.options.map((o: string, i: number) => <li key={i}>{o}</li>)}
+                        </ul>
+                      )}
+                      {reportDetail.question?.explanation && (
+                        <div className="text-xs text-muted-foreground">解説: {reportDetail.question.explanation}</div>
+                      )}
+                      {reportDetail.question?.unit_id && (
+                        <Link to="/makron/unit/$unitId" params={{ unitId: reportDetail.question.unit_id }}>
+                          <Button size="sm" variant="outline" className="mt-1"><ExternalLink className="h-3 w-3 mr-1" />単元を開く</Button>
+                        </Link>
+                      )}
+                    </Card>
+
+                    {reportDetail.suggested_answer && (
+                      <div><div className="text-[11px] text-muted-foreground flex items-center gap-1"><FileText className="h-3 w-3" />提案された修正</div>
+                        <div className="whitespace-pre-wrap">{reportDetail.suggested_answer}</div></div>
+                    )}
+                    {reportDetail.note && (
+                      <div><div className="text-[11px] text-muted-foreground">コメント</div>
+                        <div className="whitespace-pre-wrap">{reportDetail.note}</div></div>
+                    )}
+                    <div className="text-[11px] text-muted-foreground">報告者ID: {reportDetail.user_id?.slice(0, 8)}…</div>
+
+                    <div className="flex gap-2">
+                      {reportDetail.question?.id && (
+                        <Button size="sm" onClick={async () => {
+                          try {
+                            const { data } = await (supabase as any).from("makron_questions").select(QUESTION_COLUMNS).eq("id", reportDetail.question.id).maybeSingle();
+                            if (!data) return toast.error("問題が見つかりません");
+                            const k = await loadQuestionKeys(data.id);
+                            setSelUnit(data.unit_id);
+                            setDraft({ ...data, options: data.options ?? [], ...k });
+                            setReportDetail(null);
+                            toast.info("「問題一覧」タブで編集できます");
+                          } catch (e: any) { toast.error(e.message); }
+                        }}><Pencil className="h-3 w-3 mr-1" />この問題を修正</Button>
+                      )}
+                      <Button size="sm" variant="outline" onClick={async () => {
+                        const next = reportDetail.status === "open" ? "closed" : "open";
+                        await (supabase as any).from("makron_reports").update({ status: next }).eq("id", reportDetail.id);
+                        setReportDetail({ ...reportDetail, status: next }); loadReports();
+                      }}><FlagOff className="h-3 w-3 mr-1" />{reportDetail.status === "open" ? "対応済みにする" : "未対応に戻す"}</Button>
                     </div>
                   </div>
-                ))}
-              </Card>
-          </TabsContent>
-          <TabsContent value="daily" className="space-y-3">
-            <DailySetEditor />
+                )}
+              </DialogContent>
+            </Dialog>
           </TabsContent>
         </Tabs>
       </div>
     </MakronShell>
   );
 }
-
-function DailySetEditor() {
-  const [date, setDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
-  const [qs, setQs] = useState<any[]>([]);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [recent, setRecent] = useState<any[]>([]);
-  const [search, setSearch] = useState("");
-
-  const loadAll = async () => {
-    const { data } = await (supabase as any).from("makron_questions")
-      .select("id, prompt, points, status, is_active")
-      .eq("status", "approved").eq("is_active", true)
-      .order("created_at", { ascending: false }).limit(500);
-    setQs(data ?? []);
-    const { data: cur } = await (supabase as any).from("makron_daily_sets").select("question_ids").eq("date", date).maybeSingle();
-    setSelected((cur?.question_ids as string[]) ?? []);
-    const { data: rec } = await (supabase as any).rpc("admin_list_daily_sets", { _limit: 14 });
-    setRecent(rec ?? []);
-  };
-  useEffect(() => { loadAll(); }, [date]);
-
-  const toggle = (id: string) => setSelected((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
-  const save = async () => {
-    const { error } = await (supabase as any).rpc("admin_set_daily_set", { _date: date, _question_ids: selected });
-    if (error) return toast.error(error.message);
-    toast.success(`${date} のデイリー(${selected.length}問)を保存しました`);
-    loadAll();
-  };
-  const filtered = qs.filter((q) => !search || (q.prompt ?? "").toLowerCase().includes(search.toLowerCase()));
-
-  return (
-    <div className="space-y-3">
-      <Card className="p-3 flex flex-wrap items-center gap-2">
-        <label className="text-sm font-bold">対象日:</label>
-        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-44" />
-        <span className="text-xs text-muted-foreground">選択中: <span className="font-bold text-foreground">{selected.length}</span> 問</span>
-        <Button size="sm" className="ml-auto" onClick={save}><Save className="h-3 w-3 mr-1" />保存</Button>
-      </Card>
-      <div className="grid md:grid-cols-2 gap-3">
-        <Card className="p-3 space-y-2">
-          <div className="font-bold text-sm">問題を選ぶ（承認済み）</div>
-          <Input placeholder="検索" value={search} onChange={(e) => setSearch(e.target.value)} />
-          <div className="max-h-[55vh] overflow-auto divide-y">
-            {filtered.map((q) => (
-              <label key={q.id} className={`flex items-center gap-2 p-2 cursor-pointer text-sm ${selected.includes(q.id) ? "bg-primary/10" : "hover:bg-accent/40"}`}>
-                <input type="checkbox" checked={selected.includes(q.id)} onChange={() => toggle(q.id)} />
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">{q.points}点</span>
-                <span className="flex-1 min-w-0 truncate">{q.prompt}</span>
-              </label>
-            ))}
-            {filtered.length === 0 && <div className="text-xs text-muted-foreground p-3">該当なし</div>}
-          </div>
-        </Card>
-        <Card className="p-3 space-y-2">
-          <div className="font-bold text-sm">直近のデイリー</div>
-          <div className="max-h-[55vh] overflow-auto divide-y">
-            {recent.length === 0 && <div className="text-xs text-muted-foreground p-3">まだ登録なし</div>}
-            {recent.map((r: any) => (
-              <div key={r.date} className="flex items-center gap-2 py-2 text-sm">
-                <span className="tabular-nums">{r.date}</span>
-                <span className="text-[10px] text-muted-foreground">{r.num_questions}問</span>
-                <Button size="sm" variant="ghost" className="ml-auto" onClick={() => setDate(String(r.date).slice(0,10))}>編集</Button>
-              </div>
-            ))}
-          </div>
-          <div className="text-[10px] text-muted-foreground">
-            ※ 設定しない日は、自動で承認済み問題10問が選ばれます。
-          </div>
-        </Card>
-      </div>
-    </div>
-  );
-}
-
-
