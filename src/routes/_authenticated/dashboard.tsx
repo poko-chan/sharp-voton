@@ -75,7 +75,7 @@ function Dashboard() {
   }, []);
 
   const loadDashboard = async (uid: string) => {
-    const [logsRes, goalsAllRes, annRes, gradesRes, subsRes] = await Promise.all([
+    const [logsRes, goalsAllRes, annRes, gradesRes, subsRes, examsRes] = await Promise.all([
       supabase.from("study_logs")
         .select("id, date, duration_minutes, subject_id, start_time, content, materials(title), subjects(name, color)")
 
@@ -86,6 +86,9 @@ function Dashboard() {
         .order("publish_at", { ascending: false }).limit(2),
       supabase.from("grading_history").select("score, correct").eq("user_id", uid).limit(2000),
       supabase.from("submissions").select("xp_awarded").eq("user_id", uid),
+      supabase.from("exams").select("id, name, start_date")
+        .eq("user_id", uid).gte("start_date", localDateStr())
+        .order("start_date", { ascending: true }).limit(3),
     ]);
     const xp = (subsRes.data ?? []).reduce((s, r) => s + (r.xp_awarded ?? 0), 0);
     const logs = logsRes.data ?? [];
@@ -162,6 +165,15 @@ function Dashboard() {
       .map(([name, { v, c }]) => ({ name, value: v, color: c }))
       .sort((a, b) => b.value - a.value);
 
+    const matMap = new Map<string, number>();
+    logs.forEach((l: any) => {
+      const t = l.materials?.title;
+      if (t) matMap.set(t, (matMap.get(t) ?? 0) + (l.duration_minutes ?? 0));
+    });
+    const byMaterial = Array.from(matMap.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value).slice(0, 5);
+
     const hourArr = new Array(24).fill(0);
     logs.forEach((l: any) => {
       if (l.start_time) {
@@ -194,6 +206,7 @@ function Dashboard() {
       },
       weekly: week, monthly: month, heatmap: heat, byDow,
       bySubject: subjArr, topSubjects: subjArr.slice(0, 5), peakByHour: peakBuckets,
+      byMaterial, exams: (examsRes.data ?? []) as { id: string; name: string; start_date: string | null }[],
     };
   };
 
@@ -223,6 +236,9 @@ function Dashboard() {
   const announcements = data?.announcements ?? [];
   const recent = data?.recent ?? [];
   const classroomXp = data?.classroomXp ?? 0;
+  const byMaterial = data?.byMaterial ?? [];
+  const exams = data?.exams ?? [];
+  const maxMaterialMin = Math.max(1, ...byMaterial.map((m) => m.value));
 
   const diff = stats.weekMin - stats.lastWeekMin;
   const diffPct = stats.lastWeekMin > 0 ? Math.round((diff / stats.lastWeekMin) * 100) : null;
@@ -519,6 +535,65 @@ function Dashboard() {
                 })}
               </div>
             </>
+          )}
+        </Card>
+      </div>
+
+      {/* ===== 試験カウントダウン + 教材別 ===== */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <Card className="p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-bold flex items-center gap-2"><CalendarDays className="h-4 w-4 text-rose-500" />試験カウントダウン</h3>
+            <Button asChild size="sm" variant="ghost"><Link to="/exams">管理 <ChevronRight className="h-3 w-3" /></Link></Button>
+          </div>
+          {exams.length === 0 ? (
+            <p className="text-sm text-muted-foreground">予定されている試験はありません。<Link to="/exams" className="ml-1 text-primary underline">登録する</Link></p>
+          ) : (
+            <div className="space-y-3">
+              {exams.map((e) => {
+                const days = e.start_date
+                  ? Math.max(0, Math.ceil((new Date(e.start_date + "T00:00:00").getTime() - Date.now()) / 86400000))
+                  : null;
+                const urgency = days === null ? "slate" : days <= 3 ? "rose" : days <= 14 ? "amber" : "primary";
+                return (
+                  <div key={e.id} className="flex items-center gap-3 p-3 rounded-xl border bg-muted/20">
+                    <div className={`h-12 w-12 rounded-xl grid place-items-center shrink-0 font-extrabold tabular-nums ${
+                      urgency === "rose" ? "bg-rose-500/15 text-rose-600"
+                      : urgency === "amber" ? "bg-amber-500/15 text-amber-600"
+                      : "bg-primary/12 text-primary"}`}>
+                      {days ?? "—"}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-semibold truncate">{e.name}</div>
+                      <div className="text-[11px] text-muted-foreground">{e.start_date ?? "日付未設定"}{days !== null ? ` ・ あと ${days} 日` : ""}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
+
+        <Card className="p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-bold flex items-center gap-2"><Layers className="h-4 w-4 text-primary" />よく使う教材 TOP5</h3>
+            <Button asChild size="sm" variant="ghost"><Link to="/materials">教材DB <ChevronRight className="h-3 w-3" /></Link></Button>
+          </div>
+          {byMaterial.length === 0 ? (
+            <p className="text-sm text-muted-foreground">教材を紐づけた記録がまだありません。</p>
+          ) : (
+            <div className="space-y-3">
+              {byMaterial.map((m, i) => (
+                <div key={m.name}>
+                  <div className="flex justify-between text-[12px] mb-1">
+                    <span className="font-semibold truncate pr-2">{i + 1}. {m.name}</span>
+                    <span className="text-muted-foreground tabular-nums shrink-0">{fmt(m.value)}</span>
+                  </div>
+                  <PowerBar value={(m.value / maxMaterialMin) * 100} height={9} striped={false}
+                    from="oklch(0.75 0.16 200)" to="oklch(0.62 0.22 275)" />
+                </div>
+              ))}
+            </div>
           )}
         </Card>
       </div>
