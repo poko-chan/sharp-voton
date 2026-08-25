@@ -23,10 +23,25 @@ function Mistakes() {
   const loadEdu = async () => {
     if (!user) return;
     const { data } = await (supabase as any).from("org_edu_attempts")
-      .select("*, org_edu_questions(body, answer, explanation), org_edu_units(title)")
+      .select("*, org_edu_questions(body), org_edu_units(title)")
       .eq("user_id", user.id).eq("correct", false).is("resolved_at", null)
       .order("created_at", { ascending: false }).limit(100);
-    setEdu(data ?? []);
+    const rows = (data ?? []) as any[];
+    // 正解・解説はテーブルから直接読めないので、復習用 RPC で取得する
+    const orgIds = Array.from(new Set(rows.map((r) => r.organization_id).filter(Boolean)));
+    const keyMap = new Map<string, { answer: string; explanation: string | null }>();
+    for (const org of orgIds) {
+      const { data: rev } = await (supabase as any).rpc("org_edu_review_rows", { _org: org, _include_done: false });
+      for (const r of ((rev ?? []) as any[])) keyMap.set(r.id, { answer: r.answer, explanation: r.explanation });
+    }
+    setEdu(rows.map((r) => ({
+      ...r,
+      org_edu_questions: {
+        ...(r.org_edu_questions ?? {}),
+        answer: keyMap.get(r.id)?.answer ?? "",
+        explanation: keyMap.get(r.id)?.explanation ?? null,
+      },
+    })));
   };
 
   useEffect(() => {
