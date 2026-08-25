@@ -117,47 +117,57 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
       </header>
 
       <main>
-        {/* Hero */}
-        <section className="relative">
-          <div className="relative mx-auto max-w-6xl px-4 py-16 text-center sm:py-28">
-            <span className="chip">Study# — 旧 Voton Study+</span>
-            <h1 className="mx-auto mt-6 max-w-4xl font-display text-[2.5rem] font-black leading-[1.1] tracking-tight sm:text-6xl lg:text-7xl">
-              学習のすべてを、<span className="text-gradient">ひとつに</span>。
-              <span className="mt-2 block text-2xl font-extrabold text-muted-foreground sm:text-3xl">Study#</span>
-            </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-[0.95rem] leading-relaxed text-muted-foreground sm:text-lg">
-              記録する。集中する。解く。AIに聞く。仲間と続ける。学校や塾で運用する。 バラバラだった学習の道具を、Study#
-              はひとつのプラットフォームにまとめました。
-            </p>
-            <div className="mt-9 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
-              {isAuthed ? (
-                <Link to="/dashboard" className="cta">
-                  {t("landing.dashboard")}
-                </Link>
-              ) : (
-                <Link to="/login" className="cta">
-                  {t("landing.start")}
-                </Link>
-              )}
-              <Link to="/all-services" className="cta-ghost">
-                機能をぜんぶ見る
-              </Link>
-            </div>
-            <dl className="mx-auto mt-14 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-              {[
-                [`${SERVICE_COUNT}+`, "搭載機能"],
-                ["10問", "毎日のデイリー演習"],
-                ["24h", "AIチャット"],
-                ["4段階", "組織の役割管理"],
-              ].map(([v, l]) => (
-                <div key={l} className="surface p-4 text-left sm:text-center">
-                  <dt className="font-display text-2xl font-black text-gradient sm:text-3xl">{v}</dt>
-                  <dd className="mt-1 text-[11px] text-muted-foreground sm:text-xs">{l}</dd>
+        {/* Hero — ink panel, asymmetric */}
+        <section className="mx-auto max-w-6xl px-4 pt-8 sm:pt-14">
+          <div className="ink-panel overflow-hidden px-6 py-12 sm:px-12 sm:py-20">
+            <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]">
+              <div>
+                <span className="chip border-white/20 bg-white/10 text-white/80">Study# — 旧 Voton Study+</span>
+                <h1 className="mt-6 font-display text-[2.4rem] font-bold leading-[1.05] tracking-tight sm:text-6xl">
+                  学習のすべてを、
+                  <br />
+                  <span className="text-gradient">ひとつに</span>。
+                </h1>
+                <p className="muted-on-ink mt-6 max-w-xl text-[0.95rem] leading-relaxed sm:text-lg">
+                  記録する。集中する。解く。AIに聞く。仲間と続ける。学校や塾で運用する。
+                  バラバラだった学習の道具を、Study# はひとつのプラットフォームにまとめました。
+                </p>
+                <div className="mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+                  {isAuthed ? (
+                    <Link to="/dashboard" className="cta cta-signal">
+                      {t("landing.dashboard")}
+                    </Link>
+                  ) : (
+                    <Link to="/login" className="cta cta-signal">
+                      {t("landing.start")}
+                    </Link>
+                  )}
+                  <Link
+                    to="/all-services"
+                    className="cta-ghost border-white/25 bg-white/5 text-white hover:bg-white/10"
+                  >
+                    機能をぜんぶ見る
+                  </Link>
                 </div>
-              ))}
-            </dl>
+              </div>
+
+              <dl className="grid grid-cols-2 gap-3 sm:gap-4">
+                {[
+                  [`${SERVICE_COUNT}+`, "搭載機能"],
+                  ["10問", "毎日のデイリー演習"],
+                  ["24h", "AIチャット"],
+                  ["4段階", "組織の役割管理"],
+                ].map(([v, l]) => (
+                  <div key={l} className="rounded-2xl border border-white/12 bg-white/[0.06] p-5 backdrop-blur-sm">
+                    <dt className="font-display text-2xl font-bold text-gradient sm:text-3xl">{v}</dt>
+                    <dd className="muted-on-ink mt-1 text-[11px] sm:text-xs">{l}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
           </div>
         </section>
+
 
         {/* Core features */}
         <section id="features" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:py-24">
