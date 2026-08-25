@@ -51,7 +51,7 @@ function PackDashboard() {
     const uids = Array.from(new Set(list.map((r: any) => r.user_id).filter(Boolean)));
     let profMap: Record<string, any> = {};
     if (uids.length > 0) {
-      const profs = await fetchPublicProfiles(uids);
+      const profs = await fetchPublicProfiles(uids as string[]);
       (profs ?? []).forEach((p: any) => { profMap[p.id] = p; });
     }
     setSessions(list.map((r: any) => ({ ...r, profile: profMap[r.user_id] })));
