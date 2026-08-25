@@ -48,7 +48,8 @@ const DEFAULT: UserPrefs = {
   right_dock: ["ambient", "feedback"],
   sidebar_hidden: [],
   act_as_admin: false,
-  theme_color: "#3B82F6",
+  // 未設定＝テーマ（data-theme / high-contrast）の配色をそのまま使う
+  theme_color: undefined,
   font_family: "system",
   notif_settings: {},
 };
