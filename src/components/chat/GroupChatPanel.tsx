@@ -178,10 +178,14 @@ export function GroupChatPanel({
                       </div>
                     )}
                   </Card>
-                  <span className="text-[10px] text-muted-foreground px-1">
+                  <span className="text-[10px] text-muted-foreground px-1 flex items-center gap-1">
+                    {mine && !isDeleted && readCount(m) > 0 && (
+                      <span className="text-primary font-medium">既読 {readCount(m)}</span>
+                    )}
                     {new Date(m.created_at).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}
                     {m.edited_at && !isDeleted ? " (編集済み)" : ""}
                   </span>
+
                 </div>
               </div>
             );
