@@ -59,7 +59,10 @@ function ClassDetail() {
     const myRole = enriched.find((m) => m.user_id === user.id)?.role;
     const teacher = myRole === "teacher" || c?.owner_id === user.id;
     setIsTeacher(teacher);
-    const { data: asg } = await supabase.from("assignments").select("*").eq("class_id", classId).order("created_at", { ascending: false });
+    // quiz_answer_key は生徒から読めない列なので明示的に除外して取得する
+    const { data: asg } = await supabase.from("assignments")
+      .select("id, class_id, created_by, title, description, due_at, max_points, xp_mode, fixed_xp, attachments, allowed_file_types, kind, quiz_questions, created_at, updated_at")
+      .eq("class_id", classId).order("created_at", { ascending: false });
     setAssignments(asg ?? []);
 
     const asgIds = (asg ?? []).map((a: any) => a.id);
