@@ -10,7 +10,7 @@ import logoUrl from "@/assets/logo.png";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
-    meta: [{ title: "新しいパスワードを設定 | StudyΩ" }],
+    meta: [{ title: "新しいパスワードを設定 | Study#" }],
   }),
   component: ResetPasswordPage,
 });

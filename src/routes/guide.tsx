@@ -3,9 +3,9 @@ import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import logoUrl from "@/assets/logo.png";
 import { STEPS, FAQ } from "@/content/services";
 
-const TITLE = "使い方ガイド | StudyΩ（Voton Study Omega）";
+const TITLE = "使い方ガイド | Study#";
 const DESC =
-  "StudyΩ のはじめ方を、アカウント作成から記録・Makron演習・AI復習・振り返りまでステップごとに解説。1日の使い方の例やよくある質問もまとめています。";
+  "Study# のはじめ方を、アカウント作成から記録・Makron演習・AI復習・振り返りまでステップごとに解説。1日の使い方の例やよくある質問もまとめています。";
 
 export const Route = createFileRoute("/guide")({
   head: () => ({
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/guide")({
       { name: "twitter:title", content: TITLE },
       { name: "twitter:description", content: DESC },
     ],
-    links: [{ rel: "canonical", href: "https://omega-voton.lovable.app/guide" }],
+    links: [{ rel: "canonical", href: "https://sharp-voton.lovable.app/guide" }],
   }),
   component: GuidePage,
 });
@@ -50,7 +50,7 @@ function GuidePage() {
       <header className="sticky top-0 z-40 border-b liquid-bar">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
           <Link to="/" className="flex items-center gap-2.5">
-            <img src={logoUrl} alt="StudyΩ" width={32} height={32} className="h-8 w-8 rounded-xl" />
+            <img src={logoUrl} alt="Study#" width={32} height={32} className="h-8 w-8 rounded-xl" />
             <span className="font-display font-extrabold tracking-tight">Study<span className="text-gradient">Ω</span></span>
           </Link>
           <nav className="flex items-center gap-1 text-sm">

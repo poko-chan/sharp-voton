@@ -28,7 +28,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "ダッシュボード｜Voton Study Omega" },
+      { title: "ダッシュボード｜Study#" },
       { name: "description", content: "今日の学習時間・連続記録・目標達成度・教科バランスをひと目で。学習の積み重ねを可視化するダッシュボード。" },
       { name: "robots", content: "noindex,nofollow" },
     ],

@@ -9,7 +9,7 @@ export type MailProvider = {
 };
 
 export const MAIL_PROVIDERS: MailProvider[] = [
-  { key: "gmail", name: "Gmail", url: "https://mail.google.com/mail/u/0/#search/StudyΩ", domains: ["gmail.com", "googlemail.com"], color: "#EA4335" },
+  { key: "gmail", name: "Gmail", url: "https://mail.google.com/mail/u/0/#search/Study#", domains: ["gmail.com", "googlemail.com"], color: "#EA4335" },
   { key: "outlook", name: "Outlook", url: "https://outlook.live.com/mail/0/", domains: ["outlook.com", "outlook.jp", "hotmail.com", "hotmail.co.jp", "live.jp", "live.com", "msn.com"], color: "#0078D4" },
   { key: "icloud", name: "iCloud メール", url: "https://www.icloud.com/mail", domains: ["icloud.com", "me.com", "mac.com"], color: "#3693F3" },
   { key: "yahoo", name: "Yahoo!メール", url: "https://mail.yahoo.co.jp/", domains: ["yahoo.co.jp", "ybb.ne.jp", "yahoo.com"], color: "#6001D2" },

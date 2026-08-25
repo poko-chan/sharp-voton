@@ -62,7 +62,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-const SITE_URL = "https://omega-voton.lovable.app";
+const SITE_URL = "https://sharp-voton.lovable.app";
 const OG_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fd850e55-f433-466a-ae78-8f2f88319d43/id-preview-8ca241ff--70a80aa5-02cd-459f-845f-d642eaffb4f2.lovable.app-1778835357697.png";
 
 // Chrome Built-in AI (Prompt API) Origin Trial token.
@@ -81,9 +81,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "google-site-verification", content: "B53jOoCzbt35gsIhXt-rg9Jqqc4OifdwkX_Bf05phOk" },
       { name: "theme-color", content: "#10b981" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-title", content: "StudyΩ" },
+      { name: "apple-mobile-web-app-title", content: "Study#" },
       ...(CHROME_AI_OT ? [{ httpEquiv: "origin-trial", content: CHROME_AI_OT } as any] : []),
-      { property: "og:site_name", content: "Voton Study Omega" },
+      { property: "og:site_name", content: "Study#" },
       { property: "og:image", content: OG_IMAGE },
       { name: "twitter:image", content: OG_IMAGE },
       { name: "twitter:card", content: "summary_large_image" },
@@ -105,7 +105,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Organization",
-          name: "Voton Study Omega",
+          name: "Study#",
           url: SITE_URL,
           logo: `${SITE_URL}/icon-512.png`,
         }),
@@ -115,7 +115,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
-          name: "Voton Study Omega（StudyΩ）",
+          name: "Study#",
           url: SITE_URL,
         }),
       },

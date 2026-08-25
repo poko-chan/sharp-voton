@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 
-const BASE_URL = "https://omega-voton.lovable.app";
+const BASE_URL = "https://sharp-voton.lovable.app";
 
 interface SitemapEntry {
   path: string;

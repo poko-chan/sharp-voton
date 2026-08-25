@@ -6,9 +6,9 @@ import { Share2 } from "lucide-react";
 
 export const Route = createFileRoute("/share/$token")({
   head: ({ params }) => {
-    const title = "共有された勉強記録｜StudyΩ";
-    const description = "StudyΩ で共有された勉強記録のサマリーです。学習時間と科目の内訳を閲覧できます。";
-    const url = `https://omega-voton.lovable.app/share/${params.token}`;
+    const title = "共有された勉強記録｜Study#";
+    const description = "Study# で共有された勉強記録のサマリーです。学習時間と科目の内訳を閲覧できます。";
+    const url = `https://sharp-voton.lovable.app/share/${params.token}`;
     return {
       meta: [
         { title },

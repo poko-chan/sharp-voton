@@ -87,7 +87,7 @@ export function OrgApplicationThread({ applicationId }: { applicationId: string 
               >
                 <div className="mb-0.5 flex items-center gap-1 text-[10px] opacity-80">
                   {m.is_admin ? <ShieldCheck className="h-3 w-3" /> : <UserIcon className="h-3 w-3" />}
-                  {m.is_admin ? "StudyΩ 運営" : "申請者"}
+                  {m.is_admin ? "Study# 運営" : "申請者"}
                   <span>・{new Date(m.created_at).toLocaleString("ja-JP")}</span>
                 </div>
                 <div className="whitespace-pre-wrap break-words">{m.body}</div>
