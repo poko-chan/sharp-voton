@@ -75,8 +75,10 @@ export async function cpuAiEnsureLoaded(onProgress?: (progress: number, text: st
     } catch (error) {
       downloading = false;
       generatorPromise = null;
-      throw error;
+      const { storageInfo, friendlyStorageError } = await import("@/lib/web-llm");
+      throw new Error(friendlyStorageError(error, await storageInfo(), "1.1B-"));
     }
+
   })();
   
   return generatorPromise;
