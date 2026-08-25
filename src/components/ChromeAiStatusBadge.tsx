@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Sparkles, AlertTriangle, Download, Cpu, Cloud } from "lucide-react";
+import { Loader2, Sparkles, AlertTriangle, Download, Cpu, Cloud, HardDrive, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
