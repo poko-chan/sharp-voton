@@ -51,7 +51,7 @@ function ClassDetail() {
     const { data: mem } = await supabase.from("class_members").select("user_id, role, joined_at").eq("class_id", classId);
     const userIds = (mem ?? []).map((m) => m.user_id);
     const { data: profs } = userIds.length > 0
-      ? await supabase.from("profiles").select("id, display_name, username, avatar_url").in("id", userIds)
+      ? { data: await fetchPublicProfiles(userIds) }
       : { data: [] as any[] };
     const pMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
     const enriched = (mem ?? []).map((m) => ({ ...m, profile: pMap.get(m.user_id) }));
@@ -303,3 +303,4 @@ function ClassDetail() {
 import { Stream } from "@/components/classroom/stream";
 import { CreateAssignment, AssignmentDialog } from "@/components/classroom/assignments";
 import { StudentLogs, FilesTab, ClassChatTab } from "@/components/classroom/panels";
+import { fetchPublicProfiles } from "@/lib/public-profiles";

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { fetchPublicProfiles } from "@/lib/public-profiles";
 
 export type OrgAppKey = "notifications" | "posts" | "surveys" | "calendar" | "digitalid" | "chat" | "makron" | "edu";
 
@@ -76,7 +77,7 @@ export function useOrg(orgId: string) {
 export async function loadProfiles(ids: string[]) {
   const uniq = Array.from(new Set(ids.filter(Boolean)));
   if (!uniq.length) return {} as Record<string, any>;
-  const { data } = await supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", uniq);
+  const data = await fetchPublicProfiles(uniq);
   const map: Record<string, any> = {};
   for (const p of data ?? []) map[p.id] = p;
   return map;

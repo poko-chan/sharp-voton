@@ -47,9 +47,7 @@ export function ClassFilesPanel({
     const ids = Array.from(new Set((data ?? []).map((f) => f.uploader_id)));
     if (ids.length > 0) {
       const { data: profs } = await supabase
-        .from("profiles")
-        .select("id, display_name, username")
-        .in("id", ids);
+        .rpc("public_profiles_by_ids", { _ids: ids });
       const map: Record<string, { name: string }> = {};
       (profs ?? []).forEach((p: any) => {
         map[p.id] = { name: p.display_name ?? p.username ?? "?" };

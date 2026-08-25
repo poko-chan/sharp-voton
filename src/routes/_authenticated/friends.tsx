@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { fetchPublicProfiles } from "@/lib/public-profiles";
 
 export const Route = createFileRoute("/_authenticated/friends")({ component: FriendsPage });
 
@@ -63,7 +64,7 @@ function FriendsPage() {
     const ids2 = (f2 ?? []).filter((r: any) => r.status === "accepted").map((r: any) => r.follower_id);
     const ids2Pending = (f2 ?? []).filter((r: any) => r.status === "pending").map((r: any) => r.follower_id);
     const all = Array.from(new Set([...ids1, ...ids2, ...ids1Pending, ...ids2Pending, ...ids1Blocked, user.id]));
-    const { data: profs } = await supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", all);
+    const profs = await fetchPublicProfiles(all);
     const map = new Map((profs ?? []).map((p: any) => [p.id, p]));
     setFollowing(ids1.map((id) => map.get(id)).filter(Boolean) as Profile[]);
     setFollowers(ids2.map((id) => map.get(id)).filter(Boolean) as Profile[]);
@@ -95,10 +96,7 @@ function FriendsPage() {
     if (!search.trim()) { setResults(null); return; }
     setSearching(true);
     const { data } = await supabase
-      .from("profiles")
-      .select("id, username, display_name, avatar_url")
-      .or(`username.ilike.%${search}%,display_name.ilike.%${search}%`)
-      .limit(20);
+      .rpc("search_public_profiles", { _q: search });
     setResults((data ?? []).filter((p: any) => p.id !== user?.id) as Profile[]);
     setSearching(false);
   };
