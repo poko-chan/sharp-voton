@@ -68,7 +68,6 @@ import { Route as AuthenticatedOrganizationsOrgIdRouteImport } from './routes/_a
 import { Route as AuthenticatedMaterialsIdRouteImport } from './routes/_authenticated/materials.$id'
 import { Route as AuthenticatedMakronLabelsRouteImport } from './routes/_authenticated/makron.labels'
 import { Route as AuthenticatedMakronHistoryRouteImport } from './routes/_authenticated/makron.history'
-import { Route as AuthenticatedMakronDailyRouteImport } from './routes/_authenticated/makron.daily'
 import { Route as AuthenticatedMakronAdminRouteImport } from './routes/_authenticated/makron.admin'
 import { Route as AuthenticatedExamsExamIdRouteImport } from './routes/_authenticated/exams.$examId'
 import { Route as AuthenticatedClassroomClassIdRouteImport } from './routes/_authenticated/classroom.$classId'
@@ -391,12 +390,6 @@ const AuthenticatedMakronHistoryRoute =
     path: '/history',
     getParentRoute: () => AuthenticatedMakronRoute,
   } as any)
-const AuthenticatedMakronDailyRoute =
-  AuthenticatedMakronDailyRouteImport.update({
-    id: '/daily',
-    path: '/daily',
-    getParentRoute: () => AuthenticatedMakronRoute,
-  } as any)
 const AuthenticatedMakronAdminRoute =
   AuthenticatedMakronAdminRouteImport.update({
     id: '/admin',
@@ -541,7 +534,6 @@ export interface FileRoutesByFullPath {
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/exams/$examId': typeof AuthenticatedExamsExamIdRoute
   '/makron/admin': typeof AuthenticatedMakronAdminRoute
-  '/makron/daily': typeof AuthenticatedMakronDailyRoute
   '/makron/history': typeof AuthenticatedMakronHistoryRoute
   '/makron/labels': typeof AuthenticatedMakronLabelsRoute
   '/materials/$id': typeof AuthenticatedMaterialsIdRoute
@@ -613,7 +605,6 @@ export interface FileRoutesByTo {
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/exams/$examId': typeof AuthenticatedExamsExamIdRoute
   '/makron/admin': typeof AuthenticatedMakronAdminRoute
-  '/makron/daily': typeof AuthenticatedMakronDailyRoute
   '/makron/history': typeof AuthenticatedMakronHistoryRoute
   '/makron/labels': typeof AuthenticatedMakronLabelsRoute
   '/materials/$id': typeof AuthenticatedMaterialsIdRoute
@@ -689,7 +680,6 @@ export interface FileRoutesById {
   '/_authenticated/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/_authenticated/exams/$examId': typeof AuthenticatedExamsExamIdRoute
   '/_authenticated/makron/admin': typeof AuthenticatedMakronAdminRoute
-  '/_authenticated/makron/daily': typeof AuthenticatedMakronDailyRoute
   '/_authenticated/makron/history': typeof AuthenticatedMakronHistoryRoute
   '/_authenticated/makron/labels': typeof AuthenticatedMakronLabelsRoute
   '/_authenticated/materials/$id': typeof AuthenticatedMaterialsIdRoute
@@ -767,7 +757,6 @@ export interface FileRouteTypes {
     | '/classroom/$classId'
     | '/exams/$examId'
     | '/makron/admin'
-    | '/makron/daily'
     | '/makron/history'
     | '/makron/labels'
     | '/materials/$id'
@@ -839,7 +828,6 @@ export interface FileRouteTypes {
     | '/classroom/$classId'
     | '/exams/$examId'
     | '/makron/admin'
-    | '/makron/daily'
     | '/makron/history'
     | '/makron/labels'
     | '/materials/$id'
@@ -914,7 +902,6 @@ export interface FileRouteTypes {
     | '/_authenticated/classroom/$classId'
     | '/_authenticated/exams/$examId'
     | '/_authenticated/makron/admin'
-    | '/_authenticated/makron/daily'
     | '/_authenticated/makron/history'
     | '/_authenticated/makron/labels'
     | '/_authenticated/materials/$id'
@@ -1373,13 +1360,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMakronHistoryRouteImport
       parentRoute: typeof AuthenticatedMakronRoute
     }
-    '/_authenticated/makron/daily': {
-      id: '/_authenticated/makron/daily'
-      path: '/daily'
-      fullPath: '/makron/daily'
-      preLoaderRoute: typeof AuthenticatedMakronDailyRouteImport
-      parentRoute: typeof AuthenticatedMakronRoute
-    }
     '/_authenticated/makron/admin': {
       id: '/_authenticated/makron/admin'
       path: '/admin'
@@ -1523,7 +1503,6 @@ const AuthenticatedMakronPackPackIdRouteWithChildren =
 
 interface AuthenticatedMakronRouteChildren {
   AuthenticatedMakronAdminRoute: typeof AuthenticatedMakronAdminRoute
-  AuthenticatedMakronDailyRoute: typeof AuthenticatedMakronDailyRoute
   AuthenticatedMakronHistoryRoute: typeof AuthenticatedMakronHistoryRoute
   AuthenticatedMakronLabelsRoute: typeof AuthenticatedMakronLabelsRoute
   AuthenticatedMakronIndexRoute: typeof AuthenticatedMakronIndexRoute
@@ -1535,7 +1514,6 @@ interface AuthenticatedMakronRouteChildren {
 
 const AuthenticatedMakronRouteChildren: AuthenticatedMakronRouteChildren = {
   AuthenticatedMakronAdminRoute: AuthenticatedMakronAdminRoute,
-  AuthenticatedMakronDailyRoute: AuthenticatedMakronDailyRoute,
   AuthenticatedMakronHistoryRoute: AuthenticatedMakronHistoryRoute,
   AuthenticatedMakronLabelsRoute: AuthenticatedMakronLabelsRoute,
   AuthenticatedMakronIndexRoute: AuthenticatedMakronIndexRoute,
