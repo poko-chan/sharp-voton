@@ -83,7 +83,7 @@ function PackDashboard() {
   const visibleSessions = filterUser === "__all" ? sessions : sessions.filter((s) => s.user_id === filterUser);
 
   return (
-    <MakronShell back="/makron" title="パックダッシュボード" subtitle={pack?.title}>
+    <MakronShell back="/makron/units" title="パックダッシュボード" subtitle={pack?.title}>
       <div className="max-w-6xl mx-auto p-6 space-y-4">
         <div className="flex items-center gap-2">
           <Link to="/makron/pack/$packId" params={{ packId }}><Button variant="outline" size="sm">パックに戻る</Button></Link>

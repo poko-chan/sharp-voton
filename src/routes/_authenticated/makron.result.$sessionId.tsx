@@ -101,10 +101,10 @@ function ResultPage() {
 
   const copyPrompt = async () => { await navigator.clipboard.writeText(prompt); toast.success("プロンプトをコピーしました"); };
 
-  if (!session) return <MakronShell back="/makron"><div className="p-8 text-muted-foreground">読み込み中...</div></MakronShell>;
+  if (!session) return <MakronShell back="/makron/units"><div className="p-8 text-muted-foreground">読み込み中...</div></MakronShell>;
 
   return (
-    <MakronShell back="/makron" title="採点ダッシュボード">
+    <MakronShell back="/makron/units" title="採点ダッシュボード">
       <div className="max-w-4xl mx-auto p-6 space-y-5">
         <Card className="p-6 text-center bg-gradient-to-br from-primary/10 to-background">
           <div className="text-xs text-muted-foreground">合計</div>

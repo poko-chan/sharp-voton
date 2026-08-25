@@ -332,13 +332,13 @@ function SessionPage() {
     setShowPreview(false);
   };
 
-  if (!session) return <MakronShell back="/makron"><div className="p-8 text-muted-foreground">読み込み中...</div></MakronShell>;
+  if (!session) return <MakronShell back="/makron/units"><div className="p-8 text-muted-foreground">読み込み中...</div></MakronShell>;
 
   // プレビュー画面（パックが skip_preview=false の時のみ）
   if (showPreview && pack) {
     const usingLimit = !!pack.question_limit && !allMode;
     return (
-      <MakronShell back="/makron" title={pack.title} subtitle="演習プレビュー">
+      <MakronShell back="/makron/units" title={pack.title} subtitle="演習プレビュー">
         <div className="max-w-3xl mx-auto p-6 space-y-3">
           <Card className="p-5 space-y-2">
             <div className="text-lg font-bold">{pack.title}</div>
@@ -371,11 +371,11 @@ function SessionPage() {
     );
   }
 
-  if (!q) return <MakronShell back="/makron"><div className="p-8 text-muted-foreground">問題がありません</div></MakronShell>;
+  if (!q) return <MakronShell back="/makron/units"><div className="p-8 text-muted-foreground">問題がありません</div></MakronShell>;
 
   return (
     <MakronShell
-      back="/makron"
+      back="/makron/units"
       title={`問題 ${idx + 1} / ${questions.length}`}
       subtitle={`配点: ${q.points} 点 ・ 経過 ${fmtTime(elapsed)}${pack && !pack.is_official ? " ・ 報酬なし" : ""}`}
       right={

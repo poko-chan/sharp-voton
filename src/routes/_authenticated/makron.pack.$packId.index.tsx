@@ -97,10 +97,10 @@ function PackPage() {
     load();
   };
 
-  if (!pack) return <MakronShell back="/makron"><div className="p-8 text-muted-foreground">読み込み中…</div></MakronShell>;
+  if (!pack) return <MakronShell back="/makron/units"><div className="p-8 text-muted-foreground">読み込み中…</div></MakronShell>;
 
   return (
-    <MakronShell back="/makron" title={pack.title} subtitle={pack.is_official ? "公式パック" : pack.status === "pending" ? "申請中" : "非公式"}>
+    <MakronShell back="/makron/units" title={pack.title} subtitle={pack.is_official ? "公式パック" : pack.status === "pending" ? "申請中" : "非公式"}>
       <div className="max-w-5xl mx-auto p-6 space-y-4">
         <Card className="p-4 flex flex-wrap items-center gap-3">
           <div className="flex-1 min-w-[200px]">
