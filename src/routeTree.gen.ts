@@ -66,6 +66,7 @@ import { Route as AuthenticatedExamsIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedClassroomIndexRouteImport } from './routes/_authenticated/classroom.index'
 import { Route as AuthenticatedOrganizationsOrgIdRouteImport } from './routes/_authenticated/organizations.$orgId'
 import { Route as AuthenticatedMaterialsIdRouteImport } from './routes/_authenticated/materials.$id'
+import { Route as AuthenticatedMakronUnitsRouteImport } from './routes/_authenticated/makron.units'
 import { Route as AuthenticatedMakronLabelsRouteImport } from './routes/_authenticated/makron.labels'
 import { Route as AuthenticatedMakronHistoryRouteImport } from './routes/_authenticated/makron.history'
 import { Route as AuthenticatedMakronAdminRouteImport } from './routes/_authenticated/makron.admin'
@@ -378,6 +379,12 @@ const AuthenticatedMaterialsIdRoute =
     path: '/$id',
     getParentRoute: () => AuthenticatedMaterialsRoute,
   } as any)
+const AuthenticatedMakronUnitsRoute =
+  AuthenticatedMakronUnitsRouteImport.update({
+    id: '/units',
+    path: '/units',
+    getParentRoute: () => AuthenticatedMakronRoute,
+  } as any)
 const AuthenticatedMakronLabelsRoute =
   AuthenticatedMakronLabelsRouteImport.update({
     id: '/labels',
@@ -536,6 +543,7 @@ export interface FileRoutesByFullPath {
   '/makron/admin': typeof AuthenticatedMakronAdminRoute
   '/makron/history': typeof AuthenticatedMakronHistoryRoute
   '/makron/labels': typeof AuthenticatedMakronLabelsRoute
+  '/makron/units': typeof AuthenticatedMakronUnitsRoute
   '/materials/$id': typeof AuthenticatedMaterialsIdRoute
   '/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdRouteWithChildren
   '/classroom/': typeof AuthenticatedClassroomIndexRoute
@@ -607,6 +615,7 @@ export interface FileRoutesByTo {
   '/makron/admin': typeof AuthenticatedMakronAdminRoute
   '/makron/history': typeof AuthenticatedMakronHistoryRoute
   '/makron/labels': typeof AuthenticatedMakronLabelsRoute
+  '/makron/units': typeof AuthenticatedMakronUnitsRoute
   '/materials/$id': typeof AuthenticatedMaterialsIdRoute
   '/classroom': typeof AuthenticatedClassroomIndexRoute
   '/exams': typeof AuthenticatedExamsIndexRoute
@@ -682,6 +691,7 @@ export interface FileRoutesById {
   '/_authenticated/makron/admin': typeof AuthenticatedMakronAdminRoute
   '/_authenticated/makron/history': typeof AuthenticatedMakronHistoryRoute
   '/_authenticated/makron/labels': typeof AuthenticatedMakronLabelsRoute
+  '/_authenticated/makron/units': typeof AuthenticatedMakronUnitsRoute
   '/_authenticated/materials/$id': typeof AuthenticatedMaterialsIdRoute
   '/_authenticated/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdRouteWithChildren
   '/_authenticated/classroom/': typeof AuthenticatedClassroomIndexRoute
@@ -759,6 +769,7 @@ export interface FileRouteTypes {
     | '/makron/admin'
     | '/makron/history'
     | '/makron/labels'
+    | '/makron/units'
     | '/materials/$id'
     | '/organizations/$orgId'
     | '/classroom/'
@@ -830,6 +841,7 @@ export interface FileRouteTypes {
     | '/makron/admin'
     | '/makron/history'
     | '/makron/labels'
+    | '/makron/units'
     | '/materials/$id'
     | '/classroom'
     | '/exams'
@@ -904,6 +916,7 @@ export interface FileRouteTypes {
     | '/_authenticated/makron/admin'
     | '/_authenticated/makron/history'
     | '/_authenticated/makron/labels'
+    | '/_authenticated/makron/units'
     | '/_authenticated/materials/$id'
     | '/_authenticated/organizations/$orgId'
     | '/_authenticated/classroom/'
@@ -1346,6 +1359,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMaterialsIdRouteImport
       parentRoute: typeof AuthenticatedMaterialsRoute
     }
+    '/_authenticated/makron/units': {
+      id: '/_authenticated/makron/units'
+      path: '/units'
+      fullPath: '/makron/units'
+      preLoaderRoute: typeof AuthenticatedMakronUnitsRouteImport
+      parentRoute: typeof AuthenticatedMakronRoute
+    }
     '/_authenticated/makron/labels': {
       id: '/_authenticated/makron/labels'
       path: '/labels'
@@ -1505,6 +1525,7 @@ interface AuthenticatedMakronRouteChildren {
   AuthenticatedMakronAdminRoute: typeof AuthenticatedMakronAdminRoute
   AuthenticatedMakronHistoryRoute: typeof AuthenticatedMakronHistoryRoute
   AuthenticatedMakronLabelsRoute: typeof AuthenticatedMakronLabelsRoute
+  AuthenticatedMakronUnitsRoute: typeof AuthenticatedMakronUnitsRoute
   AuthenticatedMakronIndexRoute: typeof AuthenticatedMakronIndexRoute
   AuthenticatedMakronPackPackIdRoute: typeof AuthenticatedMakronPackPackIdRouteWithChildren
   AuthenticatedMakronResultSessionIdRoute: typeof AuthenticatedMakronResultSessionIdRoute
@@ -1516,6 +1537,7 @@ const AuthenticatedMakronRouteChildren: AuthenticatedMakronRouteChildren = {
   AuthenticatedMakronAdminRoute: AuthenticatedMakronAdminRoute,
   AuthenticatedMakronHistoryRoute: AuthenticatedMakronHistoryRoute,
   AuthenticatedMakronLabelsRoute: AuthenticatedMakronLabelsRoute,
+  AuthenticatedMakronUnitsRoute: AuthenticatedMakronUnitsRoute,
   AuthenticatedMakronIndexRoute: AuthenticatedMakronIndexRoute,
   AuthenticatedMakronPackPackIdRoute:
     AuthenticatedMakronPackPackIdRouteWithChildren,

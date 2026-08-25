@@ -23,7 +23,7 @@ function HistoryPage() {
   }, [user?.id]);
 
   return (
-    <MakronShell back="/makron" title="受験履歴">
+    <MakronShell back="/makron/units" title="受験履歴">
       <div className="max-w-4xl mx-auto p-6 space-y-3">
         {rows.length === 0 && <Card className="p-8 text-center text-muted-foreground text-sm">まだ履歴はありません</Card>}
         {rows.map((r) => (

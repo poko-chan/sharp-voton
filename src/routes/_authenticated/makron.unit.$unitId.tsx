@@ -57,34 +57,35 @@ function UnitPage() {
   const visible = packs.filter((p) => includePending || p.status === "approved");
 
   return (
-    <MakronShell back="/makron" title={unit?.title ?? "単元"} subtitle={[unit?.subject, unit?.field, unit?.unit].filter(Boolean).join(" / ")}>
+    <MakronShell back="/makron/units" title={unit?.title ?? "単元"} subtitle={[unit?.subject, unit?.field, unit?.unit].filter(Boolean).join(" / ")}>
       <div className="max-w-4xl mx-auto p-6 space-y-4">
         {unit?.description && <Card className="p-4 text-sm whitespace-pre-wrap">{unit.description}</Card>}
-        <Card className="p-3 flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 text-sm">
-            <Switch checked={includePending} onCheckedChange={setIncludePending} />
-            <span>申請中パックも表示</span>
-          </div>
-          <div className="ml-auto">
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={() => setAiOpen(true)}>
-                <Sparkles className="h-4 w-4 mr-1" />AI で一括作成
-              </Button>
-              <Button size="sm" onClick={() => setCreating((v) => !v)}>
-                <Plus className="h-4 w-4 mr-1" />問題パックを作成
-              </Button>
+        {isAdmin && (
+          <Card className="p-3 flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 text-sm">
+              <Switch checked={includePending} onCheckedChange={setIncludePending} />
+              <span>申請中パックも表示</span>
             </div>
-          </div>
-        </Card>
+            <div className="ml-auto">
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => setAiOpen(true)}>
+                  <Sparkles className="h-4 w-4 mr-1" />AI で一括作成
+                </Button>
+                <Button size="sm" onClick={() => setCreating((v) => !v)}>
+                  <Plus className="h-4 w-4 mr-1" />問題パックを作成
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
 
-        {creating && (
+        {isAdmin && creating && (
           <Card className="p-4 space-y-2 border-primary/40">
             <div className="font-bold flex items-center gap-1"><Package className="h-4 w-4" />新しい問題パック</div>
             <Input placeholder="パック名 (例: 分類導入 基礎)" value={pTitle} onChange={(e) => setPTitle(e.target.value)} />
             <Textarea rows={2} placeholder="説明 (任意)" value={pDesc} onChange={(e) => setPDesc(e.target.value)} />
             <div className="text-[11px] text-muted-foreground">
-              {isAdmin ? "管理者作成は自動で「公式」になります。" : "一般作成は「申請中」となり、管理者承認後に公式問題として公開されます。"}
-              作成後にパック画面から問題追加・設定変更ができます。
+              管理者作成は自動で「公式」になります。作成後にパック画面から問題追加・設定変更ができます。
             </div>
             <div className="flex gap-2">
               <Button onClick={createPack} disabled={!pTitle.trim()}>作成</Button>
@@ -92,6 +93,7 @@ function UnitPage() {
             </div>
           </Card>
         )}
+
 
         <div className="grid sm:grid-cols-2 gap-3">
           {visible.map((p) => {
