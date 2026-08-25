@@ -227,7 +227,7 @@ function LoginPage() {
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="omega-voton"
+                  placeholder="study-sharp"
                   autoComplete="username"
                 />
               </div>
