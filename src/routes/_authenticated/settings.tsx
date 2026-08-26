@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Search, User, Palette, Bell, BookOpen, Shield, Sparkles, Languages, Accessibility, Database, AlertTriangle } from "lucide-react";
+import { Search, User, KeyRound, Palette, Bell, BookOpen, Shield, Sparkles, Languages, Accessibility, Database, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { SettingsNav } from "@/components/settings/SettingsNav";
 import type { SettingsCategory, SettingsCategoryId } from "@/components/settings/types";
 import { matchesKeyword } from "@/components/settings/types";
 import { AccountSection } from "@/components/settings/AccountSection";
+import { LoginMethodsSection } from "@/components/settings/LoginMethodsSection";
 import { AppearanceSection } from "@/components/settings/AppearanceSection";
 import { NotificationsSection } from "@/components/settings/NotificationsSection";
 import { StudySection } from "@/components/settings/StudySection";
@@ -18,6 +19,7 @@ import { DangerSection } from "@/components/settings/DangerSection";
 
 const CATEGORIES: SettingsCategory[] = [
   { id: "account", label: "アカウント・プロフィール", icon: User, keywords: ["アカウント", "プロフィール", "表示名", "アイコン", "メール", "ユーザー名", "account", "profile"] },
+  { id: "login", label: "ログイン方法", icon: KeyRound, keywords: ["ログイン", "パスワード", "google", "apple", "連携", "認証", "login", "password", "oauth"] },
   { id: "appearance", label: "外観・テーマ", icon: Palette, keywords: ["外観", "テーマ", "配色", "ダークモード", "フォント", "文字サイズ", "コンパクト", "ダッシュボード", "theme"] },
   { id: "notifications", label: "通知", icon: Bell, keywords: ["通知", "リマインダー", "お知らせ", "チャット", "ストリーク", "notification"] },
   { id: "study", label: "学習", icon: BookOpen, keywords: ["学習", "勉強", "タイマー", "教科", "休憩", "週の開始", "効果音", "目標", "study", "timer"] },
@@ -31,6 +33,7 @@ const CATEGORIES: SettingsCategory[] = [
 
 const SECTIONS: Record<SettingsCategoryId, React.ComponentType> = {
   account: AccountSection,
+  login: LoginMethodsSection,
   appearance: AppearanceSection,
   notifications: NotificationsSection,
   study: StudySection,
