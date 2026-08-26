@@ -228,8 +228,9 @@ export function AssignmentDialog({ assignment, isTeacher, members, onClose }: an
 
   const submit = async () => {
     if (!user) return;
+    // xp_awarded / score / graded_at はサーバー側(DBトリガ)で決定されるため送らない
     const payload: any = { assignment_id: assignment.id, user_id: user.id, content, attachments: files, submitted_at: new Date().toISOString() };
-    if (assignment.xp_mode === "fixed" && !mySub) payload.xp_awarded = assignment.fixed_xp;
+
     const { error } = mySub
       ? await supabase.from("submissions").update({ content, attachments: files, submitted_at: new Date().toISOString() }).eq("id", mySub.id)
       : await supabase.from("submissions").insert(payload);
