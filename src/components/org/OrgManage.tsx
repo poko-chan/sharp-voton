@@ -11,6 +11,7 @@ import { Building2, Ban, UserCog, Plus, Trash2, Mail, Send, KeyRound, Crown, Clo
 import { toast } from "sonner";
 import { ROLE_LABEL } from "@/lib/org-roles";
 import { OrgAssignments } from "@/components/org/OrgAssignments";
+import { fetchPublicProfiles, searchPublicProfiles } from "@/lib/public-profiles";
 
 
 
@@ -71,9 +72,8 @@ export function OrgManage({ orgId, defaultTab = "members" }: { orgId: string; de
     ].filter(Boolean)));
     const pmap: Record<string, any> = {};
     if (ids.length) {
-      const { data: profs } = await supabase.from("profiles")
-        .select("id, username, display_name, avatar_url").in("id", ids);
-      for (const p of profs ?? []) pmap[p.id] = p;
+      const profs = await fetchPublicProfiles(ids);
+      for (const p of profs) pmap[p.id] = p;
     }
     setMembers((m ?? []).map((x: any) => ({ ...x, profile: pmap[x.user_id] })));
     setJoinReqs(reqRows.map((x: any) => ({ ...x, profile: pmap[x.user_id] })));
@@ -134,11 +134,8 @@ export function OrgManage({ orgId, defaultTab = "members" }: { orgId: string; de
   };
   const searchUsers = async () => {
     if (!inviteQuery.trim()) return;
-    const { data } = await supabase.from("profiles")
-      .select("id, username, display_name, avatar_url")
-      .or(`username.ilike.%${inviteQuery}%,display_name.ilike.%${inviteQuery}%`)
-      .limit(10);
-    setInviteResults(data ?? []);
+    const data = await searchPublicProfiles(inviteQuery.trim());
+    setInviteResults(data.slice(0, 10));
   };
   const invite = async (userId: string) => {
     const { error } = await (supabase as any).rpc("org_invite_member", {

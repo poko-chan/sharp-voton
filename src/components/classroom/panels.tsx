@@ -7,6 +7,7 @@ import { Send } from "lucide-react";
 import { toast } from "sonner";
 import { ClassFilesPanel } from "@/components/ClassFilesPanel";
 import { useMyClassPermissions } from "@/components/ClassPermissionsPanel";
+import { fetchPublicProfiles } from "@/lib/public-profiles";
 
 export function StudentLogs({ members }: { members: any[] }) {
   const [logs, setLogs] = useState<Record<string, any[]>>({});
@@ -68,8 +69,8 @@ export function ClassChatTab({ classId, userId }: { classId: string; userId?: st
     setMsgs(rows);
     const ids = Array.from(new Set(rows.map((m: any) => m.sender_id)));
     if (ids.length) {
-      const { data: profs } = await supabase.from("profiles").select("id, display_name, username, avatar_url").in("id", ids);
-      setProfiles(Object.fromEntries((profs ?? []).map((p: any) => [p.id, p])));
+      const profs = await fetchPublicProfiles(ids);
+      setProfiles(Object.fromEntries(profs.map((p) => [p.id, p])));
     }
   };
   useEffect(() => { load(); }, [classId]);
