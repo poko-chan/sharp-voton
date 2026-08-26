@@ -1,0 +1,1 @@
+UPDATE public.profiles SET tutorial_done = true WHERE created_at < now() AND username IS NOT NULL;

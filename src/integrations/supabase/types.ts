@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -4935,9 +4935,11 @@ export type Database = {
           notify_daily_reminder: boolean
           notify_email: boolean
           notify_streak_break: boolean
+          onboarded_at: string | null
           referral_code: string | null
           reminder_time: string
           theme: string
+          tutorial_done: boolean
           updated_at: string
           username: string | null
         }
@@ -4960,9 +4962,11 @@ export type Database = {
           notify_daily_reminder?: boolean
           notify_email?: boolean
           notify_streak_break?: boolean
+          onboarded_at?: string | null
           referral_code?: string | null
           reminder_time?: string
           theme?: string
+          tutorial_done?: boolean
           updated_at?: string
           username?: string | null
         }
@@ -4985,9 +4989,11 @@ export type Database = {
           notify_daily_reminder?: boolean
           notify_email?: boolean
           notify_streak_break?: boolean
+          onboarded_at?: string | null
           referral_code?: string | null
           reminder_time?: string
           theme?: string
+          tutorial_done?: boolean
           updated_at?: string
           username?: string | null
         }
