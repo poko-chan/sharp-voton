@@ -28,8 +28,8 @@ export function useOnboarding(): OnboardingState {
     }
     const { data } = await (supabase as any).rpc("my_profile_private");
     const p = (data ?? {}) as any;
-    setNeedsProfile(!p.username);
-    setNeedsTutorial(Boolean(p.username) && !p.tutorial_done);
+    setNeedsProfile(!p.onboarded_at);
+    setNeedsTutorial(Boolean(p.onboarded_at) && !p.tutorial_done);
     setLoading(false);
   }, [user?.id]);
 

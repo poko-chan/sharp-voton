@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -24,6 +24,17 @@ export function ProfileSetup({ onDone }: { onDone: () => void }) {
   const check = useServerFn(checkUsernameAvailable);
   const guess = (user?.user_metadata as any)?.full_name || user?.email?.split("@")[0] || "";
   const [username, setUsername] = useState("");
+  const [currentUsername, setCurrentUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    (supabase as any).rpc("my_profile_private").then(({ data }: any) => {
+      if (!data) return;
+      setCurrentUsername(data.username ?? null);
+      setUsername((u) => u || (data.username ?? ""));
+      setDisplayName((d) => d || data.display_name || "");
+    });
+  }, [user?.id]);
   const [displayName, setDisplayName] = useState(guess);
   const [kind, setKind] = useState<"child" | "parent">("child");
   const [agreed, setAgreed] = useState(false);
@@ -41,7 +52,7 @@ export function ProfileSetup({ onDone }: { onDone: () => void }) {
       }
       if (dname.length > 40) throw new Error("表示名は40文字以内で入力してください");
       if (!agreed) throw new Error("利用規約とプライバシーポリシーに同意してください");
-      const avail = await check({ data: { username: uname } });
+      const avail = uname === currentUsername ? { available: true } : await check({ data: { username: uname } });
       if (!avail.available) throw new Error("そのユーザー名はすでに使われています");
       const { error } = await supabase
         .from("profiles")
