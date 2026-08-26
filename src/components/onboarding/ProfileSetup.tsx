@@ -31,8 +31,8 @@ export function ProfileSetup({ onDone }: { onDone: () => void }) {
     (supabase as any).rpc("my_profile_private").then(({ data }: any) => {
       if (!data) return;
       setCurrentUsername(data.username ?? null);
-      setUsername((u) => u || (data.username ?? ""));
-      setDisplayName((d) => d || data.display_name || "");
+      setUsername((u: string) => u || (data.username ?? ""));
+      setDisplayName((d: string) => d || data.display_name || "");
     });
   }, [user?.id]);
   const [displayName, setDisplayName] = useState(guess);
