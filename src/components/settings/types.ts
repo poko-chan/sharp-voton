@@ -2,6 +2,7 @@ import type { ComponentType, SVGProps } from "react";
 
 export type SettingsCategoryId =
   | "account"
+  | "login"
   | "appearance"
   | "notifications"
   | "study"
