@@ -5,6 +5,9 @@ import { AppShell } from "@/components/AppShell";
 import { TimerProvider } from "@/lib/timer-context";
 import { ServiceGate } from "@/components/ServiceGate";
 import { LoginWelcomeOverlay } from "@/components/LoginWelcomeOverlay";
+import { useOnboarding } from "@/lib/onboarding";
+import { ProfileSetup } from "@/components/onboarding/ProfileSetup";
+import { TutorialOverlay } from "@/components/onboarding/TutorialOverlay";
 
 // Map URL prefix -> service key (must match SERVICES in restriction-context).
 const ROUTE_SERVICE: Array<[string, string]> = [
@@ -34,6 +37,7 @@ function AuthLayout() {
   const { user, loading, accountKind } = useAuth();
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const onboarding = useOnboarding();
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
   }, [user, loading, navigate]);
@@ -55,6 +59,13 @@ function AuthLayout() {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">読み込み中...</div>;
   }
   if (!user) return null;
+  if (!onboarding.loading && onboarding.needsProfile) {
+    return <ProfileSetup onDone={() => onboarding.reload()} />;
+  }
+  const tutorial =
+    !onboarding.loading && onboarding.needsTutorial ? (
+      <TutorialOverlay onDone={() => onboarding.reload()} />
+    ) : null;
   const match = ROUTE_SERVICE.find(([prefix]) => path === prefix || path.startsWith(prefix + "/"));
   const content = match
     ? <ServiceGate serviceKey={match[1]}><Outlet /></ServiceGate>
@@ -65,6 +76,7 @@ function AuthLayout() {
     return (
         <TimerProvider>
           {content}
+          {tutorial}
           <LoginWelcomeOverlay />
         </TimerProvider>
     );
@@ -72,6 +84,7 @@ function AuthLayout() {
   return (
       <TimerProvider>
         <AppShell>{content}</AppShell>
+        {tutorial}
         <LoginWelcomeOverlay />
       </TimerProvider>
   );
