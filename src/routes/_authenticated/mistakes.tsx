@@ -51,9 +51,27 @@ function Mistakes() {
       const ids = (sess ?? []).map((s) => s.id);
       if (ids.length) {
         const { data } = await supabase.from("makron_answers")
-          .select("*, makron_questions(prompt, answer)").in("session_id", ids)
+          .select("*, makron_questions(prompt)").in("session_id", ids)
           .eq("is_correct", false).order("created_at", { ascending: false }).limit(100);
-        setRows(data ?? []);
+        const answerMap = new Map<string, string>();
+        await Promise.all(ids.map(async (sessionId) => {
+          const { data: revealed } = await (supabase as any).rpc("makron_reveal", { _session_id: sessionId });
+          for (const item of revealed ?? []) {
+            const answers = item.accepted_answers?.length
+              ? item.accepted_answers
+              : item.correct_options?.length
+                ? item.correct_options
+                : [item.model_answer].filter(Boolean);
+            answerMap.set(item.question_id, item.correct_answer || answers.join(" / "));
+          }
+        }));
+        setRows((data ?? []).map((row: any) => ({
+          ...row,
+          makron_questions: {
+            ...(row.makron_questions ?? {}),
+            answer: answerMap.get(row.question_id) ?? "",
+          },
+        })));
       }
       loadEdu();
     })();
