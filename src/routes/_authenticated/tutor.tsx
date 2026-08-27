@@ -89,7 +89,45 @@ ${ctx.recentNotes ? `- 直近の学習メモ:\n${ctx.recentNotes}` : ""}
 }`;
 
 
+/** 思考プロセス（生成後も残る詳細ログ） */
+function ThinkingBlock({
+  steps, defaultOpen = false, onOpenChange, live = false,
+}: {
+  steps: ThinkingStep[];
+  defaultOpen?: boolean;
+  onOpenChange?: (v: boolean) => void;
+  live?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  useEffect(() => { if (live) setOpen(defaultOpen); }, [defaultOpen, live]);
+  return (
+    <Collapsible
+      open={open}
+      onOpenChange={(v) => { setOpen(v); onOpenChange?.(v); }}
+      className="not-prose mb-2 rounded-lg border border-primary/20 bg-primary/5 px-2 py-1.5"
+    >
+      <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground w-full">
+        <Brain className="h-3.5 w-3.5 text-primary" />
+        <span>思考プロセス（{steps.length}ステップ）</span>
+        <ChevronDown className={`h-3 w-3 ml-auto transition-transform ${open ? "rotate-180" : ""}`} />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="mt-1.5 space-y-1.5 border-l-2 border-primary/30 pl-2">
+        {steps.map((step, i) => (
+          <div key={i} className="text-xs">
+            <div className="flex items-center gap-1.5 font-medium">
+              {step.done ? <Search className="h-3 w-3 text-primary" /> : <Loader2 className="h-3 w-3 animate-spin text-primary" />}
+              <span>{step.label}</span>
+            </div>
+            {step.detail && <div className="pl-4.5 ml-1 text-muted-foreground whitespace-pre-wrap">{step.detail}</div>}
+          </div>
+        ))}
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
 function TutorPage() {
+
   const { user } = useAuth();
   const listFn = useServerFn(listTutorThreads);
   const createFn = useServerFn(createTutorThread);
