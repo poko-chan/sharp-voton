@@ -2,8 +2,17 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+export const STUDY_SCOPES = ["study", "goals", "weak", "notes", "exams", "flashcards", "markon"] as const;
+export type StudyScope = (typeof STUDY_SCOPES)[number];
+
 // ユーザーの学習コンテキストを集約して返す（AIチャットのツール呼び出しから使用）
+// scopes で「AIに見せてよい情報」を分けて指定できる。
 export const getStudyContext = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z.object({ scopes: z.array(z.enum(STUDY_SCOPES)).optional() }).optional().parse(i ?? {}),
+  )
+
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
