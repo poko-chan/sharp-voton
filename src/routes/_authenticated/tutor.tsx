@@ -312,13 +312,40 @@ function TutorPage() {
 
   return (
     <div className="p-4 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2"><Sparkles className="text-primary" /> AIチャット</h1>
-          <p className="text-sm text-muted-foreground">新しいチャットごとに会話が保存されます</p>
+          <p className="text-sm text-muted-foreground">
+            新しいチャットごとに会話が保存されます{engineLabel && ` ・ 使用中のAI: ${engineLabel}`}
+          </p>
         </div>
+        <AiStatusBadge />
       </div>
       {!canAi && <div className="mb-3"><AiUnavailable feature="AIチャット" /></div>}
+
+      <Card className="mb-3 p-3">
+        <div className="text-xs font-semibold flex items-center gap-1.5 mb-2">
+          <Brain className="h-3.5 w-3.5 text-primary" />AIが参照できる情報（オフにすると渡しません）
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {SCOPE_DEFS.map((s) => {
+            const on = scopes.includes(s.key);
+            return (
+              <button
+                key={s.key}
+                title={s.desc}
+                onClick={() => toggleScope(s.key)}
+                className={`rounded-full border px-2.5 py-1 text-[11px] transition ${
+                  on ? "bg-primary/10 border-primary text-primary" : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                {on ? "✓ " : ""}{s.label}
+              </button>
+            );
+          })}
+        </div>
+      </Card>
+
 
       <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-3 h-[calc(100vh-10rem)]">
         {/* スレッドサイドバー */}
