@@ -34,9 +34,12 @@ function SharedView() {
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase.rpc("share_study_summary", { _token: token });
-      if (error) { setErr("リンクが無効か期限切れです"); return; }
-      setRows((data as any) ?? []);
+      try {
+        const data = await getSharedStudySummary({ data: { token } });
+        setRows(data ?? []);
+      } catch {
+        setErr("リンクが無効か期限切れです");
+      }
     })();
   }, [token]);
 
