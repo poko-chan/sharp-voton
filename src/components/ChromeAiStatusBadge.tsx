@@ -228,8 +228,9 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
               <Card className="p-3 text-[12px] flex items-center gap-2">
                 <HardDrive className="h-4 w-4 text-primary shrink-0" />
                 <div className="flex-1">
-                  空き容量の目安: <b>{(storage.freeBytes / 1e9).toFixed(1)}GB</b>
-                  <span className="text-muted-foreground">（使用 {(storage.usageBytes / 1e9).toFixed(1)}GB）</span>
+                  空き容量の目安: <b>{(storage.free / 1024 ** 3).toFixed(1)}GB</b>
+                  <span className="text-muted-foreground">（使用 {(storage.usage / 1024 ** 3).toFixed(1)}GB）</span>
+
                 </div>
                 <Button size="sm" variant="ghost" className="gap-1 text-destructive"
                   onClick={async () => { await clearWebLlmCache(); toast.success("キャッシュを削除しました"); refresh(); }}>
