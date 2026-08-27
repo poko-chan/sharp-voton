@@ -1,0 +1,1 @@
+ALTER TABLE public.tutor_messages ADD COLUMN IF NOT EXISTS thinking jsonb NOT NULL DEFAULT '[]'::jsonb;

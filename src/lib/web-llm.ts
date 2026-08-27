@@ -15,35 +15,102 @@ export type WebLlmModel = {
 export const WEBLLM_MODELS: WebLlmModel[] = [
   {
     id: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
-    label: "標準（Qwen2.5 1.5B）",
+    label: "Qwen2.5 1.5B（標準）",
     sizeLabel: "約 1.1GB",
-    note: "容量が小さく失敗しにくい。まずはこれを推奨。",
+    note: "容量が小さく失敗しにくい。まずはこれを推奨。日本語もそこそこ。",
   },
   {
     id: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
-    label: "最軽量（Qwen2.5 0.5B）",
+    label: "Qwen2.5 0.5B（最軽量）",
     sizeLabel: "約 0.4GB",
     note: "空き容量が少ない端末向け。品質は落ちるが確実に動く。",
   },
   {
     id: "Qwen2.5-3B-Instruct-q4f16_1-MLC",
-    label: "高品質（Qwen2.5 3B）",
+    label: "Qwen2.5 3B（高品質）",
     sizeLabel: "約 1.9GB",
     note: "日本語の品質と速度のバランスが良い。空き容量 4GB 以上推奨。",
   },
   {
     id: "Qwen2.5-7B-Instruct-q4f16_1-MLC",
-    label: "最高品質（Qwen2.5 7B）",
+    label: "Qwen2.5 7B（最高品質）",
     sizeLabel: "約 4.4GB",
     note: "最も賢い。VRAM 6GB 以上・空き容量 10GB 以上の PC 向け。",
+  },
+  {
+    id: "Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC",
+    label: "Qwen2.5 Coder 1.5B（プログラミング向け）",
+    sizeLabel: "約 1.1GB",
+    note: "コードの説明・添削が得意。情報や技術の学習向け。",
+  },
+  {
+    id: "Qwen2.5-Math-1.5B-Instruct-q4f16_1-MLC",
+    label: "Qwen2.5 Math 1.5B（数学向け）",
+    sizeLabel: "約 1.1GB",
+    note: "数式の計算・証明の説明が得意。数学の質問向け。",
+  },
+  {
+    id: "Qwen3-1.7B-q4f16_1-MLC",
+    label: "Qwen3 1.7B（新世代・軽量）",
+    sizeLabel: "約 1.3GB",
+    note: "最新世代。軽いのに理屈立てた回答が得意。",
+  },
+  {
+    id: "Qwen3-4B-q4f16_1-MLC",
+    label: "Qwen3 4B（新世代・高品質）",
+    sizeLabel: "約 2.6GB",
+    note: "最新世代の中位モデル。日本語の説明が丁寧。",
+  },
+  {
+    id: "Llama-3.2-1B-Instruct-q4f16_1-MLC",
+    label: "Llama 3.2 1B",
+    sizeLabel: "約 0.9GB",
+    note: "軽量。英語中心の用途向け。",
   },
   {
     id: "Llama-3.2-3B-Instruct-q4f16_1-MLC",
     label: "Llama 3.2 3B",
     sizeLabel: "約 2.0GB",
-    note: "英語中心の用途向け。",
+    note: "英語中心の用途向け。要約が得意。",
+  },
+  {
+    id: "Llama-3.1-8B-Instruct-q4f16_1-MLC",
+    label: "Llama 3.1 8B",
+    sizeLabel: "約 4.6GB",
+    note: "高性能だが重い。ゲーミング PC 向け。",
+  },
+  {
+    id: "gemma-2-2b-it-q4f16_1-MLC",
+    label: "Gemma 2 2B",
+    sizeLabel: "約 1.5GB",
+    note: "Google 製。短い説明が上手。",
+  },
+  {
+    id: "gemma-2-9b-it-q4f16_1-MLC",
+    label: "Gemma 2 9B",
+    sizeLabel: "約 5.0GB",
+    note: "Google 製の大型。高性能 PC 向け。",
+  },
+  {
+    id: "Phi-3.5-mini-instruct-q4f16_1-MLC",
+    label: "Phi 3.5 mini",
+    sizeLabel: "約 2.2GB",
+    note: "Microsoft 製。論理的な問題に強い。",
+  },
+  {
+    id: "SmolLM2-1.7B-Instruct-q4f16_1-MLC",
+    label: "SmolLM2 1.7B",
+    sizeLabel: "約 1.1GB",
+    note: "軽量で高速。簡単な質問向け。",
+  },
+  {
+    id: "Mistral-7B-Instruct-v0.3-q4f16_1-MLC",
+    label: "Mistral 7B",
+    sizeLabel: "約 4.5GB",
+    note: "定番の大型モデル。高性能 PC 向け。",
   },
 ];
+
 
 /** モデル ID からおおよその必要バイト数を推定する（空き容量チェック用） */
 export function estimateModelBytes(id: string): number {
@@ -183,6 +250,17 @@ export function isModelCached(): boolean {
   return engineReady || isCached();
 }
 
+/** ダウンロード済み（すぐ使える）モデル ID の一覧 */
+export function webLlmCachedModelIds(): string[] {
+  if (typeof window === "undefined") return [];
+  return WEBLLM_MODELS.filter((m) => window.localStorage.getItem(cacheKeyFor(m.id)) === "true").map((m) => m.id);
+}
+
+export function hasWebGpuSupport(): boolean {
+  return hasWebGpu();
+}
+
+
 export async function webLlmStatus(): Promise<WebLlmStatus> {
   if (typeof window === "undefined") return "unavailable";
   if (!hasWebGpu()) return "unavailable";
@@ -218,12 +296,20 @@ export async function webLlmDiagnostics(): Promise<WebLlmDiagnostics> {
   };
 }
 
+let loadedModelId: string | null = null;
+
 export async function webLlmEnsureLoaded(
   onProgress?: (progress: number, text: string) => void,
   modelId: string = getWebLlmModelId(),
 ): Promise<any> {
   if (!hasWebGpu()) throw new Error("WebGPU が利用できません");
-  if (enginePromise) return enginePromise;
+  if (enginePromise && loadedModelId === modelId) return enginePromise;
+  if (enginePromise && loadedModelId !== modelId) {
+    enginePromise = null;
+    engineReady = false;
+  }
+  loadedModelId = modelId;
+
 
   engineDownloading = true;
 

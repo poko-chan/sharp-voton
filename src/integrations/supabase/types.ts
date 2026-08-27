@@ -6178,6 +6178,7 @@ export type Database = {
           created_at: string
           id: string
           role: string
+          thinking: Json
           thread_id: string | null
           user_id: string
         }
@@ -6187,6 +6188,7 @@ export type Database = {
           created_at?: string
           id?: string
           role: string
+          thinking?: Json
           thread_id?: string | null
           user_id: string
         }
@@ -6196,6 +6198,7 @@ export type Database = {
           created_at?: string
           id?: string
           role?: string
+          thinking?: Json
           thread_id?: string | null
           user_id?: string
         }
