@@ -296,12 +296,20 @@ export async function webLlmDiagnostics(): Promise<WebLlmDiagnostics> {
   };
 }
 
+let loadedModelId: string | null = null;
+
 export async function webLlmEnsureLoaded(
   onProgress?: (progress: number, text: string) => void,
   modelId: string = getWebLlmModelId(),
 ): Promise<any> {
   if (!hasWebGpu()) throw new Error("WebGPU が利用できません");
-  if (enginePromise) return enginePromise;
+  if (enginePromise && loadedModelId === modelId) return enginePromise;
+  if (enginePromise && loadedModelId !== modelId) {
+    enginePromise = null;
+    engineReady = false;
+  }
+  loadedModelId = modelId;
+
 
   engineDownloading = true;
 
