@@ -193,7 +193,10 @@ function TutorPage() {
   const send = async () => {
     if (!user || (!input.trim() && pending.length === 0) || busy) return;
     setBusy(true);
+    stepsRef.current = [];
     setThinkingSteps([]);
+    setShowThinking(true);
+    const t0 = Date.now();
     try {
       // 必要ならスレッド作成
       let tid = activeId;
@@ -223,35 +226,56 @@ function TutorPage() {
         return `${m.role === "user" ? "ユーザー" : "アシスタント"}: ${m.content}${imgNote}`;
       }).join("\n\n");
 
+      addStep(
+        "使用するAIを決めています",
+        `${engineLabel || "端末内AI"} を使用します。参照を許可した情報: ${
+          scopes.length ? scopes.map((k) => SCOPE_DEFS.find((s) => s.key === k)?.label).join("、") : "なし"
+        }`,
+      );
+      finishLastStep();
+
       // 1) ツールが必要かどうかをモデルに判断させる（テキストプロトコル）
-      addStep("質問を確認しています…");
+      addStep("質問の意図を判定しています", "学習データを参照すべき質問かどうかをAIに判断させています。");
       let ctx: any = null;
       const detectSession = await createAiSession({ system: detectSystem() });
       let decision = "";
       try {
         decision = await detectSession.prompt(history + "\n\nアシスタント:");
       } finally { detectSession.destroy(); }
-      finishLastStep();
+      const needsCtx = decision.trim().toUpperCase().startsWith(TOOL_MARKER.toUpperCase()) && scopes.length > 0;
+      finishLastStep(`判定結果: ${needsCtx ? "学習データを参照する" : "会話だけで回答する"}（AIの出力: ${decision.trim().slice(0, 60) || "—"}）`);
 
-      if (decision.trim().toUpperCase().startsWith(TOOL_MARKER.toUpperCase())) {
-        addStep("学習データを取得しています…");
-        try { ctx = await ctxFn(); } catch { /* ツール失敗時はデータなしで続行 */ }
-        finishLastStep();
+      if (needsCtx) {
+        addStep("学習データを取得しています", scopes.map((k) => SCOPE_DEFS.find((s) => s.key === k)?.label).join("、"));
+        try { ctx = await ctxFn({ data: { scopes } }); } catch { /* ツール失敗時はデータなしで続行 */ }
+        finishLastStep(
+          ctx
+            ? [
+                ctx.totalMinutes30d !== null ? `学習時間 ${ctx.totalMinutes30d}分 / ${ctx.activeDays30d}日` : null,
+                (ctx.activeGoals ?? []).length ? `目標 ${ctx.activeGoals.length}件` : null,
+                (ctx.weakTopics ?? []).length ? `苦手 ${ctx.weakTopics.length}件` : null,
+                (ctx.upcomingExams ?? []).length ? `試験 ${ctx.upcomingExams.length}件` : null,
+                (ctx.hardCards ?? []).length ? `苦手カード ${ctx.hardCards.length}件` : null,
+                (ctx.markonRecent ?? []).length ? `Markon成績 ${ctx.markonRecent.length}件` : null,
+              ].filter(Boolean).join(" / ") || "参照できるデータはありませんでした"
+            : "取得に失敗したため、会話だけで回答します",
+        );
       }
 
       // 2) 最終回答をストリーミング生成
-      addStep("回答を組み立てています…");
+      addStep("回答を組み立てています", "取得した情報とこれまでの会話をもとに、段階的な説明を作成中です。");
       const answerSession = await createAiSession({ system: answerSystem(displayName, ctx) });
       let text = "";
       setStreaming("");
       try {
         text = await answerSession.promptStreaming(history + "\n\nアシスタント:", (partial) => setStreaming(partial));
       } finally { answerSession.destroy(); }
-      finishLastStep();
+      finishLastStep(`${text.length}文字を生成しました（所要 ${Math.round((Date.now() - t0) / 1000)}秒）`);
 
       await supabase.from("tutor_messages").insert({
         user_id: user.id, role: "assistant", content: text, attachments: [], thread_id: tid,
-      });
+        thinking: stepsRef.current as any,
+      } as any);
       // タイトルを最初のメッセージから自動生成（新規チャットのみ）
       if (isNew && userMsg.content) {
         const auto = userMsg.content.slice(0, 30);
@@ -260,8 +284,9 @@ function TutorPage() {
       await loadMsgs(tid);
       await loadThreads();
     } catch (e: any) { toast.error(e.message); }
-    finally { setBusy(false); setStreaming(""); setThinkingSteps([]); }
+    finally { setBusy(false); setStreaming(""); stepsRef.current = []; setThinkingSteps([]); }
   };
+
 
   const submitRename = async (id: string) => {
     if (!renameTitle.trim()) { setRenamingId(null); return; }
