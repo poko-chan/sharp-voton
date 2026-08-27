@@ -19,6 +19,8 @@ import {
 } from "@/lib/tutor.functions";
 import { isAiUsable, createAiSession } from "@/lib/ai-provider";
 import { AiUnavailable } from "@/components/AiUnavailable";
+import { AiStatusBadge } from "@/components/ChromeAiStatusBadge";
+
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 type Attachment = { url: string; name: string; type: string };
