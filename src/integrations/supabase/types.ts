@@ -7016,36 +7016,20 @@ export type Database = {
       makron_weakness_questions: {
         Args: { _limit?: number; _unit_id: string }
         Returns: {
-          accepted_answers: Json
-          correct_options: Json
-          created_at: string
-          created_by: string | null
-          explanation: string | null
+          explanation: string
           grading: string
-          hint_text: string | null
+          hint_text: string
           id: string
-          image_url: string | null
+          image_url: string
           is_active: boolean
-          model_answer: string | null
           options: Json
           order_idx: number
-          pack_id: string | null
+          pack_id: string
           points: number
           prompt: string
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: string
-          submitted_at: string | null
           type: string
-          unit_id: string | null
-          updated_at: string
+          unit_id: string
         }[]
-        SetofOptions: {
-          from: "*"
-          to: "makron_questions"
-          isOneToOne: false
-          isSetofReturn: true
-        }
       }
       mark_group_read: { Args: { _group: string }; Returns: undefined }
       material_global_usage: {
