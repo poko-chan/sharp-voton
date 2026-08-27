@@ -14,16 +14,25 @@ export const getStudyContext = createServerFn({ method: "POST" })
   )
 
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    const scopes = new Set<string>(data?.scopes ?? [...STUDY_SCOPES]);
+    const on = (s: StudyScope) => scopes.has(s);
     const since = new Date(Date.now() - 30 * 86400_000).toISOString().slice(0, 10);
+    const empty = { data: [] as any[] };
 
-    const [logsR, subjR, goalsR, qR, profR] = await Promise.all([
-      supabase.from("study_logs").select("date, duration_minutes, content, subjects(name)").eq("user_id", userId).gte("date", since).order("date", { ascending: false }).limit(200),
-      supabase.from("subjects").select("name").eq("user_id", userId),
-      supabase.from("goals").select("title, target_minutes, progress_minutes, deadline, done").eq("user_id", userId).eq("done", false).limit(10),
-      supabase.from("questions").select("topic, was_wrong, attempts").eq("user_id", userId).limit(500),
+    const [logsR, subjR, goalsR, qR, profR, examsR, todosR, cardsR, packsR] = await Promise.all([
+      on("study") || on("notes")
+        ? supabase.from("study_logs").select("date, duration_minutes, content, subjects(name)").eq("user_id", userId).gte("date", since).order("date", { ascending: false }).limit(200)
+        : empty,
+      on("study") ? supabase.from("subjects").select("name").eq("user_id", userId) : empty,
+      on("goals") ? supabase.from("goals").select("title, target_minutes, progress_minutes, deadline, done").eq("user_id", userId).eq("done", false).limit(10) : empty,
+      on("weak") ? supabase.from("questions").select("topic, was_wrong, attempts").eq("user_id", userId).limit(500) : empty,
       supabase.from("profiles").select("display_name").eq("id", userId).maybeSingle(),
+      on("exams") ? (supabase as any).from("exams").select("title, exam_date, target_score").eq("user_id", userId).order("exam_date", { ascending: true }).limit(5) : empty,
+      on("exams") ? (supabase as any).from("exam_todos").select("title, done").eq("user_id", userId).eq("done", false).limit(15) : empty,
+      on("flashcards") ? (supabase as any).from("flashcards").select("front, correct_count, wrong_count").eq("user_id", userId).order("wrong_count", { ascending: false }).limit(15) : empty,
+      on("markon") ? (supabase as any).from("makron_pack_attempts").select("score, total, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(10) : empty,
     ]);
 
     const logs = (logsR.data ?? []) as any[];
@@ -50,19 +59,27 @@ export const getStudyContext = createServerFn({ method: "POST" })
       .filter(([, v]) => v.wrong > 0)
       .sort((a, b) => b[1].wrong - a[1].wrong).slice(0, 5);
 
-    const recentNotes = logs.slice(0, 5).map((l) => `- ${l.date}: ${l.subjects?.name ?? ""} ${l.duration_minutes}分 ${l.content ?? ""}`).join("\n");
+    const recentNotes = on("notes")
+      ? logs.slice(0, 5).map((l) => `- ${l.date}: ${l.subjects?.name ?? ""} ${l.duration_minutes}分 ${l.content ?? ""}`).join("\n")
+      : "";
 
     return {
+      scopes: Array.from(scopes),
       displayName: (profR.data as any)?.display_name ?? "生徒",
-      totalMinutes30d: totalMin,
-      activeDays30d: activeDays,
+      totalMinutes30d: on("study") ? totalMin : null,
+      activeDays30d: on("study") ? activeDays : null,
       subjectsRegistered: (subjR.data ?? []).map((s: any) => s.name),
       topSubjects: topSubjects.map(([n, m]) => ({ name: n, minutes: m })),
       activeGoals: goalsR.data ?? [],
       weakTopics: weakTopics.map(([t, v]) => ({ topic: t, wrong: v.wrong, total: v.total })),
       recentNotes,
+      upcomingExams: (examsR.data ?? []).map((e: any) => ({ title: e.title, date: e.exam_date, target: e.target_score })),
+      examTodos: (todosR.data ?? []).map((t: any) => t.title),
+      hardCards: (cardsR.data ?? []).filter((c: any) => (c.wrong_count ?? 0) > 0).map((c: any) => ({ front: c.front, wrong: c.wrong_count, correct: c.correct_count })),
+      markonRecent: (packsR.data ?? []).map((a: any) => ({ score: a.score, total: a.total, at: a.created_at })),
     };
   });
+
 
 export const listTutorThreads = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
