@@ -22,18 +22,42 @@ import { AiUnavailable } from "@/components/AiUnavailable";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 type Attachment = { url: string; name: string; type: string };
-type Msg = { id: string; role: string; content: string; attachments: Attachment[]; created_at: string; thread_id: string | null };
+type ThinkingStep = { label: string; detail?: string; done: boolean };
+type Msg = { id: string; role: string; content: string; attachments: Attachment[]; created_at: string; thread_id: string | null; thinking?: ThinkingStep[] };
 type Thread = { id: string; title: string; updated_at: string; created_at: string };
 
 const TOOL_MARKER = "TOOL: get_study_context";
 const NO_TOOL_MARKER = "TOOL: none";
 
+/** AIに見せてよい情報の種類 */
+const SCOPE_DEFS = [
+  { key: "study", label: "学習時間・科目", desc: "直近30日の勉強時間と科目別の内訳" },
+  { key: "goals", label: "学習目標", desc: "進行中の目標と達成度" },
+  { key: "weak", label: "苦手トピック", desc: "間違いの多い単元" },
+  { key: "notes", label: "学習メモ", desc: "直近の勉強記録の内容" },
+  { key: "exams", label: "試験・タスク", desc: "近い試験の予定とやること" },
+  { key: "flashcards", label: "暗記カード", desc: "間違えやすいカード" },
+  { key: "markon", label: "Markon成績", desc: "演習パックの得点履歴" },
+] as const;
+type ScopeKey = (typeof SCOPE_DEFS)[number]["key"];
+const SCOPES_LS = "ai.tutor.scopes";
+
+function loadScopes(): ScopeKey[] {
+  if (typeof window === "undefined") return SCOPE_DEFS.map((s) => s.key);
+  try {
+    const raw = window.localStorage.getItem(SCOPES_LS);
+    if (!raw) return SCOPE_DEFS.map((s) => s.key);
+    const arr = JSON.parse(raw) as string[];
+    return SCOPE_DEFS.map((s) => s.key).filter((k) => arr.includes(k));
+  } catch { return SCOPE_DEFS.map((s) => s.key); }
+}
+
 const detectSystem = () =>
   `あなたはAIチャットのアシスタントです。次のツールが使えます。
 
-- get_study_context: ユーザーの学習時間・登録科目・進行中の目標・苦手トピック・直近の学習メモなど、学習データを取得します。
+- get_study_context: ユーザーの学習時間・登録科目・進行中の目標・苦手トピック・試験予定・暗記カード・演習成績などの学習データを取得します。
 
-ユーザーの直近の発言が、学習状況（勉強時間、進捗、苦手分野、目標の達成度など）に関する質問や、それを踏まえたアドバイスを求めるものであれば、説明を一切せず1行だけ次を出力してください:
+ユーザーの直近の発言が、学習状況（勉強時間、進捗、苦手分野、目標の達成度、試験対策など）に関する質問や、それを踏まえたアドバイスを求めるものであれば、説明を一切せず1行だけ次を出力してください:
 ${TOOL_MARKER}
 
 そうでなければ、説明を一切せず1行だけ次を出力してください:
@@ -47,19 +71,21 @@ ${
   ctx
     ? `
 【生徒の学習状況（直近30日・ツールで取得済み）】
-- 学習時間: ${ctx.totalMinutes30d ?? 0}分 / 活動日: ${ctx.activeDays30d ?? 0}日
+${ctx.totalMinutes30d !== null ? `- 学習時間: ${ctx.totalMinutes30d ?? 0}分 / 活動日: ${ctx.activeDays30d ?? 0}日
 - 登録科目: ${(ctx.subjectsRegistered ?? []).join("、") || "なし"}
-- よく勉強: ${(ctx.topSubjects ?? []).map((s: any) => `${s.name}(${s.minutes}分)`).join("、") || "—"}
-- 苦手トピック: ${(ctx.weakTopics ?? []).map((w: any) => `${w.topic}(${w.wrong}/${w.total}誤)`).join("、") || "—"}
-- 進行中の目標: ${(ctx.activeGoals ?? []).map((g: any) => `${g.title}(${g.progress_minutes}/${g.target_minutes}分)`).join("、") || "—"}
-- 直近の学習メモ:
-${ctx.recentNotes ?? "—"}
+- よく勉強: ${(ctx.topSubjects ?? []).map((s: any) => `${s.name}(${s.minutes}分)`).join("、") || "—"}` : ""}
+${(ctx.weakTopics ?? []).length ? `- 苦手トピック: ${ctx.weakTopics.map((w: any) => `${w.topic}(${w.wrong}/${w.total}誤)`).join("、")}` : ""}
+${(ctx.activeGoals ?? []).length ? `- 進行中の目標: ${ctx.activeGoals.map((g: any) => `${g.title}(${g.progress_minutes}/${g.target_minutes}分)`).join("、")}` : ""}
+${(ctx.upcomingExams ?? []).length ? `- 近い試験: ${ctx.upcomingExams.map((e: any) => `${e.title}(${e.date ?? "日付未定"})`).join("、")}` : ""}
+${(ctx.examTodos ?? []).length ? `- 試験に向けた未完了タスク: ${ctx.examTodos.join("、")}` : ""}
+${(ctx.hardCards ?? []).length ? `- 苦手な暗記カード: ${ctx.hardCards.map((c: any) => `${c.front}(誤${c.wrong})`).join("、")}` : ""}
+${(ctx.markonRecent ?? []).length ? `- Markon直近の成績: ${ctx.markonRecent.map((m: any) => `${m.score}/${m.total}`).join("、")}` : ""}
+${ctx.recentNotes ? `- 直近の学習メモ:\n${ctx.recentNotes}` : ""}
 
 これらを踏まえ、生徒の弱点に寄り添ったアドバイスをしてください。`
     : ""
 }`;
 
-type ThinkingStep = { label: string; done: boolean };
 
 function TutorPage() {
   const { user } = useAuth();
