@@ -1,6 +1,6 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSharedStudySummary } from "@/lib/share.functions";
 import { Card } from "@/components/ui/card";
 import { Share2 } from "lucide-react";
 
