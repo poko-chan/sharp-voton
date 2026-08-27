@@ -416,6 +416,9 @@ function TutorPage() {
                       ? <img key={i} src={a.url} alt={a.name} className="max-h-48 rounded mb-1" />
                       : <a key={i} href={a.url} target="_blank" className="text-xs underline">{a.name}</a>
                   ))}
+                  {m.role !== "user" && (m.thinking ?? []).length > 0 && (
+                    <ThinkingBlock steps={m.thinking ?? []} defaultOpen={false} />
+                  )}
                   <ReactMarkdown>{m.content}</ReactMarkdown>
                 </div>
               </div>
@@ -424,26 +427,9 @@ function TutorPage() {
               <div className="flex justify-start">
                 <div className="max-w-[85%] bg-muted rounded-2xl px-4 py-2 space-y-2">
                   {thinkingSteps.length > 0 && (
-                    <Collapsible open={showThinking} onOpenChange={setShowThinking}>
-                      <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground w-full">
-                        <Brain className="h-3.5 w-3.5" />
-                        <span>思考プロセス</span>
-                        <ChevronDown className={`h-3 w-3 ml-auto transition-transform ${showThinking ? "rotate-180" : ""}`} />
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="mt-1 space-y-1 border-l-2 border-primary/30 pl-2">
-                        {thinkingSteps.map((step, i) => (
-                          <div key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            {step.done ? (
-                              <Search className="h-3 w-3 text-primary" />
-                            ) : (
-                              <Loader2 className="h-3 w-3 animate-spin text-primary" />
-                            )}
-                            <span>{step.label}</span>
-                          </div>
-                        ))}
-                      </CollapsibleContent>
-                    </Collapsible>
+                    <ThinkingBlock steps={thinkingSteps} defaultOpen={showThinking} onOpenChange={setShowThinking} live />
                   )}
+
                   <div className="prose prose-sm dark:prose-invert">
                     {streaming ? (
                       <>
