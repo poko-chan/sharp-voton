@@ -382,8 +382,9 @@ function isLooping(text: string): boolean {
 export async function createWebLlmSession(opts?: {
   system?: string;
   temperature?: number;
+  modelId?: string;
 }): Promise<WebLlmSession> {
-  const engine = await webLlmEnsureLoaded();
+  const engine = await webLlmEnsureLoaded(undefined, opts?.modelId ?? getWebLlmModelId());
   const system = opts?.system ? `${DEFAULT_SYSTEM}\n\n${opts.system}` : DEFAULT_SYSTEM;
   const history: Array<{ role: string; content: string }> = [{ role: "system", content: system }];
 
