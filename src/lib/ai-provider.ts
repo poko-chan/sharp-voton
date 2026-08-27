@@ -1,5 +1,9 @@
-// 統一 AI プロバイダ: Gemini Nano (Chrome Built-in AI) → WebLLM → クラウド AI の順にフォールバック。
-// 使えるものが複数あればユーザーが選択できる (localStorage: ai.engine.pref)。
+// 統一 AI プロバイダ: 端末内で動く AI（Gemini Nano / WebLLM / Ollama）をまとめて扱う。
+// 選択は「モデル単位」で localStorage(ai.engine.pref) に保存する。
+//   "auto"                … ダウンロード済みの中からおすすめを自動選択
+//   "nano"                … Chrome 内蔵 Gemini Nano
+//   "webllm:<modelId>"    … ブラウザ内 WebLLM の特定モデル
+//   "ollama:<modelName>"  … パソコンの Ollama の特定モデル
 
 import {
   chromeAiStatus,
@@ -14,91 +18,171 @@ import {
   webLlmDiagnostics,
   webLlmEnsureLoaded,
   createWebLlmSession,
+  webLlmCachedModelIds,
+  hasWebGpuSupport,
+  getWebLlmModelId,
+  setWebLlmModelId,
+  WEBLLM_MODELS,
 } from "@/lib/web-llm";
-import { cpuAiStatus, cpuAiDiagnostics, cpuAiEnsureLoaded, createCpuAiSession } from "@/lib/cpu-ai";
+import { ollamaModels, ollamaDiagnostics, createOllamaSession } from "@/lib/ollama";
 import { aiRunStart, aiRunChars, aiRunDone, aiRunError, aiRunModelLoading, aiRunIdle } from "@/lib/ai-status";
 
-export type AiEnginePref = "auto" | "nano" | "webllm" | "cpu";
-export type AiEngine = "nano" | "webllm" | "cpu" | "none";
+export type AiEngine = "nano" | "webllm" | "ollama" | "none";
 
 export const AI_ENGINE_LABELS: Record<AiEngine, string> = {
-  nano: "Gemini Nano (端末内)",
-  webllm: "WebLLM (端末内)",
-  cpu: "CPU AI (端末内)",
+  nano: "Gemini Nano (Chrome内蔵)",
+  webllm: "WebLLM (ブラウザ内)",
+  ollama: "Ollama (パソコン内)",
   none: "利用不可",
 };
 
+/** 保存される選択値。"auto" | "nano" | "webllm:<id>" | "ollama:<name>" */
+export type AiSelection = string;
+export type AiTarget = { engine: AiEngine; modelId: string; modelLabel: string };
+
 const LS_KEY = "ai.engine.pref";
 
-export function getAiEnginePref(): AiEnginePref {
+export function getAiSelection(): AiSelection {
   if (typeof window === "undefined") return "auto";
-  const v = window.localStorage.getItem(LS_KEY) as AiEnginePref | null;
-  return v === "nano" || v === "webllm" || v === "cpu" || v === "auto" ? v : "auto";
+  const v = window.localStorage.getItem(LS_KEY);
+  if (!v || v === "cpu") return "auto"; // CPU AI は廃止
+  if (v === "webllm") return `webllm:${getWebLlmModelId()}`;
+  return v;
 }
 
-export function setAiEnginePref(pref: AiEnginePref) {
+export function setAiSelection(sel: AiSelection) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(LS_KEY, pref);
+  window.localStorage.setItem(LS_KEY, sel);
+  if (sel.startsWith("webllm:")) setWebLlmModelId(sel.slice("webllm:".length));
   try {
-    window.dispatchEvent(new CustomEvent("ai-engine-pref-changed", { detail: pref }));
+    window.dispatchEvent(new CustomEvent("ai-engine-pref-changed", { detail: sel }));
   } catch { /* noop */ }
 }
 
-function isNanoUsable(s: string) {
-  return s === "available" || s === "downloadable" || s === "downloading";
-}
-function isWebLlmUsable(s: string) {
-  return s === "available" || s === "downloadable" || s === "downloading";
-}
+// 旧 API 互換
+export const getAiEnginePref = getAiSelection;
+export const setAiEnginePref = setAiSelection;
 
-/** 現在の設定 + 実際の可用性を突き合わせて、使うエンジンを決定 */
-export async function resolveAiEngine(): Promise<AiEngine> {
-  const [nano, web, cpu] = await Promise.all([chromeAiStatus(), webLlmStatus(), cpuAiStatus()]);
-  const pref = getAiEnginePref();
+export type AiModelEntry = {
+  /** 選択値。setAiSelection にそのまま渡せる */
+  key: string;
+  engine: AiEngine;
+  modelId: string;
+  /** モデル名 */
+  name: string;
+  /** 動かしている仕組みの名前（WebLLM / Ollama / Chrome内蔵） */
+  engineLabel: string;
+  sizeLabel: string;
+  note: string;
+  /** すぐ使える（ダウンロード済み） */
+  ready: boolean;
+  /** ダウンロードすれば使える */
+  installable: boolean;
+  /** おすすめ度（大きいほど優先） */
+  score: number;
+};
 
-  // 1. ユーザー指定があり、かつ利用可能（ダウンロード中/可を含む）ならそれを使う
-  if (pref === "nano" && isNanoUsable(nano)) return "nano";
-  if (pref === "webllm" && isWebLlmUsable(web)) return "webllm";
-  if (pref === "cpu" && cpu !== "unavailable") return "cpu";
+/** 端末で扱える AI モデルを全部並べる（使える／ダウンロードが必要 の両方） */
+export async function listAiModels(): Promise<AiModelEntry[]> {
+  const [nano, ollama] = await Promise.all([chromeAiStatus(), ollamaModels()]);
+  const cached = new Set(webLlmCachedModelIds());
+  const gpu = hasWebGpuSupport();
+  const out: AiModelEntry[] = [];
 
-  // 2. 自動選択: すでに利用可能なものを優先
-  if (pref === "auto") {
-    if (nano === "available") return "nano";
-    if (web === "available") return "webllm";
-    if (cpu === "available") return "cpu";
-    // なければダウンロードが必要なものから選ぶ
-    if (isNanoUsable(nano)) return "nano";
-    if (isWebLlmUsable(web)) return "webllm";
-    if (cpu !== "unavailable") return "cpu";
+  out.push({
+    key: "nano",
+    engine: "nano",
+    modelId: "gemini-nano",
+    name: "Gemini Nano",
+    engineLabel: "Chrome内蔵",
+    sizeLabel: "約 2GB（Chromeが管理）",
+    note: "Chrome / Edge に内蔵された AI。ダウンロードはブラウザ側で行われ、最も軽快に動きます。",
+    ready: nano === "available",
+    installable: nano === "downloadable" || nano === "downloading",
+    score: 80,
+  });
+
+  for (const m of ollama) {
+    out.push({
+      key: `ollama:${m.name}`,
+      engine: "ollama",
+      modelId: m.name,
+      name: m.name,
+      engineLabel: "Ollama",
+      sizeLabel: m.sizeBytes ? `${(m.sizeBytes / 1e9).toFixed(1)}GB` : "—",
+      note: "パソコンにインストールされた Ollama のモデル。ブラウザの容量を使わず、最も高品質です。",
+      ready: true,
+      installable: false,
+      score: 100,
+    });
   }
 
-  // 3. フォールバック
-  if (nano === "available") return "nano";
-  if (web === "available") return "webllm";
-  if (cpu === "available") return "cpu";
-  if (isNanoUsable(nano)) return "nano";
-  if (isWebLlmUsable(web)) return "webllm";
-  if (cpu !== "unavailable") return "cpu";
+  for (const m of WEBLLM_MODELS) {
+    out.push({
+      key: `webllm:${m.id}`,
+      engine: "webllm",
+      modelId: m.id,
+      name: m.label,
+      engineLabel: "WebLLM",
+      sizeLabel: m.sizeLabel,
+      note: m.note,
+      ready: gpu && cached.has(m.id),
+      installable: gpu && !cached.has(m.id),
+      score: 50 + (m.sizeLabel.includes("4.") || m.sizeLabel.includes("5.") ? 5 : 0),
+    });
+  }
 
-  return "none";
+  return out;
+}
+
+function labelFor(engine: AiEngine, modelId: string): string {
+  if (engine === "nano") return "Gemini Nano";
+  if (engine === "ollama") return modelId;
+  return WEBLLM_MODELS.find((m) => m.id === modelId)?.label ?? modelId;
+}
+
+/** 現在の設定 + 実際の可用性から、使うモデルを決定 */
+export async function resolveAiTarget(): Promise<AiTarget> {
+  const sel = getAiSelection();
+  const models = await listAiModels();
+  const pick = (e: AiModelEntry): AiTarget => ({ engine: e.engine, modelId: e.modelId, modelLabel: labelFor(e.engine, e.modelId) });
+
+  if (sel !== "auto") {
+    const exact = models.find((m) => m.key === sel);
+    if (exact && (exact.ready || exact.installable)) return pick(exact);
+  }
+
+  // オート: すぐ使えるものの中でおすすめ順
+  const ready = models.filter((m) => m.ready).sort((a, b) => b.score - a.score);
+  if (ready[0]) return pick(ready[0]);
+
+  const installable = models.filter((m) => m.installable).sort((a, b) => b.score - a.score);
+  if (installable[0]) return pick(installable[0]);
+
+  return { engine: "none", modelId: "", modelLabel: "利用不可" };
+}
+
+export async function resolveAiEngine(): Promise<AiEngine> {
+  return (await resolveAiTarget()).engine;
 }
 
 export type AiDiagnostics = {
   active: AiEngine;
-  pref: AiEnginePref;
+  target: AiTarget;
+  pref: AiSelection;
   nano: Awaited<ReturnType<typeof chromeAiDiagnostics>>;
   webllm: Awaited<ReturnType<typeof webLlmDiagnostics>>;
-  cpu: Awaited<ReturnType<typeof cpuAiDiagnostics>>;
+  ollama: Awaited<ReturnType<typeof ollamaDiagnostics>>;
 };
 
 export async function aiDiagnostics(): Promise<AiDiagnostics> {
-  const [nano, webllm, cpu] = await Promise.all([
+  const [nano, webllm, ollama, target] = await Promise.all([
     chromeAiDiagnostics(),
     webLlmDiagnostics(),
-    cpuAiDiagnostics(),
+    ollamaDiagnostics(),
+    resolveAiTarget(),
   ]);
-  const active = await resolveAiEngine();
-  return { active, pref: getAiEnginePref(), nano, webllm, cpu };
+  return { active: target.engine, target, pref: getAiSelection(), nano, webllm, ollama };
 }
 
 export async function aiStatus(): Promise<AiEngine> {
@@ -106,39 +190,30 @@ export async function aiStatus(): Promise<AiEngine> {
 }
 
 export async function isAiUsable(): Promise<boolean> {
-  const e = await resolveAiEngine();
-  return e !== "none";
+  return (await resolveAiEngine()) !== "none";
 }
 
 export async function aiEnsureReady(
   onProgress?: (loaded: number, total: number, text?: string) => void,
 ): Promise<AiEngine> {
-  const engine = await resolveAiEngine();
+  const target = await resolveAiTarget();
   try {
-    if (engine === "nano") {
-      const status = await chromeAiStatus();
-      if (status !== "available") {
+    if (target.engine === "nano") {
+      if ((await chromeAiStatus()) !== "available") {
         await chromeAiEnsureDownloaded((l, t) => {
           onProgress?.(l, t);
           aiRunModelLoading("nano", t > 0 ? Math.round((l / t) * 100) : null, "Gemini Nano を取得中…");
         });
       }
-    } else if (engine === "webllm") {
+    } else if (target.engine === "webllm") {
       await webLlmEnsureLoaded((p, text) => {
         onProgress?.(Math.round(p * 1000), 1000, text);
         aiRunModelLoading("webllm", Math.round(p * 100), text || "WebLLM モデルを取得中…");
-      });
-    } else if (engine === "cpu") {
-      await cpuAiEnsureLoaded((p, text) => {
-        onProgress?.(p, 100, text);
-        aiRunModelLoading("cpu", p, text || "CPU AI モデルを取得中…");
-      });
+      }, target.modelId);
     }
-    // 成功したら一旦状態を done にする（Indicator が消えるように）
     aiRunDone(0);
-    // 少し待ってから完全に消す（done の表示時間を確保）
     setTimeout(() => aiRunIdle(), 2000);
-    return engine;
+    return target.engine;
   } catch (e: any) {
     aiRunError(e?.message ?? "AI モデルの準備に失敗しました");
     throw e;
@@ -151,61 +226,44 @@ export async function createAiSession(opts?: {
   system?: string;
   temperature?: number;
   topK?: number;
-}): Promise<AiSession & { engine: AiEngine }> {
-  const engine = await resolveAiEngine();
+}): Promise<AiSession & { engine: AiEngine; modelLabel: string }> {
+  const target = await resolveAiTarget();
 
-  if (engine === "nano") {
+  if (target.engine === "ollama") {
+    const s = createOllamaSession(target.modelId, { system: opts?.system, temperature: opts?.temperature });
+    return Object.assign(withStatus(s, "ollama"), { engine: "ollama" as const, modelLabel: target.modelLabel });
+  }
+
+  if (target.engine === "nano") {
     try {
-      // Nano は明示的に ensure を呼ぶ（ダウンロード中なら待つ）
-      const status = await chromeAiStatus();
-      if (status !== "available") {
+      if ((await chromeAiStatus()) !== "available") {
         aiRunModelLoading("nano", null, "Gemini Nano を準備中…");
-        await chromeAiEnsureDownloaded((l, t) => aiRunModelLoading("nano", t > 0 ? Math.round((l / t) * 100) : null, "Gemini Nano を取得中…"));
+        await chromeAiEnsureDownloaded((l, t) =>
+          aiRunModelLoading("nano", t > 0 ? Math.round((l / t) * 100) : null, "Gemini Nano を取得中…"),
+        );
       }
       const s = await createChromeAiSession(opts);
-      return Object.assign(withStatus(s, "nano"), { engine: "nano" as const });
-    } catch {
-      if (isWebLlmUsable(await webLlmStatus())) {
-        aiRunModelLoading("webllm", null, "Gemini NanoからWebLLMへ切替中…");
-        const s = await createWebLlmSession({
-          system: opts?.system,
-          temperature: opts?.temperature,
-        });
-        return Object.assign(withStatus(s, "webllm"), { engine: "webllm" as const });
+      return Object.assign(withStatus(s, "nano"), { engine: "nano" as const, modelLabel: target.modelLabel });
+    } catch (err: any) {
+      const web = await webLlmStatus();
+      if (web === "available" || web === "downloadable" || web === "downloading") {
+        aiRunModelLoading("webllm", null, "Gemini Nano から WebLLM へ切替中…");
+        await webLlmEnsureLoaded((p, text) => aiRunModelLoading("webllm", Math.round(p * 100), text));
+        const s = await createWebLlmSession({ system: opts?.system, temperature: opts?.temperature });
+        return Object.assign(withStatus(s, "webllm"), { engine: "webllm" as const, modelLabel: labelFor("webllm", getWebLlmModelId()) });
       }
-      if ((await cpuAiStatus()) !== "unavailable") {
-        const s = await createCpuAiSession({ system: opts?.system, temperature: opts?.temperature });
-        return Object.assign(withStatus(s, "cpu"), { engine: "cpu" as const });
-      }
-      throw new Error("Gemini Nano のセッション作成に失敗しました");
+      throw new Error("Gemini Nano のセッション作成に失敗しました: " + (err?.message ?? ""));
     }
   }
 
-  if (engine === "webllm") {
-    try {
-      aiRunModelLoading("webllm", null, "WebLLM を準備中…");
-      await webLlmEnsureLoaded((p, text) => aiRunModelLoading("webllm", Math.round(p * 100), text));
-      const s = await createWebLlmSession({ system: opts?.system, temperature: opts?.temperature });
-      return Object.assign(withStatus(s, "webllm"), { engine: "webllm" as const });
-    } catch (err: any) {
-      if ((await cpuAiStatus()) !== "unavailable") {
-        const s = await createCpuAiSession({ system: opts?.system, temperature: opts?.temperature });
-        return Object.assign(withStatus(s, "cpu"), { engine: "cpu" as const });
-      }
-      throw new Error("WebLLM の読み込みに失敗しました: " + err.message);
-    }
+  if (target.engine === "webllm") {
+    aiRunModelLoading("webllm", null, "WebLLM を準備中…");
+    await webLlmEnsureLoaded((p, text) => aiRunModelLoading("webllm", Math.round(p * 100), text), target.modelId);
+    const s = await createWebLlmSession({ system: opts?.system, temperature: opts?.temperature });
+    return Object.assign(withStatus(s, "webllm"), { engine: "webllm" as const, modelLabel: target.modelLabel });
   }
 
-  if (engine === "cpu") {
-    try {
-      aiRunModelLoading("cpu", null, "CPU AI を準備中…");
-      const s = await createCpuAiSession({ system: opts?.system, temperature: opts?.temperature });
-      return Object.assign(withStatus(s, "cpu"), { engine: "cpu" as const });
-    } catch (err: any) {
-      throw new Error("CPU AI の読み込みに失敗しました: " + err.message);
-    }
-  }
-  throw new Error("利用可能な端末内 AI がありません（Gemini Nano / WebLLM / CPU AI）");
+  throw new Error("使える端末内 AI がありません。AI設定からモデルをダウンロードしてください。");
 }
 
 /** セッションをラップして、生成状況をグローバルに通知する */
