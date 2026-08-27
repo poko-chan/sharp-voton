@@ -250,6 +250,17 @@ export function isModelCached(): boolean {
   return engineReady || isCached();
 }
 
+/** ダウンロード済み（すぐ使える）モデル ID の一覧 */
+export function webLlmCachedModelIds(): string[] {
+  if (typeof window === "undefined") return [];
+  return WEBLLM_MODELS.filter((m) => window.localStorage.getItem(cacheKeyFor(m.id)) === "true").map((m) => m.id);
+}
+
+export function hasWebGpuSupport(): boolean {
+  return hasWebGpu();
+}
+
+
 export async function webLlmStatus(): Promise<WebLlmStatus> {
   if (typeof window === "undefined") return "unavailable";
   if (!hasWebGpu()) return "unavailable";
