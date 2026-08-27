@@ -1,6 +1,6 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSharedStudySummary } from "@/lib/share.functions";
 import { Card } from "@/components/ui/card";
 import { Share2 } from "lucide-react";
 
@@ -34,9 +34,12 @@ function SharedView() {
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase.rpc("share_study_summary", { _token: token });
-      if (error) { setErr("リンクが無効か期限切れです"); return; }
-      setRows((data as any) ?? []);
+      try {
+        const data = await getSharedStudySummary({ data: { token } });
+        setRows(data ?? []);
+      } catch {
+        setErr("リンクが無効か期限切れです");
+      }
     })();
   }, [token]);
 
