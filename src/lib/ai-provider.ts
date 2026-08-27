@@ -247,10 +247,11 @@ export async function createAiSession(opts?: {
     } catch (err: any) {
       const web = await webLlmStatus();
       if (web === "available" || web === "downloadable" || web === "downloading") {
+        const fallbackId = getWebLlmModelId();
         aiRunModelLoading("webllm", null, "Gemini Nano から WebLLM へ切替中…");
-        await webLlmEnsureLoaded((p, text) => aiRunModelLoading("webllm", Math.round(p * 100), text));
-        const s = await createWebLlmSession({ system: opts?.system, temperature: opts?.temperature });
-        return Object.assign(withStatus(s, "webllm"), { engine: "webllm" as const, modelLabel: labelFor("webllm", getWebLlmModelId()) });
+        await webLlmEnsureLoaded((p, text) => aiRunModelLoading("webllm", Math.round(p * 100), text), fallbackId);
+        const s = await createWebLlmSession({ system: opts?.system, temperature: opts?.temperature, modelId: fallbackId });
+        return Object.assign(withStatus(s, "webllm"), { engine: "webllm" as const, modelLabel: labelFor("webllm", fallbackId) });
       }
       throw new Error("Gemini Nano のセッション作成に失敗しました: " + (err?.message ?? ""));
     }
@@ -259,7 +260,7 @@ export async function createAiSession(opts?: {
   if (target.engine === "webllm") {
     aiRunModelLoading("webllm", null, "WebLLM を準備中…");
     await webLlmEnsureLoaded((p, text) => aiRunModelLoading("webllm", Math.round(p * 100), text), target.modelId);
-    const s = await createWebLlmSession({ system: opts?.system, temperature: opts?.temperature });
+    const s = await createWebLlmSession({ system: opts?.system, temperature: opts?.temperature, modelId: target.modelId });
     return Object.assign(withStatus(s, "webllm"), { engine: "webllm" as const, modelLabel: target.modelLabel });
   }
 

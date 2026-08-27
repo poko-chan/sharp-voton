@@ -6941,6 +6941,13 @@ export type Database = {
           question_id: string
         }[]
       }
+      makron_my_answer_keys: {
+        Args: never
+        Returns: {
+          correct_answer: string
+          question_id: string
+        }[]
+      }
       makron_pack_attempters: {
         Args: { _pack_id: string }
         Returns: {
