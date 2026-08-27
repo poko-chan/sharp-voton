@@ -111,10 +111,36 @@ function TutorPage() {
   const [canAi, setCanAi] = useState<boolean>(false);
   const [thinkingSteps, setThinkingSteps] = useState<ThinkingStep[]>([]);
   const [showThinking, setShowThinking] = useState(true);
+  const [scopes, setScopes] = useState<ScopeKey[]>(() => loadScopes());
+  const [engineLabel, setEngineLabel] = useState<string>("");
+  const stepsRef = useRef<ThinkingStep[]>([]);
   useEffect(() => { isAiUsable().then(setCanAi); }, []);
+  useEffect(() => {
+    import("@/lib/ai-provider").then(({ resolveAiTarget }) =>
+      resolveAiTarget().then((t) => setEngineLabel(t.engine === "none" ? "" : `${t.modelLabel}`)),
+    );
+  }, [canAi]);
 
-  const addStep = (label: string) => setThinkingSteps((prev) => [...prev, { label, done: false }]);
-  const finishLastStep = () => setThinkingSteps((prev) => prev.map((s, i) => (i === prev.length - 1 ? { ...s, done: true } : s)));
+  const toggleScope = (k: ScopeKey) => {
+    setScopes((prev) => {
+      const next = prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k];
+      try { window.localStorage.setItem(SCOPES_LS, JSON.stringify(next)); } catch { /* noop */ }
+      return next;
+    });
+  };
+
+  const syncSteps = () => setThinkingSteps([...stepsRef.current]);
+  const addStep = (label: string, detail?: string) => {
+    stepsRef.current = [...stepsRef.current, { label, detail, done: false }];
+    syncSteps();
+  };
+  const finishLastStep = (detail?: string) => {
+    stepsRef.current = stepsRef.current.map((s, i) =>
+      i === stepsRef.current.length - 1 ? { ...s, done: true, detail: detail ?? s.detail } : s,
+    );
+    syncSteps();
+  };
+
 
   const loadThreads = useCallback(async () => {
     try {
