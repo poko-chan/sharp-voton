@@ -417,38 +417,8 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
         </section>
       </main>
 
-      <footer className="border-t border-border/50 py-10">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 text-sm text-muted-foreground sm:flex-row sm:justify-between">
-          <div className="flex items-center gap-2">
-            <img src={logoUrl} alt="" width={24} height={24} loading="lazy" className="h-6 w-6 rounded-md" />
-            <span>Study#</span>
-          </div>
-          <nav className="flex flex-wrap items-center justify-center gap-4">
-            <Link to="/all-services" className="transition hover:text-foreground">
-              {t("landing.allServices")}
-            </Link>
-            <Link to="/guide" className="transition hover:text-foreground">
-              {t("landing.guide")}
-            </Link>
-            <Link to="/for-schools" className="transition hover:text-foreground">
-              {t("landing.forSchools")}
-            </Link>
-            <Link to="/help" className="transition hover:text-foreground">
-              {t("landing.help")}
-            </Link>
-            <Link to="/terms" className="transition hover:text-foreground">
-              {t("landing.terms")}
-            </Link>
-            <Link to="/privacy" className="transition hover:text-foreground">
-              {t("landing.privacy")}
-            </Link>
-            <Link to="/login" className="transition hover:text-foreground">
-              {t("login.title")}
-            </Link>
-            <GoogleTranslateWidget />
-          </nav>
-        </div>
-      </footer>
+      <PublicFooter />
+
     </div>
   );
 }
