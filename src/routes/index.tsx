@@ -352,6 +352,23 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
           </div>
         </section>
 
+        {/* Trust */}
+        <section className="mx-auto max-w-6xl px-4 pb-4 sm:pb-8">
+          <p className="section-eyebrow">Safety</p>
+          <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">
+            安心して使えるように
+          </h2>
+          <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {TRUST.map((t) => (
+              <div key={t.t} className="surface p-6">
+                <h3 className="font-display text-lg font-extrabold">{t.t}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t.d}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+
         {/* FAQ */}
         <section id="faq" className="scroll-mt-20 border-t border-border/50 bg-muted/20">
           <div className="mx-auto max-w-3xl px-4 py-16 sm:py-24">
