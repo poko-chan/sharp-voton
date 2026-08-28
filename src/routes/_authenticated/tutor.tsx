@@ -322,6 +322,18 @@ function TutorPage() {
       } finally { answerSession.destroy(); }
       finishLastStep(`${text.length}文字を生成しました（所要 ${Math.round((Date.now() - t0) / 1000)}秒）`);
 
+      // 3) 記録・目標などの操作依頼が含まれていれば、許可カードを提案する
+      if (userMsg.content) {
+        addStep("登録できる内容がないか確認しています", "勉強記録や目標の追加を求めているかを判定しています。");
+        try {
+          const subs = await fetchSubjectNames(user.id);
+          const act = await detectAiAction(userMsg.content, subs.map((s) => s.name));
+          setProposedAction(act);
+          finishLastStep(act ? (act.kind === "add_study_log" ? "学習記録の登録を提案します" : "学習目標の作成を提案します") : "登録の提案はありません");
+        } catch { finishLastStep("判定できませんでした"); }
+      }
+
+
       await supabase.from("tutor_messages").insert({
         user_id: user.id, role: "assistant", content: text, attachments: [], thread_id: tid,
         thinking: stepsRef.current as any,
