@@ -29,10 +29,10 @@ export const getStudyContext = createServerFn({ method: "POST" })
       on("goals") ? supabase.from("goals").select("title, target_minutes, progress_minutes, deadline, done").eq("user_id", userId).eq("done", false).limit(10) : empty,
       on("weak") ? supabase.from("questions").select("topic, was_wrong, attempts").eq("user_id", userId).limit(500) : empty,
       supabase.from("profiles").select("display_name").eq("id", userId).maybeSingle(),
-      on("exams") ? (supabase as any).from("exams").select("title, exam_date, target_score").eq("user_id", userId).order("exam_date", { ascending: true }).limit(5) : empty,
-      on("exams") ? (supabase as any).from("exam_todos").select("title, done").eq("user_id", userId).eq("done", false).limit(15) : empty,
-      on("flashcards") ? (supabase as any).from("flashcards").select("front, correct_count, wrong_count").eq("user_id", userId).order("wrong_count", { ascending: false }).limit(15) : empty,
-      on("markon") ? (supabase as any).from("makron_pack_attempts").select("score, total, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(10) : empty,
+      on("exams") ? (supabase as any).from("exams").select("name, start_date, end_date").eq("user_id", userId).gte("start_date", new Date().toISOString().slice(0, 10)).order("start_date", { ascending: true }).limit(5) : empty,
+      on("exams") ? (supabase as any).from("exam_todos").select("text, done").eq("user_id", userId).eq("done", false).limit(15) : empty,
+      on("flashcards") ? (supabase as any).from("flashcards").select("front, reviews, ease, next_review_at").eq("user_id", userId).order("ease", { ascending: true }).limit(15) : empty,
+      on("markon") ? (supabase as any).from("makron_pack_attempts").select("attempts_count, xp_earned_total, last_attempt_at, makron_packs(title)").eq("user_id", userId).order("last_attempt_at", { ascending: false }).limit(10) : empty,
     ]);
 
     const logs = (logsR.data ?? []) as any[];
