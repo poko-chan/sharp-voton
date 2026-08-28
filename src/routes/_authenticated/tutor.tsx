@@ -251,6 +251,8 @@ function TutorPage() {
     stepsRef.current = [];
     setThinkingSteps([]);
     setShowThinking(true);
+    setProposedAction(null);
+
     const t0 = Date.now();
     try {
       // 必要ならスレッド作成
