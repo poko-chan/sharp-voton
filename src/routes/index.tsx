@@ -169,6 +169,75 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
           </div>
         </section>
 
+        {/* Before / After */}
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
+          <p className="section-eyebrow">Before / After</p>
+          <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">
+            いつもの勉強が、こう変わる
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
+            新しいことを増やすのではなく、いま手作業でやっていることを置き換えます。
+          </p>
+          <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {REPLACEMENTS.map((r) => (
+              <article key={r.before} className="surface surface-hover flex flex-col gap-3 p-6">
+                <p className="text-sm text-muted-foreground line-through decoration-destructive/50">{r.before}</p>
+                <p className="text-sm font-semibold leading-relaxed">↓ {r.after}</p>
+                <p className="mt-auto rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
+                  {r.gain}
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {/* Why it works */}
+        <section className="border-y border-border/50 bg-muted/20">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
+            <p className="section-eyebrow">Why it works</p>
+            <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">
+              続く理由は、根性ではなく設計です
+            </h2>
+            <div className="mt-10 grid gap-4 md:grid-cols-2">
+              {WHY_IT_WORKS.map((w, i) => (
+                <article key={w.t} className="surface p-6">
+                  <span className="font-display text-sm font-black text-gradient">0{i + 1}</span>
+                  <h3 className="mt-2 font-display text-xl font-extrabold">{w.t}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{w.d}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Scenarios */}
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
+          <p className="section-eyebrow">Real use</p>
+          <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">実際の、ある一日</h2>
+          <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
+            自分に近い状況を選んで、そのまま真似できるようにまとめました。
+          </p>
+          <div className="mt-10 grid gap-4 md:grid-cols-2">
+            {SCENARIOS.map((s) => (
+              <article key={s.who} className="surface surface-hover p-6">
+                <h3 className="font-display text-xl font-extrabold">{s.who}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{s.situation}</p>
+                <ol className="mt-4 space-y-2">
+                  {s.flow.map((f, i) => (
+                    <li key={f} className="flex gap-3 text-sm">
+                      <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary/12 text-[10px] font-bold text-primary">
+                        {i + 1}
+                      </span>
+                      <span className="leading-relaxed text-muted-foreground">{f}</span>
+                    </li>
+                  ))}
+                </ol>
+                <p className="mt-4 rounded-xl bg-accent/12 p-3 text-sm font-semibold leading-relaxed">{s.result}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
 
         {/* Core features */}
         <section id="features" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:py-24">
