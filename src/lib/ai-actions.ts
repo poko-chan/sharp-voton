@@ -42,12 +42,31 @@ const actionSystem = (subjects: string[]) =>
 
 日付は「今日」「昨日」「◯月◯日」などを今日の日付から計算して必ず YYYY-MM-DD にしてください。時間は分単位の数値にしてください（「1時間半」→90）。`;
 
+/** 「記録して」「目標を作って」など、明示的な登録依頼っぽいときだけ true。
+ *  普通の質問で余計な判定AIを走らせないための軽量フィルタ（正規表現のみ・コストゼロ）。 */
+export function looksLikeActionRequest(text: string): boolean {
+  const t = text.trim();
+  if (!t || t.length > 400) return false;
+  const verb = /(記録|登録|つけて|付けて|保存|追加|作って|作成|設定)/;
+  const target = /(勉強|学習|スタディ|ログ|記録|目標|ゴール|プラン|分|時間|h|時間半)/i;
+  if (!verb.test(t)) return false;
+  if (!target.test(t)) return false;
+  // 質問文だけのケース（「どう記録するの？」など）は除外
+  if (/(方法|やり方|どうやって|どうすれば|できますか|とは|なぜ|教えて.*方法)/.test(t) && !/(して|してください|お願い|しといて|してね)/.test(t)) return false;
+  return true;
+}
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
+}
+
 /** ユーザーの最後の発言から操作提案を抽出する。提案がなければ null */
 export async function detectAiAction(userText: string, subjects: string[]): Promise<AiAction | null> {
-  if (!userText.trim()) return null;
+  if (!looksLikeActionRequest(userText)) return null;
   try {
-    const raw = await aiJSON<any>(`ユーザーの発言:\n${userText}\n\nJSON:`, actionSystem(subjects));
+    const raw = await withTimeout(aiJSON<any>(`ユーザーの発言:\n${userText}\n\nJSON:`, actionSystem(subjects)), 30000);
     if (!raw || typeof raw !== "object") return null;
+
     if (raw.kind === "add_study_log") {
       const minutes = Math.max(1, Math.min(400, Math.round(Number(raw.minutes) || 0)));
       if (!minutes) return null;
