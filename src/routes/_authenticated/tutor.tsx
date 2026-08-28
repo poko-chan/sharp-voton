@@ -92,8 +92,8 @@ ${(ctx.weakTopics ?? []).length ? `- 苦手トピック: ${ctx.weakTopics.map((w
 ${(ctx.activeGoals ?? []).length ? `- 進行中の目標: ${ctx.activeGoals.map((g: any) => `${g.title}(${g.progress_minutes}/${g.target_minutes}分)`).join("、")}` : ""}
 ${(ctx.upcomingExams ?? []).length ? `- 近い試験: ${ctx.upcomingExams.map((e: any) => `${e.title}(${e.date ?? "日付未定"})`).join("、")}` : ""}
 ${(ctx.examTodos ?? []).length ? `- 試験に向けた未完了タスク: ${ctx.examTodos.join("、")}` : ""}
-${(ctx.hardCards ?? []).length ? `- 苦手な暗記カード: ${ctx.hardCards.map((c: any) => `${c.front}(誤${c.wrong})`).join("、")}` : ""}
-${(ctx.markonRecent ?? []).length ? `- Markon直近の成績: ${ctx.markonRecent.map((m: any) => `${m.score}/${m.total}`).join("、")}` : ""}
+${(ctx.hardCards ?? []).length ? `- 苦手な暗記カード: ${ctx.hardCards.map((c: any) => `${c.front}(復習${c.reviews}回)`).join("、")}` : ""}
+${(ctx.markonRecent ?? []).length ? `- Markon直近の演習: ${ctx.markonRecent.map((m: any) => `${m.pack}(${m.attempts}回挑戦)`).join("、")}` : ""}
 ${ctx.recentNotes ? `- 直近の学習メモ:\n${ctx.recentNotes}` : ""}
 
 これらを踏まえ、生徒の弱点に寄り添った具体的なアドバイスをしてください。`
