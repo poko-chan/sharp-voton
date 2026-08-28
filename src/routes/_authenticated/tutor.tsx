@@ -23,7 +23,7 @@ import { AiStatusBadge } from "@/components/ChromeAiStatusBadge";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AiActionCard } from "@/components/ai/AiActionCard";
-import { detectAiAction, applyAiAction, fetchSubjectNames, type AiAction } from "@/lib/ai-actions";
+import { detectAiAction, applyAiAction, fetchSubjectNames, looksLikeActionRequest, type AiAction } from "@/lib/ai-actions";
 
 
 type Attachment = { url: string; name: string; type: string };
