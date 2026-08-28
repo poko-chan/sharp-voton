@@ -22,6 +22,9 @@ import { AiUnavailable } from "@/components/AiUnavailable";
 import { AiStatusBadge } from "@/components/ChromeAiStatusBadge";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { AiActionCard } from "@/components/ai/AiActionCard";
+import { detectAiAction, applyAiAction, fetchSubjectNames, type AiAction } from "@/lib/ai-actions";
+
 
 type Attachment = { url: string; name: string; type: string };
 type ThinkingStep = { label: string; detail?: string; done: boolean };
@@ -68,7 +71,16 @@ ${NO_TOOL_MARKER}
 他の文章は絶対に出力しないでください。`;
 
 const answerSystem = (displayName: string, ctx: any | null) =>
-  `あなたは${displayName}さん専属の優しいAIチャットアシスタントです。日本語で答え、まずヒントを与え段階的に解説してください。マークダウンを使い、画像が添付されていればその内容を読み取り解説します。
+  `あなたは${displayName}さん専属の優しい学習アシスタントです。
+
+【回答のルール】
+- 日本語で、結論 → 理由・考え方の順に簡潔に書く。前置きや自己紹介はしない。
+- 手順が必要なときは番号付きリスト、比較は箇条書き、数式は必要最小限で。
+- 長さは目安300〜600字。冗長な繰り返しや同じ内容の言い換えをしない。
+- わからないことは推測せず「情報が足りない」と伝え、確認したい点を1つだけ質問する。
+- 答えを丸写しさせず、まずヒント → 次に考え方 → 最後に答え合わせの流れにする。
+- 画像が添付されていれば、その内容を読み取って解説する。
+- マークダウンの見出し(#)は使わず、太字・リストで整理する。
 ${
   ctx
     ? `
@@ -84,9 +96,10 @@ ${(ctx.hardCards ?? []).length ? `- 苦手な暗記カード: ${ctx.hardCards.ma
 ${(ctx.markonRecent ?? []).length ? `- Markon直近の成績: ${ctx.markonRecent.map((m: any) => `${m.score}/${m.total}`).join("、")}` : ""}
 ${ctx.recentNotes ? `- 直近の学習メモ:\n${ctx.recentNotes}` : ""}
 
-これらを踏まえ、生徒の弱点に寄り添ったアドバイスをしてください。`
+これらを踏まえ、生徒の弱点に寄り添った具体的なアドバイスをしてください。`
     : ""
 }`;
+
 
 
 /** 思考プロセス（生成後も残る詳細ログ） */
@@ -153,7 +166,9 @@ function TutorPage() {
   const [showThinking, setShowThinking] = useState(true);
   const [scopes, setScopes] = useState<ScopeKey[]>(() => loadScopes());
   const [engineLabel, setEngineLabel] = useState<string>("");
+  const [proposedAction, setProposedAction] = useState<AiAction | null>(null);
   const stepsRef = useRef<ThinkingStep[]>([]);
+
   useEffect(() => { isAiUsable().then(setCanAi); }, []);
   useEffect(() => {
     import("@/lib/ai-provider").then(({ resolveAiTarget }) =>
@@ -236,6 +251,8 @@ function TutorPage() {
     stepsRef.current = [];
     setThinkingSteps([]);
     setShowThinking(true);
+    setProposedAction(null);
+
     const t0 = Date.now();
     try {
       // 必要ならスレッド作成
@@ -311,6 +328,18 @@ function TutorPage() {
         text = await answerSession.promptStreaming(history + "\n\nアシスタント:", (partial) => setStreaming(partial));
       } finally { answerSession.destroy(); }
       finishLastStep(`${text.length}文字を生成しました（所要 ${Math.round((Date.now() - t0) / 1000)}秒）`);
+
+      // 3) 記録・目標などの操作依頼が含まれていれば、許可カードを提案する
+      if (userMsg.content) {
+        addStep("登録できる内容がないか確認しています", "勉強記録や目標の追加を求めているかを判定しています。");
+        try {
+          const subs = await fetchSubjectNames(user.id);
+          const act = await detectAiAction(userMsg.content, subs.map((s) => s.name));
+          setProposedAction(act);
+          finishLastStep(act ? (act.kind === "add_study_log" ? "学習記録の登録を提案します" : "学習目標の作成を提案します") : "登録の提案はありません");
+        } catch { finishLastStep("判定できませんでした"); }
+      }
+
 
       await supabase.from("tutor_messages").insert({
         user_id: user.id, role: "assistant", content: text, attachments: [], thread_id: tid,
@@ -470,10 +499,7 @@ function TutorPage() {
 
                   <div className="prose prose-sm dark:prose-invert">
                     {streaming ? (
-                      <>
-                        <ReactMarkdown>{streaming}</ReactMarkdown>
-                        <span className="inline-block w-2 h-4 align-middle bg-primary/70 animate-pulse rounded-sm" />
-                      </>
+                      <ReactMarkdown>{streaming + "▍"}</ReactMarkdown>
                     ) : (
                       thinkingSteps.length === 0 && <Loader2 className="h-4 w-4 animate-spin" />
                     )}
@@ -481,7 +507,25 @@ function TutorPage() {
                 </div>
               </div>
             )}
+            {proposedAction && (
+              <div className="flex justify-start">
+                <div className="max-w-[85%] w-full">
+                  <AiActionCard
+                    action={proposedAction}
+                    onCancel={() => setProposedAction(null)}
+                    onApprove={async (a) => {
+                      try {
+                        const msg = await applyAiAction(a, user!.id);
+                        toast.success(msg);
+                        setProposedAction(null);
+                      } catch (e: any) { toast.error(e.message ?? "登録に失敗しました"); }
+                    }}
+                  />
+                </div>
+              </div>
+            )}
             <div ref={endRef} />
+
           </div>
 
           {pending.length > 0 && (
