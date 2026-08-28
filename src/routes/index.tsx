@@ -4,7 +4,18 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import logoUrl from "@/assets/logo.png";
-import { CORE, MORE, STEPS, FAQ, SERVICE_COUNT } from "@/content/services";
+import {
+  CORE,
+  MORE,
+  STEPS,
+  FAQ,
+  SERVICE_COUNT,
+  REPLACEMENTS,
+  WHY_IT_WORKS,
+  SCENARIOS,
+  TRUST,
+} from "@/content/services";
+
 
 const TITLE = "Study#— 学習のすべてを、ひとつに。";
 const DESC =
