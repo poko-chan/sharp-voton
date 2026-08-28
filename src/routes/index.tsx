@@ -154,7 +154,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
               <dl className="grid grid-cols-2 gap-3 sm:gap-4">
                 {[
                   [`${SERVICE_COUNT}+`, "搭載機能"],
-                  ["10問", "毎日のデイリー演習"],
+                  ["0円", "主要機能は無料"],
                   ["24h", "AIチャット"],
                   ["4段階", "組織の役割管理"],
                 ].map(([v, l]) => (
@@ -164,6 +164,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
                   </div>
                 ))}
               </dl>
+
             </div>
           </div>
         </section>
