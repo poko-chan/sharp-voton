@@ -29,10 +29,10 @@ export const getStudyContext = createServerFn({ method: "POST" })
       on("goals") ? supabase.from("goals").select("title, target_minutes, progress_minutes, deadline, done").eq("user_id", userId).eq("done", false).limit(10) : empty,
       on("weak") ? supabase.from("questions").select("topic, was_wrong, attempts").eq("user_id", userId).limit(500) : empty,
       supabase.from("profiles").select("display_name").eq("id", userId).maybeSingle(),
-      on("exams") ? (supabase as any).from("exams").select("title, exam_date, target_score").eq("user_id", userId).order("exam_date", { ascending: true }).limit(5) : empty,
-      on("exams") ? (supabase as any).from("exam_todos").select("title, done").eq("user_id", userId).eq("done", false).limit(15) : empty,
-      on("flashcards") ? (supabase as any).from("flashcards").select("front, correct_count, wrong_count").eq("user_id", userId).order("wrong_count", { ascending: false }).limit(15) : empty,
-      on("markon") ? (supabase as any).from("makron_pack_attempts").select("score, total, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(10) : empty,
+      on("exams") ? (supabase as any).from("exams").select("name, start_date, end_date").eq("user_id", userId).gte("start_date", new Date().toISOString().slice(0, 10)).order("start_date", { ascending: true }).limit(5) : empty,
+      on("exams") ? (supabase as any).from("exam_todos").select("text, done").eq("user_id", userId).eq("done", false).limit(15) : empty,
+      on("flashcards") ? (supabase as any).from("flashcards").select("front, reviews, ease, next_review_at").eq("user_id", userId).order("ease", { ascending: true }).limit(15) : empty,
+      on("markon") ? (supabase as any).from("makron_pack_attempts").select("attempts_count, xp_earned_total, last_attempt_at, makron_packs(title)").eq("user_id", userId).order("last_attempt_at", { ascending: false }).limit(10) : empty,
     ]);
 
     const logs = (logsR.data ?? []) as any[];
@@ -73,10 +73,10 @@ export const getStudyContext = createServerFn({ method: "POST" })
       activeGoals: goalsR.data ?? [],
       weakTopics: weakTopics.map(([t, v]) => ({ topic: t, wrong: v.wrong, total: v.total })),
       recentNotes,
-      upcomingExams: (examsR.data ?? []).map((e: any) => ({ title: e.title, date: e.exam_date, target: e.target_score })),
-      examTodos: (todosR.data ?? []).map((t: any) => t.title),
-      hardCards: (cardsR.data ?? []).filter((c: any) => (c.wrong_count ?? 0) > 0).map((c: any) => ({ front: c.front, wrong: c.wrong_count, correct: c.correct_count })),
-      markonRecent: (packsR.data ?? []).map((a: any) => ({ score: a.score, total: a.total, at: a.created_at })),
+      upcomingExams: (examsR.data ?? []).map((e: any) => ({ title: e.name, date: e.start_date, end: e.end_date })),
+      examTodos: (todosR.data ?? []).map((t: any) => t.text),
+      hardCards: (cardsR.data ?? []).filter((c: any) => (c.reviews ?? 0) > 0).map((c: any) => ({ front: c.front, ease: c.ease, reviews: c.reviews, nextReview: c.next_review_at })),
+      markonRecent: (packsR.data ?? []).map((a: any) => ({ pack: a.makron_packs?.title ?? "パック", attempts: a.attempts_count, xp: a.xp_earned_total, at: a.last_attempt_at })),
     };
   });
 
