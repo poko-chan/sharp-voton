@@ -420,27 +420,35 @@ function TutorPage() {
       </div>
       {!canAi && <div className="mb-3"><AiUnavailable feature="AIチャット" /></div>}
 
-      <Card className="mb-3 p-3">
-        <div className="text-xs font-semibold flex items-center gap-1.5 mb-2">
-          <Brain className="h-3.5 w-3.5 text-primary" />AIが参照できる情報（オフにすると渡しません）
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {SCOPE_DEFS.map((s) => {
-            const on = scopes.includes(s.key);
-            return (
-              <button
-                key={s.key}
-                title={s.desc}
-                onClick={() => toggleScope(s.key)}
-                className={`rounded-full border px-2.5 py-1 text-[11px] transition ${
-                  on ? "bg-primary/10 border-primary text-primary" : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                {on ? "✓ " : ""}{s.label}
-              </button>
-            );
-          })}
-        </div>
+      <Card className="mb-3 overflow-hidden border-primary/15 bg-gradient-to-r from-primary/[0.06] via-background to-background">
+        <button className="flex w-full items-center gap-3 p-3 text-left" onClick={() => setScopeOpen((v) => !v)}>
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><ShieldCheck className="h-4 w-4" /></span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold">AIに許可する学習情報</span>
+            <span className="block truncate text-xs text-muted-foreground">{scopes.length}種類を許可中・質問に必要な情報だけ端末内AIへ渡します</span>
+          </span>
+          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${scopeOpen ? "rotate-180" : ""}`} />
+        </button>
+        {scopeOpen && (
+          <div className="border-t px-3 pb-3 pt-2">
+            <div className="mb-2 rounded-lg bg-muted/60 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+              許可した情報も常に読むわけではありません。たとえば「今日の計画」には目標や試験を使い、「英語を訳して」など通常の質問には学習情報を使いません。情報は回答作成だけに使われます。
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              {SCOPE_DEFS.map((s) => {
+                const on = scopes.includes(s.key);
+                const Icon = s.icon;
+                return (
+                  <label key={s.key} className={`flex cursor-pointer items-start gap-2.5 rounded-xl border p-3 transition ${on ? "border-primary/30 bg-primary/[0.06]" : "bg-background/70"}`}>
+                    <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${on ? "text-primary" : "text-muted-foreground"}`} />
+                    <span className="min-w-0 flex-1"><span className="block text-xs font-semibold">{s.label}</span><span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground">{s.desc}</span></span>
+                    <Switch checked={on} onCheckedChange={() => toggleScope(s.key)} aria-label={`${s.label}の参照許可`} />
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </Card>
 
 
@@ -458,7 +466,7 @@ function TutorPage() {
                 className={`group rounded-lg px-2 py-2 text-sm cursor-pointer flex items-center gap-2 ${
                   activeId === t.id ? "bg-primary/15 text-primary" : "hover:bg-muted"
                 }`}
-                onClick={() => setActiveId(t.id)}
+                onClick={() => { if (!busy) setActiveId(t.id); }}
               >
                 <MessageSquare className="h-3.5 w-3.5 shrink-0" />
                 {renamingId === t.id ? (
@@ -495,11 +503,16 @@ function TutorPage() {
         {/* チャット本体 */}
         <Card className="flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {!activeId && msgs.length === 0 && (
+            {messageLoading && <div className="h-full grid place-items-center"><div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />会話を読み込んでいます</div></div>}
+            {!messageLoading && msgs.length === 0 && (
               <div className="h-full grid place-items-center text-center text-muted-foreground">
-                <div>
+                <div className="max-w-lg">
                   <Sparkles className="h-10 w-10 mx-auto mb-2 text-primary/50" />
-                  <p className="text-sm">質問を入力すると新しいチャットが始まります</p>
+                  <p className="font-semibold text-foreground">知りたいことを、そのまま話してください</p>
+                  <p className="mt-1 text-sm">普通の質問はすぐ回答し、記録の依頼は保存前に必ず確認します。</p>
+                  <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                    {QUICK_PROMPTS.map((prompt) => <button key={prompt} onClick={() => { setInput(prompt); inputRef.current?.focus(); }} className="rounded-xl border bg-background px-3 py-2 text-left text-xs text-foreground transition hover:border-primary/40 hover:bg-primary/[0.04]">{prompt}</button>)}
+                  </div>
                 </div>
               </div>
             )}
@@ -529,7 +542,7 @@ function TutorPage() {
                     {streaming ? (
                       <ReactMarkdown>{streaming + "▍"}</ReactMarkdown>
                     ) : (
-                      thinkingSteps.length === 0 && <Loader2 className="h-4 w-4 animate-spin" />
+                      thinkingSteps.length === 0 && <span className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />回答を準備しています…</span>
                     )}
                   </div>
                 </div>
@@ -549,6 +562,14 @@ function TutorPage() {
                       } catch (e: any) { toast.error(e.message ?? "登録に失敗しました"); }
                     }}
                   />
+                </div>
+              </div>
+            )}
+            {flowError && !busy && (
+              <div className="flex justify-start">
+                <div className="max-w-[85%] rounded-xl border border-destructive/25 bg-destructive/[0.04] p-3 text-sm">
+                  <p>{flowError}</p>
+                  {input.trim() && <Button variant="outline" size="sm" className="mt-2" onClick={() => void send()}><RotateCcw className="h-3.5 w-3.5" />もう一度送る</Button>}
                 </div>
               </div>
             )}
@@ -575,9 +596,11 @@ function TutorPage() {
               {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
             </Button>
             <Textarea
+              ref={inputRef}
               value={input} onChange={(e) => setInput(e.target.value)}
-              placeholder="例: この問題の解き方を教えて"
+              placeholder={busy ? "回答が終わるまでお待ちください" : "質問や「数学を30分記録して」と入力"}
               className="min-h-[44px] max-h-32 resize-none"
+              disabled={busy}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); } }}
             />
             <Button type="submit" disabled={busy || !canAi}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}</Button>
