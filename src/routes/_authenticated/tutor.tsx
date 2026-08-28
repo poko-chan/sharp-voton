@@ -369,14 +369,14 @@ function TutorPage() {
         thinking: stepsRef.current as any,
       } as any);
       if (answerSaveError) throw new Error("回答は生成できましたが、会話履歴に保存できませんでした。");
+      completedNormally = true;
       // タイトルを最初のメッセージから自動生成（新規チャットのみ）
       if (isNew && userMsg.content) {
         const auto = userMsg.content.slice(0, 30);
-        await renameFn({ data: { id: tid, title: auto } });
+        try { await renameFn({ data: { id: tid, title: auto } }); } catch { /* 回答自体は保存済み */ }
       }
       if (activeIdRef.current === tid) await loadMsgs(tid);
       await loadThreads();
-      completedNormally = true;
 
     } catch (e: any) {
       const message = e?.message || "回答を生成できませんでした。";
@@ -385,7 +385,7 @@ function TutorPage() {
       if (inputWasCleared && originalPending.length) setPending(originalPending);
       if (insertedMessageId && !completedNormally) {
         await supabase.from("tutor_messages").delete().eq("id", insertedMessageId).eq("user_id", user.id);
-        if (activeIdRef.current === activeId) setMsgs((current) => current.filter((message) => message.id !== insertedMessageId));
+        setMsgs((current) => current.filter((message) => message.id !== insertedMessageId));
       }
       toast.error(message);
     } finally {
