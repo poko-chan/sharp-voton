@@ -480,10 +480,7 @@ function TutorPage() {
 
                   <div className="prose prose-sm dark:prose-invert">
                     {streaming ? (
-                      <>
-                        <ReactMarkdown>{streaming}</ReactMarkdown>
-                        <span className="inline-block w-2 h-4 align-middle bg-primary/70 animate-pulse rounded-sm" />
-                      </>
+                      <ReactMarkdown>{streaming + "▍"}</ReactMarkdown>
                     ) : (
                       thinkingSteps.length === 0 && <Loader2 className="h-4 w-4 animate-spin" />
                     )}
@@ -491,7 +488,25 @@ function TutorPage() {
                 </div>
               </div>
             )}
+            {proposedAction && (
+              <div className="flex justify-start">
+                <div className="max-w-[85%] w-full">
+                  <AiActionCard
+                    action={proposedAction}
+                    onCancel={() => setProposedAction(null)}
+                    onApprove={async (a) => {
+                      try {
+                        const msg = await applyAiAction(a, user!.id);
+                        toast.success(msg);
+                        setProposedAction(null);
+                      } catch (e: any) { toast.error(e.message ?? "登録に失敗しました"); }
+                    }}
+                  />
+                </div>
+              </div>
+            )}
             <div ref={endRef} />
+
           </div>
 
           {pending.length > 0 && (
