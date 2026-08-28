@@ -265,6 +265,8 @@ function TutorPage() {
     const originalInput = input;
     const originalPending = [...pending];
     let inputWasCleared = false;
+    let insertedMessageId: string | null = null;
+    let completedNormally = false;
     setBusy(true);
     setFlowError(null);
     stepsRef.current = [];
@@ -284,12 +286,14 @@ function TutorPage() {
         isNew = true;
         setThreads((t) => [row, ...t]);
         setActiveId(tid);
+        activeIdRef.current = tid;
       }
 
       const userMsg = { user_id: user.id, role: "user", content: originalInput.trim(), attachments: originalPending, thread_id: tid };
       const { data: ins, error: insertError } = await supabase.from("tutor_messages").insert(userMsg).select().single();
       if (insertError || !ins) throw new Error("メッセージを保存できませんでした。入力内容はそのまま残しています。");
       const insMsg = ins as unknown as Msg;
+      insertedMessageId = insMsg.id;
       const nextMsgs = [...msgs, insMsg];
       if (activeIdRef.current === tid) setMsgs(nextMsgs);
       setInput(""); setPending([]);
@@ -305,6 +309,7 @@ function TutorPage() {
           setProposedAction(action);
           if (!action) setFlowError("登録内容を読み取れませんでした。日付・教科・時間を含めて、もう一度入力してください。");
         }
+        completedNormally = true;
         return;
       }
 
@@ -371,12 +376,17 @@ function TutorPage() {
       }
       if (activeIdRef.current === tid) await loadMsgs(tid);
       await loadThreads();
+      completedNormally = true;
 
     } catch (e: any) {
       const message = e?.message || "回答を生成できませんでした。";
       setFlowError(message);
       if (inputWasCleared && originalInput) setInput(originalInput);
       if (inputWasCleared && originalPending.length) setPending(originalPending);
+      if (insertedMessageId && !completedNormally) {
+        await supabase.from("tutor_messages").delete().eq("id", insertedMessageId).eq("user_id", user.id);
+        if (activeIdRef.current === activeId) setMsgs((current) => current.filter((message) => message.id !== insertedMessageId));
+      }
       toast.error(message);
     } finally {
       if (runId === runIdRef.current) {
