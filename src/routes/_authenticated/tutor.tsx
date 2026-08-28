@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Sparkles, Send, Paperclip, Loader2, X, Trash2, Plus, MessageSquare, Pencil, ChevronDown, Brain, Search } from "lucide-react";
+import { Sparkles, Send, Paperclip, Loader2, X, Trash2, Plus, MessageSquare, Pencil, ChevronDown, Brain, Search, ShieldCheck, Database, RotateCcw, BookOpen, Target, CalendarDays, NotebookTabs, ChartNoAxesColumnIncreasing } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import {
@@ -23,7 +23,8 @@ import { AiStatusBadge } from "@/components/ChromeAiStatusBadge";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AiActionCard } from "@/components/ai/AiActionCard";
-import { detectAiAction, applyAiAction, fetchSubjectNames, looksLikeActionRequest, type AiAction } from "@/lib/ai-actions";
+import { detectAiAction, applyAiAction, fetchSubjectNames, looksLikeActionRequest, parseCommonActionRequest, type AiAction } from "@/lib/ai-actions";
+import { Switch } from "@/components/ui/switch";
 
 
 type Attachment = { url: string; name: string; type: string };
@@ -31,18 +32,15 @@ type ThinkingStep = { label: string; detail?: string; done: boolean };
 type Msg = { id: string; role: string; content: string; attachments: Attachment[]; created_at: string; thread_id: string | null; thinking?: ThinkingStep[] };
 type Thread = { id: string; title: string; updated_at: string; created_at: string };
 
-const TOOL_MARKER = "TOOL: get_study_context";
-const NO_TOOL_MARKER = "TOOL: none";
-
 /** AIに見せてよい情報の種類 */
 const SCOPE_DEFS = [
-  { key: "study", label: "学習時間・科目", desc: "直近30日の勉強時間と科目別の内訳" },
-  { key: "goals", label: "学習目標", desc: "進行中の目標と達成度" },
-  { key: "weak", label: "苦手トピック", desc: "間違いの多い単元" },
-  { key: "notes", label: "学習メモ", desc: "直近の勉強記録の内容" },
-  { key: "exams", label: "試験・タスク", desc: "近い試験の予定とやること" },
-  { key: "flashcards", label: "暗記カード", desc: "間違えやすいカード" },
-  { key: "markon", label: "Markon成績", desc: "演習パックの得点履歴" },
+  { key: "study", label: "学習時間と教科", desc: "直近30日の学習時間、活動日数、よく勉強した教科", icon: ChartNoAxesColumnIncreasing },
+  { key: "goals", label: "学習目標", desc: "進行中の目標、目標時間、現在の進み具合", icon: Target },
+  { key: "weak", label: "苦手な内容", desc: "間違いが多い単元やトピック", icon: Brain },
+  { key: "notes", label: "学習記録の内容", desc: "最近勉強した内容や自分で残したメモ", icon: NotebookTabs },
+  { key: "exams", label: "試験とやること", desc: "これからの試験日程と未完了タスク", icon: CalendarDays },
+  { key: "flashcards", label: "暗記カード", desc: "復習回数や忘れやすいカード", icon: BookOpen },
+  { key: "markon", label: "Markon演習", desc: "最近取り組んだパックと挑戦回数", icon: Database },
 ] as const;
 type ScopeKey = (typeof SCOPE_DEFS)[number]["key"];
 const SCOPES_LS = "ai.tutor.scopes";
@@ -57,18 +55,21 @@ function loadScopes(): ScopeKey[] {
   } catch { return SCOPE_DEFS.map((s) => s.key); }
 }
 
-const detectSystem = () =>
-  `あなたはAIチャットのアシスタントです。次のツールが使えます。
+function relevantScopes(text: string, allowed: ScopeKey[]): ScopeKey[] {
+  const rules: Record<ScopeKey, RegExp> = {
+    study: /(勉強時間|学習時間|勉強量|学習状況|最近|科目|教科|頑張|進捗|振り返)/,
+    goals: /(目標|ゴール|達成|進捗|計画|プラン)/,
+    weak: /(苦手|弱点|間違|ミス|復習|伸ば)/,
+    notes: /(学習記録|勉強記録|メモ|最近|振り返)/,
+    exams: /(試験|テスト|受験|課題|タスク|予定|期限|勉強計画)/,
+    flashcards: /(暗記|カード|覚え|単語|復習)/,
+    markon: /(Markon|マクロン|演習|パック|正答|成績)/i,
+  };
+  const personal = /(私|自分|ぼく|僕|わたし|おすすめ|何をすべき|どう勉強|アドバイス)/.test(text);
+  return allowed.filter((key) => rules[key].test(text) || (personal && ["study", "goals", "weak"].includes(key)));
+}
 
-- get_study_context: ユーザーの学習時間・登録科目・進行中の目標・苦手トピック・試験予定・暗記カード・演習成績などの学習データを取得します。
-
-ユーザーの直近の発言が、学習状況（勉強時間、進捗、苦手分野、目標の達成度、試験対策など）に関する質問や、それを踏まえたアドバイスを求めるものであれば、説明を一切せず1行だけ次を出力してください:
-${TOOL_MARKER}
-
-そうでなければ、説明を一切せず1行だけ次を出力してください:
-${NO_TOOL_MARKER}
-
-他の文章は絶対に出力しないでください。`;
+const QUICK_PROMPTS = ["今日の勉強計画を考えて", "最近の学習から苦手を教えて", "この問題の考え方を教えて", "今日、数学を30分勉強したので記録して"];
 
 const answerSystem = (displayName: string, ctx: any | null) =>
   `あなたは${displayName}さん専属の優しい学習アシスタントです。
@@ -167,7 +168,15 @@ function TutorPage() {
   const [scopes, setScopes] = useState<ScopeKey[]>(() => loadScopes());
   const [engineLabel, setEngineLabel] = useState<string>("");
   const [proposedAction, setProposedAction] = useState<AiAction | null>(null);
+  const [scopeOpen, setScopeOpen] = useState(false);
+  const [messageLoading, setMessageLoading] = useState(false);
+  const [flowError, setFlowError] = useState<string | null>(null);
   const stepsRef = useRef<ThinkingStep[]>([]);
+  const activeIdRef = useRef<string | null>(null);
+  const runIdRef = useRef(0);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => { activeIdRef.current = activeId; }, [activeId]);
 
   useEffect(() => { isAiUsable().then(setCanAi); }, []);
   useEffect(() => {
@@ -207,11 +216,16 @@ function TutorPage() {
 
   const loadMsgs = useCallback(async (tid: string | null) => {
     if (!user || !tid) { setMsgs([]); return; }
-    const { data } = await supabase
+    setMessageLoading(true);
+    const { data, error } = await supabase
       .from("tutor_messages").select("*")
       .eq("user_id", user.id).eq("thread_id", tid)
       .order("created_at");
-    setMsgs((data as any) ?? []);
+    if (activeIdRef.current === tid) {
+      if (error) setFlowError("会話履歴を読み込めませんでした。もう一度お試しください。");
+      else setMsgs((data as any) ?? []);
+      setMessageLoading(false);
+    }
   }, [user]);
 
   useEffect(() => { loadThreads(); }, [user]);
@@ -247,7 +261,11 @@ function TutorPage() {
 
   const send = async () => {
     if (!user || (!input.trim() && pending.length === 0) || busy) return;
+    const runId = ++runIdRef.current;
+    const originalInput = input;
+    const originalPending = [...pending];
     setBusy(true);
+    setFlowError(null);
     stepsRef.current = [];
     setThinkingSteps([]);
     setShowThinking(true);
@@ -267,12 +285,26 @@ function TutorPage() {
         setActiveId(tid);
       }
 
-      const userMsg = { user_id: user.id, role: "user", content: input.trim(), attachments: pending, thread_id: tid };
-      const { data: ins } = await supabase.from("tutor_messages").insert(userMsg).select().single();
+      const userMsg = { user_id: user.id, role: "user", content: originalInput.trim(), attachments: originalPending, thread_id: tid };
+      const { data: ins, error: insertError } = await supabase.from("tutor_messages").insert(userMsg).select().single();
+      if (insertError || !ins) throw new Error("メッセージを保存できませんでした。入力内容はそのまま残しています。");
       const insMsg = ins as unknown as Msg;
-      const nextMsgs = ins ? [...msgs, insMsg] : msgs;
-      if (ins) setMsgs(nextMsgs);
+      const nextMsgs = [...msgs, insMsg];
+      if (activeIdRef.current === tid) setMsgs(nextMsgs);
       setInput(""); setPending([]);
+
+      if (looksLikeActionRequest(userMsg.content)) {
+        addStep("登録内容を確認しています", "内容を確認したあと、許可した場合だけ保存します。");
+        const subs = await fetchSubjectNames(user.id);
+        let action = parseCommonActionRequest(userMsg.content, subs.map((s) => s.name));
+        if (!action) action = await detectAiAction(userMsg.content, subs.map((s) => s.name));
+        finishLastStep(action ? "確認カードを作成しました" : "登録に必要な情報が足りませんでした");
+        if (runId === runIdRef.current && activeIdRef.current === tid) {
+          setProposedAction(action);
+          if (!action) setFlowError("登録内容を読み取れませんでした。日付・教科・時間を含めて、もう一度入力してください。");
+        }
+        return;
+      }
 
       const displayName = user.user_metadata?.display_name ?? user.email?.split("@")[0] ?? "生徒";
 
@@ -291,20 +323,13 @@ function TutorPage() {
       );
       finishLastStep();
 
-      // 1) ツールが必要かどうかをモデルに判断させる（テキストプロトコル）
-      addStep("質問の意図を判定しています", "学習データを参照すべき質問かどうかをAIに判断させています。");
       let ctx: any = null;
-      const detectSession = await createAiSession({ system: detectSystem() });
-      let decision = "";
-      try {
-        decision = await detectSession.prompt(history + "\n\nアシスタント:");
-      } finally { detectSession.destroy(); }
-      const needsCtx = decision.trim().toUpperCase().startsWith(TOOL_MARKER.toUpperCase()) && scopes.length > 0;
-      finishLastStep(`判定結果: ${needsCtx ? "学習データを参照する" : "会話だけで回答する"}（AIの出力: ${decision.trim().slice(0, 60) || "—"}）`);
+      const requestedScopes = relevantScopes(userMsg.content, scopes);
+      const needsCtx = requestedScopes.length > 0;
 
       if (needsCtx) {
-        addStep("学習データを取得しています", scopes.map((k) => SCOPE_DEFS.find((s) => s.key === k)?.label).join("、"));
-        try { ctx = await ctxFn({ data: { scopes } }); } catch { /* ツール失敗時はデータなしで続行 */ }
+        addStep("学習情報を確認しています", requestedScopes.map((k) => SCOPE_DEFS.find((s) => s.key === k)?.label).join("、"));
+        try { ctx = await ctxFn({ data: { scopes: requestedScopes } }); } catch { setFlowError("一部の学習情報を取得できなかったため、会話内容だけで回答します。"); }
         finishLastStep(
           ctx
             ? [
@@ -325,36 +350,38 @@ function TutorPage() {
       let text = "";
       setStreaming("");
       try {
-        text = await answerSession.promptStreaming(history + "\n\nアシスタント:", (partial) => setStreaming(partial));
+        text = await answerSession.promptStreaming(history + "\n\nアシスタント:", (partial) => {
+          if (runId === runIdRef.current && activeIdRef.current === tid) setStreaming(partial);
+        });
       } finally { answerSession.destroy(); }
+      if (!text.trim()) throw new Error("AIから回答を受け取れませんでした。もう一度お試しください。");
       finishLastStep(`${text.length}文字を生成しました（所要 ${Math.round((Date.now() - t0) / 1000)}秒）`);
 
-      await supabase.from("tutor_messages").insert({
+      const { error: answerSaveError } = await supabase.from("tutor_messages").insert({
         user_id: user.id, role: "assistant", content: text, attachments: [], thread_id: tid,
         thinking: stepsRef.current as any,
       } as any);
+      if (answerSaveError) throw new Error("回答は生成できましたが、会話履歴に保存できませんでした。");
       // タイトルを最初のメッセージから自動生成（新規チャットのみ）
       if (isNew && userMsg.content) {
         const auto = userMsg.content.slice(0, 30);
         await renameFn({ data: { id: tid, title: auto } });
       }
-      await loadMsgs(tid);
+      if (activeIdRef.current === tid) await loadMsgs(tid);
       await loadThreads();
 
-      // 3) 明示的な登録依頼のときだけ、回答表示後にバックグラウンドで許可カードを提案する
-      //    （普通の質問では判定AIを一切走らせないので、待ち時間は増えない）
-      if (looksLikeActionRequest(userMsg.content)) {
-        void (async () => {
-          try {
-            const subs = await fetchSubjectNames(user.id);
-            const act = await detectAiAction(userMsg.content, subs.map((s) => s.name));
-            if (act) setProposedAction(act);
-          } catch { /* 提案は任意機能なので失敗しても無視 */ }
-        })();
+    } catch (e: any) {
+      const message = e?.message || "回答を生成できませんでした。";
+      setFlowError(message);
+      if (!input && originalInput) setInput(originalInput);
+      if (pending.length === 0 && originalPending.length) setPending(originalPending);
+      toast.error(message);
+    } finally {
+      if (runId === runIdRef.current) {
+        setBusy(false); setStreaming(""); stepsRef.current = []; setThinkingSteps([]);
+        window.setTimeout(() => inputRef.current?.focus(), 0);
       }
-
-    } catch (e: any) { toast.error(e.message); }
-    finally { setBusy(false); setStreaming(""); stepsRef.current = []; setThinkingSteps([]); }
+    }
   };
 
 
