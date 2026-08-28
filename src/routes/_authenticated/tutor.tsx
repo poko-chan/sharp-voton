@@ -22,6 +22,9 @@ import { AiUnavailable } from "@/components/AiUnavailable";
 import { AiStatusBadge } from "@/components/ChromeAiStatusBadge";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { AiActionCard } from "@/components/ai/AiActionCard";
+import { detectAiAction, applyAiAction, fetchSubjectNames, type AiAction } from "@/lib/ai-actions";
+
 
 type Attachment = { url: string; name: string; type: string };
 type ThinkingStep = { label: string; detail?: string; done: boolean };
