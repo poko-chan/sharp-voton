@@ -329,18 +329,6 @@ function TutorPage() {
       } finally { answerSession.destroy(); }
       finishLastStep(`${text.length}文字を生成しました（所要 ${Math.round((Date.now() - t0) / 1000)}秒）`);
 
-      // 3) 記録・目標などの操作依頼が含まれていれば、許可カードを提案する
-      if (userMsg.content) {
-        addStep("登録できる内容がないか確認しています", "勉強記録や目標の追加を求めているかを判定しています。");
-        try {
-          const subs = await fetchSubjectNames(user.id);
-          const act = await detectAiAction(userMsg.content, subs.map((s) => s.name));
-          setProposedAction(act);
-          finishLastStep(act ? (act.kind === "add_study_log" ? "学習記録の登録を提案します" : "学習目標の作成を提案します") : "登録の提案はありません");
-        } catch { finishLastStep("判定できませんでした"); }
-      }
-
-
       await supabase.from("tutor_messages").insert({
         user_id: user.id, role: "assistant", content: text, attachments: [], thread_id: tid,
         thinking: stepsRef.current as any,
@@ -352,6 +340,19 @@ function TutorPage() {
       }
       await loadMsgs(tid);
       await loadThreads();
+
+      // 3) 明示的な登録依頼のときだけ、回答表示後にバックグラウンドで許可カードを提案する
+      //    （普通の質問では判定AIを一切走らせないので、待ち時間は増えない）
+      if (looksLikeActionRequest(userMsg.content)) {
+        void (async () => {
+          try {
+            const subs = await fetchSubjectNames(user.id);
+            const act = await detectAiAction(userMsg.content, subs.map((s) => s.name));
+            if (act) setProposedAction(act);
+          } catch { /* 提案は任意機能なので失敗しても無視 */ }
+        })();
+      }
+
     } catch (e: any) { toast.error(e.message); }
     finally { setBusy(false); setStreaming(""); stepsRef.current = []; setThinkingSteps([]); }
   };
