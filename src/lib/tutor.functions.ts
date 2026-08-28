@@ -73,10 +73,10 @@ export const getStudyContext = createServerFn({ method: "POST" })
       activeGoals: goalsR.data ?? [],
       weakTopics: weakTopics.map(([t, v]) => ({ topic: t, wrong: v.wrong, total: v.total })),
       recentNotes,
-      upcomingExams: (examsR.data ?? []).map((e: any) => ({ title: e.title, date: e.exam_date, target: e.target_score })),
-      examTodos: (todosR.data ?? []).map((t: any) => t.title),
-      hardCards: (cardsR.data ?? []).filter((c: any) => (c.wrong_count ?? 0) > 0).map((c: any) => ({ front: c.front, wrong: c.wrong_count, correct: c.correct_count })),
-      markonRecent: (packsR.data ?? []).map((a: any) => ({ score: a.score, total: a.total, at: a.created_at })),
+      upcomingExams: (examsR.data ?? []).map((e: any) => ({ title: e.name, date: e.start_date, end: e.end_date })),
+      examTodos: (todosR.data ?? []).map((t: any) => t.text),
+      hardCards: (cardsR.data ?? []).filter((c: any) => (c.reviews ?? 0) > 0).map((c: any) => ({ front: c.front, ease: c.ease, reviews: c.reviews, nextReview: c.next_review_at })),
+      markonRecent: (packsR.data ?? []).map((a: any) => ({ pack: a.makron_packs?.title ?? "パック", attempts: a.attempts_count, xp: a.xp_earned_total, at: a.last_attempt_at })),
     };
   });
 
