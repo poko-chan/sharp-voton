@@ -163,7 +163,9 @@ function TutorPage() {
   const [showThinking, setShowThinking] = useState(true);
   const [scopes, setScopes] = useState<ScopeKey[]>(() => loadScopes());
   const [engineLabel, setEngineLabel] = useState<string>("");
+  const [proposedAction, setProposedAction] = useState<AiAction | null>(null);
   const stepsRef = useRef<ThinkingStep[]>([]);
+
   useEffect(() => { isAiUsable().then(setCanAi); }, []);
   useEffect(() => {
     import("@/lib/ai-provider").then(({ resolveAiTarget }) =>
