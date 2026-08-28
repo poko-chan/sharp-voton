@@ -264,6 +264,7 @@ function TutorPage() {
     const runId = ++runIdRef.current;
     const originalInput = input;
     const originalPending = [...pending];
+    let inputWasCleared = false;
     setBusy(true);
     setFlowError(null);
     stepsRef.current = [];
@@ -292,6 +293,7 @@ function TutorPage() {
       const nextMsgs = [...msgs, insMsg];
       if (activeIdRef.current === tid) setMsgs(nextMsgs);
       setInput(""); setPending([]);
+      inputWasCleared = true;
 
       if (looksLikeActionRequest(userMsg.content)) {
         addStep("登録内容を確認しています", "内容を確認したあと、許可した場合だけ保存します。");
@@ -373,8 +375,8 @@ function TutorPage() {
     } catch (e: any) {
       const message = e?.message || "回答を生成できませんでした。";
       setFlowError(message);
-      if (!input && originalInput) setInput(originalInput);
-      if (pending.length === 0 && originalPending.length) setPending(originalPending);
+      if (inputWasCleared && originalInput) setInput(originalInput);
+      if (inputWasCleared && originalPending.length) setPending(originalPending);
       toast.error(message);
     } finally {
       if (runId === runIdRef.current) {
