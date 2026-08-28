@@ -56,6 +56,43 @@ export function looksLikeActionRequest(text: string): boolean {
   return true;
 }
 
+/** Common requests are parsed instantly so recording never needs a second model call. */
+export function parseCommonActionRequest(text: string, subjects: string[]): AiAction | null {
+  if (!looksLikeActionRequest(text)) return null;
+  const normalized = text.replace(/[、。]/g, " ");
+  const isGoal = /(目標|ゴール)/.test(normalized) && /(作って|作成|設定|追加|登録)/.test(normalized);
+  if (isGoal) {
+    const hours = normalized.match(/(\d+(?:\.\d+)?)\s*時間/);
+    const minutes = normalized.match(/(\d+)\s*分/);
+    const target = hours ? Math.round(Number(hours[1]) * 60) : minutes ? Number(minutes[1]) : 600;
+    return {
+      kind: "add_goal",
+      title: normalized.replace(/(目標|ゴール).*/, "").trim().slice(0, 100) || "新しい学習目標",
+      target_minutes: Math.max(1, target),
+      deadline: null,
+    };
+  }
+
+  const hours = normalized.match(/(\d+(?:\.\d+)?)\s*時間(?:半)?/);
+  const minutes = normalized.match(/(\d+)\s*分/);
+  const duration = hours
+    ? Math.round(Number(hours[1]) * 60 + (/時間半/.test(hours[0]) ? 30 : 0))
+    : minutes ? Number(minutes[1]) : 0;
+  if (!duration) return null;
+  const subject = subjects.find((name) => normalized.includes(name)) ?? "";
+  const date = /昨日/.test(normalized)
+    ? (() => { const d = new Date(); d.setDate(d.getDate() - 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; })()
+    : today();
+  return {
+    kind: "add_study_log",
+    date,
+    subject,
+    minutes: Math.min(1440, Math.max(1, duration)),
+    content: text.trim(),
+    material: null,
+  };
+}
+
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
 }
@@ -110,23 +147,20 @@ export async function applyAiAction(action: AiAction, userId: string): Promise<s
     const subs = await fetchSubjectNames(userId);
     let subject = subs.find((s) => s.name === action.subject) ?? subs.find((s) => s.name.includes(action.subject));
     if (!subject) {
-      const { data, error } = await supabase
-        .from("subjects").insert({ user_id: userId, name: action.subject } as never).select("id,name").single();
-      if (error) throw error;
-      subject = data as any;
+      throw new Error("登録済みの教科を選択してください");
     }
     const mat = action.material ? await findMaterial(action.material) : null;
     const { error } = await supabase.from("study_logs").insert({
       user_id: userId,
       date: action.date,
-      subject_id: subject!.id,
+      subject_id: subject.id,
       duration_minutes: action.minutes,
       content: action.content,
       material_id: mat?.id ?? null,
       material_ids: mat ? [mat.id] : [],
     } as never);
     if (error) throw error;
-    return `${action.date} に ${subject!.name} ${action.minutes}分を記録しました`;
+    return `${action.date} に ${subject.name} ${action.minutes}分を記録しました`;
   }
 
   const { error } = await supabase.from("goals").insert({
