@@ -71,8 +71,9 @@ ${web.map((r, i) => `[${i + 1}] ${r.title}（${r.source}）: ${r.snippet}`).join
 `
     : ""
 }
-
+${
   ctx
+
     ? `
 【生徒の学習状況（直近30日・許可された情報のみ）】
 ${ctx.totalMinutes30d !== null ? `- 学習時間: ${ctx.totalMinutes30d ?? 0}分 / 活動日: ${ctx.activeDays30d ?? 0}日
