@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Timer, CalendarDays, BookOpen, Brain, MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy, Megaphone, GraduationCap, Menu, X, MoreHorizontal, StickyNote, Users, Ban, HelpCircle, ClipboardList } from "lucide-react";
+import { LayoutDashboard, Timer, CalendarDays, BookOpen, Brain, MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy, Megaphone, GraduationCap, Menu, X, MoreHorizontal, StickyNote, Users, Ban, HelpCircle, ClipboardList, PanelLeft, PanelLeftClose } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -72,6 +72,17 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<{ display_name: string | null; username: string | null; avatar_url: string | null } | null>(null);
   const [level, setLevel] = useState<number>(1);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(true);
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("app.nav.open");
+      if (saved !== null) setNavOpen(saved === "1");
+    } catch { /* noop */ }
+  }, []);
+  const toggleNav = () => setNavOpen((v) => {
+    try { window.localStorage.setItem("app.nav.open", v ? "0" : "1"); } catch { /* noop */ }
+    return !v;
+  });
   const [notifPrefs, setNotifPrefs] = useState<{ notify_daily_reminder: boolean; reminder_time: string } | null>(null);
 
   useEffect(() => {
