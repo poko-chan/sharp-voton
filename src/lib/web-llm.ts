@@ -379,6 +379,10 @@ function isLooping(text: string): boolean {
 export async function createWebLlmSession(opts?: {
   system?: string;
   temperature?: number;
+  topP?: number;
+  maxTokens?: number;
+  frequencyPenalty?: number;
+  presencePenalty?: number;
   modelId?: string;
 }): Promise<WebLlmSession> {
   const engine = await webLlmEnsureLoaded(undefined, opts?.modelId ?? getWebLlmModelId());
@@ -402,11 +406,11 @@ export async function createWebLlmSession(opts?: {
         stream: true,
         // リトライ時はサンプリングを変えて同じ暴走を避ける
         temperature: attempt === 0 ? (opts?.temperature ?? 0.3) : 0.75,
-        top_p: attempt === 0 ? 0.9 : 0.95,
+        top_p: attempt === 0 ? (opts?.topP ?? 0.9) : 0.95,
         // 繰り返し・オウム返しの抑制（これが無いと同じ文を延々と吐く）
-        frequency_penalty: attempt === 0 ? 0.6 : 1.0,
-        presence_penalty: attempt === 0 ? 0.4 : 0.8,
-        max_tokens: 1024,
+        frequency_penalty: attempt === 0 ? (opts?.frequencyPenalty ?? 0.6) : 1.0,
+        presence_penalty: attempt === 0 ? (opts?.presencePenalty ?? 0.4) : 0.8,
+        max_tokens: opts?.maxTokens ?? 1024,
       });
       let full = "";
       let broken = false;
