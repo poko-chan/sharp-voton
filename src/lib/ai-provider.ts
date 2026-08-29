@@ -6,6 +6,7 @@
 //   "ollama:<modelName>"  … パソコンの Ollama の特定モデル
 
 import { sanitizeAiText, hasMeaningfulContent } from "@/lib/ai-degenerate";
+import { paramsFor, type AiTask, type GenParams } from "@/lib/ai-quality";
 import {
   chromeAiStatus,
   chromeAiDiagnostics,
@@ -225,13 +226,28 @@ export type AiSession = ChromeAiSession;
 
 export async function createAiSession(opts?: {
   system?: string;
+  /** 用途プリセット（未指定は chat）。温度や長さを用途に合わせて自動調整する */
+  task?: AiTask;
   temperature?: number;
+  topP?: number;
+  maxTokens?: number;
   topK?: number;
 }): Promise<AiSession & { engine: AiEngine; modelLabel: string }> {
   const target = await resolveAiTarget();
+  const gen: GenParams = paramsFor(opts?.task ?? "chat", {
+    ...(typeof opts?.temperature === "number" ? { temperature: opts.temperature } : {}),
+    ...(typeof opts?.topP === "number" ? { topP: opts.topP } : {}),
+    ...(typeof opts?.maxTokens === "number" ? { maxTokens: opts.maxTokens } : {}),
+  });
 
   if (target.engine === "ollama") {
-    const s = createOllamaSession(target.modelId, { system: opts?.system, temperature: opts?.temperature });
+    const s = createOllamaSession(target.modelId, {
+      system: opts?.system,
+      temperature: gen.temperature,
+      topP: gen.topP,
+      maxTokens: gen.maxTokens,
+      frequencyPenalty: gen.frequencyPenalty,
+    });
     return Object.assign(withStatus(s, "ollama"), { engine: "ollama" as const, modelLabel: target.modelLabel });
   }
 
@@ -243,7 +259,7 @@ export async function createAiSession(opts?: {
           aiRunModelLoading("nano", t > 0 ? Math.round((l / t) * 100) : null, "Gemini Nano を取得中…"),
         );
       }
-      const s = await createChromeAiSession(opts);
+      const s = await createChromeAiSession({ ...opts, temperature: gen.temperature });
       return Object.assign(withStatus(s, "nano"), { engine: "nano" as const, modelLabel: target.modelLabel });
     } catch (err: any) {
       const web = await webLlmStatus();
@@ -251,7 +267,7 @@ export async function createAiSession(opts?: {
         const fallbackId = getWebLlmModelId();
         aiRunModelLoading("webllm", null, "Gemini Nano から WebLLM へ切替中…");
         await webLlmEnsureLoaded((p, text) => aiRunModelLoading("webllm", Math.round(p * 100), text), fallbackId);
-        const s = await createWebLlmSession({ system: opts?.system, temperature: opts?.temperature, modelId: fallbackId });
+        const s = await createWebLlmSession({ system: opts?.system, ...gen, modelId: fallbackId });
         return Object.assign(withStatus(s, "webllm"), { engine: "webllm" as const, modelLabel: labelFor("webllm", fallbackId) });
       }
       throw new Error("Gemini Nano のセッション作成に失敗しました: " + (err?.message ?? ""));
@@ -261,7 +277,7 @@ export async function createAiSession(opts?: {
   if (target.engine === "webllm") {
     aiRunModelLoading("webllm", null, "WebLLM を準備中…");
     await webLlmEnsureLoaded((p, text) => aiRunModelLoading("webllm", Math.round(p * 100), text), target.modelId);
-    const s = await createWebLlmSession({ system: opts?.system, temperature: opts?.temperature, modelId: target.modelId });
+    const s = await createWebLlmSession({ system: opts?.system, ...gen, modelId: target.modelId });
     return Object.assign(withStatus(s, "webllm"), { engine: "webllm" as const, modelLabel: target.modelLabel });
   }
 
