@@ -5,6 +5,7 @@
 //   "webllm:<modelId>"    … ブラウザ内 WebLLM の特定モデル
 //   "ollama:<modelName>"  … パソコンの Ollama の特定モデル
 
+import { sanitizeAiText, hasMeaningfulContent } from "@/lib/ai-degenerate";
 import {
   chromeAiStatus,
   chromeAiDiagnostics,
@@ -269,11 +270,18 @@ export async function createAiSession(opts?: {
 
 /** セッションをラップして、生成状況をグローバルに通知する */
 function withStatus(s: AiSession, engine: AiEngine): AiSession {
+  const clean = (raw: string) => {
+    const out = sanitizeAiText(raw);
+    if (!hasMeaningfulContent(out)) {
+      throw new Error("AIの出力が壊れました（同じ記号の繰り返し）。もう一度送信するか、AI設定で別のモデルを選んでください。");
+    }
+    return out;
+  };
   return {
     prompt: async (t) => {
       aiRunStart(engine);
       try {
-        const out = await s.promptStreaming(t, (p) => aiRunChars(p.length));
+        const out = clean(await s.promptStreaming(t, (p) => aiRunChars(p.length)));
         aiRunDone(out.length);
         return out;
       } catch (e: any) {
@@ -285,7 +293,7 @@ function withStatus(s: AiSession, engine: AiEngine): AiSession {
       aiRunStart(engine);
       try {
         const raw = await s.promptStreaming(t, (p) => aiRunChars(p.length));
-        const parsed = extractJSON<T>(raw);
+        const parsed = extractJSON<T>(sanitizeAiText(raw));
         aiRunDone(raw.length);
         return parsed;
       } catch (e: any) {
@@ -296,7 +304,11 @@ function withStatus(s: AiSession, engine: AiEngine): AiSession {
     promptStreaming: async (t, onChunk) => {
       aiRunStart(engine);
       try {
-        const out = await s.promptStreaming(t, (p) => { aiRunChars(p.length); onChunk(p); });
+        const out = clean(await s.promptStreaming(t, (p) => {
+          const c = sanitizeAiText(p);
+          aiRunChars(c.length);
+          onChunk(c);
+        }));
         aiRunDone(out.length);
         return out;
       } catch (e: any) {
@@ -307,6 +319,7 @@ function withStatus(s: AiSession, engine: AiEngine): AiSession {
     destroy: () => s.destroy(),
   };
 }
+
 
 export async function aiPrompt(text: string, system?: string): Promise<string> {
   const s = await createAiSession({ system });
