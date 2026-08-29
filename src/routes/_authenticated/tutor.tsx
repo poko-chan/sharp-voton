@@ -23,6 +23,7 @@ import {
 } from "@/lib/tutor.functions";
 import { webSearch, type WebResult } from "@/lib/websearch.functions";
 import { isAiUsable, createAiSession } from "@/lib/ai-provider";
+import { buildBudgetedHistory } from "@/lib/ai-quality";
 import { AiUnavailable } from "@/components/AiUnavailable";
 import { AiStatusBadge } from "@/components/ChromeAiStatusBadge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -349,7 +350,10 @@ function TutorPage() {
       let plan = "";
       if (prefs.passes >= 3) {
         addStep("答えの骨組みを考えています", "何をどの順で説明すべきかを先に整理します。");
-        plan = await session.prompt(`${convo}\n\n上の質問に答える前に、回答に必ず含めるべき要点を箇条書き3〜5個だけ書いてください。回答本文は書かないでください。`);
+        const planner = await createAiSession({ task: "reasoning", system });
+        try {
+          plan = await planner.prompt(`${convo}\n\n上の質問に答える前に、回答に必ず含めるべき要点を箇条書き3〜5個だけ書いてください。回答本文は書かないでください。`);
+        } finally { planner.destroy(); }
         finishLastStep(plan.trim().slice(0, 400) || "要点を整理しました");
       }
 
