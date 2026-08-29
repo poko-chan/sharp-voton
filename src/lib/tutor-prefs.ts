@@ -103,17 +103,27 @@ export const TONE_RULE: Record<Tone, string> = {
 export function needsWebSearch(text: string): boolean {
   const t = text.trim();
   if (t.length < 4) return false;
-  // 記録・計画など自分のデータの話は検索不要
-  if (/(記録して|目標|勉強計画|振り返|私の|自分の)/.test(t) && !/(とは|意味|調べ|最新|ニュース)/.test(t)) return false;
-  return /(とは|意味|由来|違い|とは何|誰|いつ|どこ|年号|出典|根拠|最新|今年|去年|ニュース|統計|データ|入試|倍率|日程|要項|定義|公式|法律|制度|ランキング|価格|englishの意味|調べて|検索)/.test(t)
-    || /[A-Za-z]{4,}/.test(t) && /(について|解説|教えて)/.test(t);
+  // 自分のデータ・記録・計画の話は検索しない
+  if (/(記録して|登録して|目標を|勉強計画|振り返|私の|自分の|ぼくの|僕の)/.test(t) && !/(とは|意味|調べ|最新|ニュース|違い)/.test(t)) return false;
+  // 計算・添削など、その場で解ける依頼は検索しない
+  if (/(計算して|解いて|添削|翻訳して|要約して|作文|例文を作)/.test(t)) return false;
+  return (
+    /(とは|意味|由来|違い|なぜ|誰|いつ|どこ|年号|出典|根拠|最新|今年|去年|ニュース|統計|データ|入試|倍率|日程|要項|定義|公式|法律|制度|ランキング|価格|相場|調べて|検索|事実|正しい|本当)/.test(t) ||
+    (/[A-Za-z]{4,}/.test(t) && /(について|解説|教えて)/.test(t))
+  );
 }
 
-/** 検索クエリを質問文から作る（余計な依頼語を削る） */
+const STOP_WORDS =
+  /(教えて|説明して|解説して|調べて|検索して|知りたい|ください|下さい|お願いします|ですか|でしょうか|かな|なんですか|について|に関して|とは何|くわしく|詳しく|簡単に|わかりやすく|[。、？?！!]|^ねえ|^ちょっと)/g;
+
+/** 検索クエリを質問文から作る（余計な依頼語を削り、キーワード中心にする） */
 export function buildSearchQuery(text: string): string {
-  return text
-    .replace(/(教えて|説明して|解説して|調べて|検索して|ください|下さい|お願いします|ですか|でしょうか|かな|？|\?)/g, " ")
+  const cleaned = text
+    .replace(/\r?\n+/g, " ")
+    .replace(STOP_WORDS, " ")
     .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 120);
+    .trim();
+  const q = cleaned.length >= 2 ? cleaned : text.trim();
+  return q.slice(0, 120);
 }
+
