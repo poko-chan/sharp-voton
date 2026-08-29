@@ -1,138 +1,121 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Sparkles, Send, Paperclip, Loader2, X, Trash2, Plus, MessageSquare, Pencil, ChevronDown, Brain, Search, ShieldCheck, Database, RotateCcw, BookOpen, Target, CalendarDays, NotebookTabs, ChartNoAxesColumnIncreasing } from "lucide-react";
+import {
+  Sparkles, Send, Paperclip, Loader2, X, Trash2, Plus, MessageSquare, Pencil, ChevronDown,
+  Brain, Search, RotateCcw, PanelLeftClose, PanelLeft, Settings2, Copy, Check, Square,
+  Download, ArrowDown, SlidersHorizontal, Eye, EyeOff, Layers, Bot,
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   getStudyContext, listTutorThreads, createTutorThread, renameTutorThread, deleteTutorThread,
 } from "@/lib/tutor.functions";
 import { isAiUsable, createAiSession } from "@/lib/ai-provider";
 import { AiUnavailable } from "@/components/AiUnavailable";
 import { AiStatusBadge } from "@/components/ChromeAiStatusBadge";
-
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AiActionCard } from "@/components/ai/AiActionCard";
+import { ChatSettingsPanel } from "@/components/ai/ChatSettingsPanel";
+import { VoiceMicButton } from "@/components/VoiceMicButton";
+import {
+  SCOPE_DEFS, loadPrefs, savePrefs, relevantScopes, LENGTH_RULE, TONE_RULE,
+  type ChatPrefs, type ScopeKey,
+} from "@/lib/tutor-prefs";
 import { detectAiAction, applyAiAction, fetchSubjectNames, looksLikeActionRequest, parseCommonActionRequest, type AiAction } from "@/lib/ai-actions";
-import { Switch } from "@/components/ui/switch";
-
 
 type Attachment = { url: string; name: string; type: string };
 type ThinkingStep = { label: string; detail?: string; done: boolean };
 type Msg = { id: string; role: string; content: string; attachments: Attachment[]; created_at: string; thread_id: string | null; thinking?: ThinkingStep[] };
 type Thread = { id: string; title: string; updated_at: string; created_at: string };
 
-/** AIに見せてよい情報の種類 */
-const SCOPE_DEFS = [
-  { key: "study", label: "学習時間と教科", desc: "直近30日の学習時間、活動日数、よく勉強した教科", icon: ChartNoAxesColumnIncreasing },
-  { key: "goals", label: "学習目標", desc: "進行中の目標、目標時間、現在の進み具合", icon: Target },
-  { key: "weak", label: "苦手な内容", desc: "間違いが多い単元やトピック", icon: Brain },
-  { key: "notes", label: "学習記録の内容", desc: "最近勉強した内容や自分で残したメモ", icon: NotebookTabs },
-  { key: "exams", label: "試験とやること", desc: "これからの試験日程と未完了タスク", icon: CalendarDays },
-  { key: "flashcards", label: "暗記カード", desc: "復習回数や忘れやすいカード", icon: BookOpen },
-  { key: "markon", label: "Markon演習", desc: "最近取り組んだパックと挑戦回数", icon: Database },
-] as const;
-type ScopeKey = (typeof SCOPE_DEFS)[number]["key"];
-const SCOPES_LS = "ai.tutor.scopes";
+const QUICK_PROMPTS = [
+  { title: "今日の勉強計画", body: "今日の勉強計画を、優先順位つきで考えて" },
+  { title: "苦手を分析", body: "最近の学習記録から、私の苦手と対策を教えて" },
+  { title: "考え方を教わる", body: "この問題の考え方だけヒントで教えて：" },
+  { title: "学習を記録する", body: "今日、数学を30分勉強したので記録して" },
+];
 
-function loadScopes(): ScopeKey[] {
-  if (typeof window === "undefined") return SCOPE_DEFS.map((s) => s.key);
-  try {
-    const raw = window.localStorage.getItem(SCOPES_LS);
-    if (!raw) return SCOPE_DEFS.map((s) => s.key);
-    const arr = JSON.parse(raw) as string[];
-    return SCOPE_DEFS.map((s) => s.key).filter((k) => arr.includes(k));
-  } catch { return SCOPE_DEFS.map((s) => s.key); }
-}
-
-function relevantScopes(text: string, allowed: ScopeKey[]): ScopeKey[] {
-  const rules: Record<ScopeKey, RegExp> = {
-    study: /(勉強時間|学習時間|勉強量|学習状況|最近|科目|教科|頑張|進捗|振り返)/,
-    goals: /(目標|ゴール|達成|進捗|計画|プラン)/,
-    weak: /(苦手|弱点|間違|ミス|復習|伸ば)/,
-    notes: /(学習記録|勉強記録|メモ|最近|振り返)/,
-    exams: /(試験|テスト|受験|課題|タスク|予定|期限|勉強計画)/,
-    flashcards: /(暗記|カード|覚え|単語|復習)/,
-    markon: /(Markon|マクロン|演習|パック|正答|成績)/i,
-  };
-  const personal = /(私|自分|ぼく|僕|わたし|おすすめ|何をすべき|どう勉強|アドバイス)/.test(text);
-  return allowed.filter((key) => rules[key].test(text) || (personal && ["study", "goals", "weak"].includes(key)));
-}
-
-const QUICK_PROMPTS = ["今日の勉強計画を考えて", "最近の学習から苦手を教えて", "この問題の考え方を教えて", "今日、数学を30分勉強したので記録して"];
-
-const answerSystem = (displayName: string, ctx: any | null) =>
-  `あなたは${displayName}さん専属の優しい学習アシスタントです。
+const answerSystem = (displayName: string, prefs: ChatPrefs, ctx: any | null) =>
+  `あなたは${displayName}さん専属の学習アシスタントです。
 
 【回答のルール】
-- 日本語で、結論 → 理由・考え方の順に簡潔に書く。前置きや自己紹介はしない。
-- 手順が必要なときは番号付きリスト、比較は箇条書き、数式は必要最小限で。
-- 長さは目安300〜600字。冗長な繰り返しや同じ内容の言い換えをしない。
+- 日本語で、結論 → 理由・考え方の順に書く。前置きや自己紹介はしない。
+- ${LENGTH_RULE[prefs.length]}
+- ${TONE_RULE[prefs.tone]}
+- ${prefs.directAnswer ? "答えを先に示し、そのあと理由と確認ポイントを説明する。" : "いきなり答えを出さず、ヒント → 考え方 → 最後に答え合わせの順で導く。"}
+- 手順は番号付きリスト、比較は箇条書きで整理する。マークダウンの見出し(#)は使わない。
 - わからないことは推測せず「情報が足りない」と伝え、確認したい点を1つだけ質問する。
-- 答えを丸写しさせず、まずヒント → 次に考え方 → 最後に答え合わせの流れにする。
 - 画像が添付されていれば、その内容を読み取って解説する。
-- マークダウンの見出し(#)は使わず、太字・リストで整理する。
 ${
   ctx
     ? `
-【生徒の学習状況（直近30日・ツールで取得済み）】
+【生徒の学習状況（直近30日・許可された情報のみ）】
 ${ctx.totalMinutes30d !== null ? `- 学習時間: ${ctx.totalMinutes30d ?? 0}分 / 活動日: ${ctx.activeDays30d ?? 0}日
 - 登録科目: ${(ctx.subjectsRegistered ?? []).join("、") || "なし"}
 - よく勉強: ${(ctx.topSubjects ?? []).map((s: any) => `${s.name}(${s.minutes}分)`).join("、") || "—"}` : ""}
 ${(ctx.weakTopics ?? []).length ? `- 苦手トピック: ${ctx.weakTopics.map((w: any) => `${w.topic}(${w.wrong}/${w.total}誤)`).join("、")}` : ""}
 ${(ctx.activeGoals ?? []).length ? `- 進行中の目標: ${ctx.activeGoals.map((g: any) => `${g.title}(${g.progress_minutes}/${g.target_minutes}分)`).join("、")}` : ""}
 ${(ctx.upcomingExams ?? []).length ? `- 近い試験: ${ctx.upcomingExams.map((e: any) => `${e.title}(${e.date ?? "日付未定"})`).join("、")}` : ""}
-${(ctx.examTodos ?? []).length ? `- 試験に向けた未完了タスク: ${ctx.examTodos.join("、")}` : ""}
+${(ctx.examTodos ?? []).length ? `- 未完了タスク: ${ctx.examTodos.join("、")}` : ""}
 ${(ctx.hardCards ?? []).length ? `- 苦手な暗記カード: ${ctx.hardCards.map((c: any) => `${c.front}(復習${c.reviews}回)`).join("、")}` : ""}
-${(ctx.markonRecent ?? []).length ? `- Markon直近の演習: ${ctx.markonRecent.map((m: any) => `${m.pack}(${m.attempts}回挑戦)`).join("、")}` : ""}
+${(ctx.markonRecent ?? []).length ? `- Markon直近: ${ctx.markonRecent.map((m: any) => `${m.pack}(${m.attempts}回)`).join("、")}` : ""}
 ${ctx.recentNotes ? `- 直近の学習メモ:\n${ctx.recentNotes}` : ""}
 
-これらを踏まえ、生徒の弱点に寄り添った具体的なアドバイスをしてください。`
+これらを踏まえ、具体的で実行できるアドバイスをしてください。`
     : ""
 }`;
 
+function CopyButton({ text, label = "コピー" }: { text: string; label?: string }) {
+  const [done, setDone] = useState(false);
+  return (
+    <button
+      type="button"
+      className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-muted-foreground transition hover:bg-muted hover:text-foreground"
+      onClick={async () => {
+        try { await navigator.clipboard.writeText(text); setDone(true); setTimeout(() => setDone(false), 1500); }
+        catch { toast.error("コピーできませんでした"); }
+      }}
+    >
+      {done ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}{done ? "コピーしました" : label}
+    </button>
+  );
+}
 
-
-/** 思考プロセス（生成後も残る詳細ログ） */
 function ThinkingBlock({
   steps, defaultOpen = false, onOpenChange, live = false,
-}: {
-  steps: ThinkingStep[];
-  defaultOpen?: boolean;
-  onOpenChange?: (v: boolean) => void;
-  live?: boolean;
-}) {
+}: { steps: ThinkingStep[]; defaultOpen?: boolean; onOpenChange?: (v: boolean) => void; live?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   useEffect(() => { if (live) setOpen(defaultOpen); }, [defaultOpen, live]);
   return (
     <Collapsible
       open={open}
       onOpenChange={(v) => { setOpen(v); onOpenChange?.(v); }}
-      className="not-prose mb-2 rounded-lg border border-primary/20 bg-primary/5 px-2 py-1.5"
+      className="not-prose mb-2 rounded-xl border border-border/70 bg-muted/40 px-2.5 py-2"
     >
-      <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground w-full">
+      <CollapsibleTrigger className="flex w-full items-center gap-1.5 text-xs text-muted-foreground transition hover:text-foreground">
         <Brain className="h-3.5 w-3.5 text-primary" />
         <span>思考プロセス（{steps.length}ステップ）</span>
-        <ChevronDown className={`h-3 w-3 ml-auto transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown className={`ml-auto h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
       </CollapsibleTrigger>
-      <CollapsibleContent className="mt-1.5 space-y-1.5 border-l-2 border-primary/30 pl-2">
+      <CollapsibleContent className="mt-2 space-y-1.5 border-l-2 border-primary/30 pl-2.5">
         {steps.map((step, i) => (
           <div key={i} className="text-xs">
             <div className="flex items-center gap-1.5 font-medium">
               {step.done ? <Search className="h-3 w-3 text-primary" /> : <Loader2 className="h-3 w-3 animate-spin text-primary" />}
               <span>{step.label}</span>
             </div>
-            {step.detail && <div className="pl-4.5 ml-1 text-muted-foreground whitespace-pre-wrap">{step.detail}</div>}
+            {step.detail && <div className="ml-1 whitespace-pre-wrap pl-4 text-muted-foreground">{step.detail}</div>}
           </div>
         ))}
       </CollapsibleContent>
@@ -141,7 +124,6 @@ function ThinkingBlock({
 }
 
 function TutorPage() {
-
   const { user } = useAuth();
   const listFn = useServerFn(listTutorThreads);
   const createFn = useServerFn(createTutorThread);
@@ -160,67 +142,67 @@ function TutorPage() {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameTitle, setRenameTitle] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<Thread | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
-  const endRef = useRef<HTMLDivElement>(null);
-  const [canAi, setCanAi] = useState<boolean>(false);
+  const [canAi, setCanAi] = useState(false);
   const [thinkingSteps, setThinkingSteps] = useState<ThinkingStep[]>([]);
   const [showThinking, setShowThinking] = useState(true);
-  const [scopes, setScopes] = useState<ScopeKey[]>(() => loadScopes());
-  const [engineLabel, setEngineLabel] = useState<string>("");
+  const [engineLabel, setEngineLabel] = useState("");
   const [proposedAction, setProposedAction] = useState<AiAction | null>(null);
-  const [scopeOpen, setScopeOpen] = useState(false);
   const [messageLoading, setMessageLoading] = useState(false);
   const [flowError, setFlowError] = useState<string | null>(null);
+  const [prefs, setPrefs] = useState<ChatPrefs>(() => loadPrefs());
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [threadQuery, setThreadQuery] = useState("");
+  const [atBottom, setAtBottom] = useState(true);
+
+  const fileRef = useRef<HTMLInputElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const stepsRef = useRef<ThinkingStep[]>([]);
   const activeIdRef = useRef<string | null>(null);
   const runIdRef = useRef(0);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const cancelRef = useRef(false);
 
   useEffect(() => { activeIdRef.current = activeId; }, [activeId]);
-
+  useEffect(() => { savePrefs(prefs); }, [prefs]);
   useEffect(() => { isAiUsable().then(setCanAi); }, []);
   useEffect(() => {
     import("@/lib/ai-provider").then(({ resolveAiTarget }) =>
-      resolveAiTarget().then((t) => setEngineLabel(t.engine === "none" ? "" : `${t.modelLabel}`)),
+      resolveAiTarget().then((t) => setEngineLabel(t.engine === "none" ? "" : t.modelLabel)),
     );
   }, [canAi]);
-
-  const toggleScope = (k: ScopeKey) => {
-    setScopes((prev) => {
-      const next = prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k];
-      try { window.localStorage.setItem(SCOPES_LS, JSON.stringify(next)); } catch { /* noop */ }
-      return next;
-    });
-  };
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = window.localStorage.getItem("ai.tutor.sidebar");
+    if (saved !== null) setSidebarOpen(saved === "1");
+    else setSidebarOpen(window.innerWidth >= 1024);
+  }, []);
+  const toggleSidebar = () => setSidebarOpen((v) => {
+    try { window.localStorage.setItem("ai.tutor.sidebar", v ? "0" : "1"); } catch { /* noop */ }
+    return !v;
+  });
 
   const syncSteps = () => setThinkingSteps([...stepsRef.current]);
-  const addStep = (label: string, detail?: string) => {
-    stepsRef.current = [...stepsRef.current, { label, detail, done: false }];
-    syncSteps();
-  };
+  const addStep = (label: string, detail?: string) => { stepsRef.current = [...stepsRef.current, { label, detail, done: false }]; syncSteps(); };
   const finishLastStep = (detail?: string) => {
-    stepsRef.current = stepsRef.current.map((s, i) =>
-      i === stepsRef.current.length - 1 ? { ...s, done: true, detail: detail ?? s.detail } : s,
-    );
+    stepsRef.current = stepsRef.current.map((s, i) => (i === stepsRef.current.length - 1 ? { ...s, done: true, detail: detail ?? s.detail } : s));
     syncSteps();
   };
-
 
   const loadThreads = useCallback(async () => {
     try {
       const data = (await listFn()) as Thread[];
       setThreads(data);
-      if (!activeId && data.length > 0) setActiveId(data[0].id);
+      if (!activeIdRef.current && data.length > 0) setActiveId(data[0].id);
     } catch (e: any) { toast.error(e.message); }
-  }, [listFn, activeId]);
+  }, [listFn]);
 
   const loadMsgs = useCallback(async (tid: string | null) => {
     if (!user || !tid) { setMsgs([]); return; }
     setMessageLoading(true);
     const { data, error } = await supabase
-      .from("tutor_messages").select("*")
-      .eq("user_id", user.id).eq("thread_id", tid)
-      .order("created_at");
+      .from("tutor_messages").select("*").eq("user_id", user.id).eq("thread_id", tid).order("created_at");
     if (activeIdRef.current === tid) {
       if (error) setFlowError("会話履歴を読み込めませんでした。もう一度お試しください。");
       else setMsgs((data as any) ?? []);
@@ -228,16 +210,25 @@ function TutorPage() {
     }
   }, [user]);
 
-  useEffect(() => { loadThreads(); }, [user]);
+  useEffect(() => { loadThreads(); }, [user, loadThreads]);
   useEffect(() => { loadMsgs(activeId); }, [activeId, loadMsgs]);
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, busy, streaming]);
+  useEffect(() => { if (atBottom) endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, busy, streaming, atBottom]);
+
+  const onScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 120);
+  };
 
   const newChat = async () => {
+    if (busy) return;
     try {
       const row = (await createFn({ data: {} })) as Thread;
       setThreads((t) => [row, ...t]);
       setActiveId(row.id);
       setMsgs([]);
+      setFlowError(null);
+      setTimeout(() => inputRef.current?.focus(), 0);
     } catch (e: any) { toast.error(e.message); }
   };
 
@@ -251,42 +242,126 @@ function TutorPage() {
         const { error } = await supabase.storage.from("tutor-files").upload(path, file);
         if (error) throw error;
         const { signedUrl } = await import("@/lib/storage-url");
-        const url = await signedUrl("tutor-files", path);
-        ups.push({ url, name: file.name, type: file.type });
+        ups.push({ url: await signedUrl("tutor-files", path), name: file.name, type: file.type });
       }
       setPending((p) => [...p, ...ups]);
     } catch (err: any) { toast.error(err.message); }
     finally { setUploading(false); if (fileRef.current) fileRef.current.value = ""; }
   };
 
+  /** 会話履歴（全メッセージ）からモデルに渡すテキストを作る */
+  const buildHistory = (list: Msg[]) =>
+    list.map((m) => {
+      const imgs = (m.attachments ?? []).filter((a) => a.type.startsWith("image/"));
+      const imgNote = imgs.length ? `\n[添付画像: ${imgs.map((a) => a.name).join(", ")}]` : "";
+      return `${m.role === "user" ? "ユーザー" : "アシスタント"}: ${m.content}${imgNote}`;
+    }).join("\n\n");
+
+  /** 回答生成の本体（送信・再生成の共通処理） */
+  const generate = async (tid: string, history: Msg[], runId: number) => {
+    if (!user) return;
+    const lastUser = [...history].reverse().find((m) => m.role === "user")?.content ?? "";
+    const displayName = user.user_metadata?.display_name ?? user.email?.split("@")[0] ?? "生徒";
+    const t0 = Date.now();
+
+    addStep("使うAIを決めています", `${engineLabel || "端末内AI"} / 参照モード: ${
+      prefs.lookup === "always" ? "いつも見る" : prefs.lookup === "never" ? "見ない" : "自動"
+    } / 推論${prefs.passes}回`);
+    finishLastStep();
+
+    let ctx: any = null;
+    const requested: ScopeKey[] =
+      prefs.lookup === "never" ? []
+        : prefs.lookup === "always" ? prefs.scopes
+          : relevantScopes(lastUser, prefs.scopes);
+
+    if (requested.length > 0) {
+      addStep("学習情報を確認しています", requested.map((k) => SCOPE_DEFS.find((s) => s.key === k)?.label).join("、"));
+      try { ctx = await ctxFn({ data: { scopes: requested } }); }
+      catch { setFlowError("一部の学習情報を取得できなかったため、会話内容だけで回答します。"); }
+      finishLastStep(
+        ctx
+          ? [
+              ctx.totalMinutes30d !== null ? `学習時間 ${ctx.totalMinutes30d}分 / ${ctx.activeDays30d}日` : null,
+              (ctx.activeGoals ?? []).length ? `目標 ${ctx.activeGoals.length}件` : null,
+              (ctx.weakTopics ?? []).length ? `苦手 ${ctx.weakTopics.length}件` : null,
+              (ctx.upcomingExams ?? []).length ? `試験 ${ctx.upcomingExams.length}件` : null,
+              (ctx.hardCards ?? []).length ? `苦手カード ${ctx.hardCards.length}件` : null,
+              (ctx.markonRecent ?? []).length ? `Markon ${ctx.markonRecent.length}件` : null,
+            ].filter(Boolean).join(" / ") || "参照できるデータはありませんでした"
+          : "取得に失敗したため、会話だけで回答します",
+      );
+    } else if (prefs.lookup === "never") {
+      addStep("学習データは参照しません", "設定で「見ない」が選ばれています。");
+      finishLastStep();
+    }
+
+    const convo = buildHistory(history);
+    const system = answerSystem(displayName, prefs, ctx);
+    const session = await createAiSession({ system });
+    let text = "";
+    setStreaming("");
+
+    try {
+      // 推論パス1: 考える骨組み（3回設定のときだけ）
+      let plan = "";
+      if (prefs.passes >= 3) {
+        addStep("答えの骨組みを考えています", "何をどの順で説明すべきかを先に整理します。");
+        plan = await session.prompt(`${convo}\n\n上の質問に答える前に、回答に必ず含めるべき要点を箇条書き3〜5個だけ書いてください。回答本文は書かないでください。`);
+        finishLastStep(plan.trim().slice(0, 400) || "要点を整理しました");
+      }
+
+      // 推論パス2: 下書き（2回以上）
+      let draft = "";
+      if (prefs.passes >= 2) {
+        addStep("下書きを作成しています", "まず素早く下書きを書き、次に自己点検して仕上げます。");
+        draft = await session.prompt(`${convo}${plan ? `\n\n【押さえる要点】\n${plan}` : ""}\n\nアシスタント:`);
+        finishLastStep(`下書き ${draft.trim().length}文字`);
+      }
+
+      addStep(prefs.passes >= 2 ? "下書きを見直して仕上げています" : "回答を組み立てています",
+        prefs.passes >= 2 ? "誤り・抜け・冗長さを自分でチェックして書き直します。" : "会話と学習情報をもとに説明を作成中です。");
+
+      const finalPrompt = draft
+        ? `${convo}\n\n【あなたが書いた下書き】\n${draft}\n\n下書きの誤り・説明の抜け・冗長な部分を自分で点検し、より正確でわかりやすい最終回答だけを書いてください。「下書き」への言及はしないこと。\n\nアシスタント:`
+        : `${convo}\n\nアシスタント:`;
+
+      text = await session.promptStreaming(finalPrompt, (partial) => {
+        if (runId === runIdRef.current && activeIdRef.current === tid && !cancelRef.current) setStreaming(partial);
+      });
+    } finally { session.destroy(); }
+
+    if (cancelRef.current && !text.trim()) throw new Error("生成を中断しました。");
+    if (!text.trim()) throw new Error("AIから回答を受け取れませんでした。もう一度お試しください。");
+    finishLastStep(`${text.length}文字を生成しました（所要 ${Math.round((Date.now() - t0) / 1000)}秒${cancelRef.current ? "・途中で中断" : ""}）`);
+
+    const { error } = await supabase.from("tutor_messages").insert({
+      user_id: user.id, role: "assistant", content: text, attachments: [], thread_id: tid,
+      thinking: stepsRef.current as any,
+    } as any);
+    if (error) throw new Error("回答は生成できましたが、会話履歴に保存できませんでした。");
+  };
+
   const send = async () => {
     if (!user || (!input.trim() && pending.length === 0) || busy) return;
     const runId = ++runIdRef.current;
+    cancelRef.current = false;
     const originalInput = input;
     const originalPending = [...pending];
     let inputWasCleared = false;
     let insertedMessageId: string | null = null;
     let completedNormally = false;
-    setBusy(true);
-    setFlowError(null);
-    stepsRef.current = [];
-    setThinkingSteps([]);
-    setShowThinking(true);
-    setProposedAction(null);
+    setBusy(true); setFlowError(null); setProposedAction(null);
+    stepsRef.current = []; setThinkingSteps([]); setShowThinking(prefs.autoOpenThinking);
 
-    const t0 = Date.now();
     try {
-      // 必要ならスレッド作成
       let tid = activeId;
       let isNew = false;
       if (!tid) {
-        const title = (input.trim() || "新しいチャット").slice(0, 40);
-        const row = (await createFn({ data: { title } })) as Thread;
-        tid = row.id;
-        isNew = true;
+        const row = (await createFn({ data: { title: (input.trim() || "新しいチャット").slice(0, 40) } })) as Thread;
+        tid = row.id; isNew = true;
         setThreads((t) => [row, ...t]);
-        setActiveId(tid);
-        activeIdRef.current = tid;
+        setActiveId(tid); activeIdRef.current = tid;
       }
 
       const userMsg = { user_id: user.id, role: "user", content: originalInput.trim(), attachments: originalPending, thread_id: tid };
@@ -296,8 +371,7 @@ function TutorPage() {
       insertedMessageId = insMsg.id;
       const nextMsgs = [...msgs, insMsg];
       if (activeIdRef.current === tid) setMsgs(nextMsgs);
-      setInput(""); setPending([]);
-      inputWasCleared = true;
+      setInput(""); setPending([]); inputWasCleared = true;
 
       if (looksLikeActionRequest(userMsg.content)) {
         addStep("登録内容を確認しています", "内容を確認したあと、許可した場合だけ保存します。");
@@ -313,71 +387,14 @@ function TutorPage() {
         return;
       }
 
-      const displayName = user.user_metadata?.display_name ?? user.email?.split("@")[0] ?? "生徒";
-
-      // 会話履歴をテキストに変換（画像は URL を会話に含めて参照させる）
-      const history = nextMsgs.map((m) => {
-        const imgs = (m.attachments ?? []).filter((a) => a.type.startsWith("image/"));
-        const imgNote = imgs.length ? `\n[添付画像: ${imgs.map((a) => a.name).join(", ")}]` : "";
-        return `${m.role === "user" ? "ユーザー" : "アシスタント"}: ${m.content}${imgNote}`;
-      }).join("\n\n");
-
-      addStep(
-        "使用するAIを決めています",
-        `${engineLabel || "端末内AI"} を使用します。参照を許可した情報: ${
-          scopes.length ? scopes.map((k) => SCOPE_DEFS.find((s) => s.key === k)?.label).join("、") : "なし"
-        }`,
-      );
-      finishLastStep();
-
-      let ctx: any = null;
-      const requestedScopes = relevantScopes(userMsg.content, scopes);
-      const needsCtx = requestedScopes.length > 0;
-
-      if (needsCtx) {
-        addStep("学習情報を確認しています", requestedScopes.map((k) => SCOPE_DEFS.find((s) => s.key === k)?.label).join("、"));
-        try { ctx = await ctxFn({ data: { scopes: requestedScopes } }); } catch { setFlowError("一部の学習情報を取得できなかったため、会話内容だけで回答します。"); }
-        finishLastStep(
-          ctx
-            ? [
-                ctx.totalMinutes30d !== null ? `学習時間 ${ctx.totalMinutes30d}分 / ${ctx.activeDays30d}日` : null,
-                (ctx.activeGoals ?? []).length ? `目標 ${ctx.activeGoals.length}件` : null,
-                (ctx.weakTopics ?? []).length ? `苦手 ${ctx.weakTopics.length}件` : null,
-                (ctx.upcomingExams ?? []).length ? `試験 ${ctx.upcomingExams.length}件` : null,
-                (ctx.hardCards ?? []).length ? `苦手カード ${ctx.hardCards.length}件` : null,
-                (ctx.markonRecent ?? []).length ? `Markon成績 ${ctx.markonRecent.length}件` : null,
-              ].filter(Boolean).join(" / ") || "参照できるデータはありませんでした"
-            : "取得に失敗したため、会話だけで回答します",
-        );
-      }
-
-      // 2) 最終回答をストリーミング生成
-      addStep("回答を組み立てています", "取得した情報とこれまでの会話をもとに、段階的な説明を作成中です。");
-      const answerSession = await createAiSession({ system: answerSystem(displayName, ctx) });
-      let text = "";
-      setStreaming("");
-      try {
-        text = await answerSession.promptStreaming(history + "\n\nアシスタント:", (partial) => {
-          if (runId === runIdRef.current && activeIdRef.current === tid) setStreaming(partial);
-        });
-      } finally { answerSession.destroy(); }
-      if (!text.trim()) throw new Error("AIから回答を受け取れませんでした。もう一度お試しください。");
-      finishLastStep(`${text.length}文字を生成しました（所要 ${Math.round((Date.now() - t0) / 1000)}秒）`);
-
-      const { error: answerSaveError } = await supabase.from("tutor_messages").insert({
-        user_id: user.id, role: "assistant", content: text, attachments: [], thread_id: tid,
-        thinking: stepsRef.current as any,
-      } as any);
-      if (answerSaveError) throw new Error("回答は生成できましたが、会話履歴に保存できませんでした。");
+      await generate(tid, nextMsgs, runId);
       completedNormally = true;
-      // タイトルを最初のメッセージから自動生成（新規チャットのみ）
+
       if (isNew && userMsg.content) {
-        const auto = userMsg.content.slice(0, 30);
-        try { await renameFn({ data: { id: tid, title: auto } }); } catch { /* 回答自体は保存済み */ }
+        try { await renameFn({ data: { id: tid, title: userMsg.content.slice(0, 30) } }); } catch { /* 回答は保存済み */ }
       }
       if (activeIdRef.current === tid) await loadMsgs(tid);
       await loadThreads();
-
     } catch (e: any) {
       const message = e?.message || "回答を生成できませんでした。";
       setFlowError(message);
@@ -385,17 +402,50 @@ function TutorPage() {
       if (inputWasCleared && originalPending.length) setPending(originalPending);
       if (insertedMessageId && !completedNormally) {
         await supabase.from("tutor_messages").delete().eq("id", insertedMessageId).eq("user_id", user.id);
-        setMsgs((current) => current.filter((message) => message.id !== insertedMessageId));
+        setMsgs((c) => c.filter((m) => m.id !== insertedMessageId));
       }
       toast.error(message);
     } finally {
       if (runId === runIdRef.current) {
-        setBusy(false); setStreaming(""); stepsRef.current = []; setThinkingSteps([]);
+        setBusy(false); setStreaming(""); stepsRef.current = []; setThinkingSteps([]); cancelRef.current = false;
         window.setTimeout(() => inputRef.current?.focus(), 0);
       }
     }
   };
 
+  /** 直前の回答を作り直す */
+  const regenerate = async () => {
+    if (!user || busy || !activeId) return;
+    const last = [...msgs].reverse().find((m) => m.role === "assistant");
+    if (!last) return;
+    const runId = ++runIdRef.current;
+    cancelRef.current = false;
+    setBusy(true); setFlowError(null); setProposedAction(null);
+    stepsRef.current = []; setThinkingSteps([]); setShowThinking(prefs.autoOpenThinking);
+    try {
+      await supabase.from("tutor_messages").delete().eq("id", last.id).eq("user_id", user.id);
+      const trimmed = msgs.filter((m) => m.id !== last.id);
+      setMsgs(trimmed);
+      await generate(activeId, trimmed, runId);
+      await loadMsgs(activeId);
+    } catch (e: any) {
+      setFlowError(e?.message ?? "作り直しに失敗しました");
+      await loadMsgs(activeId);
+    } finally {
+      if (runId === runIdRef.current) { setBusy(false); setStreaming(""); stepsRef.current = []; setThinkingSteps([]); cancelRef.current = false; }
+    }
+  };
+
+  const stopGeneration = () => { cancelRef.current = true; toast.info("生成を止めています…"); };
+
+  const exportChat = () => {
+    const title = threads.find((t) => t.id === activeId)?.title ?? "chat";
+    const md = `# ${title}\n\n` + msgs.map((m) => `## ${m.role === "user" ? "自分" : "AI"}\n\n${m.content}\n`).join("\n");
+    const url = URL.createObjectURL(new Blob([md], { type: "text/markdown" }));
+    const a = document.createElement("a");
+    a.href = url; a.download = `${title.replace(/[\\/:*?"<>|]/g, "_")}.md`; a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const submitRename = async (id: string) => {
     if (!renameTitle.trim()) { setRenamingId(null); return; }
@@ -411,214 +461,317 @@ function TutorPage() {
     try {
       await deleteFn({ data: { id: deleteTarget.id } });
       setThreads((t) => t.filter((x) => x.id !== deleteTarget.id));
-      if (activeId === deleteTarget.id) {
-        setActiveId(null); setMsgs([]);
-      }
+      if (activeId === deleteTarget.id) { setActiveId(null); setMsgs([]); }
       toast.success("チャットを削除しました");
     } catch (e: any) { toast.error(e.message); }
     finally { setDeleteTarget(null); }
   };
 
-  return (
-    <div className="p-4 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2"><Sparkles className="text-primary" /> AIチャット</h1>
-          <p className="text-sm text-muted-foreground">
-            新しいチャットごとに会話が保存されます{engineLabel && ` ・ 使用中のAI: ${engineLabel}`}
-          </p>
-        </div>
-        <AiStatusBadge />
-      </div>
-      {!canAi && <div className="mb-3"><AiUnavailable feature="AIチャット" /></div>}
+  const filteredThreads = useMemo(
+    () => threads.filter((t) => !threadQuery || t.title.toLowerCase().includes(threadQuery.toLowerCase())),
+    [threads, threadQuery],
+  );
+  const lookupIcon = prefs.lookup === "never" ? EyeOff : Eye;
+  const LookupIcon = lookupIcon;
+  const activeTitle = threads.find((t) => t.id === activeId)?.title ?? "新しいチャット";
 
-      <Card className="mb-3 overflow-hidden border-primary/15 bg-gradient-to-r from-primary/[0.06] via-background to-background">
-        <button className="flex w-full items-center gap-3 p-3 text-left" onClick={() => setScopeOpen((v) => !v)}>
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><ShieldCheck className="h-4 w-4" /></span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-sm font-semibold">AIに許可する学習情報</span>
-            <span className="block truncate text-xs text-muted-foreground">{scopes.length}種類を許可中・質問に必要な情報だけ端末内AIへ渡します</span>
-          </span>
-          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${scopeOpen ? "rotate-180" : ""}`} />
-        </button>
-        {scopeOpen && (
-          <div className="border-t px-3 pb-3 pt-2">
-            <div className="mb-2 rounded-lg bg-muted/60 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
-              許可した情報も常に読むわけではありません。たとえば「今日の計画」には目標や試験を使い、「英語を訳して」など通常の質問には学習情報を使いません。情報は回答作成だけに使われます。
+  return (
+    <div className="flex h-[calc(100dvh-3.5rem)] overflow-hidden bg-background">
+      {/* サイドバー */}
+      <aside
+        className={`flex h-full shrink-0 flex-col border-r bg-muted/30 backdrop-blur transition-[width] duration-200 ${
+          sidebarOpen ? "w-[264px]" : "w-0"
+        } overflow-hidden`}
+      >
+        <div className="space-y-2 p-2.5">
+          <div className="flex items-center gap-1.5">
+            <Button onClick={newChat} className="flex-1 justify-start gap-2 rounded-xl" size="sm">
+              <Plus className="h-4 w-4" />新しいチャット
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={toggleSidebar} title="サイドバーを閉じる">
+              <PanelLeftClose className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+            <Input value={threadQuery} onChange={(e) => setThreadQuery(e.target.value)} placeholder="チャットを検索" className="h-8 rounded-xl pl-8 text-xs" />
+          </div>
+        </div>
+        <div className="flex-1 space-y-0.5 overflow-y-auto px-2 pb-3">
+          {filteredThreads.length === 0 && <p className="py-6 text-center text-xs text-muted-foreground">チャットがありません</p>}
+          {filteredThreads.map((t) => (
+            <div
+              key={t.id}
+              className={`group flex cursor-pointer items-center gap-2 rounded-xl px-2.5 py-2 text-sm transition ${
+                activeId === t.id ? "bg-primary/12 font-medium text-foreground" : "hover:bg-muted"
+              }`}
+              onClick={() => { if (!busy) { setActiveId(t.id); setFlowError(null); } }}
+            >
+              <MessageSquare className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+              {renamingId === t.id ? (
+                <Input
+                  autoFocus value={renameTitle} onChange={(e) => setRenameTitle(e.target.value)}
+                  onBlur={() => submitRename(t.id)}
+                  onKeyDown={(e) => { if (e.key === "Enter") submitRename(t.id); if (e.key === "Escape") setRenamingId(null); }}
+                  className="h-6 text-xs" onClick={(e) => e.stopPropagation()}
+                />
+              ) : <span className="flex-1 truncate">{t.title}</span>}
+              <button className="rounded p-1 opacity-0 transition group-hover:opacity-100 hover:bg-background"
+                onClick={(e) => { e.stopPropagation(); setRenamingId(t.id); setRenameTitle(t.title); }} title="名前を変える">
+                <Pencil className="h-3 w-3" />
+              </button>
+              <button className="rounded p-1 text-destructive opacity-0 transition group-hover:opacity-100 hover:bg-destructive/15"
+                onClick={(e) => { e.stopPropagation(); setDeleteTarget(t); }} title="削除">
+                <Trash2 className="h-3 w-3" />
+              </button>
             </div>
-            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-              {SCOPE_DEFS.map((s) => {
-                const on = scopes.includes(s.key);
-                const Icon = s.icon;
+          ))}
+        </div>
+        <div className="border-t p-2.5">
+          <Button variant="outline" size="sm" className="w-full justify-start gap-2 rounded-xl" onClick={() => setSettingsOpen(true)}>
+            <SlidersHorizontal className="h-4 w-4" />チャットの設定
+          </Button>
+        </div>
+      </aside>
+
+      {/* メイン */}
+      <main className="flex min-w-0 flex-1 flex-col">
+        <header className="flex items-center gap-2 border-b px-3 py-2">
+          {!sidebarOpen && (
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleSidebar} title="サイドバーを開く">
+              <PanelLeft className="h-4 w-4" />
+            </Button>
+          )}
+          <div className="min-w-0">
+            <h1 className="flex items-center gap-1.5 truncate text-sm font-semibold">
+              <Sparkles className="h-4 w-4 shrink-0 text-primary" />{activeTitle}
+            </h1>
+            <p className="truncate text-[11px] text-muted-foreground">{engineLabel || "端末内AI"} ・ 推論{prefs.passes}回</p>
+          </div>
+          <div className="ml-auto flex items-center gap-1">
+            <button
+              onClick={() => setSettingsOpen(true)}
+              className="hidden items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] text-muted-foreground transition hover:bg-muted sm:flex"
+              title="参照モードを変える"
+            >
+              <LookupIcon className="h-3 w-3" />
+              {prefs.lookup === "always" ? "いつも参照" : prefs.lookup === "never" ? "参照しない" : "自動参照"}
+            </button>
+            <button
+              onClick={() => setSettingsOpen(true)}
+              className="hidden items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] text-muted-foreground transition hover:bg-muted sm:flex"
+              title="推論の回数を変える"
+            >
+              <Layers className="h-3 w-3" />推論{prefs.passes}
+            </button>
+            <AiStatusBadge />
+            {msgs.length > 0 && (
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={exportChat} title="この会話を書き出す">
+                <Download className="h-4 w-4" />
+              </Button>
+            )}
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSettingsOpen(true)} title="設定">
+              <Settings2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </header>
+
+        {!canAi && <div className="border-b p-3"><AiUnavailable feature="AIチャット" /></div>}
+
+        <div ref={scrollRef} onScroll={onScroll} className="relative flex-1 overflow-y-auto">
+          <div className="mx-auto w-full max-w-3xl px-4 py-6">
+            {messageLoading && (
+              <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />会話を読み込んでいます
+              </div>
+            )}
+
+            {!messageLoading && msgs.length === 0 && (
+              <div className="py-10 text-center">
+                <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-primary">
+                  <Sparkles className="h-7 w-7" />
+                </div>
+                <h2 className="mt-4 text-xl font-semibold">なにを一緒に進めますか？</h2>
+                <p className="mt-1.5 text-sm text-muted-foreground">
+                  普通の質問はすぐ回答し、記録の依頼は保存前に必ず確認します。設定で「学習データを見るか」「考える回数」も変えられます。
+                </p>
+                <div className="mt-5 grid gap-2 text-left sm:grid-cols-2">
+                  {QUICK_PROMPTS.map((p) => (
+                    <button key={p.title} onClick={() => { setInput(p.body); inputRef.current?.focus(); }}
+                      className="rounded-2xl border bg-card px-3.5 py-3 transition hover:border-primary/40 hover:bg-primary/[0.04]">
+                      <span className="block text-xs font-semibold">{p.title}</span>
+                      <span className="mt-0.5 block text-[11px] text-muted-foreground">{p.body}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-6">
+              {msgs.map((m, i) => {
+                const mine = m.role === "user";
+                const isLastAssistant = !mine && i === msgs.length - 1;
                 return (
-                  <label key={s.key} className={`flex cursor-pointer items-start gap-2.5 rounded-xl border p-3 transition ${on ? "border-primary/30 bg-primary/[0.06]" : "bg-background/70"}`}>
-                    <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${on ? "text-primary" : "text-muted-foreground"}`} />
-                    <span className="min-w-0 flex-1"><span className="block text-xs font-semibold">{s.label}</span><span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground">{s.desc}</span></span>
-                    <Switch checked={on} onCheckedChange={() => toggleScope(s.key)} aria-label={`${s.label}の参照許可`} />
-                  </label>
+                  <div key={m.id} className={`group flex gap-3 ${mine ? "justify-end" : ""}`}>
+                    {!mine && (
+                      <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                        <Bot className="h-4 w-4" />
+                      </span>
+                    )}
+                    <div className={mine ? "max-w-[80%]" : "min-w-0 flex-1"}>
+                      {(m.attachments ?? []).map((a, k) => (
+                        a.type.startsWith("image/")
+                          ? <img key={k} src={a.url} alt={a.name} className="mb-1.5 max-h-56 rounded-xl border" />
+                          : <a key={k} href={a.url} target="_blank" className="mb-1.5 block text-xs underline">{a.name}</a>
+                      ))}
+                      {!mine && (m.thinking ?? []).length > 0 && <ThinkingBlock steps={m.thinking ?? []} />}
+                      <div className={
+                        mine
+                          ? "rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-primary-foreground prose prose-sm prose-invert max-w-none"
+                          : "prose prose-sm dark:prose-invert max-w-none leading-relaxed"
+                      }>
+                        <ReactMarkdown>{m.content}</ReactMarkdown>
+                      </div>
+                      <div className={`mt-1 flex items-center gap-1 opacity-0 transition group-hover:opacity-100 ${mine ? "justify-end" : ""}`}>
+                        <CopyButton text={m.content} />
+                        {mine && (
+                          <button className="rounded-md px-1.5 py-1 text-[11px] text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                            onClick={() => { setInput(m.content); inputRef.current?.focus(); }}>
+                            編集して送り直す
+                          </button>
+                        )}
+                        {isLastAssistant && !busy && (
+                          <button className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                            onClick={() => void regenerate()}>
+                            <RotateCcw className="h-3 w-3" />作り直す
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 );
               })}
-            </div>
-          </div>
-        )}
-      </Card>
 
-
-      <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-3 h-[calc(100vh-10rem)]">
-        {/* スレッドサイドバー */}
-        <Card className="flex flex-col overflow-hidden">
-          <div className="p-2 border-b">
-            <Button onClick={newChat} className="w-full" size="sm"><Plus className="h-4 w-4 mr-1" /> 新しいチャット</Button>
-          </div>
-          <div className="flex-1 overflow-y-auto p-2 space-y-1">
-            {threads.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">まだチャットがありません</p>}
-            {threads.map((t) => (
-              <div
-                key={t.id}
-                className={`group rounded-lg px-2 py-2 text-sm cursor-pointer flex items-center gap-2 ${
-                  activeId === t.id ? "bg-primary/15 text-primary" : "hover:bg-muted"
-                }`}
-                onClick={() => { if (!busy) setActiveId(t.id); }}
-              >
-                <MessageSquare className="h-3.5 w-3.5 shrink-0" />
-                {renamingId === t.id ? (
-                  <Input
-                    autoFocus
-                    value={renameTitle}
-                    onChange={(e) => setRenameTitle(e.target.value)}
-                    onBlur={() => submitRename(t.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") submitRename(t.id);
-                      if (e.key === "Escape") setRenamingId(null);
-                    }}
-                    className="h-6 text-xs"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                ) : (
-                  <span className="flex-1 truncate">{t.title}</span>
-                )}
-                <button
-                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-background rounded"
-                  onClick={(e) => { e.stopPropagation(); setRenamingId(t.id); setRenameTitle(t.title); }}
-                  title="名前変更"
-                ><Pencil className="h-3 w-3" /></button>
-                <button
-                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/20 text-destructive rounded"
-                  onClick={(e) => { e.stopPropagation(); setDeleteTarget(t); }}
-                  title="削除"
-                ><Trash2 className="h-3 w-3" /></button>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* チャット本体 */}
-        <Card className="flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {messageLoading && <div className="h-full grid place-items-center"><div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />会話を読み込んでいます</div></div>}
-            {!messageLoading && msgs.length === 0 && (
-              <div className="h-full grid place-items-center text-center text-muted-foreground">
-                <div className="max-w-lg">
-                  <Sparkles className="h-10 w-10 mx-auto mb-2 text-primary/50" />
-                  <p className="font-semibold text-foreground">知りたいことを、そのまま話してください</p>
-                  <p className="mt-1 text-sm">普通の質問はすぐ回答し、記録の依頼は保存前に必ず確認します。</p>
-                  <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                    {QUICK_PROMPTS.map((prompt) => <button key={prompt} onClick={() => { setInput(prompt); inputRef.current?.focus(); }} className="rounded-xl border bg-background px-3 py-2 text-left text-xs text-foreground transition hover:border-primary/40 hover:bg-primary/[0.04]">{prompt}</button>)}
-                  </div>
-                </div>
-              </div>
-            )}
-            {msgs.map((m) => (
-              <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[85%] rounded-2xl px-4 py-2 prose prose-sm dark:prose-invert ${m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
-                  {(m.attachments ?? []).map((a, i) => (
-                    a.type.startsWith("image/")
-                      ? <img key={i} src={a.url} alt={a.name} className="max-h-48 rounded mb-1" />
-                      : <a key={i} href={a.url} target="_blank" className="text-xs underline">{a.name}</a>
-                  ))}
-                  {m.role !== "user" && (m.thinking ?? []).length > 0 && (
-                    <ThinkingBlock steps={m.thinking ?? []} defaultOpen={false} />
-                  )}
-                  <ReactMarkdown>{m.content}</ReactMarkdown>
-                </div>
-              </div>
-            ))}
-            {busy && (
-              <div className="flex justify-start">
-                <div className="max-w-[85%] bg-muted rounded-2xl px-4 py-2 space-y-2">
-                  {thinkingSteps.length > 0 && (
-                    <ThinkingBlock steps={thinkingSteps} defaultOpen={showThinking} onOpenChange={setShowThinking} live />
-                  )}
-
-                  <div className="prose prose-sm dark:prose-invert">
-                    {streaming ? (
-                      <ReactMarkdown>{streaming + "▍"}</ReactMarkdown>
-                    ) : (
-                      thinkingSteps.length === 0 && <span className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />回答を準備しています…</span>
+              {busy && (
+                <div className="flex gap-3">
+                  <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                    <Bot className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    {thinkingSteps.length > 0 && (
+                      <ThinkingBlock steps={thinkingSteps} defaultOpen={showThinking} onOpenChange={setShowThinking} live />
                     )}
+                    <div className="prose prose-sm max-w-none dark:prose-invert">
+                      {streaming ? <ReactMarkdown>{streaming + "▍"}</ReactMarkdown> : (
+                        thinkingSteps.length === 0 && (
+                          <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />回答を準備しています…
+                          </span>
+                        )
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-            {proposedAction && (
-              <div className="flex justify-start">
-                <div className="max-w-[85%] w-full">
-                  <AiActionCard
-                    action={proposedAction}
-                    onCancel={() => setProposedAction(null)}
-                    onApprove={async (a) => {
-                      try {
-                        const msg = await applyAiAction(a, user!.id);
-                        toast.success(msg);
-                        setProposedAction(null);
-                      } catch (e: any) { toast.error(e.message ?? "登録に失敗しました"); }
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-            {flowError && !busy && (
-              <div className="flex justify-start">
-                <div className="max-w-[85%] rounded-xl border border-destructive/25 bg-destructive/[0.04] p-3 text-sm">
-                  <p>{flowError}</p>
-                  {input.trim() && <Button variant="outline" size="sm" className="mt-2" onClick={() => void send()}><RotateCcw className="h-3.5 w-3.5" />もう一度送る</Button>}
-                </div>
-              </div>
-            )}
-            <div ref={endRef} />
+              )}
 
+              {proposedAction && (
+                <AiActionCard
+                  action={proposedAction}
+                  onCancel={() => setProposedAction(null)}
+                  onApprove={async (a) => {
+                    try { toast.success(await applyAiAction(a, user!.id)); setProposedAction(null); }
+                    catch (e: any) { toast.error(e.message ?? "登録に失敗しました"); }
+                  }}
+                />
+              )}
+
+              {flowError && !busy && (
+                <div className="rounded-2xl border border-destructive/25 bg-destructive/[0.04] p-3 text-sm">
+                  <p>{flowError}</p>
+                  {input.trim() && (
+                    <Button variant="outline" size="sm" className="mt-2 gap-1" onClick={() => void send()}>
+                      <RotateCcw className="h-3.5 w-3.5" />もう一度送る
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+            <div ref={endRef} />
           </div>
 
-          {pending.length > 0 && (
-            <div className="border-t p-2 flex flex-wrap gap-2">
-              {pending.map((a, i) => (
-                <div key={i} className="relative">
-                  {a.type.startsWith("image/")
-                    ? <img src={a.url} className="h-16 w-16 object-cover rounded" />
-                    : <div className="h-16 px-2 grid place-items-center bg-muted rounded text-xs">{a.name}</div>}
-                  <button onClick={() => setPending(pending.filter((_, j) => j !== i))} className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"><X className="h-3 w-3" /></button>
-                </div>
-              ))}
-            </div>
+          {!atBottom && (
+            <button onClick={() => endRef.current?.scrollIntoView({ behavior: "smooth" })}
+              className="sticky bottom-4 left-1/2 z-10 -ml-4 grid h-8 w-8 place-items-center rounded-full border bg-card shadow-md transition hover:bg-muted"
+              title="最新へ">
+              <ArrowDown className="h-4 w-4" />
+            </button>
           )}
+        </div>
 
-          <form className="border-t p-3 flex gap-2" onSubmit={(e) => { e.preventDefault(); void send(); }}>
-            <input type="file" ref={fileRef} className="hidden" multiple accept="image/*,.pdf" onChange={onUpload} />
-            <Button type="button" variant="outline" size="icon" disabled={uploading} onClick={() => fileRef.current?.click()}>
-              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
-            </Button>
-            <Textarea
-              ref={inputRef}
-              value={input} onChange={(e) => setInput(e.target.value)}
-              placeholder={busy ? "回答が終わるまでお待ちください" : "質問や「数学を30分記録して」と入力"}
-              className="min-h-[44px] max-h-32 resize-none"
-              disabled={busy}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); } }}
-            />
-            <Button type="submit" disabled={busy || !canAi}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}</Button>
-          </form>
-        </Card>
-      </div>
+        {/* 入力欄 */}
+        <div className="border-t bg-background/80 backdrop-blur">
+          <div className="mx-auto w-full max-w-3xl px-4 py-3">
+            {pending.length > 0 && (
+              <div className="mb-2 flex flex-wrap gap-2">
+                {pending.map((a, i) => (
+                  <div key={i} className="relative">
+                    {a.type.startsWith("image/")
+                      ? <img src={a.url} className="h-16 w-16 rounded-lg object-cover" />
+                      : <div className="grid h-16 place-items-center rounded-lg bg-muted px-2 text-xs">{a.name}</div>}
+                    <button onClick={() => setPending(pending.filter((_, j) => j !== i))}
+                      className="absolute -right-1 -top-1 rounded-full bg-destructive p-0.5 text-destructive-foreground">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <form onSubmit={(e) => { e.preventDefault(); void send(); }}
+              className="flex items-end gap-1.5 rounded-3xl border bg-card p-1.5 shadow-sm focus-within:border-primary/40">
+              <input type="file" ref={fileRef} className="hidden" multiple accept="image/*,.pdf" onChange={onUpload} />
+              <Button type="button" variant="ghost" size="icon" className="h-9 w-9 shrink-0 rounded-full" disabled={uploading} onClick={() => fileRef.current?.click()} title="ファイルを添付">
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+              </Button>
+              <Textarea
+                ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)}
+                placeholder={busy ? "生成中です…" : "質問や「数学を30分記録して」と入力（Shift+Enterで改行）"}
+                className="max-h-40 min-h-[40px] resize-none border-0 bg-transparent px-1 py-2 shadow-none focus-visible:ring-0"
+                disabled={busy}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); } }}
+              />
+              <div className="flex shrink-0 items-center gap-1">
+                <VoiceMicButton onResult={(t) => setInput((v) => (v ? `${v} ${t}` : t))} />
+                {busy ? (
+                  <Button type="button" variant="destructive" size="icon" className="h-9 w-9 rounded-full" onClick={stopGeneration} title="生成を止める">
+                    <Square className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button type="submit" size="icon" className="h-9 w-9 rounded-full" disabled={!canAi || (!input.trim() && pending.length === 0)} title="送信">
+                    <Send className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </form>
+            <div className="mt-1.5 flex items-center justify-between px-1 text-[10px] text-muted-foreground">
+              <span>AIの回答が必ず正しいとは限りません。大事な内容は確認してください。</span>
+              <span>{input.length > 0 ? `${input.length}文字` : "Enterで送信"}</span>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <SheetContent className="w-full overflow-y-auto sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>チャットの設定</SheetTitle>
+            <SheetDescription>このチャットでAIがどう考えるか、何を見るかを決められます。</SheetDescription>
+          </SheetHeader>
+          <div className="mt-4 pb-8">
+            <ChatSettingsPanel prefs={prefs} onChange={setPrefs} />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
@@ -630,10 +783,8 @@ function TutorPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>キャンセル</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => { e.preventDefault(); doDelete(); }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >削除する</AlertDialogAction>
+            <AlertDialogAction onClick={(e) => { e.preventDefault(); doDelete(); }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90">削除する</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
