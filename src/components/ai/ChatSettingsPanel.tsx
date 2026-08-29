@@ -46,33 +46,11 @@ export function ChatSettingsPanel({ prefs, onChange }: { prefs: ChatPrefs; onCha
 
   return (
     <div className="space-y-5">
-      <Section
-        icon={prefs.lookup === "never" ? EyeOff : Eye}
-        title="このチャットで学習データを見るか"
-        desc="AIがあなたの学習記録や目標を参照するかどうかを決めます。"
-      >
-        <Segmented
-          value={prefs.lookup}
-          onChange={(v) => set({ lookup: v })}
-          options={[
-            { v: "auto", label: "自動", hint: "必要なときだけ見る" },
-            { v: "always", label: "いつも見る", hint: "毎回参照して答える" },
-            { v: "never", label: "見ない", hint: "会話だけで答える" },
-          ]}
-        />
-      </Section>
+      <p className="rounded-xl bg-muted/60 p-2.5 text-[11px] leading-relaxed text-muted-foreground">
+        ここは「毎回は変えない」設定です。推論の回数・学習データの参照・Web検索の切り替えは、入力欄のすぐ下のボタンから変えられます。
+      </p>
 
-      <Section icon={Layers} title="考える回数（推論パス）" desc="回数を増やすほど下書きを自己点検して精度が上がりますが、時間がかかります。">
-        <Segmented
-          value={prefs.passes}
-          onChange={(v) => set({ passes: v })}
-          options={[
-            { v: 1, label: "すぐ答える", hint: "1回で生成" },
-            { v: 2, label: "見直す", hint: "下書き→改善" },
-            { v: 3, label: "じっくり", hint: "計画→下書き→改善" },
-          ]}
-        />
-      </Section>
+
 
       <Section icon={Sparkles} title="回答の長さ" desc="用途に合わせて情報量を切り替えます。">
         <Segmented
