@@ -290,10 +290,23 @@ function TutorPage() {
         : prefs.lookup === "always" ? prefs.scopes
           : relevantScopes(lastUser, prefs.scopes);
 
+    const doSearch = prefs.web === "on" || (prefs.web === "auto" && needsWebSearch(lastUser));
     if (requested.length > 0) {
       addStep("学習情報を確認しています", requested.map((k) => SCOPE_DEFS.find((s) => s.key === k)?.label).join("、"));
-      try { ctx = await ctxFn({ data: { scopes: requested } }); }
-      catch { setFlowError("一部の学習情報を取得できなかったため、会話内容だけで回答します。"); }
+    }
+    if (doSearch) addStep("Webで事実を確認しています", buildSearchQuery(lastUser));
+
+    // 学習情報とWeb検索は同時に取りに行き、待ち時間を短くする
+    const [ctxRes, webRes] = await Promise.all([
+      requested.length > 0 ? ctxFn({ data: { scopes: requested } }).catch(() => null) : Promise.resolve(null),
+      doSearch
+        ? searchFn({ data: { query: buildSearchQuery(lastUser) } }).catch(() => null)
+        : Promise.resolve(null),
+    ]);
+
+    if (requested.length > 0) {
+      ctx = ctxRes;
+      if (!ctx) setFlowError("一部の学習情報を取得できなかったため、会話内容だけで回答します。");
       finishLastStep(
         ctx
           ? [
@@ -311,8 +324,18 @@ function TutorPage() {
       finishLastStep();
     }
 
+    const webResults: WebResult[] = ((webRes as any)?.results ?? []) as WebResult[];
+    if (doSearch) {
+      finishLastStep(
+        webResults.length
+          ? webResults.map((r, i) => `[${i + 1}] ${r.title}（${r.source}）`).join("\n")
+          : "検索結果が見つからなかったため、AIの知識だけで答えます",
+      );
+    }
+
     const convo = buildHistory(history);
-    const system = answerSystem(displayName, prefs, ctx);
+    const system = answerSystem(displayName, prefs, ctx, webResults);
+
     const session = await createAiSession({ system });
     let text = "";
     setStreaming("");
