@@ -1,5 +1,5 @@
 import { Switch } from "@/components/ui/switch";
-import { Database, Eye, EyeOff, Layers, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
+import { Database, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
 import { SCOPE_DEFS, type ChatPrefs, type ScopeKey } from "@/lib/tutor-prefs";
 
 function Segmented<T extends string | number>({
