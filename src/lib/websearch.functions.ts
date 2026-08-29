@@ -256,11 +256,16 @@ export const webSearch = createServerFn({ method: "POST" })
       }
     });
 
-    // 日本語で何も取れなければ英語Wikipediaへフォールバック
+    // 何も取れなければ 軽量版DDG → 英語Wikipedia の順にフォールバック
+    if (results.length === 0) {
+      const lite = await timeout(ddgLite(q), 6000).catch(() => [] as WebResult[]);
+      if (lite.length) { providers.push("web-lite"); results = lite; }
+    }
     if (results.length === 0) {
       const en = await timeout(wikipedia(q, "en"), 6000).catch(() => [] as WebResult[]);
       if (en.length) { providers.push("wikipedia-en"); results = en; }
     }
+
 
     const seenUrl = new Set<string>();
     const seenTitle = new Set<string>();
