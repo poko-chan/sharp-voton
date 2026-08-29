@@ -269,12 +269,17 @@ export const webSearch = createServerFn({ method: "POST" })
 
     const seenUrl = new Set<string>();
     const seenTitle = new Set<string>();
+    const perHost = new Map<string, number>();
     const unique = rank(results, q).filter((r) => {
       const t = r.title.toLowerCase();
+      const h = hostOf(r.url);
       if (seenUrl.has(r.url) || seenTitle.has(t)) return false;
-      seenUrl.add(r.url); seenTitle.add(t);
+      // 1つのサイトに偏らせず、いろいろな出典を混ぜる
+      if ((perHost.get(h) ?? 0) >= 2) return false;
+      seenUrl.add(r.url); seenTitle.add(t); perHost.set(h, (perHost.get(h) ?? 0) + 1);
       return true;
     }).slice(0, limit);
+
 
     const value: WebSearchResponse = { query: q, results: unique, providers, cached: false };
     CACHE.set(key, { at: Date.now(), value });
