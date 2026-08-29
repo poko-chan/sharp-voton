@@ -387,37 +387,62 @@ export async function createWebLlmSession(opts?: {
 
   const complete = async (text: string, onChunk?: (p: string) => void) => {
     history.push({ role: "user", content: text });
-    // system + 直近 MAX_TURNS 件だけ渡す
-    const messages = [history[0], ...history.slice(1).slice(-MAX_TURNS)];
-    const stream = await engine.chat.completions.create({
-      messages,
-      stream: true,
-      temperature: opts?.temperature ?? 0.3,
-      top_p: 0.9,
-      // 繰り返し・オウム返しの抑制（これが無いと同じ文を延々と吐く）
-      frequency_penalty: 0.6,
-      presence_penalty: 0.4,
-      max_tokens: 1024,
-    });
-    let full = "";
-    for await (const chunk of stream as any) {
-      const delta = chunk.choices?.[0]?.delta?.content ?? "";
-      if (delta) {
-        full += delta;
-        try { onChunk?.(full); } catch { /* noop */ }
-        if (isLooping(full)) {
-          try { await engine.interruptGenerate?.(); } catch { /* noop */ }
-          break;
+
+    const runOnce = async (attempt: number) => {
+      // system + 直近 MAX_TURNS 件だけ渡す
+      const base = [history[0], ...history.slice(1).slice(-MAX_TURNS)];
+      const messages = attempt === 0
+        ? base
+        : [...base, {
+            role: "user",
+            content: "直前の出力が同じ文字・語句の繰り返しになって壊れていました。記号の連打をせず、普通の日本語の文章で、簡潔に答え直してください。",
+          }];
+      const stream = await engine.chat.completions.create({
+        messages,
+        stream: true,
+        // リトライ時はサンプリングを変えて同じ暴走を避ける
+        temperature: attempt === 0 ? (opts?.temperature ?? 0.3) : 0.75,
+        top_p: attempt === 0 ? 0.9 : 0.95,
+        // 繰り返し・オウム返しの抑制（これが無いと同じ文を延々と吐く）
+        frequency_penalty: attempt === 0 ? 0.6 : 1.0,
+        presence_penalty: attempt === 0 ? 0.4 : 0.8,
+        max_tokens: 1024,
+      });
+      let full = "";
+      let broken = false;
+      for await (const chunk of stream as any) {
+        const delta = chunk.choices?.[0]?.delta?.content ?? "";
+        if (delta) {
+          full += delta;
+          try { onChunk?.(sanitizeAiText(full)); } catch { /* noop */ }
+          if (isDegenerate(full)) {
+            broken = true;
+            try { await engine.interruptGenerate?.(); } catch { /* noop */ }
+            break;
+          }
         }
       }
+      return { text: sanitizeAiText(full), broken };
+    };
+
+    let result = await runOnce(0);
+    if (result.broken || !hasMeaningfulContent(result.text)) {
+      try { result = await runOnce(1); } catch { /* 最初の結果を使う */ }
     }
-    const answer = full.trim();
+
+    const answer = result.text.trim();
+    if (!hasMeaningfulContent(answer)) {
+      // 壊れた出力は履歴に残さない（次の生成まで巻き込まれるため）
+      history.pop();
+      throw new Error("AIの出力が壊れました（同じ記号の繰り返し）。もう一度送信するか、AI設定で別のモデルを選んでください。");
+    }
     history.push({ role: "assistant", content: answer });
     if (history.length > MAX_TURNS * 2 + 1) {
       history.splice(1, history.length - (MAX_TURNS * 2 + 1));
     }
     return answer;
   };
+
 
   return {
     prompt: (t) => complete(t),
