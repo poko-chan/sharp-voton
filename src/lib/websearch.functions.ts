@@ -112,6 +112,85 @@ async function ddgLite(q: string): Promise<WebResult[]> {
   return out;
 }
 
+const normalizeLink = (href: string) => {
+  let link = href;
+  const uddg = /uddg=([^&]+)/.exec(link);
+  if (uddg) link = decodeURIComponent(uddg[1]);
+  if (link.startsWith("//")) link = `https:${link}`;
+  return link;
+};
+
+/** 一般Web検索（DuckDuckGo HTML版）。Wikipedia以外のサイトを拾う主力。 */
+async function ddgWeb(q: string): Promise<WebResult[]> {
+  const r = await fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(q)}&kl=jp-jp`, {
+    headers: { "user-agent": UA, "accept-language": "ja,en;q=0.8" },
+  });
+  if (!r.ok) return [];
+  const html = await r.text();
+  if (!html.includes("result__a")) return [];
+  const out: WebResult[] = [];
+  const re =
+    /<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>[\s\S]*?class="[^"]*result__snippet[^"]*"[^>]*>([\s\S]*?)<\/a>/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(html)) && out.length < 6) {
+    const link = normalizeLink(m[1]);
+    const title = strip(m[2]);
+    const snippet = clip(strip(m[3]));
+    if (title && link.startsWith("http")) out.push({ title, snippet, url: link, source: hostOf(link) });
+  }
+  return out;
+}
+
+/** 時事・最新情報向けのニュース検索（Google ニュース RSS）。 */
+async function newsSearch(q: string): Promise<WebResult[]> {
+  const r = await fetch(
+    `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=ja&gl=JP&ceid=JP:ja`,
+    { headers: { "user-agent": UA } },
+  );
+  if (!r.ok) return [];
+  const xml = await r.text();
+  const out: WebResult[] = [];
+  const re = /<item>([\s\S]*?)<\/item>/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(xml)) && out.length < 4) {
+    const block = m[1];
+    const rawTitle = strip(/<title>([\s\S]*?)<\/title>/.exec(block)?.[1] ?? "");
+    const link = strip(/<link>([\s\S]*?)<\/link>/.exec(block)?.[1] ?? "");
+    const date = strip(/<pubDate>([\s\S]*?)<\/pubDate>/.exec(block)?.[1] ?? "");
+    const src = strip(/<source[^>]*>([\s\S]*?)<\/source>/.exec(block)?.[1] ?? "");
+    if (!rawTitle || !link.startsWith("http")) continue;
+    const title = rawTitle.replace(/\s-\s[^-]+$/, "");
+    out.push({
+      title,
+      snippet: clip(`${date ? `${new Date(date).toLocaleDateString("ja-JP")}｜` : ""}${rawTitle}`),
+      url: link,
+      source: src || "ニュース",
+    });
+  }
+  return out;
+}
+
+/** 用語・言葉の意味は辞書（Wiktionary）も参照する。 */
+async function wiktionary(q: string): Promise<WebResult[]> {
+  const term = q.split(/\s+/)[0].slice(0, 40);
+  const r = await fetch(
+    `https://ja.wiktionary.org/w/api.php?action=query&format=json&origin=*&prop=extracts&explaintext=1&exintro=1&redirects=1&titles=${encodeURIComponent(term)}`,
+    { headers: { "user-agent": "StudySharp/1.0 (education assistant)" } },
+  );
+  if (!r.ok) return [];
+  const j: any = await r.json();
+  const pages: any[] = Object.values(j?.query?.pages ?? {});
+  return pages
+    .filter((p) => p?.extract)
+    .map((p) => ({
+      title: `${p.title}（辞書）`,
+      snippet: clip(strip(String(p.extract))),
+      url: `https://ja.wiktionary.org/wiki/${encodeURIComponent(p.title)}`,
+      source: "Wiktionary",
+    }));
+}
+
+
 function hostOf(url: string): string {
   try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return "web"; }
 }
