@@ -2,6 +2,8 @@
 // 要件: WebGPU。ライブラリ本体はブラウザで CDN から動的ロードする
 // （npm 依存としてバンドルすると SSR ビルドがメモリ不足で落ちるため）。
 
+import { isDegenerate, sanitizeAiText, hasMeaningfulContent } from "@/lib/ai-degenerate";
+
 export type WebLlmStatus = "unavailable" | "downloadable" | "downloading" | "available";
 
 export type WebLlmModel = {
