@@ -10,6 +10,7 @@ import { Copy, Sparkles, Loader2, ClipboardPaste, Check } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { isAiUsable, createAiSession, extractJSON } from "@/lib/ai-provider";
+import { promptJSONRobust } from "@/lib/ai-quality";
 import { AiStatusBadge } from "@/components/ChromeAiStatusBadge";
 
 type Mode = "new" | "add";
@@ -93,12 +94,18 @@ export function AiPackImportDialog({
     setBusy(true);
     try {
       const session = await createAiSession({
+        task: "json",
+        maxTokens: 2400,
+        temperature: 0.6,
         system: "あなたは日本の学習問題を作るアシスタントです。出力は必ず厳密な JSON のみ。コードブロックや前置きは禁止。",
-        temperature: 0.7,
       });
       try {
-        const out = await session.prompt(prompt);
-        const parsed = extractJSON<GeneratedPayload>(out);
+        const parsed = await promptJSONRobust<GeneratedPayload>(
+          session,
+          prompt,
+          (v: any) => Array.isArray(v?.questions) && v.questions.length > 0,
+          3,
+        );
         await importPayload(parsed);
       } finally { session.destroy(); }
     } catch (e: any) {

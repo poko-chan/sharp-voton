@@ -73,7 +73,13 @@ export type OllamaSession = {
   destroy: () => void;
 };
 
-export function createOllamaSession(model: string, opts?: { system?: string; temperature?: number }): OllamaSession {
+export function createOllamaSession(model: string, opts?: {
+  system?: string;
+  temperature?: number;
+  topP?: number;
+  maxTokens?: number;
+  frequencyPenalty?: number;
+}): OllamaSession {
   const history: Array<{ role: string; content: string }> = [];
   if (opts?.system) history.push({ role: "system", content: opts.system });
 
@@ -86,7 +92,12 @@ export function createOllamaSession(model: string, opts?: { system?: string; tem
         model,
         messages: history.slice(-13),
         stream: true,
-        options: { temperature: opts?.temperature ?? 0.3 },
+        options: {
+          temperature: opts?.temperature ?? 0.3,
+          top_p: opts?.topP ?? 0.9,
+          num_predict: opts?.maxTokens ?? 1024,
+          repeat_penalty: 1 + (opts?.frequencyPenalty ?? 0.4) * 0.5,
+        },
       }),
     });
     if (!res.ok || !res.body) throw new Error(`Ollama への接続に失敗しました (${res.status})`);

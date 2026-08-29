@@ -23,6 +23,7 @@ import {
 } from "@/lib/tutor.functions";
 import { webSearch, type WebResult } from "@/lib/websearch.functions";
 import { isAiUsable, createAiSession } from "@/lib/ai-provider";
+import { buildBudgetedHistory } from "@/lib/ai-quality";
 import { AiUnavailable } from "@/components/AiUnavailable";
 import { AiStatusBadge } from "@/components/ChromeAiStatusBadge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -267,11 +268,14 @@ function TutorPage() {
 
   /** 会話履歴（全メッセージ）からモデルに渡すテキストを作る */
   const buildHistory = (list: Msg[]) =>
-    list.map((m) => {
-      const imgs = (m.attachments ?? []).filter((a) => a.type.startsWith("image/"));
-      const imgNote = imgs.length ? `\n[添付画像: ${imgs.map((a) => a.name).join(", ")}]` : "";
-      return `${m.role === "user" ? "ユーザー" : "アシスタント"}: ${m.content}${imgNote}`;
-    }).join("\n\n");
+    buildBudgetedHistory(
+      list.map((m) => {
+        const imgs = (m.attachments ?? []).filter((a) => a.type.startsWith("image/"));
+        const imgNote = imgs.length ? `\n[添付画像: ${imgs.map((a) => a.name).join(", ")}]` : "";
+        return { role: m.role === "user" ? ("user" as const) : ("assistant" as const), content: `${m.content}${imgNote}` };
+      }),
+      { budget: 4000, keepRecent: 6 },
+    );
 
   /** 回答生成の本体（送信・再生成の共通処理） */
   const generate = async (tid: string, history: Msg[], runId: number) => {
@@ -337,7 +341,7 @@ function TutorPage() {
     const convo = buildHistory(history);
     const system = answerSystem(displayName, prefs, ctx, webResults);
 
-    const session = await createAiSession({ system });
+    const session = await createAiSession({ system, task: "chat" });
     let text = "";
     setStreaming("");
 
@@ -346,7 +350,10 @@ function TutorPage() {
       let plan = "";
       if (prefs.passes >= 3) {
         addStep("答えの骨組みを考えています", "何をどの順で説明すべきかを先に整理します。");
-        plan = await session.prompt(`${convo}\n\n上の質問に答える前に、回答に必ず含めるべき要点を箇条書き3〜5個だけ書いてください。回答本文は書かないでください。`);
+        const planner = await createAiSession({ task: "reasoning", system });
+        try {
+          plan = await planner.prompt(`${convo}\n\n上の質問に答える前に、回答に必ず含めるべき要点を箇条書き3〜5個だけ書いてください。回答本文は書かないでください。`);
+        } finally { planner.destroy(); }
         finishLastStep(plan.trim().slice(0, 400) || "要点を整理しました");
       }
 
