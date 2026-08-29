@@ -370,14 +370,9 @@ const MAX_TURNS = 6;
 
 /** 同一文の繰り返しループを検出して打ち切る */
 function isLooping(text: string): boolean {
-  if (text.length < 240) return false;
-  const tail = text.slice(-600);
-  const parts = tail.split(/[。．.!?！？\n]/).map((s) => s.trim()).filter((s) => s.length > 8);
-  if (parts.length < 4) return false;
-  const uniq = new Set(parts);
-  // 直近の文のうち半分以上が重複していればループとみなす
-  return uniq.size <= Math.floor(parts.length / 2);
+  return isDegenerate(text);
 }
+
 
 export async function createWebLlmSession(opts?: {
   system?: string;
