@@ -10,6 +10,7 @@ import { Copy, Sparkles, Loader2, ClipboardPaste, Check } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { isAiUsable, createAiSession, extractJSON } from "@/lib/ai-provider";
+import { promptJSONRobust } from "@/lib/ai-quality";
 import { AiStatusBadge } from "@/components/ChromeAiStatusBadge";
 
 type Mode = "new" | "add";
@@ -102,7 +103,7 @@ export function AiPackImportDialog({
         const parsed = await promptJSONRobust<GeneratedPayload>(
           session,
           prompt,
-          (v) => Array.isArray(v?.questions) && v.questions.length > 0,
+          (v: any) => Array.isArray(v?.questions) && v.questions.length > 0,
           3,
         );
         await importPayload(parsed);
