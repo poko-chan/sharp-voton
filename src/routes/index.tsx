@@ -18,10 +18,21 @@ import {
   TRUST,
 } from "@/content/services";
 
-
-const TITLE = "Study#— 学習のすべてを、ひとつに。";
+// 1. タイトルと説明文に「Voton Study Sharp」や表記ゆれ（VotonStudySharp, Study Sharp）を含める
+const TITLE = "Voton Study Sharp (Study#) — 学習のすべてを、ひとつに。";
 const DESC =
-  "Study# は勉強記録・タイマー・カレンダー・問題演習・AIチャット・目標管理・組織/学校運営までを1つにまとめたオールインワン学習プラットフォームです。";
+  "Voton Study Sharp（VotonStudySharp / Study Sharp / Study#）は、勉強記録・タイマー・カレンダー・問題演習・AIチャット・目標管理・組織/学校運営までを1つにまとめたオールインワン学習プラットフォームです。";
+
+// 2. Googleに「表記ゆれ・別名」を明確に伝える構造化データ（JSON-LD）を作成
+const SCHEMA_DATA = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Voton Study Sharp",
+  alternateName: ["VotonStudySharp", "Study Sharp", "Study#", "Voton Study+"],
+  applicationCategory: "EducationalApplication",
+  operatingSystem: "All",
+  url: "https://sharp-voton.lovable.app/",
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,6 +45,13 @@ export const Route = createFileRoute("/")({
       { name: "twitter:description", content: DESC },
     ],
     links: [{ rel: "canonical", href: "https://sharp-voton.lovable.app/" }],
+    // 3. head 内に構造化データの <script> を挿入する
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify(SCHEMA_DATA),
+      },
+    ],
   }),
   component: LandingRoute,
 });
@@ -75,7 +93,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
           <div className="flex items-center gap-2.5">
             <img
               src={logoUrl}
-              alt="Study# ロゴ"
+              alt="Voton Study Sharp (Study#) ロゴ"
               width={36}
               height={36}
               className="h-9 w-9 rounded-xl shadow-sm"
@@ -135,7 +153,9 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
           <div className="ink-panel overflow-hidden px-6 py-12 sm:px-12 sm:py-20">
             <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]">
               <div>
-                <span className="chip border-white/20 bg-white/10 text-white/80">Study# — 旧 Voton Study+</span>
+                <span className="chip border-white/20 bg-white/10 text-white/80">
+                  Voton Study Sharp (Study#) — 旧 Voton Study+
+                </span>
                 <h1 className="mt-6 font-display text-[2.4rem] font-bold leading-[1.05] tracking-tight sm:text-6xl">
                   学習のすべてを、
                   <br />
@@ -143,7 +163,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
                 </h1>
                 <p className="muted-on-ink mt-6 max-w-xl text-[0.95rem] leading-relaxed sm:text-lg">
                   記録する。集中する。解く。AIに聞く。仲間と続ける。学校や塾で運用する。
-                  バラバラだった学習の道具を、Study# はひとつのプラットフォームにまとめました。
+                  バラバラだった学習の道具を、Voton Study Sharp（Study#）はひとつのプラットフォームにまとめました。
                 </p>
                 <div className="mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                   {isAuthed ? (
@@ -155,10 +175,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
                       {t("landing.start")}
                     </Link>
                   )}
-                  <Link
-                    to="/all-services"
-                    className="cta-ghost cta-ghost-ink"
-                  >
+                  <Link to="/all-services" className="cta-ghost cta-ghost-ink">
                     機能をぜんぶ見る
                   </Link>
                 </div>
@@ -177,7 +194,6 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
                   </div>
                 ))}
               </dl>
-
             </div>
           </div>
         </section>
@@ -250,7 +266,6 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
             ))}
           </div>
         </section>
-
 
         {/* Core features */}
         <section id="features" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:py-24">
@@ -357,9 +372,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
         {/* Trust */}
         <section className="mx-auto max-w-6xl px-4 pb-4 sm:pb-8">
           <p className="section-eyebrow">Safety</p>
-          <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">
-            安心して使えるように
-          </h2>
+          <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">安心して使えるように</h2>
           <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {TRUST.map((t) => (
               <div key={t.t} className="surface p-6">
@@ -369,7 +382,6 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
             ))}
           </div>
         </section>
-
 
         {/* FAQ */}
         <section id="faq" className="scroll-mt-20 border-t border-border/50 bg-muted/20">
@@ -420,7 +432,6 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
       </main>
 
       <PublicFooter />
-
     </div>
   );
 }
