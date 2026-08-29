@@ -112,6 +112,85 @@ async function ddgLite(q: string): Promise<WebResult[]> {
   return out;
 }
 
+const normalizeLink = (href: string) => {
+  let link = href;
+  const uddg = /uddg=([^&]+)/.exec(link);
+  if (uddg) link = decodeURIComponent(uddg[1]);
+  if (link.startsWith("//")) link = `https:${link}`;
+  return link;
+};
+
+/** 一般Web検索（DuckDuckGo HTML版）。Wikipedia以外のサイトを拾う主力。 */
+async function ddgWeb(q: string): Promise<WebResult[]> {
+  const r = await fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(q)}&kl=jp-jp`, {
+    headers: { "user-agent": UA, "accept-language": "ja,en;q=0.8" },
+  });
+  if (!r.ok) return [];
+  const html = await r.text();
+  if (!html.includes("result__a")) return [];
+  const out: WebResult[] = [];
+  const re =
+    /<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>[\s\S]*?class="[^"]*result__snippet[^"]*"[^>]*>([\s\S]*?)<\/a>/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(html)) && out.length < 6) {
+    const link = normalizeLink(m[1]);
+    const title = strip(m[2]);
+    const snippet = clip(strip(m[3]));
+    if (title && link.startsWith("http")) out.push({ title, snippet, url: link, source: hostOf(link) });
+  }
+  return out;
+}
+
+/** 時事・最新情報向けのニュース検索（Google ニュース RSS）。 */
+async function newsSearch(q: string): Promise<WebResult[]> {
+  const r = await fetch(
+    `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=ja&gl=JP&ceid=JP:ja`,
+    { headers: { "user-agent": UA } },
+  );
+  if (!r.ok) return [];
+  const xml = await r.text();
+  const out: WebResult[] = [];
+  const re = /<item>([\s\S]*?)<\/item>/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(xml)) && out.length < 4) {
+    const block = m[1];
+    const rawTitle = strip(/<title>([\s\S]*?)<\/title>/.exec(block)?.[1] ?? "");
+    const link = strip(/<link>([\s\S]*?)<\/link>/.exec(block)?.[1] ?? "");
+    const date = strip(/<pubDate>([\s\S]*?)<\/pubDate>/.exec(block)?.[1] ?? "");
+    const src = strip(/<source[^>]*>([\s\S]*?)<\/source>/.exec(block)?.[1] ?? "");
+    if (!rawTitle || !link.startsWith("http")) continue;
+    const title = rawTitle.replace(/\s-\s[^-]+$/, "");
+    out.push({
+      title,
+      snippet: clip(`${date ? `${new Date(date).toLocaleDateString("ja-JP")}｜` : ""}${rawTitle}`),
+      url: link,
+      source: src || "ニュース",
+    });
+  }
+  return out;
+}
+
+/** 用語・言葉の意味は辞書（Wiktionary）も参照する。 */
+async function wiktionary(q: string): Promise<WebResult[]> {
+  const term = q.split(/\s+/)[0].slice(0, 40);
+  const r = await fetch(
+    `https://ja.wiktionary.org/w/api.php?action=query&format=json&origin=*&prop=extracts&explaintext=1&exintro=1&redirects=1&titles=${encodeURIComponent(term)}`,
+    { headers: { "user-agent": "StudySharp/1.0 (education assistant)" } },
+  );
+  if (!r.ok) return [];
+  const j: any = await r.json();
+  const pages: any[] = Object.values(j?.query?.pages ?? {});
+  return pages
+    .filter((p) => p?.extract)
+    .map((p) => ({
+      title: `${p.title}（辞書）`,
+      snippet: clip(strip(String(p.extract))),
+      url: `https://ja.wiktionary.org/wiki/${encodeURIComponent(p.title)}`,
+      source: "Wiktionary",
+    }));
+}
+
+
 function hostOf(url: string): string {
   try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return "web"; }
 }
@@ -155,11 +234,17 @@ export const webSearch = createServerFn({ method: "POST" })
     const hit = CACHE.get(key);
     if (hit && Date.now() - hit.at < TTL) return { ...hit.value, cached: true };
 
+    const wantsNews = /(最新|今年|去年|今月|ニュース|速報|発表|動向|話題|20\d\d年)/.test(q);
+    const wantsDict = /(意味|語源|由来|読み方|とは)/.test(q);
+
     const tasks: Array<[string, Promise<WebResult[]>]> = [
+      ["web", timeout(ddgWeb(q), 7000)],
       ["wikipedia", timeout(wikipedia(q, "ja"), 6000)],
       ["duckduckgo", timeout(ddgInstant(q), 6000)],
-      ["web", timeout(ddgLite(q), 6000)],
     ];
+    if (wantsNews) tasks.push(["news", timeout(newsSearch(q), 6000)]);
+    if (wantsDict) tasks.push(["dictionary", timeout(wiktionary(q), 5000)]);
+
     const settled = await Promise.allSettled(tasks.map(([, p]) => p));
 
     const providers: string[] = [];
@@ -171,20 +256,30 @@ export const webSearch = createServerFn({ method: "POST" })
       }
     });
 
-    // 日本語で何も取れなければ英語Wikipediaへフォールバック
+    // 何も取れなければ 軽量版DDG → 英語Wikipedia の順にフォールバック
+    if (results.length === 0) {
+      const lite = await timeout(ddgLite(q), 6000).catch(() => [] as WebResult[]);
+      if (lite.length) { providers.push("web-lite"); results = lite; }
+    }
     if (results.length === 0) {
       const en = await timeout(wikipedia(q, "en"), 6000).catch(() => [] as WebResult[]);
       if (en.length) { providers.push("wikipedia-en"); results = en; }
     }
 
+
     const seenUrl = new Set<string>();
     const seenTitle = new Set<string>();
+    const perHost = new Map<string, number>();
     const unique = rank(results, q).filter((r) => {
       const t = r.title.toLowerCase();
+      const h = hostOf(r.url);
       if (seenUrl.has(r.url) || seenTitle.has(t)) return false;
-      seenUrl.add(r.url); seenTitle.add(t);
+      // 1つのサイトに偏らせず、いろいろな出典を混ぜる
+      if ((perHost.get(h) ?? 0) >= 2) return false;
+      seenUrl.add(r.url); seenTitle.add(t); perHost.set(h, (perHost.get(h) ?? 0) + 1);
       return true;
     }).slice(0, limit);
+
 
     const value: WebSearchResponse = { query: q, results: unique, providers, cached: false };
     CACHE.set(key, { at: Date.now(), value });
