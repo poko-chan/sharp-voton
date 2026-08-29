@@ -267,11 +267,14 @@ function TutorPage() {
 
   /** 会話履歴（全メッセージ）からモデルに渡すテキストを作る */
   const buildHistory = (list: Msg[]) =>
-    list.map((m) => {
-      const imgs = (m.attachments ?? []).filter((a) => a.type.startsWith("image/"));
-      const imgNote = imgs.length ? `\n[添付画像: ${imgs.map((a) => a.name).join(", ")}]` : "";
-      return `${m.role === "user" ? "ユーザー" : "アシスタント"}: ${m.content}${imgNote}`;
-    }).join("\n\n");
+    buildBudgetedHistory(
+      list.map((m) => {
+        const imgs = (m.attachments ?? []).filter((a) => a.type.startsWith("image/"));
+        const imgNote = imgs.length ? `\n[添付画像: ${imgs.map((a) => a.name).join(", ")}]` : "";
+        return { role: m.role === "user" ? ("user" as const) : ("assistant" as const), content: `${m.content}${imgNote}` };
+      }),
+      { budget: 4000, keepRecent: 6 },
+    );
 
   /** 回答生成の本体（送信・再生成の共通処理） */
   const generate = async (tid: string, history: Msg[], runId: number) => {
@@ -337,7 +340,7 @@ function TutorPage() {
     const convo = buildHistory(history);
     const system = answerSystem(displayName, prefs, ctx, webResults);
 
-    const session = await createAiSession({ system });
+    const session = await createAiSession({ system, task: "chat" });
     let text = "";
     setStreaming("");
 
