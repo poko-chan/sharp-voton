@@ -93,12 +93,18 @@ export function AiPackImportDialog({
     setBusy(true);
     try {
       const session = await createAiSession({
+        task: "json",
+        maxTokens: 2400,
+        temperature: 0.6,
         system: "あなたは日本の学習問題を作るアシスタントです。出力は必ず厳密な JSON のみ。コードブロックや前置きは禁止。",
-        temperature: 0.7,
       });
       try {
-        const out = await session.prompt(prompt);
-        const parsed = extractJSON<GeneratedPayload>(out);
+        const parsed = await promptJSONRobust<GeneratedPayload>(
+          session,
+          prompt,
+          (v) => Array.isArray(v?.questions) && v.questions.length > 0,
+          3,
+        );
         await importPayload(parsed);
       } finally { session.destroy(); }
     } catch (e: any) {
