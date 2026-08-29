@@ -374,9 +374,14 @@ function TutorPage() {
     if (!text.trim()) throw new Error("AIから回答を受け取れませんでした。もう一度お試しください。");
     finishLastStep(`${text.length}文字を生成しました（所要 ${Math.round((Date.now() - t0) / 1000)}秒${cancelRef.current ? "・途中で中断" : ""}）`);
 
+    const sources = webResults.length
+      ? `\n\n---\n**参照した情報源**\n${webResults.map((r, i) => `${i + 1}. [${r.title}](${r.url}) — ${r.source}`).join("\n")}`
+      : "";
+
     const { error } = await supabase.from("tutor_messages").insert({
-      user_id: user.id, role: "assistant", content: text, attachments: [], thread_id: tid,
+      user_id: user.id, role: "assistant", content: text + sources, attachments: [], thread_id: tid,
       thinking: stepsRef.current as any,
+
     } as any);
     if (error) throw new Error("回答は生成できましたが、会話履歴に保存できませんでした。");
   };
