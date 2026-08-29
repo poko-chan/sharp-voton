@@ -5,6 +5,7 @@
 //   "webllm:<modelId>"    … ブラウザ内 WebLLM の特定モデル
 //   "ollama:<modelName>"  … パソコンの Ollama の特定モデル
 
+import { sanitizeAiText, hasMeaningfulContent } from "@/lib/ai-degenerate";
 import {
   chromeAiStatus,
   chromeAiDiagnostics,
