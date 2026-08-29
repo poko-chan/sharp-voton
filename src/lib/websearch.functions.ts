@@ -234,11 +234,17 @@ export const webSearch = createServerFn({ method: "POST" })
     const hit = CACHE.get(key);
     if (hit && Date.now() - hit.at < TTL) return { ...hit.value, cached: true };
 
+    const wantsNews = /(最新|今年|去年|今月|ニュース|速報|発表|動向|話題|20\d\d年)/.test(q);
+    const wantsDict = /(意味|語源|由来|読み方|とは)/.test(q);
+
     const tasks: Array<[string, Promise<WebResult[]>]> = [
+      ["web", timeout(ddgWeb(q), 7000)],
       ["wikipedia", timeout(wikipedia(q, "ja"), 6000)],
       ["duckduckgo", timeout(ddgInstant(q), 6000)],
-      ["web", timeout(ddgLite(q), 6000)],
     ];
+    if (wantsNews) tasks.push(["news", timeout(newsSearch(q), 6000)]);
+    if (wantsDict) tasks.push(["dictionary", timeout(wiktionary(q), 5000)]);
+
     const settled = await Promise.allSettled(tasks.map(([, p]) => p));
 
     const providers: string[] = [];
