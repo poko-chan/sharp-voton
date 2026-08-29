@@ -98,3 +98,22 @@ export const TONE_RULE: Record<Tone, string> = {
   calm: "落ち着いた、事実重視の説明口調。感情表現は控えめに。",
   coach: "コーチのように前向きに背中を押す。行動を1つ提案する。",
 };
+
+/** 事実確認のためにWeb検索したほうがよい質問かを判定する */
+export function needsWebSearch(text: string): boolean {
+  const t = text.trim();
+  if (t.length < 4) return false;
+  // 記録・計画など自分のデータの話は検索不要
+  if (/(記録して|目標|勉強計画|振り返|私の|自分の)/.test(t) && !/(とは|意味|調べ|最新|ニュース)/.test(t)) return false;
+  return /(とは|意味|由来|違い|とは何|誰|いつ|どこ|年号|出典|根拠|最新|今年|去年|ニュース|統計|データ|入試|倍率|日程|要項|定義|公式|法律|制度|ランキング|価格|englishの意味|調べて|検索)/.test(t)
+    || /[A-Za-z]{4,}/.test(t) && /(について|解説|教えて)/.test(t);
+}
+
+/** 検索クエリを質問文から作る（余計な依頼語を削る） */
+export function buildSearchQuery(text: string): string {
+  return text
+    .replace(/(教えて|説明して|解説して|調べて|検索して|ください|下さい|お願いします|ですか|でしょうか|かな|？|\?)/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 120);
+}
