@@ -49,7 +49,7 @@ const QUICK_PROMPTS = [
   { title: "学習を記録する", body: "今日、数学を30分勉強したので記録して" },
 ];
 
-const answerSystem = (displayName: string, prefs: ChatPrefs, ctx: any | null) =>
+const answerSystem = (displayName: string, prefs: ChatPrefs, ctx: any | null, web: WebResult[] = []) =>
   `あなたは${displayName}さん専属の学習アシスタントです。
 
 【回答のルール】
