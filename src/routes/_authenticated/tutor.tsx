@@ -593,21 +593,12 @@ function TutorPage() {
             <p className="truncate text-[11px] text-muted-foreground">{engineLabel || "端末内AI"} ・ 推論{prefs.passes}回</p>
           </div>
           <div className="ml-auto flex items-center gap-1">
-            <button
-              onClick={() => setSettingsOpen(true)}
-              className="hidden items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] text-muted-foreground transition hover:bg-muted sm:flex"
-              title="参照モードを変える"
-            >
+            <span className="hidden items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] text-muted-foreground sm:flex">
               <LookupIcon className="h-3 w-3" />
               {prefs.lookup === "always" ? "いつも参照" : prefs.lookup === "never" ? "参照しない" : "自動参照"}
-            </button>
-            <button
-              onClick={() => setSettingsOpen(true)}
-              className="hidden items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] text-muted-foreground transition hover:bg-muted sm:flex"
-              title="推論の回数を変える"
-            >
-              <Layers className="h-3 w-3" />推論{prefs.passes}
-            </button>
+              <Layers className="ml-1 h-3 w-3" />推論{prefs.passes}
+            </span>
+
             <AiStatusBadge />
             {msgs.length > 0 && (
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={exportChat} title="この会話を書き出す">
