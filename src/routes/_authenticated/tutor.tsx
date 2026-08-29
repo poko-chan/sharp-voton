@@ -297,17 +297,23 @@ function TutorPage() {
           : relevantScopes(lastUser, prefs.scopes);
 
     const doSearch = prefs.web === "on" || (prefs.web === "auto" && needsWebSearch(lastUser));
+    // メッセージ内のURLを検出して直接読みに行く（どのサイトでも対応）
+    const urlsInMsg = Array.from(new Set(lastUser.match(/https?:\/\/[^\s　)\]}>"'〈〉「」『』【】、。]+/g) ?? []))
+      .filter((u) => !/\.(png|jpe?g|gif|webp|svg|mp4|mp3|pdf|zip)($|\?)/i.test(u))
+      .slice(0, 2);
     if (requested.length > 0) {
       addStep("学習情報を確認しています", requested.map((k) => SCOPE_DEFS.find((s) => s.key === k)?.label).join("、"));
     }
     if (doSearch) addStep("Webで事実を確認しています", buildSearchQuery(lastUser));
+    if (urlsInMsg.length > 0) addStep("ページを読んでいます", urlsInMsg.join("\n"));
 
-    // 学習情報とWeb検索は同時に取りに行き、待ち時間を短くする
-    const [ctxRes, webRes] = await Promise.all([
+    // 学習情報・Web検索・指定ページの取得は同時に行い、待ち時間を短くする
+    const [ctxRes, webRes, pages] = await Promise.all([
       requested.length > 0 ? ctxFn({ data: { scopes: requested } }).catch(() => null) : Promise.resolve(null),
       doSearch
         ? searchFn({ data: { query: buildSearchQuery(lastUser) } }).catch(() => null)
         : Promise.resolve(null),
+      Promise.all(urlsInMsg.map((u) => pageFn({ data: { url: u } }).catch(() => null))),
     ]);
 
     if (requested.length > 0) {
