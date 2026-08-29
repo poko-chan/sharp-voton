@@ -21,7 +21,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import {
   getStudyContext, listTutorThreads, createTutorThread, renameTutorThread, deleteTutorThread,
 } from "@/lib/tutor.functions";
-import { webSearch, type WebResult } from "@/lib/websearch.functions";
+import { webSearch, fetchPage, type WebResult } from "@/lib/websearch.functions";
 import { isAiUsable, createAiSession } from "@/lib/ai-provider";
 import { buildBudgetedHistory } from "@/lib/ai-quality";
 import { AiUnavailable } from "@/components/AiUnavailable";
@@ -147,6 +147,7 @@ function TutorPage() {
   const deleteFn = useServerFn(deleteTutorThread);
   const ctxFn = useServerFn(getStudyContext);
   const searchFn = useServerFn(webSearch);
+  const pageFn = useServerFn(fetchPage);
 
   const [threads, setThreads] = useState<Thread[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
