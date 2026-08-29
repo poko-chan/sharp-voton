@@ -788,7 +788,55 @@ function TutorPage() {
                 )}
               </div>
             </form>
+
+            {/* よく切り替える設定は入力欄のすぐ下に置く */}
+            <div className="mt-2 flex flex-wrap items-center gap-1.5 px-1">
+              <button
+                type="button"
+                onClick={() => setPrefs((p) => ({ ...p, web: p.web === "auto" ? "on" : p.web === "on" ? "off" : "auto" }))}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition hover:bg-muted ${
+                  prefs.web === "off" ? "text-muted-foreground" : "border-primary/40 bg-primary/10 text-foreground"
+                }`}
+                title="Web検索で事実を確認するかどうか"
+              >
+                {prefs.web === "off" ? <GlobeLock className="h-3.5 w-3.5" /> : <Globe className="h-3.5 w-3.5" />}
+                Web検索: {prefs.web === "on" ? "いつも" : prefs.web === "off" ? "しない" : "必要なとき"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPrefs((p) => ({ ...p, lookup: p.lookup === "auto" ? "always" : p.lookup === "always" ? "never" : "auto" }))}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition hover:bg-muted ${
+                  prefs.lookup === "never" ? "text-muted-foreground" : "border-primary/40 bg-primary/10 text-foreground"
+                }`}
+                title="AIが自分の学習データを見るかどうか"
+              >
+                <LookupIcon className="h-3.5 w-3.5" />
+                学習データ: {prefs.lookup === "always" ? "いつも見る" : prefs.lookup === "never" ? "見ない" : "必要なとき"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPrefs((p) => ({ ...p, passes: (p.passes === 3 ? 1 : ((p.passes + 1) as 1 | 2 | 3)) }))}
+                className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition hover:bg-muted"
+                title="考える回数（多いほど正確・遅い）"
+              >
+                <Layers className="h-3.5 w-3.5" />
+                {prefs.passes === 1 ? "すぐ答える" : prefs.passes === 2 ? "見直す" : "じっくり"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSettingsOpen(true)}
+                className="ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] text-muted-foreground transition hover:bg-muted"
+                title="毎回は変えない設定"
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5" />くわしい設定
+              </button>
+            </div>
+
             <div className="mt-1.5 flex items-center justify-between px-1 text-[10px] text-muted-foreground">
+
               <span>AIの回答が必ず正しいとは限りません。大事な内容は確認してください。</span>
               <span>{input.length > 0 ? `${input.length}文字` : "Enterで送信"}</span>
             </div>
