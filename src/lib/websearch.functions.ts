@@ -215,7 +215,97 @@ function rank(results: WebResult[], q: string): WebResult[] {
 
 // 同じ質問を短時間に繰り返したときの無駄打ちを防ぐ簡易キャッシュ
 const CACHE = new Map<string, { at: number; value: WebSearchResponse }>();
+const PAGE_CACHE = new Map<string, { at: number; value: PageFetchResponse }>();
 const TTL = 10 * 60 * 1000;
+
+export type PageFetchResponse = {
+  url: string;
+  finalUrl: string;
+  title: string;
+  text: string;
+  ok: boolean;
+  error?: string;
+};
+
+/** HTMLから読める本文だけを抜き出す（密度ベースの簡易リーダー）。 */
+function extractReadable(html: string): { title: string; text: string } {
+  const title = strip(/<title[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1] ?? "").slice(0, 120);
+  let body = html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    .replace(/<svg[\s\S]*?<\/svg>/gi, " ")
+    .replace(/<header[\s\S]*?<\/header>/gi, " ")
+    .replace(/<footer[\s\S]*?<\/footer>/gi, " ")
+    .replace(/<nav[\s\S]*?<\/nav>/gi, " ")
+    .replace(/<form[\s\S]*?<\/form>/gi, " ");
+  // 段落・見出し・リストの区切りを改行として残す
+  body = body.replace(/<\/(p|div|li|h[1-6]|tr|section|article|br)>/gi, "\n");
+  const text = strip(body)
+    .replace(/[ \t]*\n[ \t]*/g, "\n")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l.length >= 20 || /[。！？.!?]$/.test(l))
+    .filter((l) => !/^(cookie|著作権|©|all rights|利用規約|プライバシー)/i.test(l))
+    .join("\n");
+  return { title, text };
+}
+
+/**
+ * どのサイトでも本文を読み取る汎用ページ取得。
+ * チャットにURLを貼ると、AIがその内容を根拠に答えられるようになる。
+ */
+export const fetchPage = createServerFn({ method: "POST" })
+  .inputValidator((i) =>
+    z.object({ url: z.string().min(8).max(2000), maxChars: z.number().int().min(500).max(8000).optional() }).parse(i),
+  )
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data }): Promise<PageFetchResponse> => {
+    let url = data.url.trim();
+    if (!/^https?:\/\//i.test(url)) url = `https://${url}`;
+    const maxChars = data.maxChars ?? 4000;
+
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      return { url, finalUrl: url, title: "", text: "", ok: false, error: "URLの形式が正しくありません" };
+    }
+    // ローカル・内部アドレスへのアクセスは拒否（安全のため）
+    if (!/^https?:$/.test(parsed.protocol) || /^(localhost|127\.|0\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|\[?::1)/.test(parsed.hostname)) {
+      return { url, finalUrl: url, title: "", text: "", ok: false, error: "このアドレスにはアクセスできません" };
+    }
+
+    const key = `${url}::${maxChars}`;
+    const hit = PAGE_CACHE.get(key);
+    if (hit && Date.now() - hit.at < TTL) return hit.value;
+
+    try {
+      const res = await fetch(url, {
+        headers: { "user-agent": UA, "accept-language": "ja,en;q=0.8", accept: "text/html,application/xhtml+xml" },
+        redirect: "follow",
+      });
+      const finalUrl = res.url || url;
+      const ct = res.headers.get("content-type") ?? "";
+      if (!res.ok) {
+        return { url, finalUrl, title: "", text: "", ok: false, error: `ページを開けませんでした（${res.status}）` };
+      }
+      if (!ct.includes("html") && !ct.includes("text")) {
+        return { url, finalUrl, title: "", text: "", ok: false, error: "HTMLページではないため読み取れません（PDF・画像など）" };
+      }
+      const html = (await res.text()).slice(0, 1_500_000);
+      const { title, text } = extractReadable(html);
+      if (!text) return { url, finalUrl, title, text: "", ok: false, error: "本文を読み取れませんでした（ログインが必要なページの可能性があります）" };
+      const clipped = text.length > maxChars ? `${text.slice(0, maxChars)}…` : text;
+      const value: PageFetchResponse = { url, finalUrl, title, text: clipped, ok: true };
+      PAGE_CACHE.set(key, { at: Date.now(), value });
+      if (PAGE_CACHE.size > 100) PAGE_CACHE.delete(PAGE_CACHE.keys().next().value as string);
+      return value;
+    } catch (e: any) {
+      return { url, finalUrl: url, title: "", text: "", ok: false, error: `アクセスに失敗しました（${String(e?.message ?? e).slice(0, 80)}）` };
+    }
+  });
 
 /** 学習質問の事実確認に使う軽量Web検索（外部APIキー不要・複数ソースで冗長化）。 */
 export const webSearch = createServerFn({ method: "POST" })

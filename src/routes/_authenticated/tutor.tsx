@@ -21,7 +21,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import {
   getStudyContext, listTutorThreads, createTutorThread, renameTutorThread, deleteTutorThread,
 } from "@/lib/tutor.functions";
-import { webSearch, type WebResult } from "@/lib/websearch.functions";
+import { webSearch, fetchPage, type WebResult } from "@/lib/websearch.functions";
 import { isAiUsable, createAiSession } from "@/lib/ai-provider";
 import { buildBudgetedHistory } from "@/lib/ai-quality";
 import { AiUnavailable } from "@/components/AiUnavailable";
@@ -147,6 +147,7 @@ function TutorPage() {
   const deleteFn = useServerFn(deleteTutorThread);
   const ctxFn = useServerFn(getStudyContext);
   const searchFn = useServerFn(webSearch);
+  const pageFn = useServerFn(fetchPage);
 
   const [threads, setThreads] = useState<Thread[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -296,17 +297,23 @@ function TutorPage() {
           : relevantScopes(lastUser, prefs.scopes);
 
     const doSearch = prefs.web === "on" || (prefs.web === "auto" && needsWebSearch(lastUser));
+    // メッセージ内のURLを検出して直接読みに行く（どのサイトでも対応）
+    const urlsInMsg = Array.from(new Set(lastUser.match(/https?:\/\/[^\s　)\]}>"'〈〉「」『』【】、。]+/g) ?? []))
+      .filter((u) => !/\.(png|jpe?g|gif|webp|svg|mp4|mp3|pdf|zip)($|\?)/i.test(u))
+      .slice(0, 2);
     if (requested.length > 0) {
       addStep("学習情報を確認しています", requested.map((k) => SCOPE_DEFS.find((s) => s.key === k)?.label).join("、"));
     }
     if (doSearch) addStep("Webで事実を確認しています", buildSearchQuery(lastUser));
+    if (urlsInMsg.length > 0) addStep("ページを読んでいます", urlsInMsg.join("\n"));
 
-    // 学習情報とWeb検索は同時に取りに行き、待ち時間を短くする
-    const [ctxRes, webRes] = await Promise.all([
+    // 学習情報・Web検索・指定ページの取得は同時に行い、待ち時間を短くする
+    const [ctxRes, webRes, pages] = await Promise.all([
       requested.length > 0 ? ctxFn({ data: { scopes: requested } }).catch(() => null) : Promise.resolve(null),
       doSearch
         ? searchFn({ data: { query: buildSearchQuery(lastUser) } }).catch(() => null)
         : Promise.resolve(null),
+      Promise.all(urlsInMsg.map((u) => pageFn({ data: { url: u } }).catch(() => null))),
     ]);
 
     if (requested.length > 0) {
@@ -330,6 +337,24 @@ function TutorPage() {
     }
 
     const webResults: WebResult[] = ((webRes as any)?.results ?? []) as WebResult[];
+    // 指定されたページ本文を根拠の先頭に追加（ユーザーが明示した資料を最優先）
+    const pageResults: WebResult[] = (pages ?? [])
+      .filter((p: any) => p?.ok && p.text)
+      .map((p: any) => ({
+        title: p.title || p.finalUrl,
+        snippet: String(p.text).slice(0, 1500),
+        url: p.finalUrl,
+        source: "指定ページ",
+      }));
+    if (urlsInMsg.length > 0) {
+      const failed = (pages ?? []).filter((p: any) => !p?.ok);
+      finishLastStep(
+        pageResults.length
+          ? pageResults.map((p) => `読み取り完了: ${p.title}`).join("\n")
+          : failed.map((p: any) => p?.error ?? "読み取れませんでした").join("\n") || "読み取れませんでした",
+      );
+    }
+    webResults.unshift(...pageResults);
     if (doSearch) {
       finishLastStep(
         webResults.length
