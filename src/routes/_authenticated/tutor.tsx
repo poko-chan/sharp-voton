@@ -145,6 +145,7 @@ function TutorPage() {
   const renameFn = useServerFn(renameTutorThread);
   const deleteFn = useServerFn(deleteTutorThread);
   const ctxFn = useServerFn(getStudyContext);
+  const searchFn = useServerFn(webSearch);
 
   const [threads, setThreads] = useState<Thread[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
