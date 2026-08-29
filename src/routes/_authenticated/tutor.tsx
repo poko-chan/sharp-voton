@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import {
   Sparkles, Send, Paperclip, Loader2, X, Trash2, Plus, MessageSquare, Pencil, ChevronDown,
   Brain, Search, RotateCcw, PanelLeftClose, PanelLeft, Settings2, Copy, Check, Square,
-  Download, ArrowDown, SlidersHorizontal, Eye, EyeOff, Layers, Bot,
+  Download, ArrowDown, SlidersHorizontal, Eye, EyeOff, Layers, Bot, Globe, GlobeLock,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import {
   getStudyContext, listTutorThreads, createTutorThread, renameTutorThread, deleteTutorThread,
 } from "@/lib/tutor.functions";
+import { webSearch, type WebResult } from "@/lib/websearch.functions";
 import { isAiUsable, createAiSession } from "@/lib/ai-provider";
 import { AiUnavailable } from "@/components/AiUnavailable";
 import { AiStatusBadge } from "@/components/ChromeAiStatusBadge";
@@ -30,9 +31,11 @@ import { ChatSettingsPanel } from "@/components/ai/ChatSettingsPanel";
 import { VoiceMicButton } from "@/components/VoiceMicButton";
 import {
   SCOPE_DEFS, loadPrefs, savePrefs, relevantScopes, LENGTH_RULE, TONE_RULE,
+  needsWebSearch, buildSearchQuery,
   type ChatPrefs, type ScopeKey,
 } from "@/lib/tutor-prefs";
 import { detectAiAction, applyAiAction, fetchSubjectNames, looksLikeActionRequest, parseCommonActionRequest, type AiAction } from "@/lib/ai-actions";
+
 
 type Attachment = { url: string; name: string; type: string };
 type ThinkingStep = { label: string; detail?: string; done: boolean };
