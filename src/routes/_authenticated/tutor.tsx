@@ -337,6 +337,24 @@ function TutorPage() {
     }
 
     const webResults: WebResult[] = ((webRes as any)?.results ?? []) as WebResult[];
+    // 指定されたページ本文を根拠の先頭に追加（ユーザーが明示した資料を最優先）
+    const pageResults: WebResult[] = (pages ?? [])
+      .filter((p: any) => p?.ok && p.text)
+      .map((p: any) => ({
+        title: p.title || p.finalUrl,
+        snippet: String(p.text).slice(0, 1500),
+        url: p.finalUrl,
+        source: "指定ページ",
+      }));
+    if (urlsInMsg.length > 0) {
+      const failed = (pages ?? []).filter((p: any) => !p?.ok);
+      finishLastStep(
+        pageResults.length
+          ? pageResults.map((p) => `読み取り完了: ${p.title}`).join("\n")
+          : failed.map((p: any) => p?.error ?? "読み取れませんでした").join("\n") || "読み取れませんでした",
+      );
+    }
+    webResults.unshift(...pageResults);
     if (doSearch) {
       finishLastStep(
         webResults.length
