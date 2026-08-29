@@ -17,12 +17,15 @@ export type ScopeKey = (typeof SCOPE_DEFS)[number]["key"];
 export const ALL_SCOPES = SCOPE_DEFS.map((s) => s.key) as ScopeKey[];
 
 export type LookupMode = "auto" | "always" | "never";
+export type WebMode = "auto" | "on" | "off";
 export type Length = "short" | "normal" | "deep";
 export type Tone = "friendly" | "calm" | "coach";
 
 export type ChatPrefs = {
   /** 学習データを見るかどうか */
   lookup: LookupMode;
+  /** Web検索で事実確認するかどうか */
+  web: WebMode;
   /** 推論の回数（1=即答, 2=見直し, 3=じっくり検討） */
   passes: 1 | 2 | 3;
   /** 回答の長さ */
@@ -39,6 +42,7 @@ export type ChatPrefs = {
 
 export const DEFAULT_PREFS: ChatPrefs = {
   lookup: "auto",
+  web: "auto",
   passes: 1,
   length: "normal",
   tone: "friendly",
@@ -46,6 +50,7 @@ export const DEFAULT_PREFS: ChatPrefs = {
   autoOpenThinking: true,
   scopes: ALL_SCOPES,
 };
+
 
 const LS = "ai.tutor.prefs.v2";
 
