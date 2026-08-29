@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Timer, CalendarDays, BookOpen, Brain, MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy, Megaphone, GraduationCap, Menu, X, MoreHorizontal, StickyNote, Users, Ban, HelpCircle, ClipboardList } from "lucide-react";
+import { LayoutDashboard, Timer, CalendarDays, BookOpen, Brain, MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy, Megaphone, GraduationCap, Menu, X, MoreHorizontal, StickyNote, Users, Ban, HelpCircle, ClipboardList, PanelLeft, PanelLeftClose } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -72,6 +72,17 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<{ display_name: string | null; username: string | null; avatar_url: string | null } | null>(null);
   const [level, setLevel] = useState<number>(1);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(true);
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("app.nav.open");
+      if (saved !== null) setNavOpen(saved === "1");
+    } catch { /* noop */ }
+  }, []);
+  const toggleNav = () => setNavOpen((v) => {
+    try { window.localStorage.setItem("app.nav.open", v ? "0" : "1"); } catch { /* noop */ }
+    return !v;
+  });
   const [notifPrefs, setNotifPrefs] = useState<{ notify_daily_reminder: boolean; reminder_time: string } | null>(null);
 
   useEffect(() => {
@@ -360,7 +371,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Desktop sidebar */}
-      {!isMobile && (
+      {!isMobile && navOpen && (
         <aside className="w-64 shrink-0 border-r liquid-bar text-sidebar-foreground flex flex-col sticky top-0 h-screen self-start">
           {sidebarContent}
         </aside>
@@ -370,12 +381,24 @@ export function AppShell({ children }: { children: ReactNode }) {
         <TimerIndicator />
         {/* Desktop top bar */}
         {!isMobile && (
-          <div className="sticky top-0 z-30 flex h-12 justify-end items-center gap-2 px-4 border-b liquid-bar">
-            <ChromeAiStatusBadge compact />
-            <div className="mx-2 h-4 w-px bg-border/70" />
-            <GoogleTranslateWidget />
+          <div className="sticky top-0 z-30 flex h-12 items-center gap-2 px-4 border-b liquid-bar">
+            <button
+              onClick={toggleNav}
+              title={navOpen ? "メニューを閉じる" : "メニューを開く"}
+              aria-label={navOpen ? "メニューを閉じる" : "メニューを開く"}
+              className="h-8 w-8 inline-flex items-center justify-center rounded-lg transition hover:bg-accent"
+            >
+              {navOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
+            </button>
+            {!navOpen && <img src={logoUrl} alt="" className="h-7 w-7 rounded-lg shadow-sm" />}
+            <div className="ml-auto flex items-center gap-2">
+              <ChromeAiStatusBadge compact />
+              <div className="mx-2 h-4 w-px bg-border/70" />
+              <GoogleTranslateWidget />
+            </div>
           </div>
         )}
+
 
         {/* Mobile top bar (hamburger + clock) */}
         {isMobile && (

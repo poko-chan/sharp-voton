@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import {
   Sparkles, Send, Paperclip, Loader2, X, Trash2, Plus, MessageSquare, Pencil, ChevronDown,
   Brain, Search, RotateCcw, PanelLeftClose, PanelLeft, Settings2, Copy, Check, Square,
-  Download, ArrowDown, SlidersHorizontal, Eye, EyeOff, Layers, Bot,
+  Download, ArrowDown, SlidersHorizontal, Eye, EyeOff, Layers, Bot, Globe, GlobeLock,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import {
   getStudyContext, listTutorThreads, createTutorThread, renameTutorThread, deleteTutorThread,
 } from "@/lib/tutor.functions";
+import { webSearch, type WebResult } from "@/lib/websearch.functions";
 import { isAiUsable, createAiSession } from "@/lib/ai-provider";
 import { AiUnavailable } from "@/components/AiUnavailable";
 import { AiStatusBadge } from "@/components/ChromeAiStatusBadge";
@@ -30,9 +31,11 @@ import { ChatSettingsPanel } from "@/components/ai/ChatSettingsPanel";
 import { VoiceMicButton } from "@/components/VoiceMicButton";
 import {
   SCOPE_DEFS, loadPrefs, savePrefs, relevantScopes, LENGTH_RULE, TONE_RULE,
+  needsWebSearch, buildSearchQuery,
   type ChatPrefs, type ScopeKey,
 } from "@/lib/tutor-prefs";
 import { detectAiAction, applyAiAction, fetchSubjectNames, looksLikeActionRequest, parseCommonActionRequest, type AiAction } from "@/lib/ai-actions";
+
 
 type Attachment = { url: string; name: string; type: string };
 type ThinkingStep = { label: string; detail?: string; done: boolean };
@@ -46,7 +49,7 @@ const QUICK_PROMPTS = [
   { title: "学習を記録する", body: "今日、数学を30分勉強したので記録して" },
 ];
 
-const answerSystem = (displayName: string, prefs: ChatPrefs, ctx: any | null) =>
+const answerSystem = (displayName: string, prefs: ChatPrefs, ctx: any | null, web: WebResult[] = []) =>
   `あなたは${displayName}さん専属の学習アシスタントです。
 
 【回答のルール】
@@ -58,7 +61,19 @@ const answerSystem = (displayName: string, prefs: ChatPrefs, ctx: any | null) =>
 - わからないことは推測せず「情報が足りない」と伝え、確認したい点を1つだけ質問する。
 - 画像が添付されていれば、その内容を読み取って解説する。
 ${
+  web.length
+    ? `
+【Webで調べた最新情報（これを最優先の根拠にすること）】
+${web.map((r, i) => `[${i + 1}] ${r.title}（${r.source}）: ${r.snippet}`).join("\n")}
+
+- 事実・数値・固有名詞は必ず上の資料に基づいて答え、資料にない事実は「調べた範囲では確認できませんでした」と正直に書く。
+- 根拠にした資料は文中で [1] のように番号で示す。出典URLの一覧は書かなくてよい（画面に自動表示されます）。
+`
+    : ""
+}
+${
   ctx
+
     ? `
 【生徒の学習状況（直近30日・許可された情報のみ）】
 ${ctx.totalMinutes30d !== null ? `- 学習時間: ${ctx.totalMinutes30d ?? 0}分 / 活動日: ${ctx.activeDays30d ?? 0}日
@@ -130,6 +145,7 @@ function TutorPage() {
   const renameFn = useServerFn(renameTutorThread);
   const deleteFn = useServerFn(deleteTutorThread);
   const ctxFn = useServerFn(getStudyContext);
+  const searchFn = useServerFn(webSearch);
 
   const [threads, setThreads] = useState<Thread[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -275,10 +291,23 @@ function TutorPage() {
         : prefs.lookup === "always" ? prefs.scopes
           : relevantScopes(lastUser, prefs.scopes);
 
+    const doSearch = prefs.web === "on" || (prefs.web === "auto" && needsWebSearch(lastUser));
     if (requested.length > 0) {
       addStep("学習情報を確認しています", requested.map((k) => SCOPE_DEFS.find((s) => s.key === k)?.label).join("、"));
-      try { ctx = await ctxFn({ data: { scopes: requested } }); }
-      catch { setFlowError("一部の学習情報を取得できなかったため、会話内容だけで回答します。"); }
+    }
+    if (doSearch) addStep("Webで事実を確認しています", buildSearchQuery(lastUser));
+
+    // 学習情報とWeb検索は同時に取りに行き、待ち時間を短くする
+    const [ctxRes, webRes] = await Promise.all([
+      requested.length > 0 ? ctxFn({ data: { scopes: requested } }).catch(() => null) : Promise.resolve(null),
+      doSearch
+        ? searchFn({ data: { query: buildSearchQuery(lastUser) } }).catch(() => null)
+        : Promise.resolve(null),
+    ]);
+
+    if (requested.length > 0) {
+      ctx = ctxRes;
+      if (!ctx) setFlowError("一部の学習情報を取得できなかったため、会話内容だけで回答します。");
       finishLastStep(
         ctx
           ? [
@@ -296,8 +325,18 @@ function TutorPage() {
       finishLastStep();
     }
 
+    const webResults: WebResult[] = ((webRes as any)?.results ?? []) as WebResult[];
+    if (doSearch) {
+      finishLastStep(
+        webResults.length
+          ? webResults.map((r, i) => `[${i + 1}] ${r.title}（${r.source}）`).join("\n")
+          : "検索結果が見つからなかったため、AIの知識だけで答えます",
+      );
+    }
+
     const convo = buildHistory(history);
-    const system = answerSystem(displayName, prefs, ctx);
+    const system = answerSystem(displayName, prefs, ctx, webResults);
+
     const session = await createAiSession({ system });
     let text = "";
     setStreaming("");
@@ -335,9 +374,14 @@ function TutorPage() {
     if (!text.trim()) throw new Error("AIから回答を受け取れませんでした。もう一度お試しください。");
     finishLastStep(`${text.length}文字を生成しました（所要 ${Math.round((Date.now() - t0) / 1000)}秒${cancelRef.current ? "・途中で中断" : ""}）`);
 
+    const sources = webResults.length
+      ? `\n\n---\n**参照した情報源**\n${webResults.map((r, i) => `${i + 1}. [${r.title}](${r.url}) — ${r.source}`).join("\n")}`
+      : "";
+
     const { error } = await supabase.from("tutor_messages").insert({
-      user_id: user.id, role: "assistant", content: text, attachments: [], thread_id: tid,
+      user_id: user.id, role: "assistant", content: text + sources, attachments: [], thread_id: tid,
       thinking: stepsRef.current as any,
+
     } as any);
     if (error) throw new Error("回答は生成できましたが、会話履歴に保存できませんでした。");
   };
@@ -549,21 +593,12 @@ function TutorPage() {
             <p className="truncate text-[11px] text-muted-foreground">{engineLabel || "端末内AI"} ・ 推論{prefs.passes}回</p>
           </div>
           <div className="ml-auto flex items-center gap-1">
-            <button
-              onClick={() => setSettingsOpen(true)}
-              className="hidden items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] text-muted-foreground transition hover:bg-muted sm:flex"
-              title="参照モードを変える"
-            >
+            <span className="hidden items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] text-muted-foreground sm:flex">
               <LookupIcon className="h-3 w-3" />
               {prefs.lookup === "always" ? "いつも参照" : prefs.lookup === "never" ? "参照しない" : "自動参照"}
-            </button>
-            <button
-              onClick={() => setSettingsOpen(true)}
-              className="hidden items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] text-muted-foreground transition hover:bg-muted sm:flex"
-              title="推論の回数を変える"
-            >
-              <Layers className="h-3 w-3" />推論{prefs.passes}
-            </button>
+              <Layers className="ml-1 h-3 w-3" />推論{prefs.passes}
+            </span>
+
             <AiStatusBadge />
             {msgs.length > 0 && (
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={exportChat} title="この会話を書き出す">
@@ -753,7 +788,55 @@ function TutorPage() {
                 )}
               </div>
             </form>
+
+            {/* よく切り替える設定は入力欄のすぐ下に置く */}
+            <div className="mt-2 flex flex-wrap items-center gap-1.5 px-1">
+              <button
+                type="button"
+                onClick={() => setPrefs((p) => ({ ...p, web: p.web === "auto" ? "on" : p.web === "on" ? "off" : "auto" }))}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition hover:bg-muted ${
+                  prefs.web === "off" ? "text-muted-foreground" : "border-primary/40 bg-primary/10 text-foreground"
+                }`}
+                title="Web検索で事実を確認するかどうか"
+              >
+                {prefs.web === "off" ? <GlobeLock className="h-3.5 w-3.5" /> : <Globe className="h-3.5 w-3.5" />}
+                Web検索: {prefs.web === "on" ? "いつも" : prefs.web === "off" ? "しない" : "必要なとき"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPrefs((p) => ({ ...p, lookup: p.lookup === "auto" ? "always" : p.lookup === "always" ? "never" : "auto" }))}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition hover:bg-muted ${
+                  prefs.lookup === "never" ? "text-muted-foreground" : "border-primary/40 bg-primary/10 text-foreground"
+                }`}
+                title="AIが自分の学習データを見るかどうか"
+              >
+                <LookupIcon className="h-3.5 w-3.5" />
+                学習データ: {prefs.lookup === "always" ? "いつも見る" : prefs.lookup === "never" ? "見ない" : "必要なとき"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPrefs((p) => ({ ...p, passes: (p.passes === 3 ? 1 : ((p.passes + 1) as 1 | 2 | 3)) }))}
+                className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition hover:bg-muted"
+                title="考える回数（多いほど正確・遅い）"
+              >
+                <Layers className="h-3.5 w-3.5" />
+                {prefs.passes === 1 ? "すぐ答える" : prefs.passes === 2 ? "見直す" : "じっくり"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSettingsOpen(true)}
+                className="ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] text-muted-foreground transition hover:bg-muted"
+                title="毎回は変えない設定"
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5" />くわしい設定
+              </button>
+            </div>
+
             <div className="mt-1.5 flex items-center justify-between px-1 text-[10px] text-muted-foreground">
+
               <span>AIの回答が必ず正しいとは限りません。大事な内容は確認してください。</span>
               <span>{input.length > 0 ? `${input.length}文字` : "Enterで送信"}</span>
             </div>
