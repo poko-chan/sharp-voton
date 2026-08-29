@@ -27,7 +27,7 @@ async function wikipedia(q: string): Promise<WebResult[]> {
 
 async function duckduckgo(q: string): Promise<WebResult[]> {
   const r = await fetch(`https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(q)}&kl=jp-jp`, {
-    headers: { "user-agent": "Mozilla/5.0 (compatible; StudySharpBot/1.0)" },
+    headers: { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36" },
   });
   if (!r.ok) return [];
   const html = await r.text();
