@@ -26,27 +26,25 @@ async function wikipedia(q: string): Promise<WebResult[]> {
 }
 
 async function duckduckgo(q: string): Promise<WebResult[]> {
-  const r = await fetch("https://html.duckduckgo.com/html/", {
-    method: "POST",
-    headers: {
-      "content-type": "application/x-www-form-urlencoded",
-      "user-agent": "Mozilla/5.0 (compatible; StudySharpBot/1.0)",
-    },
-    body: `q=${encodeURIComponent(q)}&kl=jp-jp`,
+  const r = await fetch(`https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(q)}&kl=jp-jp`, {
+    headers: { "user-agent": "Mozilla/5.0 (compatible; StudySharpBot/1.0)" },
   });
   if (!r.ok) return [];
   const html = await r.text();
   const out: WebResult[] = [];
-  const re = /<a[^>]+class="result__a"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>[\s\S]*?class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g;
+  const re = /href="([^"]+)"[^>]*class=['"]result-link['"][^>]*>([\s\S]*?)<\/a>[\s\S]*?class=['"]result-snippet['"][^>]*>([\s\S]*?)<\/td>/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(html)) && out.length < 4) {
     let link = m[1];
     const uddg = /uddg=([^&]+)/.exec(link);
     if (uddg) link = decodeURIComponent(uddg[1]);
+    if (link.startsWith("//")) link = `https:${link}`;
     const title = strip(m[2]);
-    const snippet = strip(m[3]);
+    const snippet = strip(m[3]).slice(0, 300);
     if (title && link.startsWith("http")) {
-      out.push({ title, snippet, url: link, source: new URL(link).hostname.replace(/^www\./, "") });
+      try {
+        out.push({ title, snippet, url: link, source: new URL(link).hostname.replace(/^www\./, "") });
+      } catch { /* 無効なURLは無視 */ }
     }
   }
   return out;
