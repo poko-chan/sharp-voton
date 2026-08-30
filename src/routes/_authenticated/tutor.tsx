@@ -648,20 +648,17 @@ function TutorPage() {
             )}
 
             {!messageLoading && msgs.length === 0 && (
-              <div className="py-10 text-center">
-                <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-primary">
-                  <Sparkles className="h-7 w-7" />
-                </div>
-                <h2 className="mt-4 text-xl font-semibold">なにを一緒に進めますか？</h2>
-                <p className="mt-1.5 text-sm text-muted-foreground">
-                  普通の質問はすぐ回答し、記録の依頼は保存前に必ず確認します。設定で「学習データを見るか」「考える回数」も変えられます。
+              <div className="flex min-h-[60dvh] flex-col items-center justify-center text-center">
+                <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">今日はどのようにお手伝いしましょうか？</h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  質問にはすぐ答え、記録の依頼は保存前に確認します。
                 </p>
-                <div className="mt-5 grid gap-2 text-left sm:grid-cols-2">
+                <div className="mt-8 grid w-full gap-3 text-left sm:grid-cols-2">
                   {QUICK_PROMPTS.map((p) => (
                     <button key={p.title} onClick={() => { setInput(p.body); inputRef.current?.focus(); }}
-                      className="rounded-2xl border bg-card px-3.5 py-3 transition hover:border-primary/40 hover:bg-primary/[0.04]">
-                      <span className="block text-xs font-semibold">{p.title}</span>
-                      <span className="mt-0.5 block text-[11px] text-muted-foreground">{p.body}</span>
+                      className="group rounded-2xl border px-4 py-3.5 transition hover:bg-muted/60">
+                      <span className="block text-sm font-medium">{p.title}</span>
+                      <span className="mt-0.5 block text-xs text-muted-foreground transition group-hover:text-foreground/70">{p.body}</span>
                     </button>
                   ))}
                 </div>
