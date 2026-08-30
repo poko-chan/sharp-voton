@@ -256,7 +256,8 @@ function TutorPage() {
     try {
       const ups: Attachment[] = [];
       for (const file of Array.from(e.target.files)) {
-        const path = `${user.id}/${Date.now()}-${file.name}`;
+        const safeName = file.name.replace(/[^\w.\-]+/g, "_");
+        const path = `${user.id}/${Date.now()}-${safeName}`;
         const { error } = await supabase.storage.from("tutor-files").upload(path, file);
         if (error) throw error;
         const { signedUrl } = await import("@/lib/storage-url");
