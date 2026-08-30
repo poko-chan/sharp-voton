@@ -1048,6 +1048,39 @@ function TutorPage() {
         </div>
       </main>
 
+      {canvas && (
+        <CanvasPanel
+          doc={canvas}
+          streaming={canvasStreaming}
+          onChange={(content) => setCanvas((c) => (c ? { ...c, content } : c))}
+          onClose={() => setCanvas(null)}
+          onExportPdf={exportCanvasPdf}
+        />
+      )}
+
+      <Dialog open={deepOpen} onOpenChange={setDeepOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>ディープリサーチの対象サイト</DialogTitle>
+            <DialogDescription>
+              調べてほしいサイトを指定できます（例: mext.go.jp, ja.wikipedia.org）。空のままなら、Web全体から探します。
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={deepSites}
+            onChange={(e) => setDeepSites(e.target.value)}
+            placeholder={"mext.go.jp\nja.wikipedia.org"}
+            className="min-h-[110px] text-sm"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setDeepSites(""); setDeepOpen(false); }}>サイト指定なし</Button>
+            <Button onClick={() => setDeepOpen(false)}>この設定で調べる</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
+
       <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
           <SheetHeader>
