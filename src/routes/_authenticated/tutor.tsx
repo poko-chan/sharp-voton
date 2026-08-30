@@ -795,41 +795,75 @@ function TutorPage() {
                   {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
                 </Button>
 
-                <button
-                  type="button"
-                  onClick={() => setPrefs((p) => ({ ...p, web: p.web === "auto" ? "on" : p.web === "on" ? "off" : "auto" }))}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                    prefs.web === "off" ? "text-muted-foreground hover:bg-muted" : "bg-background text-foreground shadow-sm"
-                  }`}
-                  title="Web検索で事実を確認するかどうか"
-                >
-                  {prefs.web === "off" ? <GlobeLock className="h-3.5 w-3.5" /> : <Globe className="h-3.5 w-3.5" />}
-                  Web検索{prefs.web === "auto" ? "" : prefs.web === "on" ? ": いつも" : ": オフ"}
-                </button>
+                {/* 品質（Flash / Think / Pro） */}
+                <div className="flex shrink-0 items-center rounded-full bg-background p-0.5 shadow-sm">
+                  {QUALITY_DEFS.map((q) => {
+                    const on = prefs.quality === q.key;
+                    const Icon = q.key === "flash" ? Zap : q.key === "think" ? Brain : Gem;
+                    return (
+                      <button
+                        key={q.key}
+                        type="button"
+                        title={q.desc}
+                        onClick={() => setPrefs((p) => ({ ...p, quality: q.key }))}
+                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition ${
+                          on ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <Icon className="h-3.5 w-3.5" />{q.label}
+                      </button>
+                    );
+                  })}
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => setPrefs((p) => ({ ...p, lookup: p.lookup === "auto" ? "always" : p.lookup === "always" ? "never" : "auto" }))}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                    prefs.lookup === "never" ? "text-muted-foreground hover:bg-muted" : "bg-background text-foreground shadow-sm"
-                  }`}
-                  title="AIが自分の学習データを見るかどうか"
-                >
-                  <LookupIcon className="h-3.5 w-3.5" />
-                  学習データ{prefs.lookup === "auto" ? "" : prefs.lookup === "always" ? ": いつも" : ": オフ"}
-                </button>
+                <Chip
+                  on={prefs.web === "on"}
+                  icon={prefs.web === "on" ? Globe : GlobeLock}
+                  label={prefs.web === "on" ? "Web検索: オン" : "Web検索: おまかせ"}
+                  title="オンにすると毎回Webで事実を確認します。おまかせのときはAIが必要と判断したときだけ検索します。"
+                  onClick={() => setPrefs((p) => ({ ...p, web: p.web === "on" ? "auto" : "on" }))}
+                />
 
-                <button
-                  type="button"
-                  onClick={() => setPrefs((p) => ({ ...p, passes: (p.passes === 3 ? 1 : ((p.passes + 1) as 1 | 2 | 3)) }))}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                    prefs.passes === 1 ? "text-muted-foreground hover:bg-muted" : "bg-background text-foreground shadow-sm"
-                  }`}
-                  title="考える回数（多いほど正確・遅い）"
-                >
-                  <Layers className="h-3.5 w-3.5" />
-                  {prefs.passes === 1 ? "すぐ答える" : prefs.passes === 2 ? "見直す" : "じっくり"}
-                </button>
+                <Chip
+                  on={prefs.lookup === "on"}
+                  icon={prefs.lookup === "on" ? Eye : EyeOff}
+                  label={prefs.lookup === "on" ? "学習データ: オン" : "学習データ: オフ"}
+                  title="AIがあなたの学習記録・目標などを参照するかどうか"
+                  onClick={() => setPrefs((p) => ({ ...p, lookup: p.lookup === "on" ? "off" : "on" }))}
+                />
+
+                <Chip
+                  on={prefs.length !== "normal"}
+                  icon={AlignLeft}
+                  label={prefs.length === "short" ? "短く" : prefs.length === "deep" ? "詳しく" : "標準の長さ"}
+                  title="回答の長さ"
+                  onClick={() => setPrefs((p) => ({ ...p, length: p.length === "short" ? "normal" : p.length === "normal" ? "deep" : "short" }))}
+                />
+
+                <Chip
+                  on={prefs.directAnswer}
+                  icon={prefs.directAnswer ? Lightbulb : GraduationCap}
+                  label={prefs.directAnswer ? "答えを先に" : "ヒント重視"}
+                  title="答えから教えるか、ヒントから導くか"
+                  onClick={() => setPrefs((p) => ({ ...p, directAnswer: !p.directAnswer }))}
+                />
+
+                <Chip
+                  on={prefs.autoOpenThinking}
+                  icon={ScrollText}
+                  label={prefs.autoOpenThinking ? "思考を表示" : "思考を隠す"}
+                  title="生成中に思考プロセスを開いた状態にする"
+                  onClick={() => setPrefs((p) => ({ ...p, autoOpenThinking: !p.autoOpenThinking }))}
+                />
+
+                <Chip
+                  on={prefs.showSources}
+                  icon={Link2}
+                  label={prefs.showSources ? "出典あり" : "出典なし"}
+                  title="回答の下に参照した情報源のリンクを付ける"
+                  onClick={() => setPrefs((p) => ({ ...p, showSources: !p.showSources }))}
+                />
+
 
                 <div className="ml-auto flex shrink-0 items-center gap-1">
                   <VoiceMicButton onResult={(t) => setInput((v) => (v ? `${v} ${t}` : t))} />
