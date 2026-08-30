@@ -54,7 +54,7 @@ export const TASK_DEFS: Record<TaskKind, TaskDef> = {
     canvas: true,
     instruction:
       "内容をマークダウンの表に整理してください。1行目に列見出しを置き、比較軸は3つ以上にすること。表のあとに、表からわかることを3行以内で添えること。",
-    placeholder: "比較したい内容を書いてください（例：рекомендации 参考書3冊の比較）",
+    placeholder: "比較したい内容を書いてください（例：参考書3冊の比較）",
   },
   diagram: {
     kind: "diagram",

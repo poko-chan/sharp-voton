@@ -56,7 +56,7 @@ export function CanvasPanel({
           <Textarea value={doc.content} onChange={(e) => onChange(e.target.value)}
             className="min-h-[60dvh] w-full resize-none font-mono text-xs" />
         ) : (
-          <div className="prose prose-sm max-w-none dark:prose-invert">
+          <div data-canvas-preview className="prose prose-sm max-w-none dark:prose-invert">
             <ReactMarkdown>{doc.content + (streaming ? "▍" : "")}</ReactMarkdown>
           </div>
         )}
