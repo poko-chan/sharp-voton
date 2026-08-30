@@ -18,15 +18,17 @@ export const ALL_SCOPES = SCOPE_DEFS.map((s) => s.key) as ScopeKey[];
 
 export type LookupMode = "on" | "off";
 export type WebMode = "auto" | "on";
-export type Quality = "flash" | "think" | "pro";
+export type Quality = "lite" | "flash" | "think" | "pro";
 export type Length = "short" | "normal" | "deep";
 export type Tone = "friendly" | "calm" | "coach";
 
 export const QUALITY_DEFS = [
+  { key: "lite", label: "Lite", desc: "推論なしで最速。思考プロセスも出しません。" },
   { key: "flash", label: "Flash", desc: "すぐ答える。日常の質問向け。" },
   { key: "think", label: "Think", desc: "考えてから答える。説明・相談向け。" },
   { key: "pro", label: "Pro", desc: "深く考えて検証。難問・長文向け。" },
 ] as const;
+
 
 export type ChatPrefs = {
   /** 学習データを見るかどうか（オン／オフ） */
@@ -75,7 +77,7 @@ export function loadPrefs(): ChatPrefs {
       ...p,
       lookup: p.lookup === "off" ? "off" : "on",
       web: p.web === "on" ? "on" : "auto",
-      quality: p.quality === "flash" || p.quality === "pro" ? p.quality : "think",
+      quality: p.quality === "lite" || p.quality === "flash" || p.quality === "pro" ? p.quality : "think",
       scopes: Array.isArray(p.scopes) ? ALL_SCOPES.filter((k) => p.scopes!.includes(k)) : ALL_SCOPES,
     };
   } catch { return DEFAULT_PREFS; }

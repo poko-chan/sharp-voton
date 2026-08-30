@@ -10,8 +10,9 @@ import {
   Send, Paperclip, Loader2, X, Trash2, Plus, MessageSquare, Pencil, ChevronDown,
   Brain, Search, RotateCcw, PanelLeftClose, PanelLeft, Settings2, Copy, Check, Square,
   Download, ArrowDown, SlidersHorizontal, Eye, EyeOff, Globe, GlobeLock,
-  Zap, Gem, AlignLeft, Lightbulb, GraduationCap, ScrollText, Link2,
+  Zap, Gem, AlignLeft, FastForward,
 } from "lucide-react";
+
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import {
@@ -37,6 +38,11 @@ import {
   type ChatPrefs, type ScopeKey,
 } from "@/lib/tutor-prefs";
 import { detectAiAction, applyAiAction, fetchSubjectNames, looksLikeActionRequest, parseCommonActionRequest, type AiAction } from "@/lib/ai-actions";
+import { ToolsMenu } from "@/components/ai/ToolsMenu";
+import { CanvasPanel, printDoc, type CanvasDoc } from "@/components/ai/CanvasPanel";
+import { TASK_DEFS, buildSiteQueries, type TaskKind } from "@/lib/tutor-tasks";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
 
 
 type Attachment = { url: string; name: string; type: string };
@@ -235,6 +241,26 @@ function TutorPage() {
   const [threadQuery, setThreadQuery] = useState("");
   const [atBottom, setAtBottom] = useState(true);
 
+  // 「…」メニューの機能（特別な作業）と、右のキャンバス
+  const [taskKind, setTaskKind] = useState<TaskKind | null>(null);
+  const [deepOpen, setDeepOpen] = useState(false);
+  const [deepSites, setDeepSites] = useState("");
+  const [canvas, setCanvas] = useState<CanvasDoc | null>(null);
+  const [canvasStreaming, setCanvasStreaming] = useState(false);
+  // ヒント重視は「今のスレッドだけ」の設定
+  const [hintByThread, setHintByThread] = useState<Record<string, boolean>>({});
+  const hintKey = activeId ?? "_new";
+  const hintOn = hintByThread[hintKey] ?? !prefs.directAnswer;
+  const setHint = (v: boolean) => setHintByThread((m) => ({ ...m, [hintKey]: v }));
+
+  const exportCanvasPdf = () => {
+    if (!canvas) return;
+    const html = document.querySelector("[data-canvas-preview]")?.innerHTML;
+    printDoc(canvas.title, html ?? `<pre>${canvas.content.replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c] as string))}</pre>`);
+  };
+
+
+
   const fileRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -263,8 +289,15 @@ function TutorPage() {
     return !v;
   });
 
+  // Lite は「思考プロセス」を一切残さない（最速で答えるモード）
+  const silent = prefs.quality === "lite";
   const syncSteps = () => setThinkingSteps([...stepsRef.current]);
-  const addStep = (label: string, detail?: string) => { stepsRef.current = [...stepsRef.current, { label, detail, done: false }]; syncSteps(); };
+  const addStep = (label: string, detail?: string) => {
+    if (silent) return;
+    stepsRef.current = [...stepsRef.current, { label, detail, done: false }];
+    syncSteps();
+  };
+
   const finishLastStep = (detail?: string) => {
     stepsRef.current = stepsRef.current.map((s, i) => (i === stepsRef.current.length - 1 ? { ...s, done: true, detail: detail ?? s.detail } : s));
     syncSteps();
@@ -363,6 +396,8 @@ function TutorPage() {
     const lastUser = [...history].reverse().find((m) => m.role === "user")?.content ?? "";
     const displayName = user.user_metadata?.display_name ?? user.email?.split("@")[0] ?? "生徒";
     const t0 = Date.now();
+    const task = taskKind ? TASK_DEFS[taskKind] : null;
+    const runPrefs: ChatPrefs = { ...prefs, directAnswer: !hintOn };
 
     addStep("準備しています", `${engineLabel || "端末内AI"} / ${QUALITY_DEFS.find((q) => q.key === prefs.quality)?.label}モード`);
     finishLastStep();
@@ -372,7 +407,10 @@ function TutorPage() {
       prefs.lookup === "off" ? [] : relevantScopes(lastUser, prefs.scopes);
 
 
-    const doSearch = prefs.web === "on" || (prefs.web === "auto" && needsWebSearch(lastUser));
+    const doSearch = task?.kind === "deep" || prefs.web === "on" || (prefs.web === "auto" && needsWebSearch(lastUser));
+    const searchQueries = task?.kind === "deep"
+      ? buildSiteQueries(buildSearchQuery(lastUser), deepSites.split(/[\s,、\n]+/))
+      : [buildSearchQuery(lastUser)];
     // メッセージ内のURLを検出して直接読みに行く（どのサイトでも対応）
     const urlsInMsg = Array.from(new Set(lastUser.match(/https?:\/\/[^\s　)\]}>"'〈〉「」『』【】、。]+/g) ?? []))
       .filter((u) => !/\.(png|jpe?g|gif|webp|svg|mp4|mp3|pdf|zip)($|\?)/i.test(u))
@@ -380,17 +418,20 @@ function TutorPage() {
     if (requested.length > 0) {
       addStep("学習情報を確認しています", requested.map((k) => SCOPE_DEFS.find((s) => s.key === k)?.label).join("、"));
     }
-    if (doSearch) addStep("Webで事実を確認しています", buildSearchQuery(lastUser));
+    if (doSearch) addStep(task?.kind === "deep" ? "資料を集めています" : "Webで事実を確認しています", searchQueries.join("\n"));
     if (urlsInMsg.length > 0) addStep("ページを読んでいます", urlsInMsg.join("\n"));
 
     // 学習情報・Web検索・指定ページの取得は同時に行い、待ち時間を短くする
     const [ctxRes, webRes, pages] = await Promise.all([
       requested.length > 0 ? ctxFn({ data: { scopes: requested } }).catch(() => null) : Promise.resolve(null),
       doSearch
-        ? searchFn({ data: { query: buildSearchQuery(lastUser) } }).catch(() => null)
+        ? Promise.all(searchQueries.map((q) => searchFn({ data: { query: q } }).catch(() => null)))
+            .then((rs) => ({ results: rs.flatMap((r: any) => r?.results ?? []) }))
         : Promise.resolve(null),
       Promise.all(urlsInMsg.map((u) => pageFn({ data: { url: u } }).catch(() => null))),
     ]);
+
+
 
     if (requested.length > 0) {
       ctx = ctxRes;
@@ -441,18 +482,29 @@ function TutorPage() {
     }
 
     const convo = buildHistory(history);
-    const system = answerSystem(displayName, prefs, ctx, webResults);
+    const system = answerSystem(displayName, runPrefs, ctx, webResults)
+      + (task ? `\n\n【今回の作業】\n${task.instruction}` : "");
 
     const session = await createAiSession({ system, task: "chat" });
     let text = "";
     setStreaming("");
+    if (task?.canvas) {
+      setCanvas({ title: task.label, kind: task.kind, content: "" });
+      setCanvasStreaming(true);
+    }
 
     const live = () => runId === runIdRef.current && activeIdRef.current === tid && !cancelRef.current;
+    const onPartial = (partial: string) => {
+      if (!live()) return;
+      if (task?.canvas) setCanvas((c) => (c ? { ...c, content: partial } : c));
+      else setStreaming(partial);
+    };
 
     try {
       // ── 思考フェーズ（Think / Pro）：モデル自身の推論を実際に生成し、そのまま流す ──
+      // Lite / Flash は推論なし。Lite は思考プロセス自体を残さない。
       let thought = "";
-      if (prefs.quality !== "flash") {
+      if (prefs.quality === "think" || prefs.quality === "pro") {
         const tThink = Date.now();
         const idx = addReasoning();
         const thinker = await createAiSession({ task: "reasoning", system });
@@ -487,20 +539,20 @@ function TutorPage() {
         finishReasoning(idx2, critique, Date.now() - tCheck);
       }
 
-      addStep("回答を書いています");
+      addStep(task ? `${task.label}を作成しています` : "回答を書いています");
 
       const finalPrompt = draft
         ? `${convo}\n\n【あなたの下書き】\n${draft}${critique ? `\n\n【点検で見つかった直すべき点】\n${critique}` : ""}\n\n指摘をすべて反映した最終回答だけを書いてください。下書きや点検には言及しないこと。\n\nアシスタント:`
         : `${convo}${thought ? `\n\n【自分の思考メモ（そのままは出力しない）】\n${thought}` : ""}\n\nアシスタント:`;
 
-      text = await session.promptStreaming(finalPrompt, (partial) => {
-        if (live()) setStreaming(partial);
-      });
-    } finally { session.destroy(); }
+      text = await session.promptStreaming(finalPrompt, onPartial);
+    } finally { session.destroy(); setCanvasStreaming(false); }
 
     if (cancelRef.current && !text.trim()) throw new Error("生成を中断しました。");
     if (!text.trim()) throw new Error("AIから回答を受け取れませんでした。もう一度お試しください。");
+    if (task?.canvas) setCanvas({ title: task.label, kind: task.kind, content: text });
     finishLastStep(`${text.length}文字を生成しました（所要 ${Math.round((Date.now() - t0) / 1000)}秒${cancelRef.current ? "・途中で中断" : ""}）`);
+
 
     const sources = prefs.showSources && webResults.length
       ? `\n\n---\n**参照した情報源**\n${webResults.map((r, i) => `${i + 1}. [${r.title}](${r.url}) — ${r.source}`).join("\n")}`
@@ -877,6 +929,24 @@ function TutorPage() {
               </div>
             )}
 
+            {taskKind && (
+              <div className="mb-2 flex items-center gap-2 rounded-2xl border border-primary/30 bg-primary/[0.06] px-3 py-2 text-xs">
+                <span className="font-semibold">{TASK_DEFS[taskKind].label}</span>
+                <span className="min-w-0 flex-1 truncate text-muted-foreground">
+                  {taskKind === "deep" && deepSites.trim()
+                    ? `対象サイト: ${deepSites.trim()}`
+                    : TASK_DEFS[taskKind].placeholder}
+                </span>
+                {taskKind === "deep" && (
+                  <button type="button" className="shrink-0 underline" onClick={() => setDeepOpen(true)}>サイトを指定</button>
+                )}
+                <button type="button" className="shrink-0 rounded-full p-1 hover:bg-muted" onClick={() => setTaskKind(null)} title="やめる">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+
+
             <form onSubmit={(e) => { e.preventDefault(); void send(); }}
               className="rounded-3xl border bg-muted/50 transition focus-within:border-muted-foreground/30 focus-within:bg-muted/70">
               <input type="file" ref={fileRef} className="hidden" multiple accept="image/*,.pdf" onChange={onUpload} />
@@ -898,7 +968,7 @@ function TutorPage() {
                 <div className="flex shrink-0 items-center rounded-full bg-background p-0.5 shadow-sm">
                   {QUALITY_DEFS.map((q) => {
                     const on = prefs.quality === q.key;
-                    const Icon = q.key === "flash" ? Zap : q.key === "think" ? Brain : Gem;
+                    const Icon = q.key === "lite" ? FastForward : q.key === "flash" ? Zap : q.key === "think" ? Brain : Gem;
                     return (
                       <button
                         key={q.key}
@@ -939,29 +1009,19 @@ function TutorPage() {
                   onClick={() => setPrefs((p) => ({ ...p, length: p.length === "short" ? "normal" : p.length === "normal" ? "deep" : "short" }))}
                 />
 
-                <Chip
-                  on={prefs.directAnswer}
-                  icon={prefs.directAnswer ? Lightbulb : GraduationCap}
-                  label={prefs.directAnswer ? "答えを先に" : "ヒント重視"}
-                  title="答えから教えるか、ヒントから導くか"
-                  onClick={() => setPrefs((p) => ({ ...p, directAnswer: !p.directAnswer }))}
+                <ToolsMenu
+                  value={taskKind}
+                  disabled={prefs.quality === "lite" || busy}
+                  onSelect={(k) => {
+                    if (k === "deep") { setTaskKind("deep"); setDeepOpen(true); }
+                    else setTaskKind(k);
+                  }}
+                  hintOn={hintOn}
+                  onHintChange={setHint}
+                  canExportPdf={!!canvas}
+                  onExportPdf={exportCanvasPdf}
                 />
 
-                <Chip
-                  on={prefs.autoOpenThinking}
-                  icon={ScrollText}
-                  label={prefs.autoOpenThinking ? "思考を表示" : "思考を隠す"}
-                  title="生成中に思考プロセスを開いた状態にする"
-                  onClick={() => setPrefs((p) => ({ ...p, autoOpenThinking: !p.autoOpenThinking }))}
-                />
-
-                <Chip
-                  on={prefs.showSources}
-                  icon={Link2}
-                  label={prefs.showSources ? "出典あり" : "出典なし"}
-                  title="回答の下に参照した情報源のリンクを付ける"
-                  onClick={() => setPrefs((p) => ({ ...p, showSources: !p.showSources }))}
-                />
 
 
                 <div className="ml-auto flex shrink-0 items-center gap-1">
@@ -987,6 +1047,39 @@ function TutorPage() {
           </div>
         </div>
       </main>
+
+      {canvas && (
+        <CanvasPanel
+          doc={canvas}
+          streaming={canvasStreaming}
+          onChange={(content) => setCanvas((c) => (c ? { ...c, content } : c))}
+          onClose={() => setCanvas(null)}
+          onExportPdf={exportCanvasPdf}
+        />
+      )}
+
+      <Dialog open={deepOpen} onOpenChange={setDeepOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>ディープリサーチの対象サイト</DialogTitle>
+            <DialogDescription>
+              調べてほしいサイトを指定できます（例: mext.go.jp, ja.wikipedia.org）。空のままなら、Web全体から探します。
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={deepSites}
+            onChange={(e) => setDeepSites(e.target.value)}
+            placeholder={"mext.go.jp\nja.wikipedia.org"}
+            className="min-h-[110px] text-sm"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setDeepSites(""); setDeepOpen(false); }}>サイト指定なし</Button>
+            <Button onClick={() => setDeepOpen(false)}>この設定で調べる</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
 
       <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">

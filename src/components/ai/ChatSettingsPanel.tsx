@@ -87,12 +87,20 @@ export function ChatSettingsPanel({ prefs, onChange }: { prefs: ChatPrefs; onCha
         </label>
         <label className="flex items-center justify-between gap-3 border-t pt-2">
           <span className="min-w-0">
-            <span className="block text-xs font-semibold">思考プロセスを自動で開く</span>
-            <span className="block text-[11px] text-muted-foreground">生成中の考えを最初から表示します。</span>
+            <span className="block text-xs font-semibold">思考プロセスを表示する</span>
+            <span className="block text-[11px] text-muted-foreground">生成中の考えを最初から開いた状態で表示します（Liteでは表示しません）。</span>
           </span>
           <Switch checked={prefs.autoOpenThinking} onCheckedChange={(v) => set({ autoOpenThinking: v })} />
         </label>
+        <label className="flex items-center justify-between gap-3 border-t pt-2">
+          <span className="min-w-0">
+            <span className="block text-xs font-semibold">出典リンクを表示する</span>
+            <span className="block text-[11px] text-muted-foreground">Webを参照したとき、回答の下に情報源のリンクを付けます。</span>
+          </span>
+          <Switch checked={prefs.showSources} onCheckedChange={(v) => set({ showSources: v })} />
+        </label>
       </div>
+
 
       <Section icon={ShieldCheck} title="AIに見せてよい情報" desc="オフにした情報は、どの設定でもAIへ渡しません。">
         <div className="grid gap-2">
