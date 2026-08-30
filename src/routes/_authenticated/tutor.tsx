@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
-  Sparkles, Send, Paperclip, Loader2, X, Trash2, Plus, MessageSquare, Pencil, ChevronDown,
+  Send, Paperclip, Loader2, X, Trash2, Plus, MessageSquare, Pencil, ChevronDown,
   Brain, Search, RotateCcw, PanelLeftClose, PanelLeft, Settings2, Copy, Check, Square,
-  Download, ArrowDown, SlidersHorizontal, Eye, EyeOff, Layers, Bot, Globe, GlobeLock,
+  Download, ArrowDown, SlidersHorizontal, Eye, EyeOff, Layers, Globe, GlobeLock,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
@@ -555,35 +555,37 @@ function TutorPage() {
     <div className="flex h-[calc(100dvh-3.5rem)] overflow-hidden bg-background">
       {/* サイドバー */}
       <aside
-        className={`flex h-full shrink-0 flex-col border-r bg-muted/30 backdrop-blur transition-[width] duration-200 ${
+        className={`flex h-full shrink-0 flex-col border-r bg-muted/40 transition-[width] duration-200 ${
           sidebarOpen ? "w-[264px]" : "w-0"
         } overflow-hidden`}
       >
-        <div className="space-y-2 p-2.5">
-          <div className="flex items-center gap-1.5">
-            <Button onClick={newChat} className="flex-1 justify-start gap-2 rounded-xl" size="sm">
+        <div className="space-y-1.5 p-3">
+          <div className="flex items-center gap-1">
+            <button onClick={newChat}
+              className="flex h-9 flex-1 items-center gap-2.5 rounded-lg border bg-background px-3 text-sm font-medium shadow-sm transition hover:bg-muted/70">
               <Plus className="h-4 w-4" />新しいチャット
-            </Button>
+            </button>
             <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={toggleSidebar} title="サイドバーを閉じる">
               <PanelLeftClose className="h-4 w-4" />
             </Button>
           </div>
           <div className="relative">
             <Search className="pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-            <Input value={threadQuery} onChange={(e) => setThreadQuery(e.target.value)} placeholder="チャットを検索" className="h-8 rounded-xl pl-8 text-xs" />
+            <Input value={threadQuery} onChange={(e) => setThreadQuery(e.target.value)} placeholder="チャットを検索" className="h-8 rounded-lg border-0 bg-transparent pl-8 text-xs shadow-none focus-visible:ring-1" />
           </div>
         </div>
         <div className="flex-1 space-y-0.5 overflow-y-auto px-2 pb-3">
           {filteredThreads.length === 0 && <p className="py-6 text-center text-xs text-muted-foreground">チャットがありません</p>}
+          {filteredThreads.length > 0 && <p className="px-2.5 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">履歴</p>}
           {filteredThreads.map((t) => (
             <div
               key={t.id}
-              className={`group flex cursor-pointer items-center gap-2 rounded-xl px-2.5 py-2 text-sm transition ${
-                activeId === t.id ? "bg-primary/12 font-medium text-foreground" : "hover:bg-muted"
+              className={`group flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition ${
+                activeId === t.id ? "bg-background font-medium text-foreground shadow-sm" : "text-muted-foreground hover:bg-background/60 hover:text-foreground"
               }`}
               onClick={() => { if (!busy) { setActiveId(t.id); setFlowError(null); } }}
             >
-              <MessageSquare className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+              <MessageSquare className="h-3.5 w-3.5 shrink-0 opacity-60" />
               {renamingId === t.id ? (
                 <Input
                   autoFocus value={renameTitle} onChange={(e) => setRenameTitle(e.target.value)}
@@ -603,34 +605,26 @@ function TutorPage() {
             </div>
           ))}
         </div>
-        <div className="border-t p-2.5">
-          <Button variant="outline" size="sm" className="w-full justify-start gap-2 rounded-xl" onClick={() => setSettingsOpen(true)}>
+        <div className="p-2">
+          <button className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-background/60 hover:text-foreground" onClick={() => setSettingsOpen(true)}>
             <SlidersHorizontal className="h-4 w-4" />チャットの設定
-          </Button>
+          </button>
         </div>
       </aside>
 
       {/* メイン */}
       <main className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center gap-2 border-b px-3 py-2">
+        <header className="flex items-center gap-2 px-3 py-2.5">
           {!sidebarOpen && (
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleSidebar} title="サイドバーを開く">
               <PanelLeft className="h-4 w-4" />
             </Button>
           )}
           <div className="min-w-0">
-            <h1 className="flex items-center gap-1.5 truncate text-sm font-semibold">
-              <Sparkles className="h-4 w-4 shrink-0 text-primary" />{activeTitle}
-            </h1>
+            <h1 className="truncate text-sm font-semibold">{activeTitle}</h1>
             <p className="truncate text-[11px] text-muted-foreground">{engineLabel || "端末内AI"} ・ 推論{prefs.passes}回</p>
           </div>
           <div className="ml-auto flex items-center gap-1">
-            <span className="hidden items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] text-muted-foreground sm:flex">
-              <LookupIcon className="h-3 w-3" />
-              {prefs.lookup === "always" ? "いつも参照" : prefs.lookup === "never" ? "参照しない" : "自動参照"}
-              <Layers className="ml-1 h-3 w-3" />推論{prefs.passes}
-            </span>
-
             <AiStatusBadge />
             {msgs.length > 0 && (
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={exportChat} title="この会話を書き出す">
@@ -654,20 +648,17 @@ function TutorPage() {
             )}
 
             {!messageLoading && msgs.length === 0 && (
-              <div className="py-10 text-center">
-                <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-primary">
-                  <Sparkles className="h-7 w-7" />
-                </div>
-                <h2 className="mt-4 text-xl font-semibold">なにを一緒に進めますか？</h2>
-                <p className="mt-1.5 text-sm text-muted-foreground">
-                  普通の質問はすぐ回答し、記録の依頼は保存前に必ず確認します。設定で「学習データを見るか」「考える回数」も変えられます。
+              <div className="flex min-h-[60dvh] flex-col items-center justify-center text-center">
+                <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">今日はどのようにお手伝いしましょうか？</h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  質問にはすぐ答え、記録の依頼は保存前に確認します。
                 </p>
-                <div className="mt-5 grid gap-2 text-left sm:grid-cols-2">
+                <div className="mt-8 grid w-full gap-3 text-left sm:grid-cols-2">
                   {QUICK_PROMPTS.map((p) => (
                     <button key={p.title} onClick={() => { setInput(p.body); inputRef.current?.focus(); }}
-                      className="rounded-2xl border bg-card px-3.5 py-3 transition hover:border-primary/40 hover:bg-primary/[0.04]">
-                      <span className="block text-xs font-semibold">{p.title}</span>
-                      <span className="mt-0.5 block text-[11px] text-muted-foreground">{p.body}</span>
+                      className="group rounded-2xl border px-4 py-3.5 transition hover:bg-muted/60">
+                      <span className="block text-sm font-medium">{p.title}</span>
+                      <span className="mt-0.5 block text-xs text-muted-foreground transition group-hover:text-foreground/70">{p.body}</span>
                     </button>
                   ))}
                 </div>
@@ -679,12 +670,7 @@ function TutorPage() {
                 const mine = m.role === "user";
                 const isLastAssistant = !mine && i === msgs.length - 1;
                 return (
-                  <div key={m.id} className={`group flex gap-3 ${mine ? "justify-end" : ""}`}>
-                    {!mine && (
-                      <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                        <Bot className="h-4 w-4" />
-                      </span>
-                    )}
+                  <div key={m.id} className={`group flex ${mine ? "justify-end" : ""}`}>
                     <div className={mine ? "max-w-[80%]" : "min-w-0 flex-1"}>
                       {(m.attachments ?? []).map((a, k) => (
                         a.type.startsWith("image/")
@@ -694,7 +680,7 @@ function TutorPage() {
                       {!mine && (m.thinking ?? []).length > 0 && <ThinkingBlock steps={m.thinking ?? []} />}
                       <div className={
                         mine
-                          ? "rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-primary-foreground prose prose-sm prose-invert max-w-none"
+                          ? "rounded-3xl bg-muted px-4 py-2.5 prose prose-sm dark:prose-invert max-w-none"
                           : "prose prose-sm dark:prose-invert max-w-none leading-relaxed"
                       }>
                         <ReactMarkdown>{m.content}</ReactMarkdown>
@@ -720,10 +706,7 @@ function TutorPage() {
               })}
 
               {busy && (
-                <div className="flex gap-3">
-                  <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                    <Bot className="h-4 w-4" />
-                  </span>
+                <div className="flex">
                   <div className="min-w-0 flex-1">
                     {thinkingSteps.length > 0 && (
                       <ThinkingBlock steps={thinkingSteps} defaultOpen={showThinking} onOpenChange={setShowThinking} live />
@@ -776,8 +759,8 @@ function TutorPage() {
         </div>
 
         {/* 入力欄 */}
-        <div className="border-t bg-background/80 backdrop-blur">
-          <div className="mx-auto w-full max-w-3xl px-4 py-3">
+        <div className="bg-background">
+          <div className="mx-auto w-full max-w-3xl px-4 pb-4 pt-2">
             {pending.length > 0 && (
               <div className="mb-2 flex flex-wrap gap-2">
                 {pending.map((a, i) => (
@@ -795,82 +778,77 @@ function TutorPage() {
             )}
 
             <form onSubmit={(e) => { e.preventDefault(); void send(); }}
-              className="flex items-end gap-1.5 rounded-3xl border bg-card p-1.5 shadow-sm focus-within:border-primary/40">
+              className="rounded-3xl border bg-muted/50 transition focus-within:border-muted-foreground/30 focus-within:bg-muted/70">
               <input type="file" ref={fileRef} className="hidden" multiple accept="image/*,.pdf" onChange={onUpload} />
-              <Button type="button" variant="ghost" size="icon" className="h-9 w-9 shrink-0 rounded-full" disabled={uploading} onClick={() => fileRef.current?.click()} title="ファイルを添付">
-                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
-              </Button>
               <Textarea
                 ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)}
-                placeholder={busy ? "生成中です…" : "質問や「数学を30分記録して」と入力（Shift+Enterで改行）"}
-                className="max-h-40 min-h-[40px] resize-none border-0 bg-transparent px-1 py-2 shadow-none focus-visible:ring-0"
+                placeholder={busy ? "生成中です…" : "AIに質問する…（「数学を30分記録して」もOK）"}
+                className="max-h-48 min-h-[52px] w-full resize-none border-0 bg-transparent px-4 pb-1 pt-3.5 text-base shadow-none focus-visible:ring-0"
                 disabled={busy}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); } }}
               />
-              <div className="flex shrink-0 items-center gap-1">
-                <VoiceMicButton onResult={(t) => setInput((v) => (v ? `${v} ${t}` : t))} />
-                {busy ? (
-                  <Button type="button" variant="destructive" size="icon" className="h-9 w-9 rounded-full" onClick={stopGeneration} title="生成を止める">
-                    <Square className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <Button type="submit" size="icon" className="h-9 w-9 rounded-full" disabled={!canAi || (!input.trim() && pending.length === 0)} title="送信">
-                    <Send className="h-4 w-4" />
-                  </Button>
-                )}
+
+              {/* コンポーザー内のコントロール行 */}
+              <div className="flex flex-wrap items-center gap-1 px-2.5 pb-2.5">
+                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:text-foreground" disabled={uploading} onClick={() => fileRef.current?.click()} title="ファイルを添付">
+                  {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+                </Button>
+
+                <button
+                  type="button"
+                  onClick={() => setPrefs((p) => ({ ...p, web: p.web === "auto" ? "on" : p.web === "on" ? "off" : "auto" }))}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                    prefs.web === "off" ? "text-muted-foreground hover:bg-muted" : "bg-background text-foreground shadow-sm"
+                  }`}
+                  title="Web検索で事実を確認するかどうか"
+                >
+                  {prefs.web === "off" ? <GlobeLock className="h-3.5 w-3.5" /> : <Globe className="h-3.5 w-3.5" />}
+                  Web検索{prefs.web === "auto" ? "" : prefs.web === "on" ? ": いつも" : ": オフ"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPrefs((p) => ({ ...p, lookup: p.lookup === "auto" ? "always" : p.lookup === "always" ? "never" : "auto" }))}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                    prefs.lookup === "never" ? "text-muted-foreground hover:bg-muted" : "bg-background text-foreground shadow-sm"
+                  }`}
+                  title="AIが自分の学習データを見るかどうか"
+                >
+                  <LookupIcon className="h-3.5 w-3.5" />
+                  学習データ{prefs.lookup === "auto" ? "" : prefs.lookup === "always" ? ": いつも" : ": オフ"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPrefs((p) => ({ ...p, passes: (p.passes === 3 ? 1 : ((p.passes + 1) as 1 | 2 | 3)) }))}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                    prefs.passes === 1 ? "text-muted-foreground hover:bg-muted" : "bg-background text-foreground shadow-sm"
+                  }`}
+                  title="考える回数（多いほど正確・遅い）"
+                >
+                  <Layers className="h-3.5 w-3.5" />
+                  {prefs.passes === 1 ? "すぐ答える" : prefs.passes === 2 ? "見直す" : "じっくり"}
+                </button>
+
+                <div className="ml-auto flex shrink-0 items-center gap-1">
+                  <VoiceMicButton onResult={(t) => setInput((v) => (v ? `${v} ${t}` : t))} />
+                  {busy ? (
+                    <Button type="button" variant="destructive" size="icon" className="h-8 w-8 rounded-full" onClick={stopGeneration} title="生成を止める">
+                      <Square className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <button type="submit" disabled={!canAi || (!input.trim() && pending.length === 0)} title="送信"
+                      className="grid h-8 w-8 place-items-center rounded-full bg-foreground text-background transition hover:opacity-85 disabled:opacity-30">
+                      <Send className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
               </div>
             </form>
 
-            {/* よく切り替える設定は入力欄のすぐ下に置く */}
-            <div className="mt-2 flex flex-wrap items-center gap-1.5 px-1">
-              <button
-                type="button"
-                onClick={() => setPrefs((p) => ({ ...p, web: p.web === "auto" ? "on" : p.web === "on" ? "off" : "auto" }))}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition hover:bg-muted ${
-                  prefs.web === "off" ? "text-muted-foreground" : "border-primary/40 bg-primary/10 text-foreground"
-                }`}
-                title="Web検索で事実を確認するかどうか"
-              >
-                {prefs.web === "off" ? <GlobeLock className="h-3.5 w-3.5" /> : <Globe className="h-3.5 w-3.5" />}
-                Web検索: {prefs.web === "on" ? "いつも" : prefs.web === "off" ? "しない" : "必要なとき"}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPrefs((p) => ({ ...p, lookup: p.lookup === "auto" ? "always" : p.lookup === "always" ? "never" : "auto" }))}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition hover:bg-muted ${
-                  prefs.lookup === "never" ? "text-muted-foreground" : "border-primary/40 bg-primary/10 text-foreground"
-                }`}
-                title="AIが自分の学習データを見るかどうか"
-              >
-                <LookupIcon className="h-3.5 w-3.5" />
-                学習データ: {prefs.lookup === "always" ? "いつも見る" : prefs.lookup === "never" ? "見ない" : "必要なとき"}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPrefs((p) => ({ ...p, passes: (p.passes === 3 ? 1 : ((p.passes + 1) as 1 | 2 | 3)) }))}
-                className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition hover:bg-muted"
-                title="考える回数（多いほど正確・遅い）"
-              >
-                <Layers className="h-3.5 w-3.5" />
-                {prefs.passes === 1 ? "すぐ答える" : prefs.passes === 2 ? "見直す" : "じっくり"}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSettingsOpen(true)}
-                className="ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] text-muted-foreground transition hover:bg-muted"
-                title="毎回は変えない設定"
-              >
-                <SlidersHorizontal className="h-3.5 w-3.5" />くわしい設定
-              </button>
-            </div>
-
-            <div className="mt-1.5 flex items-center justify-between px-1 text-[10px] text-muted-foreground">
-
+            <div className="mt-2 flex items-center justify-center gap-2 px-1 text-[10px] text-muted-foreground">
               <span>AIの回答が必ず正しいとは限りません。大事な内容は確認してください。</span>
-              <span>{input.length > 0 ? `${input.length}文字` : "Enterで送信"}</span>
+              <span className="hidden sm:inline">{input.length > 0 ? `${input.length}文字` : "Enterで送信"}</span>
             </div>
           </div>
         </div>
