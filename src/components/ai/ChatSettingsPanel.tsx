@@ -47,8 +47,9 @@ export function ChatSettingsPanel({ prefs, onChange }: { prefs: ChatPrefs; onCha
   return (
     <div className="space-y-5">
       <p className="rounded-xl bg-muted/60 p-2.5 text-[11px] leading-relaxed text-muted-foreground">
-        ここは「毎回は変えない」設定です。推論の回数・学習データの参照・Web検索の切り替えは、入力欄のすぐ下のボタンから変えられます。
+        ここは「毎回は変えない」設定です。品質（Flash / Think / Pro）、Web検索、学習データ、回答の長さなどは、入力欄のすぐ下のボタンからすぐ切り替えられます。
       </p>
+
 
 
 

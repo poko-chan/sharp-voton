@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import {
   Send, Paperclip, Loader2, X, Trash2, Plus, MessageSquare, Pencil, ChevronDown,
   Brain, Search, RotateCcw, PanelLeftClose, PanelLeft, Settings2, Copy, Check, Square,
-  Download, ArrowDown, SlidersHorizontal, Eye, EyeOff, Layers, Globe, GlobeLock,
+  Download, ArrowDown, SlidersHorizontal, Eye, EyeOff, Globe, GlobeLock,
+  Zap, Gem, AlignLeft, Lightbulb, GraduationCap, ScrollText, Link2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
@@ -31,7 +32,7 @@ import { AiActionCard } from "@/components/ai/AiActionCard";
 import { ChatSettingsPanel } from "@/components/ai/ChatSettingsPanel";
 import { VoiceMicButton } from "@/components/VoiceMicButton";
 import {
-  SCOPE_DEFS, loadPrefs, savePrefs, relevantScopes, LENGTH_RULE, TONE_RULE,
+  SCOPE_DEFS, QUALITY_DEFS, loadPrefs, savePrefs, relevantScopes, LENGTH_RULE, TONE_RULE,
   needsWebSearch, buildSearchQuery,
   type ChatPrefs, type ScopeKey,
 } from "@/lib/tutor-prefs";
@@ -39,7 +40,15 @@ import { detectAiAction, applyAiAction, fetchSubjectNames, looksLikeActionReques
 
 
 type Attachment = { url: string; name: string; type: string };
-type ThinkingStep = { label: string; detail?: string; done: boolean };
+type ThinkingStep = { label: string; detail?: string; done: boolean; kind?: "tool" | "reasoning"; ms?: number };
+
+/** 思考フェーズでモデルに出させる「内心のメモ」の指示 */
+const THINK_PROMPT = {
+  think:
+    "回答を書く前に、頭の中の考えをそのままメモしてください。\n1) 質問で本当に聞かれていることは何か\n2) 使える情報・条件\n3) 答えにたどり着く筋道（計算や根拠を含む）\n4) 見落としやすい点\n短い文を並べる形で書き、最終回答の本文は書かないでください。",
+  pro:
+    "回答を書く前に、頭の中の考えをそのままメモしてください。\n1) 質問の意図と前提の確認\n2) 考えられる解き方を2つ挙げ、良い方を選ぶ理由\n3) 選んだ筋道を段階的に検討（計算・根拠・具体例）\n4) 反例や間違えやすい点の自己チェック\n5) 最終的に伝えるべき要点\n短い文を並べる形で書き、最終回答の本文は書かないでください。",
+} as const;
 type Msg = { id: string; role: string; content: string; attachments: Attachment[]; created_at: string; thread_id: string | null; thinking?: ThinkingStep[] };
 type Thread = { id: string; title: string; updated_at: string; created_at: string };
 
@@ -108,36 +117,89 @@ function CopyButton({ text, label = "コピー" }: { text: string; label?: strin
   );
 }
 
+function Chip({
+  on, icon: Icon, label, title, onClick,
+}: { on: boolean; icon: any; label: string; title: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      aria-pressed={on}
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+        on ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-muted"
+      }`}
+    >
+      <Icon className="h-3.5 w-3.5" />{label}
+    </button>
+  );
+}
+
+/** 本物の推論表示：モデルが実際に生成した思考テキストをそのまま流す */
 function ThinkingBlock({
   steps, defaultOpen = false, onOpenChange, live = false,
 }: { steps: ThinkingStep[]; defaultOpen?: boolean; onOpenChange?: (v: boolean) => void; live?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   useEffect(() => { if (live) setOpen(defaultOpen); }, [defaultOpen, live]);
+
+  const reasoning = steps.filter((s) => s.kind === "reasoning");
+  const tools = steps.filter((s) => s.kind !== "reasoning");
+  const thinking = reasoning.some((s) => !s.done);
+  const totalMs = reasoning.reduce((n, s) => n + (s.ms ?? 0), 0);
+  const header = thinking
+    ? "考えています…"
+    : reasoning.length
+      ? `${Math.max(1, Math.round(totalMs / 1000))}秒 考えました`
+      : "処理の記録";
+
   return (
     <Collapsible
       open={open}
       onOpenChange={(v) => { setOpen(v); onOpenChange?.(v); }}
-      className="not-prose mb-2 rounded-xl border border-border/70 bg-muted/40 px-2.5 py-2"
+      className="not-prose mb-3 overflow-hidden rounded-2xl border border-border/70 bg-muted/30"
     >
-      <CollapsibleTrigger className="flex w-full items-center gap-1.5 text-xs text-muted-foreground transition hover:text-foreground">
-        <Brain className="h-3.5 w-3.5 text-primary" />
-        <span>思考プロセス（{steps.length}ステップ）</span>
-        <ChevronDown className={`ml-auto h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
+      <CollapsibleTrigger className="flex w-full items-center gap-2 px-3 py-2 text-xs text-muted-foreground transition hover:text-foreground">
+        {thinking ? <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" /> : <Brain className="h-3.5 w-3.5 text-primary" />}
+        <span className={thinking ? "animate-pulse font-medium text-foreground" : "font-medium"}>{header}</span>
+        <ChevronDown className={`ml-auto h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </CollapsibleTrigger>
-      <CollapsibleContent className="mt-2 space-y-1.5 border-l-2 border-primary/30 pl-2.5">
-        {steps.map((step, i) => (
-          <div key={i} className="text-xs">
-            <div className="flex items-center gap-1.5 font-medium">
-              {step.done ? <Search className="h-3 w-3 text-primary" /> : <Loader2 className="h-3 w-3 animate-spin text-primary" />}
-              <span>{step.label}</span>
-            </div>
-            {step.detail && <div className="ml-1 whitespace-pre-wrap pl-4 text-muted-foreground">{step.detail}</div>}
+
+      <CollapsibleContent className="space-y-2 px-3 pb-3">
+        {tools.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {tools.map((s, i) => (
+              <span key={i}
+                title={s.detail}
+                className="inline-flex max-w-full items-center gap-1 rounded-full border bg-background/70 px-2 py-0.5 text-[10px] text-muted-foreground">
+                {s.done ? <Check className="h-3 w-3 text-primary" /> : <Loader2 className="h-3 w-3 animate-spin text-primary" />}
+                <span className="truncate">{s.label}</span>
+              </span>
+            ))}
           </div>
+        )}
+
+        {reasoning.map((s, i) => (
+          <div key={i} className="rounded-xl border-l-2 border-primary/40 bg-background/60 px-3 py-2">
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80">
+              {s.label}{s.ms ? ` ・ ${(s.ms / 1000).toFixed(1)}秒` : ""}
+            </p>
+            <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-muted-foreground">
+              {s.detail}{!s.done && <span className="ml-0.5 animate-pulse">▍</span>}
+            </p>
+          </div>
+        ))}
+
+        {tools.filter((s) => s.detail).map((s, i) => (
+          <details key={`d${i}`} className="text-[11px] text-muted-foreground">
+            <summary className="cursor-pointer">{s.label} の詳細</summary>
+            <p className="mt-1 whitespace-pre-wrap pl-3">{s.detail}</p>
+          </details>
         ))}
       </CollapsibleContent>
     </Collapsible>
   );
 }
+
 
 function TutorPage() {
   const { user } = useAuth();
@@ -207,6 +269,22 @@ function TutorPage() {
     stepsRef.current = stepsRef.current.map((s, i) => (i === stepsRef.current.length - 1 ? { ...s, done: true, detail: detail ?? s.detail } : s));
     syncSteps();
   };
+  /** モデル自身の推論を流し込む「思考」ステップを追加し、その位置を返す */
+  const addReasoning = (label = "思考") => {
+    stepsRef.current = [...stepsRef.current, { label, detail: "", done: false, kind: "reasoning" }];
+    syncSteps();
+    return stepsRef.current.length - 1;
+  };
+  const updateReasoning = (idx: number, text: string) => {
+    stepsRef.current = stepsRef.current.map((s, i) => (i === idx ? { ...s, detail: text } : s));
+    syncSteps();
+  };
+  const finishReasoning = (idx: number, text: string, ms: number) => {
+    stepsRef.current = stepsRef.current.map((s, i) =>
+      i === idx ? { ...s, detail: text.trim() || "（思考を取得できませんでした）", done: true, ms } : s);
+    syncSteps();
+  };
+
 
   const loadThreads = useCallback(async () => {
     try {
@@ -286,16 +364,13 @@ function TutorPage() {
     const displayName = user.user_metadata?.display_name ?? user.email?.split("@")[0] ?? "生徒";
     const t0 = Date.now();
 
-    addStep("使うAIを決めています", `${engineLabel || "端末内AI"} / 参照モード: ${
-      prefs.lookup === "always" ? "いつも見る" : prefs.lookup === "never" ? "見ない" : "自動"
-    } / 推論${prefs.passes}回`);
+    addStep("準備しています", `${engineLabel || "端末内AI"} / ${QUALITY_DEFS.find((q) => q.key === prefs.quality)?.label}モード`);
     finishLastStep();
 
     let ctx: any = null;
     const requested: ScopeKey[] =
-      prefs.lookup === "never" ? []
-        : prefs.lookup === "always" ? prefs.scopes
-          : relevantScopes(lastUser, prefs.scopes);
+      prefs.lookup === "off" ? [] : relevantScopes(lastUser, prefs.scopes);
+
 
     const doSearch = prefs.web === "on" || (prefs.web === "auto" && needsWebSearch(lastUser));
     // メッセージ内のURLを検出して直接読みに行く（どのサイトでも対応）
@@ -332,10 +407,11 @@ function TutorPage() {
             ].filter(Boolean).join(" / ") || "参照できるデータはありませんでした"
           : "取得に失敗したため、会話だけで回答します",
       );
-    } else if (prefs.lookup === "never") {
-      addStep("学習データは参照しません", "設定で「見ない」が選ばれています。");
+    } else if (prefs.lookup === "off") {
+      addStep("学習データは参照しません", "「学習データ: オフ」が選ばれています。");
       finishLastStep();
     }
+
 
     const webResults: WebResult[] = ((webRes as any)?.results ?? []) as WebResult[];
     // 指定されたページ本文を根拠の先頭に追加（ユーザーが明示した資料を最優先）
@@ -371,35 +447,54 @@ function TutorPage() {
     let text = "";
     setStreaming("");
 
+    const live = () => runId === runIdRef.current && activeIdRef.current === tid && !cancelRef.current;
+
     try {
-      // 推論パス1: 考える骨組み（3回設定のときだけ）
-      let plan = "";
-      if (prefs.passes >= 3) {
-        addStep("答えの骨組みを考えています", "何をどの順で説明すべきかを先に整理します。");
-        const planner = await createAiSession({ task: "reasoning", system });
+      // ── 思考フェーズ（Think / Pro）：モデル自身の推論を実際に生成し、そのまま流す ──
+      let thought = "";
+      if (prefs.quality !== "flash") {
+        const tThink = Date.now();
+        const idx = addReasoning();
+        const thinker = await createAiSession({ task: "reasoning", system });
         try {
-          plan = await planner.prompt(`${convo}\n\n上の質問に答える前に、回答に必ず含めるべき要点を箇条書き3〜5個だけ書いてください。回答本文は書かないでください。`);
-        } finally { planner.destroy(); }
-        finishLastStep(plan.trim().slice(0, 400) || "要点を整理しました");
+          thought = await thinker.promptStreaming(
+            `${convo}\n\n${THINK_PROMPT[prefs.quality === "pro" ? "pro" : "think"]}`,
+            (partial) => { if (live()) updateReasoning(idx, partial); },
+          );
+        } catch { /* 思考に失敗しても回答は続ける */ }
+        finally { thinker.destroy(); }
+        finishReasoning(idx, thought, Date.now() - tThink);
       }
 
-      // 推論パス2: 下書き（2回以上）
+      // ── Pro のみ：下書き → 自己検証 ──
+      let critique = "";
       let draft = "";
-      if (prefs.passes >= 2) {
-        addStep("下書きを作成しています", "まず素早く下書きを書き、次に自己点検して仕上げます。");
-        draft = await session.prompt(`${convo}${plan ? `\n\n【押さえる要点】\n${plan}` : ""}\n\nアシスタント:`);
+      if (prefs.quality === "pro") {
+        addStep("下書きを作成しています");
+        draft = await session.prompt(`${convo}${thought ? `\n\n【自分の思考メモ】\n${thought}` : ""}\n\nアシスタント:`);
         finishLastStep(`下書き ${draft.trim().length}文字`);
+
+        const tCheck = Date.now();
+        const idx2 = addReasoning("検証");
+        const checker = await createAiSession({ task: "reasoning", system });
+        try {
+          critique = await checker.promptStreaming(
+            `【質問】\n${lastUser}\n\n【下書き】\n${draft}\n\nこの下書きを採点者の目で点検してください。事実の誤り・計算ミス・説明の抜け・冗長な部分を具体的に指摘し、直すべき点だけを箇条書きで書いてください。書き直した本文は出さないこと。`,
+            (partial) => { if (live()) updateReasoning(idx2, partial); },
+          );
+        } catch { /* 検証に失敗しても続行 */ }
+        finally { checker.destroy(); }
+        finishReasoning(idx2, critique, Date.now() - tCheck);
       }
 
-      addStep(prefs.passes >= 2 ? "下書きを見直して仕上げています" : "回答を組み立てています",
-        prefs.passes >= 2 ? "誤り・抜け・冗長さを自分でチェックして書き直します。" : "会話と学習情報をもとに説明を作成中です。");
+      addStep("回答を書いています");
 
       const finalPrompt = draft
-        ? `${convo}\n\n【あなたが書いた下書き】\n${draft}\n\n下書きの誤り・説明の抜け・冗長な部分を自分で点検し、より正確でわかりやすい最終回答だけを書いてください。「下書き」への言及はしないこと。\n\nアシスタント:`
-        : `${convo}\n\nアシスタント:`;
+        ? `${convo}\n\n【あなたの下書き】\n${draft}${critique ? `\n\n【点検で見つかった直すべき点】\n${critique}` : ""}\n\n指摘をすべて反映した最終回答だけを書いてください。下書きや点検には言及しないこと。\n\nアシスタント:`
+        : `${convo}${thought ? `\n\n【自分の思考メモ（そのままは出力しない）】\n${thought}` : ""}\n\nアシスタント:`;
 
       text = await session.promptStreaming(finalPrompt, (partial) => {
-        if (runId === runIdRef.current && activeIdRef.current === tid && !cancelRef.current) setStreaming(partial);
+        if (live()) setStreaming(partial);
       });
     } finally { session.destroy(); }
 
@@ -407,9 +502,10 @@ function TutorPage() {
     if (!text.trim()) throw new Error("AIから回答を受け取れませんでした。もう一度お試しください。");
     finishLastStep(`${text.length}文字を生成しました（所要 ${Math.round((Date.now() - t0) / 1000)}秒${cancelRef.current ? "・途中で中断" : ""}）`);
 
-    const sources = webResults.length
+    const sources = prefs.showSources && webResults.length
       ? `\n\n---\n**参照した情報源**\n${webResults.map((r, i) => `${i + 1}. [${r.title}](${r.url}) — ${r.source}`).join("\n")}`
       : "";
+
 
     const { error } = await supabase.from("tutor_messages").insert({
       user_id: user.id, role: "assistant", content: text + sources, attachments: [], thread_id: tid,
@@ -548,8 +644,8 @@ function TutorPage() {
     () => threads.filter((t) => !threadQuery || t.title.toLowerCase().includes(threadQuery.toLowerCase())),
     [threads, threadQuery],
   );
-  const lookupIcon = prefs.lookup === "never" ? EyeOff : Eye;
-  const LookupIcon = lookupIcon;
+
+
   const activeTitle = threads.find((t) => t.id === activeId)?.title ?? "新しいチャット";
 
   return (
@@ -623,7 +719,10 @@ function TutorPage() {
           )}
           <div className="min-w-0">
             <h1 className="truncate text-sm font-semibold">{activeTitle}</h1>
-            <p className="truncate text-[11px] text-muted-foreground">{engineLabel || "端末内AI"} ・ 推論{prefs.passes}回</p>
+            <p className="truncate text-[11px] text-muted-foreground">
+              {engineLabel || "端末内AI"} ・ {QUALITY_DEFS.find((q) => q.key === prefs.quality)?.label}
+            </p>
+
           </div>
           <div className="ml-auto flex items-center gap-1">
             <AiStatusBadge />
@@ -795,41 +894,75 @@ function TutorPage() {
                   {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
                 </Button>
 
-                <button
-                  type="button"
-                  onClick={() => setPrefs((p) => ({ ...p, web: p.web === "auto" ? "on" : p.web === "on" ? "off" : "auto" }))}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                    prefs.web === "off" ? "text-muted-foreground hover:bg-muted" : "bg-background text-foreground shadow-sm"
-                  }`}
-                  title="Web検索で事実を確認するかどうか"
-                >
-                  {prefs.web === "off" ? <GlobeLock className="h-3.5 w-3.5" /> : <Globe className="h-3.5 w-3.5" />}
-                  Web検索{prefs.web === "auto" ? "" : prefs.web === "on" ? ": いつも" : ": オフ"}
-                </button>
+                {/* 品質（Flash / Think / Pro） */}
+                <div className="flex shrink-0 items-center rounded-full bg-background p-0.5 shadow-sm">
+                  {QUALITY_DEFS.map((q) => {
+                    const on = prefs.quality === q.key;
+                    const Icon = q.key === "flash" ? Zap : q.key === "think" ? Brain : Gem;
+                    return (
+                      <button
+                        key={q.key}
+                        type="button"
+                        title={q.desc}
+                        onClick={() => setPrefs((p) => ({ ...p, quality: q.key }))}
+                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition ${
+                          on ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <Icon className="h-3.5 w-3.5" />{q.label}
+                      </button>
+                    );
+                  })}
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => setPrefs((p) => ({ ...p, lookup: p.lookup === "auto" ? "always" : p.lookup === "always" ? "never" : "auto" }))}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                    prefs.lookup === "never" ? "text-muted-foreground hover:bg-muted" : "bg-background text-foreground shadow-sm"
-                  }`}
-                  title="AIが自分の学習データを見るかどうか"
-                >
-                  <LookupIcon className="h-3.5 w-3.5" />
-                  学習データ{prefs.lookup === "auto" ? "" : prefs.lookup === "always" ? ": いつも" : ": オフ"}
-                </button>
+                <Chip
+                  on={prefs.web === "on"}
+                  icon={prefs.web === "on" ? Globe : GlobeLock}
+                  label={prefs.web === "on" ? "Web検索: オン" : "Web検索: おまかせ"}
+                  title="オンにすると毎回Webで事実を確認します。おまかせのときはAIが必要と判断したときだけ検索します。"
+                  onClick={() => setPrefs((p) => ({ ...p, web: p.web === "on" ? "auto" : "on" }))}
+                />
 
-                <button
-                  type="button"
-                  onClick={() => setPrefs((p) => ({ ...p, passes: (p.passes === 3 ? 1 : ((p.passes + 1) as 1 | 2 | 3)) }))}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                    prefs.passes === 1 ? "text-muted-foreground hover:bg-muted" : "bg-background text-foreground shadow-sm"
-                  }`}
-                  title="考える回数（多いほど正確・遅い）"
-                >
-                  <Layers className="h-3.5 w-3.5" />
-                  {prefs.passes === 1 ? "すぐ答える" : prefs.passes === 2 ? "見直す" : "じっくり"}
-                </button>
+                <Chip
+                  on={prefs.lookup === "on"}
+                  icon={prefs.lookup === "on" ? Eye : EyeOff}
+                  label={prefs.lookup === "on" ? "学習データ: オン" : "学習データ: オフ"}
+                  title="AIがあなたの学習記録・目標などを参照するかどうか"
+                  onClick={() => setPrefs((p) => ({ ...p, lookup: p.lookup === "on" ? "off" : "on" }))}
+                />
+
+                <Chip
+                  on={prefs.length !== "normal"}
+                  icon={AlignLeft}
+                  label={prefs.length === "short" ? "短く" : prefs.length === "deep" ? "詳しく" : "標準の長さ"}
+                  title="回答の長さ"
+                  onClick={() => setPrefs((p) => ({ ...p, length: p.length === "short" ? "normal" : p.length === "normal" ? "deep" : "short" }))}
+                />
+
+                <Chip
+                  on={prefs.directAnswer}
+                  icon={prefs.directAnswer ? Lightbulb : GraduationCap}
+                  label={prefs.directAnswer ? "答えを先に" : "ヒント重視"}
+                  title="答えから教えるか、ヒントから導くか"
+                  onClick={() => setPrefs((p) => ({ ...p, directAnswer: !p.directAnswer }))}
+                />
+
+                <Chip
+                  on={prefs.autoOpenThinking}
+                  icon={ScrollText}
+                  label={prefs.autoOpenThinking ? "思考を表示" : "思考を隠す"}
+                  title="生成中に思考プロセスを開いた状態にする"
+                  onClick={() => setPrefs((p) => ({ ...p, autoOpenThinking: !p.autoOpenThinking }))}
+                />
+
+                <Chip
+                  on={prefs.showSources}
+                  icon={Link2}
+                  label={prefs.showSources ? "出典あり" : "出典なし"}
+                  title="回答の下に参照した情報源のリンクを付ける"
+                  onClick={() => setPrefs((p) => ({ ...p, showSources: !p.showSources }))}
+                />
+
 
                 <div className="ml-auto flex shrink-0 items-center gap-1">
                   <VoiceMicButton onResult={(t) => setInput((v) => (v ? `${v} ${t}` : t))} />
