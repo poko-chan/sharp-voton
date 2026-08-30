@@ -108,36 +108,89 @@ function CopyButton({ text, label = "コピー" }: { text: string; label?: strin
   );
 }
 
+function Chip({
+  on, icon: Icon, label, title, onClick,
+}: { on: boolean; icon: any; label: string; title: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      aria-pressed={on}
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+        on ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-muted"
+      }`}
+    >
+      <Icon className="h-3.5 w-3.5" />{label}
+    </button>
+  );
+}
+
+/** 本物の推論表示：モデルが実際に生成した思考テキストをそのまま流す */
 function ThinkingBlock({
   steps, defaultOpen = false, onOpenChange, live = false,
 }: { steps: ThinkingStep[]; defaultOpen?: boolean; onOpenChange?: (v: boolean) => void; live?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   useEffect(() => { if (live) setOpen(defaultOpen); }, [defaultOpen, live]);
+
+  const reasoning = steps.filter((s) => s.kind === "reasoning");
+  const tools = steps.filter((s) => s.kind !== "reasoning");
+  const thinking = reasoning.some((s) => !s.done);
+  const totalMs = reasoning.reduce((n, s) => n + (s.ms ?? 0), 0);
+  const header = thinking
+    ? "考えています…"
+    : reasoning.length
+      ? `${Math.max(1, Math.round(totalMs / 1000))}秒 考えました`
+      : "処理の記録";
+
   return (
     <Collapsible
       open={open}
       onOpenChange={(v) => { setOpen(v); onOpenChange?.(v); }}
-      className="not-prose mb-2 rounded-xl border border-border/70 bg-muted/40 px-2.5 py-2"
+      className="not-prose mb-3 overflow-hidden rounded-2xl border border-border/70 bg-muted/30"
     >
-      <CollapsibleTrigger className="flex w-full items-center gap-1.5 text-xs text-muted-foreground transition hover:text-foreground">
-        <Brain className="h-3.5 w-3.5 text-primary" />
-        <span>思考プロセス（{steps.length}ステップ）</span>
-        <ChevronDown className={`ml-auto h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
+      <CollapsibleTrigger className="flex w-full items-center gap-2 px-3 py-2 text-xs text-muted-foreground transition hover:text-foreground">
+        {thinking ? <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" /> : <Brain className="h-3.5 w-3.5 text-primary" />}
+        <span className={thinking ? "animate-pulse font-medium text-foreground" : "font-medium"}>{header}</span>
+        <ChevronDown className={`ml-auto h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </CollapsibleTrigger>
-      <CollapsibleContent className="mt-2 space-y-1.5 border-l-2 border-primary/30 pl-2.5">
-        {steps.map((step, i) => (
-          <div key={i} className="text-xs">
-            <div className="flex items-center gap-1.5 font-medium">
-              {step.done ? <Search className="h-3 w-3 text-primary" /> : <Loader2 className="h-3 w-3 animate-spin text-primary" />}
-              <span>{step.label}</span>
-            </div>
-            {step.detail && <div className="ml-1 whitespace-pre-wrap pl-4 text-muted-foreground">{step.detail}</div>}
+
+      <CollapsibleContent className="space-y-2 px-3 pb-3">
+        {tools.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {tools.map((s, i) => (
+              <span key={i}
+                title={s.detail}
+                className="inline-flex max-w-full items-center gap-1 rounded-full border bg-background/70 px-2 py-0.5 text-[10px] text-muted-foreground">
+                {s.done ? <Check className="h-3 w-3 text-primary" /> : <Loader2 className="h-3 w-3 animate-spin text-primary" />}
+                <span className="truncate">{s.label}</span>
+              </span>
+            ))}
           </div>
+        )}
+
+        {reasoning.map((s, i) => (
+          <div key={i} className="rounded-xl border-l-2 border-primary/40 bg-background/60 px-3 py-2">
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80">
+              {s.label}{s.ms ? ` ・ ${(s.ms / 1000).toFixed(1)}秒` : ""}
+            </p>
+            <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-muted-foreground">
+              {s.detail}{!s.done && <span className="ml-0.5 animate-pulse">▍</span>}
+            </p>
+          </div>
+        ))}
+
+        {tools.filter((s) => s.detail).map((s, i) => (
+          <details key={`d${i}`} className="text-[11px] text-muted-foreground">
+            <summary className="cursor-pointer">{s.label} の詳細</summary>
+            <p className="mt-1 whitespace-pre-wrap pl-3">{s.detail}</p>
+          </details>
         ))}
       </CollapsibleContent>
     </Collapsible>
   );
 }
+
 
 function TutorPage() {
   const { user } = useAuth();
