@@ -940,29 +940,19 @@ function TutorPage() {
                   onClick={() => setPrefs((p) => ({ ...p, length: p.length === "short" ? "normal" : p.length === "normal" ? "deep" : "short" }))}
                 />
 
-                <Chip
-                  on={prefs.directAnswer}
-                  icon={prefs.directAnswer ? Lightbulb : GraduationCap}
-                  label={prefs.directAnswer ? "答えを先に" : "ヒント重視"}
-                  title="答えから教えるか、ヒントから導くか"
-                  onClick={() => setPrefs((p) => ({ ...p, directAnswer: !p.directAnswer }))}
+                <ToolsMenu
+                  value={taskKind}
+                  disabled={prefs.quality === "lite" || busy}
+                  onSelect={(k) => {
+                    if (k === "deep") { setTaskKind("deep"); setDeepOpen(true); }
+                    else setTaskKind(k);
+                  }}
+                  hintOn={hintOn}
+                  onHintChange={setHint}
+                  canExportPdf={!!canvas}
+                  onExportPdf={exportCanvasPdf}
                 />
 
-                <Chip
-                  on={prefs.autoOpenThinking}
-                  icon={ScrollText}
-                  label={prefs.autoOpenThinking ? "思考を表示" : "思考を隠す"}
-                  title="生成中に思考プロセスを開いた状態にする"
-                  onClick={() => setPrefs((p) => ({ ...p, autoOpenThinking: !p.autoOpenThinking }))}
-                />
-
-                <Chip
-                  on={prefs.showSources}
-                  icon={Link2}
-                  label={prefs.showSources ? "出典あり" : "出典なし"}
-                  title="回答の下に参照した情報源のリンクを付ける"
-                  onClick={() => setPrefs((p) => ({ ...p, showSources: !p.showSources }))}
-                />
 
 
                 <div className="ml-auto flex shrink-0 items-center gap-1">
