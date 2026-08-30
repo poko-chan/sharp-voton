@@ -241,6 +241,26 @@ function TutorPage() {
   const [threadQuery, setThreadQuery] = useState("");
   const [atBottom, setAtBottom] = useState(true);
 
+  // 「…」メニューの機能（特別な作業）と、右のキャンバス
+  const [taskKind, setTaskKind] = useState<TaskKind | null>(null);
+  const [deepOpen, setDeepOpen] = useState(false);
+  const [deepSites, setDeepSites] = useState("");
+  const [canvas, setCanvas] = useState<CanvasDoc | null>(null);
+  const [canvasStreaming, setCanvasStreaming] = useState(false);
+  // ヒント重視は「今のスレッドだけ」の設定
+  const [hintByThread, setHintByThread] = useState<Record<string, boolean>>({});
+  const hintKey = activeId ?? "_new";
+  const hintOn = hintByThread[hintKey] ?? !prefs.directAnswer;
+  const setHint = (v: boolean) => setHintByThread((m) => ({ ...m, [hintKey]: v }));
+
+  const exportCanvasPdf = () => {
+    if (!canvas) return;
+    const html = document.querySelector("[data-canvas-preview]")?.innerHTML;
+    printDoc(canvas.title, html ?? `<pre>${canvas.content.replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c] as string))}</pre>`);
+  };
+
+
+
   const fileRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
