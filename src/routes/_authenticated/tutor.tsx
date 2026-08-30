@@ -475,18 +475,29 @@ function TutorPage() {
     }
 
     const convo = buildHistory(history);
-    const system = answerSystem(displayName, prefs, ctx, webResults);
+    const system = answerSystem(displayName, runPrefs, ctx, webResults)
+      + (task ? `\n\n【今回の作業】\n${task.instruction}` : "");
 
     const session = await createAiSession({ system, task: "chat" });
     let text = "";
     setStreaming("");
+    if (task?.canvas) {
+      setCanvas({ title: task.label, kind: task.kind, content: "" });
+      setCanvasStreaming(true);
+    }
 
     const live = () => runId === runIdRef.current && activeIdRef.current === tid && !cancelRef.current;
+    const onPartial = (partial: string) => {
+      if (!live()) return;
+      if (task?.canvas) setCanvas((c) => (c ? { ...c, content: partial } : c));
+      else setStreaming(partial);
+    };
 
     try {
       // ── 思考フェーズ（Think / Pro）：モデル自身の推論を実際に生成し、そのまま流す ──
+      // Lite / Flash は推論なし。Lite は思考プロセス自体を残さない。
       let thought = "";
-      if (prefs.quality !== "flash") {
+      if (prefs.quality === "think" || prefs.quality === "pro") {
         const tThink = Date.now();
         const idx = addReasoning();
         const thinker = await createAiSession({ task: "reasoning", system });
@@ -521,20 +532,20 @@ function TutorPage() {
         finishReasoning(idx2, critique, Date.now() - tCheck);
       }
 
-      addStep("回答を書いています");
+      addStep(task ? `${task.label}を作成しています` : "回答を書いています");
 
       const finalPrompt = draft
         ? `${convo}\n\n【あなたの下書き】\n${draft}${critique ? `\n\n【点検で見つかった直すべき点】\n${critique}` : ""}\n\n指摘をすべて反映した最終回答だけを書いてください。下書きや点検には言及しないこと。\n\nアシスタント:`
         : `${convo}${thought ? `\n\n【自分の思考メモ（そのままは出力しない）】\n${thought}` : ""}\n\nアシスタント:`;
 
-      text = await session.promptStreaming(finalPrompt, (partial) => {
-        if (live()) setStreaming(partial);
-      });
-    } finally { session.destroy(); }
+      text = await session.promptStreaming(finalPrompt, onPartial);
+    } finally { session.destroy(); setCanvasStreaming(false); }
 
     if (cancelRef.current && !text.trim()) throw new Error("生成を中断しました。");
     if (!text.trim()) throw new Error("AIから回答を受け取れませんでした。もう一度お試しください。");
+    if (task?.canvas) setCanvas({ title: task.label, kind: task.kind, content: text });
     finishLastStep(`${text.length}文字を生成しました（所要 ${Math.round((Date.now() - t0) / 1000)}秒${cancelRef.current ? "・途中で中断" : ""}）`);
+
 
     const sources = prefs.showSources && webResults.length
       ? `\n\n---\n**参照した情報源**\n${webResults.map((r, i) => `${i + 1}. [${r.title}](${r.url}) — ${r.source}`).join("\n")}`
