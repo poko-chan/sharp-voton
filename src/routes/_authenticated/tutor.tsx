@@ -332,10 +332,11 @@ function TutorPage() {
             ].filter(Boolean).join(" / ") || "参照できるデータはありませんでした"
           : "取得に失敗したため、会話だけで回答します",
       );
-    } else if (prefs.lookup === "never") {
-      addStep("学習データは参照しません", "設定で「見ない」が選ばれています。");
+    } else if (prefs.lookup === "off") {
+      addStep("学習データは参照しません", "「学習データ: オフ」が選ばれています。");
       finishLastStep();
     }
+
 
     const webResults: WebResult[] = ((webRes as any)?.results ?? []) as WebResult[];
     // 指定されたページ本文を根拠の先頭に追加（ユーザーが明示した資料を最優先）
