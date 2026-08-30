@@ -289,8 +289,15 @@ function TutorPage() {
     return !v;
   });
 
+  // Lite は「思考プロセス」を一切残さない（最速で答えるモード）
+  const silent = prefs.quality === "lite";
   const syncSteps = () => setThinkingSteps([...stepsRef.current]);
-  const addStep = (label: string, detail?: string) => { stepsRef.current = [...stepsRef.current, { label, detail, done: false }]; syncSteps(); };
+  const addStep = (label: string, detail?: string) => {
+    if (silent) return;
+    stepsRef.current = [...stepsRef.current, { label, detail, done: false }];
+    syncSteps();
+  };
+
   const finishLastStep = (detail?: string) => {
     stepsRef.current = stepsRef.current.map((s, i) => (i === stepsRef.current.length - 1 ? { ...s, done: true, detail: detail ?? s.detail } : s));
     syncSteps();
