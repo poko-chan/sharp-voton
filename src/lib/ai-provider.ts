@@ -25,6 +25,9 @@ import {
   getWebLlmModelId,
   setWebLlmModelId,
   WEBLLM_MODELS,
+  webLlmRecommendScore,
+  type WebLlmTag,
+
 } from "@/lib/web-llm";
 import { ollamaModels, ollamaDiagnostics, createOllamaSession } from "@/lib/ollama";
 import { aiRunStart, aiRunChars, aiRunDone, aiRunError, aiRunModelLoading, aiRunIdle } from "@/lib/ai-status";
