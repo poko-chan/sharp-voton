@@ -548,8 +548,8 @@ function TutorPage() {
     () => threads.filter((t) => !threadQuery || t.title.toLowerCase().includes(threadQuery.toLowerCase())),
     [threads, threadQuery],
   );
-  const lookupIcon = prefs.lookup === "never" ? EyeOff : Eye;
-  const LookupIcon = lookupIcon;
+
+
   const activeTitle = threads.find((t) => t.id === activeId)?.title ?? "新しいチャット";
 
   return (
