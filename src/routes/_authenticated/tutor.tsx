@@ -238,6 +238,7 @@ function TutorPage() {
   const [prefs, setPrefs] = useState<ChatPrefs>(() => loadPrefs());
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [betaOpen, setBetaOpen] = useState(true);
   const [threadQuery, setThreadQuery] = useState("");
   const [atBottom, setAtBottom] = useState(true);
 
