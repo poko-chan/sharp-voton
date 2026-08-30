@@ -207,6 +207,22 @@ function TutorPage() {
     stepsRef.current = stepsRef.current.map((s, i) => (i === stepsRef.current.length - 1 ? { ...s, done: true, detail: detail ?? s.detail } : s));
     syncSteps();
   };
+  /** モデル自身の推論を流し込む「思考」ステップを追加し、その位置を返す */
+  const addReasoning = (label = "思考") => {
+    stepsRef.current = [...stepsRef.current, { label, detail: "", done: false, kind: "reasoning" }];
+    syncSteps();
+    return stepsRef.current.length - 1;
+  };
+  const updateReasoning = (idx: number, text: string) => {
+    stepsRef.current = stepsRef.current.map((s, i) => (i === idx ? { ...s, detail: text } : s));
+    syncSteps();
+  };
+  const finishReasoning = (idx: number, text: string, ms: number) => {
+    stepsRef.current = stepsRef.current.map((s, i) =>
+      i === idx ? { ...s, detail: text.trim() || "（思考を取得できませんでした）", done: true, ms } : s);
+    syncSteps();
+  };
+
 
   const loadThreads = useCallback(async () => {
     try {
