@@ -929,6 +929,24 @@ function TutorPage() {
               </div>
             )}
 
+            {taskKind && (
+              <div className="mb-2 flex items-center gap-2 rounded-2xl border border-primary/30 bg-primary/[0.06] px-3 py-2 text-xs">
+                <span className="font-semibold">{TASK_DEFS[taskKind].label}</span>
+                <span className="min-w-0 flex-1 truncate text-muted-foreground">
+                  {taskKind === "deep" && deepSites.trim()
+                    ? `対象サイト: ${deepSites.trim()}`
+                    : TASK_DEFS[taskKind].placeholder}
+                </span>
+                {taskKind === "deep" && (
+                  <button type="button" className="shrink-0 underline" onClick={() => setDeepOpen(true)}>サイトを指定</button>
+                )}
+                <button type="button" className="shrink-0 rounded-full p-1 hover:bg-muted" onClick={() => setTaskKind(null)} title="やめる">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+
+
             <form onSubmit={(e) => { e.preventDefault(); void send(); }}
               className="rounded-3xl border bg-muted/50 transition focus-within:border-muted-foreground/30 focus-within:bg-muted/70">
               <input type="file" ref={fileRef} className="hidden" multiple accept="image/*,.pdf" onChange={onUpload} />
