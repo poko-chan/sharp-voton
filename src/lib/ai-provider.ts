@@ -25,6 +25,9 @@ import {
   getWebLlmModelId,
   setWebLlmModelId,
   WEBLLM_MODELS,
+  webLlmRecommendScore,
+  type WebLlmTag,
+
 } from "@/lib/web-llm";
 import { ollamaModels, ollamaDiagnostics, createOllamaSession } from "@/lib/ollama";
 import { aiRunStart, aiRunChars, aiRunDone, aiRunError, aiRunModelLoading, aiRunIdle } from "@/lib/ai-status";
@@ -82,7 +85,12 @@ export type AiModelEntry = {
   installable: boolean;
   /** おすすめ度（大きいほど優先） */
   score: number;
+  /** 得意分野タグ（WebLLM モデルのみ） */
+  tags?: WebLlmTag[];
+  /** パラメータ数（B） */
+  params?: number;
 };
+
 
 /** 端末で扱える AI モデルを全部並べる（使える／ダウンロードが必要 の両方） */
 export async function listAiModels(): Promise<AiModelEntry[]> {
@@ -130,9 +138,13 @@ export async function listAiModels(): Promise<AiModelEntry[]> {
       note: m.note,
       ready: gpu && cached.has(m.id),
       installable: gpu && !cached.has(m.id),
-      score: 50 + (m.sizeLabel.includes("4.") || m.sizeLabel.includes("5.") ? 5 : 0),
+      // 賢さと日本語力を加味した推奨度（0-100 → 20〜95 くらいに収まる）
+      score: webLlmRecommendScore(m),
+      tags: m.tags,
+      params: m.params,
     });
   }
+
 
   return out;
 }

@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Sparkles, Download, Check, Loader2, HardDrive, Trash2, RefreshCw,
-  GraduationCap, Cpu, Laptop, Chrome, Zap, Info,
+  GraduationCap, Cpu, Laptop, Chrome, Zap, Info, Search, Star, Gauge, Languages,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -14,7 +15,10 @@ import {
   listAiModels, getAiSelection, setAiSelection, resolveAiTarget,
   AI_ENGINE_LABELS, type AiModelEntry, type AiEngine, type AiTarget,
 } from "@/lib/ai-provider";
-import { storageInfo, clearWebLlmCache, webLlmEnsureLoaded, type StorageInfo } from "@/lib/web-llm";
+import {
+  storageInfo, clearWebLlmCache, webLlmEnsureLoaded, WEBLLM_TAG_LABELS,
+  type StorageInfo, type WebLlmTag,
+} from "@/lib/web-llm";
 import { chromeAiEnsureDownloaded } from "@/lib/chrome-ai";
 import { ollamaDiagnostics, setOllamaUrl, getOllamaUrl } from "@/lib/ollama";
 
@@ -23,6 +27,28 @@ function EngineIcon({ engine, className = "h-4 w-4" }: { engine: AiEngine; class
   if (engine === "ollama") return <Laptop className={className} />;
   if (engine === "webllm") return <Cpu className={className} />;
   return <Sparkles className={className} />;
+}
+
+const FILTERS: Array<{ key: "all" | WebLlmTag; label: string }> = [
+  { key: "all", label: "すべて" },
+  { key: "japanese", label: "日本語が得意" },
+  { key: "reasoning", label: "考える力" },
+  { key: "math", label: "数学" },
+  { key: "code", label: "プログラミング" },
+  { key: "light", label: "軽量" },
+  { key: "pro", label: "高性能PC向け" },
+];
+
+function Meter({ icon: Icon, label, value }: { icon: any; label: string; value: number }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <Icon className="h-3 w-3 text-muted-foreground shrink-0" />
+      <span className="text-[10px] text-muted-foreground w-10 shrink-0">{label}</span>
+      <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+        <span className="block h-full rounded-full bg-primary/70" style={{ width: `${Math.min(100, value)}%` }} />
+      </span>
+    </div>
+  );
 }
 
 function TutorialDialog() {
@@ -42,9 +68,9 @@ function TutorialDialog() {
           {[
             { t: "① AIはこの端末の中で動きます", d: "Study# のAIは、あなたのパソコン・スマホの中だけで動きます。会話が外部に送られることはなく、料金もかかりません。" },
             { t: "② はじめに「ダウンロード」タブへ", d: "AIを使うには、まずAIの本体（モデル）を一度だけダウンロードします。ネットが速い場所で行ってください。数百MB〜数GBあります。" },
-            { t: "③ 迷ったら「Qwen2.5 1.5B（標準）」", d: "軽くて失敗しにくく、日本語もそこそこ得意です。パソコンが高性能なら 3B や 7B にすると賢くなります。" },
-            { t: "④ 終わったら「つかう」タブで選ぶ", d: "ダウンロードが終わったモデルは「つかう」タブに並びます。選ぶだけで、以後のAI機能がそのモデルで動きます。" },
-            { t: "⑤ よくわからなければ「オート」", d: "オートにしておくと、ダウンロード済みの中から一番おすすめのAIを自動で使います。" },
+            { t: "③ 迷ったら「Qwen3 1.7B」か「標準」", d: "軽くて失敗しにくく、日本語もそこそこ得意です。パソコンが高性能なら Qwen3 4B / 8B にすると一気に賢くなります。" },
+            { t: "④ 目的で選ぶのもおすすめ", d: "「日本語が得意」「数学」「考える力」などのタグで絞り込めます。数学の記述対策なら Math 系、作文や要約なら日本語特化が向いています。" },
+            { t: "⑤ よくわからなければ「オート」", d: "オートにしておくと、ダウンロード済みの中から賢さと日本語力で一番おすすめのAIを自動で使います。" },
             { t: "⑥ もっと賢くしたい人は Ollama", d: "パソコンに Ollama（無料アプリ）を入れて起動すると、より大きく賢いモデルが使えます。起動時に OLLAMA_ORIGINS=\"*\" を設定してください。" },
           ].map((s) => (
             <div key={s.t} className="rounded-lg border p-3">
@@ -62,29 +88,56 @@ function TutorialDialog() {
 }
 
 function ModelCard({
-  m, selected, mode, onSelect, onDownload, progress,
+  m, selected, mode, best, onSelect, onDownload, progress,
 }: {
   m: AiModelEntry;
   selected: boolean;
   mode: "use" | "download";
+  best?: boolean;
   onSelect: () => void;
   onDownload: () => void;
   progress?: { pct: number; text: string } | null;
 }) {
   return (
-    <Card className={`p-3 space-y-2 transition ${selected ? "border-primary ring-1 ring-primary/40" : ""}`}>
+    <Card
+      className={`relative overflow-hidden p-3 space-y-2 transition hover:shadow-md ${
+        selected ? "border-primary ring-1 ring-primary/40 bg-primary/[0.04]" : ""
+      }`}
+    >
       <div className="flex items-start gap-2">
-        <EngineIcon engine={m.engine} className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+        <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+          <EngineIcon engine={m.engine} className="h-4 w-4" />
+        </span>
         <div className="min-w-0 flex-1">
           <div className="font-semibold text-sm flex items-center gap-1.5 flex-wrap">
             <span className="truncate">{m.name}</span>
             <Badge variant="secondary" className="text-[10px]">{m.engineLabel}</Badge>
+            {best && <Badge className="text-[10px] gap-0.5"><Star className="h-3 w-3" />おすすめ</Badge>}
             {m.ready && <Badge className="text-[10px] bg-emerald-600 hover:bg-emerald-600">使えます</Badge>}
           </div>
-          <div className="text-[11px] text-muted-foreground">{m.sizeLabel}</div>
+          <div className="text-[11px] text-muted-foreground">
+            {m.sizeLabel}{m.params ? ` ・ ${m.params}B` : ""}
+          </div>
           <div className="text-[11px] text-muted-foreground mt-0.5">{m.note}</div>
+          {!!m.tags?.length && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {m.tags.map((t) => (
+                <span key={t} className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+                  {WEBLLM_TAG_LABELS[t]}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
+
+      {m.engine === "webllm" && (
+        <div className="grid gap-1 sm:grid-cols-2">
+          <Meter icon={Gauge} label="賢さ" value={m.score} />
+          <Meter icon={Languages} label="日本語" value={m.tags?.includes("japanese") ? Math.min(100, m.score + 15) : m.score} />
+        </div>
+      )}
+
       {progress && (
         <div className="space-y-1">
           <Progress value={progress.pct} />
@@ -116,6 +169,8 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
   const [ollama, setOllama] = useState<Awaited<ReturnType<typeof ollamaDiagnostics>> | null>(null);
   const [progress, setProgress] = useState<Record<string, { pct: number; text: string }>>({});
   const [loading, setLoading] = useState(false);
+  const [q, setQ] = useState("");
+  const [filter, setFilter] = useState<"all" | WebLlmTag>("all");
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -158,11 +213,28 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
     }
   };
 
-  const ready = models.filter((m) => m.ready);
-  const installable = models.filter((m) => m.installable);
-  const activeLabel = target && target.engine !== "none"
-    ? `${target.modelLabel}`
-    : "AI未設定";
+  const match = useCallback((m: AiModelEntry) => {
+    const okTag = filter === "all" || (m.tags?.includes(filter) ?? false);
+    const okQ = !q.trim() || `${m.name} ${m.note} ${m.engineLabel}`.toLowerCase().includes(q.trim().toLowerCase());
+    return okTag && okQ;
+  }, [filter, q]);
+
+  const ready = useMemo(
+    () => models.filter((m) => m.ready).sort((a, b) => b.score - a.score),
+    [models],
+  );
+  const installable = useMemo(
+    () => models.filter((m) => m.installable).sort((a, b) => b.score - a.score),
+    [models],
+  );
+  const readyShown = ready.filter(match);
+  const installShown = installable.filter(match);
+  const bestReady = ready[0]?.key;
+  const bestInstall = installable[0]?.key;
+
+  const activeLabel = target && target.engine !== "none" ? `${target.modelLabel}` : "AI未設定";
+  const freeGb = storage ? storage.free / 1024 ** 3 : 0;
+  const usedPct = storage && storage.quota > 0 ? Math.round((storage.usage / storage.quota) * 100) : 0;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -180,16 +252,52 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant="outline" className="gap-1">
-            <Zap className="h-3 w-3" />いま使うAI: {activeLabel}
-            {target && target.engine !== "none" && <span className="text-muted-foreground">/ {AI_ENGINE_LABELS[target.engine]}</span>}
-          </Badge>
-          <div className="flex-1" />
-          <TutorialDialog />
-          <Button variant="outline" size="sm" onClick={refresh} disabled={loading} className="gap-1">
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />再判定
-          </Button>
+        {/* いま使うAI ヒーロー */}
+        <div className="rounded-2xl border bg-gradient-to-br from-primary/12 via-primary/5 to-transparent p-4">
+          <div className="flex items-start gap-3">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/15 text-primary">
+              <EngineIcon engine={target?.engine ?? "none"} className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">いま使うAI</div>
+              <div className="truncate text-lg font-bold leading-tight">{activeLabel}</div>
+              <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                {target && target.engine !== "none" && (
+                  <Badge variant="outline" className="gap-1 text-[10px]"><Zap className="h-3 w-3" />{AI_ENGINE_LABELS[target.engine]}</Badge>
+                )}
+                <Badge variant="secondary" className="text-[10px]">使えるAI {ready.length} 個</Badge>
+                {sel === "auto" && <Badge variant="secondary" className="text-[10px]">オート選択中</Badge>}
+              </div>
+            </div>
+            <div className="flex shrink-0 flex-col gap-1.5">
+              <TutorialDialog />
+              <Button variant="outline" size="sm" onClick={refresh} disabled={loading} className="gap-1">
+                <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />再判定
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* 検索・絞り込み */}
+        <div className="space-y-2">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="モデル名や特徴で検索" className="pl-8 h-9" />
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {FILTERS.map((f) => (
+              <button
+                key={f.key}
+                type="button"
+                onClick={() => setFilter(f.key)}
+                className={`rounded-full border px-2.5 py-1 text-[11px] transition ${
+                  filter === f.key ? "border-primary bg-primary/10 text-foreground" : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <Tabs defaultValue="use">
@@ -203,7 +311,9 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
               <Sparkles className="h-4 w-4 text-primary shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="font-semibold text-sm">オート（おすすめ）</div>
-                <div className="text-[11px] text-muted-foreground">ダウンロード済みの中から一番良いAIを自動で選びます。迷ったらこれ。</div>
+                <div className="text-[11px] text-muted-foreground">
+                  ダウンロード済みの中から、賢さと日本語力で一番良いAIを自動で選びます。迷ったらこれ。
+                </div>
               </div>
               <Button size="sm" variant={sel === "auto" ? "default" : "outline"} onClick={() => choose("auto")}>
                 {sel === "auto" ? <><Check className="h-3.5 w-3.5 mr-1" />選択中</> : "使う"}
@@ -215,9 +325,11 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
                 <Info className="h-5 w-5 mx-auto opacity-60" />
                 <div>まだ使えるAIがありません。「ダウンロード」タブからAIを1つ入れてください。</div>
               </Card>
+            ) : readyShown.length === 0 ? (
+              <Card className="p-4 text-sm text-muted-foreground">条件に合うAIがありません。絞り込みを変えてみてください。</Card>
             ) : (
-              ready.map((m) => (
-                <ModelCard key={m.key} m={m} mode="use" selected={sel === m.key}
+              readyShown.map((m) => (
+                <ModelCard key={m.key} m={m} mode="use" selected={sel === m.key} best={m.key === bestReady}
                   onSelect={() => choose(m.key)} onDownload={() => download(m)} />
               ))
             )}
@@ -225,24 +337,26 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
 
           <TabsContent value="download" className="space-y-2 pt-3">
             {storage && (
-              <Card className="p-3 text-[12px] flex items-center gap-2">
-                <HardDrive className="h-4 w-4 text-primary shrink-0" />
-                <div className="flex-1">
-                  空き容量の目安: <b>{(storage.free / 1024 ** 3).toFixed(1)}GB</b>
-                  <span className="text-muted-foreground">（使用 {(storage.usage / 1024 ** 3).toFixed(1)}GB）</span>
-
+              <Card className="p-3 space-y-2 text-[12px]">
+                <div className="flex items-center gap-2">
+                  <HardDrive className="h-4 w-4 text-primary shrink-0" />
+                  <div className="flex-1">
+                    空き容量の目安: <b>{freeGb.toFixed(1)}GB</b>
+                    <span className="text-muted-foreground">（使用 {(storage.usage / 1024 ** 3).toFixed(1)}GB）</span>
+                  </div>
+                  <Button size="sm" variant="ghost" className="gap-1 text-destructive"
+                    onClick={async () => { await clearWebLlmCache(); toast.success("キャッシュを削除しました"); refresh(); }}>
+                    <Trash2 className="h-3.5 w-3.5" />キャッシュ削除
+                  </Button>
                 </div>
-                <Button size="sm" variant="ghost" className="gap-1 text-destructive"
-                  onClick={async () => { await clearWebLlmCache(); toast.success("キャッシュを削除しました"); refresh(); }}>
-                  <Trash2 className="h-3.5 w-3.5" />キャッシュ削除
-                </Button>
+                <Progress value={usedPct} />
               </Card>
             )}
-            {installable.length === 0 && (
-              <Card className="p-4 text-sm text-muted-foreground">追加でダウンロードできるAIはありません。</Card>
+            {installShown.length === 0 && (
+              <Card className="p-4 text-sm text-muted-foreground">条件に合うAIがありません。絞り込みを変えてみてください。</Card>
             )}
-            {installable.map((m) => (
-              <ModelCard key={m.key} m={m} mode="download" selected={sel === m.key}
+            {installShown.map((m) => (
+              <ModelCard key={m.key} m={m} mode="download" selected={sel === m.key} best={m.key === bestInstall}
                 onSelect={() => choose(m.key)} onDownload={() => download(m)} progress={progress[m.key] ?? null} />
             ))}
 
