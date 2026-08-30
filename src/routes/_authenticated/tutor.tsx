@@ -950,7 +950,7 @@ function TutorPage() {
                 <div className="flex shrink-0 items-center rounded-full bg-background p-0.5 shadow-sm">
                   {QUALITY_DEFS.map((q) => {
                     const on = prefs.quality === q.key;
-                    const Icon = q.key === "flash" ? Zap : q.key === "think" ? Brain : Gem;
+                    const Icon = q.key === "lite" ? FastForward : q.key === "flash" ? Zap : q.key === "think" ? Brain : Gem;
                     return (
                       <button
                         key={q.key}
