@@ -670,12 +670,7 @@ function TutorPage() {
                 const mine = m.role === "user";
                 const isLastAssistant = !mine && i === msgs.length - 1;
                 return (
-                  <div key={m.id} className={`group flex gap-3 ${mine ? "justify-end" : ""}`}>
-                    {!mine && (
-                      <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                        <Bot className="h-4 w-4" />
-                      </span>
-                    )}
+                  <div key={m.id} className={`group flex ${mine ? "justify-end" : ""}`}>
                     <div className={mine ? "max-w-[80%]" : "min-w-0 flex-1"}>
                       {(m.attachments ?? []).map((a, k) => (
                         a.type.startsWith("image/")
@@ -685,7 +680,7 @@ function TutorPage() {
                       {!mine && (m.thinking ?? []).length > 0 && <ThinkingBlock steps={m.thinking ?? []} />}
                       <div className={
                         mine
-                          ? "rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-primary-foreground prose prose-sm prose-invert max-w-none"
+                          ? "rounded-3xl bg-muted px-4 py-2.5 prose prose-sm dark:prose-invert max-w-none"
                           : "prose prose-sm dark:prose-invert max-w-none leading-relaxed"
                       }>
                         <ReactMarkdown>{m.content}</ReactMarkdown>
@@ -711,10 +706,7 @@ function TutorPage() {
               })}
 
               {busy && (
-                <div className="flex gap-3">
-                  <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                    <Bot className="h-4 w-4" />
-                  </span>
+                <div className="flex">
                   <div className="min-w-0 flex-1">
                     {thinkingSteps.length > 0 && (
                       <ThinkingBlock steps={thinkingSteps} defaultOpen={showThinking} onOpenChange={setShowThinking} live />
