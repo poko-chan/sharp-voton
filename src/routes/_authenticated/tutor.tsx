@@ -10,8 +10,9 @@ import {
   Send, Paperclip, Loader2, X, Trash2, Plus, MessageSquare, Pencil, ChevronDown,
   Brain, Search, RotateCcw, PanelLeftClose, PanelLeft, Settings2, Copy, Check, Square,
   Download, ArrowDown, SlidersHorizontal, Eye, EyeOff, Globe, GlobeLock,
-  Zap, Gem, AlignLeft, Lightbulb, GraduationCap, ScrollText, Link2,
+  Zap, Gem, AlignLeft, FastForward,
 } from "lucide-react";
+
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import {
