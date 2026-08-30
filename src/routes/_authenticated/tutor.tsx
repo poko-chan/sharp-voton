@@ -371,35 +371,54 @@ function TutorPage() {
     let text = "";
     setStreaming("");
 
+    const live = () => runId === runIdRef.current && activeIdRef.current === tid && !cancelRef.current;
+
     try {
-      // 推論パス1: 考える骨組み（3回設定のときだけ）
-      let plan = "";
-      if (prefs.passes >= 3) {
-        addStep("答えの骨組みを考えています", "何をどの順で説明すべきかを先に整理します。");
-        const planner = await createAiSession({ task: "reasoning", system });
+      // ── 思考フェーズ（Think / Pro）：モデル自身の推論を実際に生成し、そのまま流す ──
+      let thought = "";
+      if (prefs.quality !== "flash") {
+        const tThink = Date.now();
+        const idx = addReasoning();
+        const thinker = await createAiSession({ task: "reasoning", system });
         try {
-          plan = await planner.prompt(`${convo}\n\n上の質問に答える前に、回答に必ず含めるべき要点を箇条書き3〜5個だけ書いてください。回答本文は書かないでください。`);
-        } finally { planner.destroy(); }
-        finishLastStep(plan.trim().slice(0, 400) || "要点を整理しました");
+          thought = await thinker.promptStreaming(
+            `${convo}\n\n${THINK_PROMPT[prefs.quality === "pro" ? "pro" : "think"]}`,
+            (partial) => { if (live()) updateReasoning(idx, partial); },
+          );
+        } catch { /* 思考に失敗しても回答は続ける */ }
+        finally { thinker.destroy(); }
+        finishReasoning(idx, thought, Date.now() - tThink);
       }
 
-      // 推論パス2: 下書き（2回以上）
+      // ── Pro のみ：下書き → 自己検証 ──
+      let critique = "";
       let draft = "";
-      if (prefs.passes >= 2) {
-        addStep("下書きを作成しています", "まず素早く下書きを書き、次に自己点検して仕上げます。");
-        draft = await session.prompt(`${convo}${plan ? `\n\n【押さえる要点】\n${plan}` : ""}\n\nアシスタント:`);
+      if (prefs.quality === "pro") {
+        addStep("下書きを作成しています");
+        draft = await session.prompt(`${convo}${thought ? `\n\n【自分の思考メモ】\n${thought}` : ""}\n\nアシスタント:`);
         finishLastStep(`下書き ${draft.trim().length}文字`);
+
+        const tCheck = Date.now();
+        const idx2 = addReasoning("検証");
+        const checker = await createAiSession({ task: "reasoning", system });
+        try {
+          critique = await checker.promptStreaming(
+            `【質問】\n${lastUser}\n\n【下書き】\n${draft}\n\nこの下書きを採点者の目で点検してください。事実の誤り・計算ミス・説明の抜け・冗長な部分を具体的に指摘し、直すべき点だけを箇条書きで書いてください。書き直した本文は出さないこと。`,
+            (partial) => { if (live()) updateReasoning(idx2, partial); },
+          );
+        } catch { /* 検証に失敗しても続行 */ }
+        finally { checker.destroy(); }
+        finishReasoning(idx2, critique, Date.now() - tCheck);
       }
 
-      addStep(prefs.passes >= 2 ? "下書きを見直して仕上げています" : "回答を組み立てています",
-        prefs.passes >= 2 ? "誤り・抜け・冗長さを自分でチェックして書き直します。" : "会話と学習情報をもとに説明を作成中です。");
+      addStep("回答を書いています");
 
       const finalPrompt = draft
-        ? `${convo}\n\n【あなたが書いた下書き】\n${draft}\n\n下書きの誤り・説明の抜け・冗長な部分を自分で点検し、より正確でわかりやすい最終回答だけを書いてください。「下書き」への言及はしないこと。\n\nアシスタント:`
-        : `${convo}\n\nアシスタント:`;
+        ? `${convo}\n\n【あなたの下書き】\n${draft}${critique ? `\n\n【点検で見つかった直すべき点】\n${critique}` : ""}\n\n指摘をすべて反映した最終回答だけを書いてください。下書きや点検には言及しないこと。\n\nアシスタント:`
+        : `${convo}${thought ? `\n\n【自分の思考メモ（そのままは出力しない）】\n${thought}` : ""}\n\nアシスタント:`;
 
       text = await session.promptStreaming(finalPrompt, (partial) => {
-        if (runId === runIdRef.current && activeIdRef.current === tid && !cancelRef.current) setStreaming(partial);
+        if (live()) setStreaming(partial);
       });
     } finally { session.destroy(); }
 
@@ -407,9 +426,10 @@ function TutorPage() {
     if (!text.trim()) throw new Error("AIから回答を受け取れませんでした。もう一度お試しください。");
     finishLastStep(`${text.length}文字を生成しました（所要 ${Math.round((Date.now() - t0) / 1000)}秒${cancelRef.current ? "・途中で中断" : ""}）`);
 
-    const sources = webResults.length
+    const sources = prefs.showSources && webResults.length
       ? `\n\n---\n**参照した情報源**\n${webResults.map((r, i) => `${i + 1}. [${r.title}](${r.url}) — ${r.source}`).join("\n")}`
       : "";
+
 
     const { error } = await supabase.from("tutor_messages").insert({
       user_id: user.id, role: "assistant", content: text + sources, attachments: [], thread_id: tid,
