@@ -555,31 +555,33 @@ function TutorPage() {
     <div className="flex h-[calc(100dvh-3.5rem)] overflow-hidden bg-background">
       {/* サイドバー */}
       <aside
-        className={`flex h-full shrink-0 flex-col border-r bg-muted/30 backdrop-blur transition-[width] duration-200 ${
+        className={`flex h-full shrink-0 flex-col border-r bg-muted/40 transition-[width] duration-200 ${
           sidebarOpen ? "w-[264px]" : "w-0"
         } overflow-hidden`}
       >
-        <div className="space-y-2 p-2.5">
-          <div className="flex items-center gap-1.5">
-            <Button onClick={newChat} className="flex-1 justify-start gap-2 rounded-xl" size="sm">
+        <div className="space-y-1.5 p-3">
+          <div className="flex items-center gap-1">
+            <button onClick={newChat}
+              className="flex h-9 flex-1 items-center gap-2.5 rounded-lg border bg-background px-3 text-sm font-medium shadow-sm transition hover:bg-muted/70">
               <Plus className="h-4 w-4" />新しいチャット
-            </Button>
+            </button>
             <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={toggleSidebar} title="サイドバーを閉じる">
               <PanelLeftClose className="h-4 w-4" />
             </Button>
           </div>
           <div className="relative">
             <Search className="pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-            <Input value={threadQuery} onChange={(e) => setThreadQuery(e.target.value)} placeholder="チャットを検索" className="h-8 rounded-xl pl-8 text-xs" />
+            <Input value={threadQuery} onChange={(e) => setThreadQuery(e.target.value)} placeholder="チャットを検索" className="h-8 rounded-lg border-0 bg-transparent pl-8 text-xs shadow-none focus-visible:ring-1" />
           </div>
         </div>
         <div className="flex-1 space-y-0.5 overflow-y-auto px-2 pb-3">
           {filteredThreads.length === 0 && <p className="py-6 text-center text-xs text-muted-foreground">チャットがありません</p>}
+          {filteredThreads.length > 0 && <p className="px-2.5 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">履歴</p>}
           {filteredThreads.map((t) => (
             <div
               key={t.id}
-              className={`group flex cursor-pointer items-center gap-2 rounded-xl px-2.5 py-2 text-sm transition ${
-                activeId === t.id ? "bg-primary/12 font-medium text-foreground" : "hover:bg-muted"
+              className={`group flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition ${
+                activeId === t.id ? "bg-background font-medium text-foreground shadow-sm" : "text-muted-foreground hover:bg-background/60 hover:text-foreground"
               }`}
               onClick={() => { if (!busy) { setActiveId(t.id); setFlowError(null); } }}
             >
