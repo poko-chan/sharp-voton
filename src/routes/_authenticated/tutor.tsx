@@ -759,8 +759,8 @@ function TutorPage() {
         </div>
 
         {/* 入力欄 */}
-        <div className="border-t bg-background/80 backdrop-blur">
-          <div className="mx-auto w-full max-w-3xl px-4 py-3">
+        <div className="bg-background">
+          <div className="mx-auto w-full max-w-3xl px-4 pb-4 pt-2">
             {pending.length > 0 && (
               <div className="mb-2 flex flex-wrap gap-2">
                 {pending.map((a, i) => (
