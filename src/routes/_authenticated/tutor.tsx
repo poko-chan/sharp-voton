@@ -32,7 +32,7 @@ import { AiActionCard } from "@/components/ai/AiActionCard";
 import { ChatSettingsPanel } from "@/components/ai/ChatSettingsPanel";
 import { VoiceMicButton } from "@/components/VoiceMicButton";
 import {
-  SCOPE_DEFS, loadPrefs, savePrefs, relevantScopes, LENGTH_RULE, TONE_RULE,
+  SCOPE_DEFS, QUALITY_DEFS, loadPrefs, savePrefs, relevantScopes, LENGTH_RULE, TONE_RULE,
   needsWebSearch, buildSearchQuery,
   type ChatPrefs, type ScopeKey,
 } from "@/lib/tutor-prefs";
