@@ -389,6 +389,8 @@ function TutorPage() {
     const lastUser = [...history].reverse().find((m) => m.role === "user")?.content ?? "";
     const displayName = user.user_metadata?.display_name ?? user.email?.split("@")[0] ?? "生徒";
     const t0 = Date.now();
+    const task = taskKind ? TASK_DEFS[taskKind] : null;
+    const runPrefs: ChatPrefs = { ...prefs, directAnswer: !hintOn };
 
     addStep("準備しています", `${engineLabel || "端末内AI"} / ${QUALITY_DEFS.find((q) => q.key === prefs.quality)?.label}モード`);
     finishLastStep();
@@ -398,7 +400,10 @@ function TutorPage() {
       prefs.lookup === "off" ? [] : relevantScopes(lastUser, prefs.scopes);
 
 
-    const doSearch = prefs.web === "on" || (prefs.web === "auto" && needsWebSearch(lastUser));
+    const doSearch = task?.kind === "deep" || prefs.web === "on" || (prefs.web === "auto" && needsWebSearch(lastUser));
+    const searchQueries = task?.kind === "deep"
+      ? buildSiteQueries(buildSearchQuery(lastUser), deepSites.split(/[\s,、\n]+/))
+      : [buildSearchQuery(lastUser)];
     // メッセージ内のURLを検出して直接読みに行く（どのサイトでも対応）
     const urlsInMsg = Array.from(new Set(lastUser.match(/https?:\/\/[^\s　)\]}>"'〈〉「」『』【】、。]+/g) ?? []))
       .filter((u) => !/\.(png|jpe?g|gif|webp|svg|mp4|mp3|pdf|zip)($|\?)/i.test(u))
@@ -406,17 +411,20 @@ function TutorPage() {
     if (requested.length > 0) {
       addStep("学習情報を確認しています", requested.map((k) => SCOPE_DEFS.find((s) => s.key === k)?.label).join("、"));
     }
-    if (doSearch) addStep("Webで事実を確認しています", buildSearchQuery(lastUser));
+    if (doSearch) addStep(task?.kind === "deep" ? "資料を集めています" : "Webで事実を確認しています", searchQueries.join("\n"));
     if (urlsInMsg.length > 0) addStep("ページを読んでいます", urlsInMsg.join("\n"));
 
     // 学習情報・Web検索・指定ページの取得は同時に行い、待ち時間を短くする
     const [ctxRes, webRes, pages] = await Promise.all([
       requested.length > 0 ? ctxFn({ data: { scopes: requested } }).catch(() => null) : Promise.resolve(null),
       doSearch
-        ? searchFn({ data: { query: buildSearchQuery(lastUser) } }).catch(() => null)
+        ? Promise.all(searchQueries.map((q) => searchFn({ data: { query: q } }).catch(() => null)))
+            .then((rs) => ({ results: rs.flatMap((r: any) => r?.results ?? []) }))
         : Promise.resolve(null),
       Promise.all(urlsInMsg.map((u) => pageFn({ data: { url: u } }).catch(() => null))),
     ]);
+
+
 
     if (requested.length > 0) {
       ctx = ctxRes;
