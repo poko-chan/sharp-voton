@@ -286,16 +286,13 @@ function TutorPage() {
     const displayName = user.user_metadata?.display_name ?? user.email?.split("@")[0] ?? "生徒";
     const t0 = Date.now();
 
-    addStep("使うAIを決めています", `${engineLabel || "端末内AI"} / 参照モード: ${
-      prefs.lookup === "always" ? "いつも見る" : prefs.lookup === "never" ? "見ない" : "自動"
-    } / 推論${prefs.passes}回`);
+    addStep("準備しています", `${engineLabel || "端末内AI"} / ${QUALITY_DEFS.find((q) => q.key === prefs.quality)?.label}モード`);
     finishLastStep();
 
     let ctx: any = null;
     const requested: ScopeKey[] =
-      prefs.lookup === "never" ? []
-        : prefs.lookup === "always" ? prefs.scopes
-          : relevantScopes(lastUser, prefs.scopes);
+      prefs.lookup === "off" ? [] : relevantScopes(lastUser, prefs.scopes);
+
 
     const doSearch = prefs.web === "on" || (prefs.web === "auto" && needsWebSearch(lastUser));
     // メッセージ内のURLを検出して直接読みに行く（どのサイトでも対応）
