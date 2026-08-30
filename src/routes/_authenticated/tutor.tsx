@@ -38,6 +38,11 @@ import {
   type ChatPrefs, type ScopeKey,
 } from "@/lib/tutor-prefs";
 import { detectAiAction, applyAiAction, fetchSubjectNames, looksLikeActionRequest, parseCommonActionRequest, type AiAction } from "@/lib/ai-actions";
+import { ToolsMenu } from "@/components/ai/ToolsMenu";
+import { CanvasPanel, printDoc, type CanvasDoc } from "@/components/ai/CanvasPanel";
+import { TASK_DEFS, buildSiteQueries, type TaskKind } from "@/lib/tutor-tasks";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
 
 
 type Attachment = { url: string; name: string; type: string };
