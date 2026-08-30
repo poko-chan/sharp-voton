@@ -585,7 +585,7 @@ function TutorPage() {
               }`}
               onClick={() => { if (!busy) { setActiveId(t.id); setFlowError(null); } }}
             >
-              <MessageSquare className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+              <MessageSquare className="h-3.5 w-3.5 shrink-0 opacity-60" />
               {renamingId === t.id ? (
                 <Input
                   autoFocus value={renameTitle} onChange={(e) => setRenameTitle(e.target.value)}
@@ -605,10 +605,10 @@ function TutorPage() {
             </div>
           ))}
         </div>
-        <div className="border-t p-2.5">
-          <Button variant="outline" size="sm" className="w-full justify-start gap-2 rounded-xl" onClick={() => setSettingsOpen(true)}>
+        <div className="p-2">
+          <button className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-background/60 hover:text-foreground" onClick={() => setSettingsOpen(true)}>
             <SlidersHorizontal className="h-4 w-4" />チャットの設定
-          </Button>
+          </button>
         </div>
       </aside>
 
