@@ -623,7 +623,10 @@ function TutorPage() {
           )}
           <div className="min-w-0">
             <h1 className="truncate text-sm font-semibold">{activeTitle}</h1>
-            <p className="truncate text-[11px] text-muted-foreground">{engineLabel || "端末内AI"} ・ 推論{prefs.passes}回</p>
+            <p className="truncate text-[11px] text-muted-foreground">
+              {engineLabel || "端末内AI"} ・ {QUALITY_DEFS.find((q) => q.key === prefs.quality)?.label}
+            </p>
+
           </div>
           <div className="ml-auto flex items-center gap-1">
             <AiStatusBadge />
