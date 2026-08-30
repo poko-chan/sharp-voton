@@ -39,7 +39,15 @@ import { detectAiAction, applyAiAction, fetchSubjectNames, looksLikeActionReques
 
 
 type Attachment = { url: string; name: string; type: string };
-type ThinkingStep = { label: string; detail?: string; done: boolean };
+type ThinkingStep = { label: string; detail?: string; done: boolean; kind?: "tool" | "reasoning"; ms?: number };
+
+/** 思考フェーズでモデルに出させる「内心のメモ」の指示 */
+const THINK_PROMPT = {
+  think:
+    "回答を書く前に、頭の中の考えをそのままメモしてください。\n1) 質問で本当に聞かれていることは何か\n2) 使える情報・条件\n3) 答えにたどり着く筋道（計算や根拠を含む）\n4) 見落としやすい点\n短い文を並べる形で書き、最終回答の本文は書かないでください。",
+  pro:
+    "回答を書く前に、頭の中の考えをそのままメモしてください。\n1) 質問の意図と前提の確認\n2) 考えられる解き方を2つ挙げ、良い方を選ぶ理由\n3) 選んだ筋道を段階的に検討（計算・根拠・具体例）\n4) 反例や間違えやすい点の自己チェック\n5) 最終的に伝えるべき要点\n短い文を並べる形で書き、最終回答の本文は書かないでください。",
+} as const;
 type Msg = { id: string; role: string; content: string; attachments: Attachment[]; created_at: string; thread_id: string | null; thinking?: ThinkingStep[] };
 type Thread = { id: string; title: string; updated_at: string; created_at: string };
 
