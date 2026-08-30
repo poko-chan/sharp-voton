@@ -791,6 +791,10 @@ function TutorPage() {
 
         {!canAi && <div className="border-b p-3"><AiUnavailable feature="AIチャット" /></div>}
 
+        <div className="border-b bg-amber-500/5 px-4 py-1.5 text-center text-[11px] text-amber-700 dark:text-amber-400">
+          AIチャットはベータ版です。回答は正確でない場合があります。重要な情報はご自身でご確認ください。
+        </div>
+
         <div ref={scrollRef} onScroll={onScroll} className="relative flex-1 overflow-y-auto">
           <div className="mx-auto w-full max-w-3xl px-4 py-6">
             {messageLoading && (
