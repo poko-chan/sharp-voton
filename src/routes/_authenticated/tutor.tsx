@@ -778,82 +778,77 @@ function TutorPage() {
             )}
 
             <form onSubmit={(e) => { e.preventDefault(); void send(); }}
-              className="flex items-end gap-1.5 rounded-3xl border bg-card p-1.5 shadow-sm focus-within:border-primary/40">
+              className="rounded-3xl border bg-muted/50 transition focus-within:border-muted-foreground/30 focus-within:bg-muted/70">
               <input type="file" ref={fileRef} className="hidden" multiple accept="image/*,.pdf" onChange={onUpload} />
-              <Button type="button" variant="ghost" size="icon" className="h-9 w-9 shrink-0 rounded-full" disabled={uploading} onClick={() => fileRef.current?.click()} title="ファイルを添付">
-                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
-              </Button>
               <Textarea
                 ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)}
-                placeholder={busy ? "生成中です…" : "質問や「数学を30分記録して」と入力（Shift+Enterで改行）"}
-                className="max-h-40 min-h-[40px] resize-none border-0 bg-transparent px-1 py-2 shadow-none focus-visible:ring-0"
+                placeholder={busy ? "生成中です…" : "AIに質問する…（「数学を30分記録して」もOK）"}
+                className="max-h-48 min-h-[52px] w-full resize-none border-0 bg-transparent px-4 pb-1 pt-3.5 text-base shadow-none focus-visible:ring-0"
                 disabled={busy}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); } }}
               />
-              <div className="flex shrink-0 items-center gap-1">
-                <VoiceMicButton onResult={(t) => setInput((v) => (v ? `${v} ${t}` : t))} />
-                {busy ? (
-                  <Button type="button" variant="destructive" size="icon" className="h-9 w-9 rounded-full" onClick={stopGeneration} title="生成を止める">
-                    <Square className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <Button type="submit" size="icon" className="h-9 w-9 rounded-full" disabled={!canAi || (!input.trim() && pending.length === 0)} title="送信">
-                    <Send className="h-4 w-4" />
-                  </Button>
-                )}
+
+              {/* コンポーザー内のコントロール行 */}
+              <div className="flex flex-wrap items-center gap-1 px-2.5 pb-2.5">
+                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:text-foreground" disabled={uploading} onClick={() => fileRef.current?.click()} title="ファイルを添付">
+                  {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+                </Button>
+
+                <button
+                  type="button"
+                  onClick={() => setPrefs((p) => ({ ...p, web: p.web === "auto" ? "on" : p.web === "on" ? "off" : "auto" }))}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                    prefs.web === "off" ? "text-muted-foreground hover:bg-muted" : "bg-background text-foreground shadow-sm"
+                  }`}
+                  title="Web検索で事実を確認するかどうか"
+                >
+                  {prefs.web === "off" ? <GlobeLock className="h-3.5 w-3.5" /> : <Globe className="h-3.5 w-3.5" />}
+                  Web検索{prefs.web === "auto" ? "" : prefs.web === "on" ? ": いつも" : ": オフ"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPrefs((p) => ({ ...p, lookup: p.lookup === "auto" ? "always" : p.lookup === "always" ? "never" : "auto" }))}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                    prefs.lookup === "never" ? "text-muted-foreground hover:bg-muted" : "bg-background text-foreground shadow-sm"
+                  }`}
+                  title="AIが自分の学習データを見るかどうか"
+                >
+                  <LookupIcon className="h-3.5 w-3.5" />
+                  学習データ{prefs.lookup === "auto" ? "" : prefs.lookup === "always" ? ": いつも" : ": オフ"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPrefs((p) => ({ ...p, passes: (p.passes === 3 ? 1 : ((p.passes + 1) as 1 | 2 | 3)) }))}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                    prefs.passes === 1 ? "text-muted-foreground hover:bg-muted" : "bg-background text-foreground shadow-sm"
+                  }`}
+                  title="考える回数（多いほど正確・遅い）"
+                >
+                  <Layers className="h-3.5 w-3.5" />
+                  {prefs.passes === 1 ? "すぐ答える" : prefs.passes === 2 ? "見直す" : "じっくり"}
+                </button>
+
+                <div className="ml-auto flex shrink-0 items-center gap-1">
+                  <VoiceMicButton onResult={(t) => setInput((v) => (v ? `${v} ${t}` : t))} />
+                  {busy ? (
+                    <Button type="button" variant="destructive" size="icon" className="h-8 w-8 rounded-full" onClick={stopGeneration} title="生成を止める">
+                      <Square className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <button type="submit" disabled={!canAi || (!input.trim() && pending.length === 0)} title="送信"
+                      className="grid h-8 w-8 place-items-center rounded-full bg-foreground text-background transition hover:opacity-85 disabled:opacity-30">
+                      <Send className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
               </div>
             </form>
 
-            {/* よく切り替える設定は入力欄のすぐ下に置く */}
-            <div className="mt-2 flex flex-wrap items-center gap-1.5 px-1">
-              <button
-                type="button"
-                onClick={() => setPrefs((p) => ({ ...p, web: p.web === "auto" ? "on" : p.web === "on" ? "off" : "auto" }))}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition hover:bg-muted ${
-                  prefs.web === "off" ? "text-muted-foreground" : "border-primary/40 bg-primary/10 text-foreground"
-                }`}
-                title="Web検索で事実を確認するかどうか"
-              >
-                {prefs.web === "off" ? <GlobeLock className="h-3.5 w-3.5" /> : <Globe className="h-3.5 w-3.5" />}
-                Web検索: {prefs.web === "on" ? "いつも" : prefs.web === "off" ? "しない" : "必要なとき"}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPrefs((p) => ({ ...p, lookup: p.lookup === "auto" ? "always" : p.lookup === "always" ? "never" : "auto" }))}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition hover:bg-muted ${
-                  prefs.lookup === "never" ? "text-muted-foreground" : "border-primary/40 bg-primary/10 text-foreground"
-                }`}
-                title="AIが自分の学習データを見るかどうか"
-              >
-                <LookupIcon className="h-3.5 w-3.5" />
-                学習データ: {prefs.lookup === "always" ? "いつも見る" : prefs.lookup === "never" ? "見ない" : "必要なとき"}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPrefs((p) => ({ ...p, passes: (p.passes === 3 ? 1 : ((p.passes + 1) as 1 | 2 | 3)) }))}
-                className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition hover:bg-muted"
-                title="考える回数（多いほど正確・遅い）"
-              >
-                <Layers className="h-3.5 w-3.5" />
-                {prefs.passes === 1 ? "すぐ答える" : prefs.passes === 2 ? "見直す" : "じっくり"}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSettingsOpen(true)}
-                className="ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] text-muted-foreground transition hover:bg-muted"
-                title="毎回は変えない設定"
-              >
-                <SlidersHorizontal className="h-3.5 w-3.5" />くわしい設定
-              </button>
-            </div>
-
-            <div className="mt-1.5 flex items-center justify-between px-1 text-[10px] text-muted-foreground">
-
+            <div className="mt-2 flex items-center justify-center gap-2 px-1 text-[10px] text-muted-foreground">
               <span>AIの回答が必ず正しいとは限りません。大事な内容は確認してください。</span>
-              <span>{input.length > 0 ? `${input.length}文字` : "Enterで送信"}</span>
+              <span className="hidden sm:inline">{input.length > 0 ? `${input.length}文字` : "Enterで送信"}</span>
             </div>
           </div>
         </div>
