@@ -85,7 +85,12 @@ export type AiModelEntry = {
   installable: boolean;
   /** おすすめ度（大きいほど優先） */
   score: number;
+  /** 得意分野タグ（WebLLM モデルのみ） */
+  tags?: WebLlmTag[];
+  /** パラメータ数（B） */
+  params?: number;
 };
+
 
 /** 端末で扱える AI モデルを全部並べる（使える／ダウンロードが必要 の両方） */
 export async function listAiModels(): Promise<AiModelEntry[]> {
