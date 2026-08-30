@@ -130,9 +130,13 @@ export async function listAiModels(): Promise<AiModelEntry[]> {
       note: m.note,
       ready: gpu && cached.has(m.id),
       installable: gpu && !cached.has(m.id),
-      score: 50 + (m.sizeLabel.includes("4.") || m.sizeLabel.includes("5.") ? 5 : 0),
+      // 賢さと日本語力を加味した推奨度（0-100 → 20〜95 くらいに収まる）
+      score: webLlmRecommendScore(m),
+      tags: m.tags,
+      params: m.params,
     });
   }
+
 
   return out;
 }
