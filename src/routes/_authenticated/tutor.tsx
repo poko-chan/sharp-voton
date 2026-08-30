@@ -614,25 +614,17 @@ function TutorPage() {
 
       {/* メイン */}
       <main className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center gap-2 border-b px-3 py-2">
+        <header className="flex items-center gap-2 px-3 py-2.5">
           {!sidebarOpen && (
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleSidebar} title="サイドバーを開く">
               <PanelLeft className="h-4 w-4" />
             </Button>
           )}
           <div className="min-w-0">
-            <h1 className="flex items-center gap-1.5 truncate text-sm font-semibold">
-              <Sparkles className="h-4 w-4 shrink-0 text-primary" />{activeTitle}
-            </h1>
+            <h1 className="truncate text-sm font-semibold">{activeTitle}</h1>
             <p className="truncate text-[11px] text-muted-foreground">{engineLabel || "端末内AI"} ・ 推論{prefs.passes}回</p>
           </div>
           <div className="ml-auto flex items-center gap-1">
-            <span className="hidden items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] text-muted-foreground sm:flex">
-              <LookupIcon className="h-3 w-3" />
-              {prefs.lookup === "always" ? "いつも参照" : prefs.lookup === "never" ? "参照しない" : "自動参照"}
-              <Layers className="ml-1 h-3 w-3" />推論{prefs.passes}
-            </span>
-
             <AiStatusBadge />
             {msgs.length > 0 && (
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={exportChat} title="この会話を書き出す">
