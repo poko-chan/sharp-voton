@@ -16,18 +16,25 @@ export const SCOPE_DEFS = [
 export type ScopeKey = (typeof SCOPE_DEFS)[number]["key"];
 export const ALL_SCOPES = SCOPE_DEFS.map((s) => s.key) as ScopeKey[];
 
-export type LookupMode = "auto" | "always" | "never";
-export type WebMode = "auto" | "on" | "off";
+export type LookupMode = "on" | "off";
+export type WebMode = "auto" | "on";
+export type Quality = "flash" | "think" | "pro";
 export type Length = "short" | "normal" | "deep";
 export type Tone = "friendly" | "calm" | "coach";
 
+export const QUALITY_DEFS = [
+  { key: "flash", label: "Flash", desc: "すぐ答える。日常の質問向け。" },
+  { key: "think", label: "Think", desc: "考えてから答える。説明・相談向け。" },
+  { key: "pro", label: "Pro", desc: "深く考えて検証。難問・長文向け。" },
+] as const;
+
 export type ChatPrefs = {
-  /** 学習データを見るかどうか */
+  /** 学習データを見るかどうか（オン／オフ） */
   lookup: LookupMode;
-  /** Web検索で事実確認するかどうか */
+  /** Web検索（on=常に検索 / auto=AIが必要と判断したときだけ） */
   web: WebMode;
-  /** 推論の回数（1=即答, 2=見直し, 3=じっくり検討） */
-  passes: 1 | 2 | 3;
+  /** 回答の品質モード */
+  quality: Quality;
   /** 回答の長さ */
   length: Length;
   /** 口調 */
@@ -36,23 +43,26 @@ export type ChatPrefs = {
   directAnswer: boolean;
   /** 思考プロセスを自動で開く */
   autoOpenThinking: boolean;
+  /** 出典リンクを回答の下に付ける */
+  showSources: boolean;
   /** 参照を許可する情報 */
   scopes: ScopeKey[];
 };
 
 export const DEFAULT_PREFS: ChatPrefs = {
-  lookup: "auto",
+  lookup: "on",
   web: "auto",
-  passes: 1,
+  quality: "think",
   length: "normal",
   tone: "friendly",
   directAnswer: false,
   autoOpenThinking: true,
+  showSources: true,
   scopes: ALL_SCOPES,
 };
 
 
-const LS = "ai.tutor.prefs.v2";
+const LS = "ai.tutor.prefs.v3";
 
 export function loadPrefs(): ChatPrefs {
   if (typeof window === "undefined") return DEFAULT_PREFS;
@@ -63,6 +73,9 @@ export function loadPrefs(): ChatPrefs {
     return {
       ...DEFAULT_PREFS,
       ...p,
+      lookup: p.lookup === "off" ? "off" : "on",
+      web: p.web === "on" ? "on" : "auto",
+      quality: p.quality === "flash" || p.quality === "pro" ? p.quality : "think",
       scopes: Array.isArray(p.scopes) ? ALL_SCOPES.filter((k) => p.scopes!.includes(k)) : ALL_SCOPES,
     };
   } catch { return DEFAULT_PREFS; }
@@ -71,6 +84,7 @@ export function loadPrefs(): ChatPrefs {
 export function savePrefs(p: ChatPrefs) {
   try { window.localStorage.setItem(LS, JSON.stringify(p)); } catch { /* noop */ }
 }
+
 
 /** 質問文から、どの学習データが必要かを推定する */
 export function relevantScopes(text: string, allowed: ScopeKey[]): ScopeKey[] {
