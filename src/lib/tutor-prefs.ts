@@ -77,7 +77,7 @@ export function loadPrefs(): ChatPrefs {
       ...p,
       lookup: p.lookup === "off" ? "off" : "on",
       web: p.web === "on" ? "on" : "auto",
-      quality: p.quality === "flash" || p.quality === "pro" ? p.quality : "think",
+      quality: p.quality === "lite" || p.quality === "flash" || p.quality === "pro" ? p.quality : "think",
       scopes: Array.isArray(p.scopes) ? ALL_SCOPES.filter((k) => p.scopes!.includes(k)) : ALL_SCOPES,
     };
   } catch { return DEFAULT_PREFS; }
