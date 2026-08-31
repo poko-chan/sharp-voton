@@ -364,6 +364,14 @@ function Dashboard() {
         </div>
       </Card>
 
+      {/* ===== あなたの街（右上） ===== */}
+      <div className="xl:sticky xl:top-4">
+        <Town />
+      </div>
+      </div>
+
+
+
       {/* ===== インサイト ===== */}
       {insights.length > 0 && (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
