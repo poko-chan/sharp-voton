@@ -6034,6 +6034,47 @@ export type Database = {
         }
         Relationships: []
       }
+      town_buildings: {
+        Row: {
+          created_at: string
+          gx: number
+          gz: number
+          id: string
+          kind: string
+          level: number
+          town_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          gx: number
+          gz: number
+          id?: string
+          kind: string
+          level?: number
+          town_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          gx?: number
+          gz?: number
+          id?: string
+          kind?: string
+          level?: number
+          town_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "town_buildings_town_id_fkey"
+            columns: ["town_id"]
+            isOneToOne: false
+            referencedRelation: "towns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       town_events: {
         Row: {
           created_at: string
@@ -6131,6 +6172,41 @@ export type Database = {
           y?: number
         }
         Relationships: []
+      }
+      town_policies: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          key: string
+          town_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          key: string
+          town_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          key?: string
+          town_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "town_policies_town_id_fkey"
+            columns: ["town_id"]
+            isOneToOne: false
+            referencedRelation: "towns"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       towns: {
         Row: {
@@ -7250,6 +7326,20 @@ export type Database = {
       submit_official_request: {
         Args: { _note?: string; _pack_id: string }
         Returns: undefined
+      }
+      town_build: {
+        Args: {
+          _cost: number
+          _gx: number
+          _gz: number
+          _kind: string
+          _town_id: string
+        }
+        Returns: Json
+      }
+      town_demolish: {
+        Args: { _building_id: string; _refund: number }
+        Returns: Json
       }
       use_inventory_item: { Args: { _item_code: string }; Returns: Json }
     }
