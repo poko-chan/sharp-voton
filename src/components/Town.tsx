@@ -322,7 +322,7 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
                 buildMode={buildMode}
                 selected={selected}
                 autoRotate={!buildMode}
-                onPick={(gx, gz) => setSelected([gx, gz])}
+                onPick={onCell}
                 onSelectBuilding={(b) => setSelected([b.gx, b.gz])}
               />
             </Suspense>
@@ -332,10 +332,13 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
               </Button>
             </div>
             {buildMode && (
-              <div className="absolute left-3 bottom-3 text-[11px] px-2 py-1 rounded bg-background/80 border">
-                区画をクリックして選択 → 下の建物を選んで建設
+              <div className="absolute left-3 bottom-3 text-[11px] px-2 py-1 rounded bg-background/85 border">
+                {picked
+                  ? `${buildDef(picked)?.emoji} ${buildDef(picked)?.label} を選択中 — 空き区画をクリックすると即建設`
+                  : "「建設」タブで建物を選ぶと、区画クリックで即建設できます"}
               </div>
             )}
+
           </div>
 
           <Tabs defaultValue="economy" className="mt-2">
