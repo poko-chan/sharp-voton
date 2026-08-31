@@ -34,21 +34,21 @@ export const Route = createFileRoute("/_authenticated/timer")({
 function Ring({
   progress, children, running, tone = "primary",
 }: { progress: number; children: React.ReactNode; running?: boolean; tone?: "primary" | "warning" }) {
-  const size = 280, stroke = 12, r = (size - stroke) / 2;
+  const size = 176, stroke = 10, r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const p = Math.max(0, Math.min(1, progress));
-  const color = tone === "warning" ? "hsl(var(--warning, 38 92% 50%))" : "hsl(var(--primary))";
+  const color = tone === "warning" ? "var(--warning)" : "var(--primary)";
   return (
     <div className="relative mx-auto" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--muted)" strokeWidth={stroke} />
         <circle
           cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
           strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - p)}
           className="transition-[stroke-dashoffset] duration-500 ease-linear"
         />
       </svg>
-      <div className="absolute inset-0 grid place-items-center text-center px-6">
+      <div className="absolute inset-0 grid place-items-center text-center px-4">
         <div>{children}</div>
       </div>
       {running && (
@@ -119,7 +119,7 @@ function TimerPage() {
   }, [state, pause, resume]);
 
   return (
-    <div className={cn("p-6 md:p-8 max-w-4xl mx-auto", focus && "fixed inset-0 z-50 max-w-none bg-background overflow-auto p-6")}>
+    <div className={cn("p-4 md:p-6 max-w-xl mx-auto", focus && "fixed inset-0 z-50 max-w-none bg-background overflow-auto p-6")}>
       <div className="flex items-center justify-between gap-3 mb-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary via-foreground to-primary/70 bg-clip-text text-transparent">
@@ -176,9 +176,9 @@ function Stopwatch() {
   const min = Math.floor(elapsedMs / 60000);
 
   return (
-    <Card className="p-6 md:p-8 mt-4 space-y-6 text-center">
+    <Card className="p-5 mt-3 space-y-4 text-center">
       <Ring progress={isThis ? (elapsedMs % 3600000) / 3600000 : 0} running={!!running}>
-        <div className="text-5xl font-mono font-bold tabular-nums tracking-tight">{fmtMs(isThis ? elapsedMs : 0)}</div>
+        <div className="text-4xl font-mono font-bold tabular-nums tracking-tight">{fmtMs(isThis ? elapsedMs : 0)}</div>
         <div className="text-xs text-muted-foreground mt-1">{isThis ? `${min}分 経過` : "経過時間なし"}</div>
       </Ring>
 
@@ -188,12 +188,12 @@ function Stopwatch() {
             <Play className="mr-2 h-4 w-4" /> 開始
           </Button>
         ) : running ? (
-          <Button size="lg" variant="secondary" onClick={pause}><Pause className="mr-2 h-4 w-4" /> 一時停止</Button>
+          <Button size="lg" onClick={pause} className="bg-warning text-background hover:bg-warning/90"><Pause className="mr-2 h-4 w-4" /> 一時停止</Button>
         ) : (
           <Button size="lg" onClick={resume}><Play className="mr-2 h-4 w-4" /> 再開</Button>
         )}
-        {isThis && <Button size="lg" onClick={finish}><Square className="mr-2 h-4 w-4" /> 終了して記録</Button>}
-        {isThis && <Button size="lg" variant="ghost" onClick={clear}><RotateCcw className="mr-2 h-4 w-4" /> 破棄</Button>}
+        {isThis && <Button size="lg" onClick={finish} className="bg-success text-background hover:bg-success/90"><Square className="mr-2 h-4 w-4" /> 終了して記録</Button>}
+        {isThis && <Button size="lg" variant="destructive" onClick={clear}><RotateCcw className="mr-2 h-4 w-4" /> 破棄</Button>}
       </div>
 
       <div className="flex items-center justify-center gap-3 pt-2 border-t">
@@ -230,9 +230,9 @@ function CountdownTimer() {
     start({ kind: "countdown", targetMs: m * 60000, subjectId: subject, content, record, materialIds });
 
   return (
-    <Card className="p-6 md:p-8 mt-4 space-y-6 text-center">
+    <Card className="p-5 mt-3 space-y-4 text-center">
       <Ring progress={progress} running={!!running}>
-        <div className="text-5xl font-mono font-bold tabular-nums">{fmtMs(isThis ? remainingMs : minutes * 60000)}</div>
+        <div className="text-4xl font-mono font-bold tabular-nums">{fmtMs(isThis ? remainingMs : minutes * 60000)}</div>
         <div className="text-xs text-muted-foreground mt-1">
           {isThis ? `${Math.round(progress * 100)}% 完了` : `${minutes}分でスタート`}
         </div>
@@ -262,10 +262,10 @@ function CountdownTimer() {
         ) : (
           <>
             {running
-              ? <Button size="lg" variant="secondary" onClick={pause}><Pause className="mr-2 h-4 w-4" /> 一時停止</Button>
+              ? <Button size="lg" onClick={pause} className="bg-warning text-background hover:bg-warning/90"><Pause className="mr-2 h-4 w-4" /> 一時停止</Button>
               : <Button size="lg" onClick={resume}><Play className="mr-2 h-4 w-4" /> 再開</Button>}
-            <Button size="lg" onClick={finish}><Square className="mr-2 h-4 w-4" /> 終了して記録</Button>
-            <Button size="lg" variant="ghost" onClick={clear}>破棄</Button>
+            <Button size="lg" onClick={finish} className="bg-success text-background hover:bg-success/90"><Square className="mr-2 h-4 w-4" /> 終了して記録</Button>
+            <Button size="lg" variant="destructive" onClick={clear}>破棄</Button>
           </>
         )}
       </div>
@@ -301,7 +301,7 @@ function Pomodoro() {
   const progress = total > 0 && isThis ? elapsedMs / total : 0;
 
   return (
-    <Card className="p-6 md:p-8 mt-4 space-y-6 text-center">
+    <Card className="p-5 mt-3 space-y-4 text-center">
       <div className="flex items-center justify-center gap-2 text-sm">
         <Badge variant={mode === "focus" ? "default" : "secondary"} className="text-xs">
           {mode === "focus" ? "🎯 集中" : "☕ 休憩"}
@@ -315,7 +315,7 @@ function Pomodoro() {
       </div>
 
       <Ring progress={progress} running={!!running} tone={mode === "focus" ? "primary" : "warning"}>
-        <div className="text-5xl font-mono font-bold tabular-nums">{fmtMs(isThis ? remainingMs : focusMin * 60000)}</div>
+        <div className="text-4xl font-mono font-bold tabular-nums">{fmtMs(isThis ? remainingMs : focusMin * 60000)}</div>
         <div className="text-xs text-muted-foreground mt-1">{focusMin}分集中 / {breakMin}分休憩</div>
       </Ring>
 
@@ -332,11 +332,11 @@ function Pomodoro() {
             <Play className="mr-2 h-4 w-4" /> 開始
           </Button>
         ) : running ? (
-          <Button size="lg" variant="secondary" onClick={pause}><Pause className="mr-2 h-4 w-4" /> 一時停止</Button>
+          <Button size="lg" onClick={pause} className="bg-warning text-background hover:bg-warning/90"><Pause className="mr-2 h-4 w-4" /> 一時停止</Button>
         ) : (
           <Button size="lg" onClick={resume}><Play className="mr-2 h-4 w-4" /> 再開</Button>
         )}
-        {isThis && <Button size="lg" variant="ghost" onClick={clear}><RotateCcw className="mr-2 h-4 w-4" /> リセット</Button>}
+        {isThis && <Button size="lg" variant="destructive" onClick={clear}><RotateCcw className="mr-2 h-4 w-4" /> リセット</Button>}
       </div>
 
       <div className="pt-2 border-t">
@@ -375,15 +375,15 @@ function Breathing() {
     return () => clearTimeout(timeoutId);
   }, [running]);
 
-  const size = phase === "吸う" || phase === "止める" ? "w-64 h-64" : "w-32 h-32";
+  const size = phase === "吸う" || phase === "止める" ? "w-48 h-48" : "w-24 h-24";
   const duration = phase === "吐く" ? "duration-[6000ms]" : "duration-[4000ms]";
 
   return (
-    <Card className="p-6 md:p-8 mt-4 space-y-6 text-center">
+    <Card className="p-5 mt-3 space-y-4 text-center">
       <p className="text-muted-foreground flex items-center justify-center gap-2 text-sm">
         <Wind className="h-4 w-4" /> 4-4-6呼吸法でリラックス ・ 完了 {rounds} 回
       </p>
-      <div className="h-72 flex items-center justify-center">
+      <div className="h-60 flex items-center justify-center">
         <div className={cn(
           "rounded-full bg-primary/20 ring-8 ring-primary/5 transition-all ease-in-out flex items-center justify-center text-2xl font-bold",
           size, duration,
