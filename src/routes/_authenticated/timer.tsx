@@ -34,21 +34,21 @@ export const Route = createFileRoute("/_authenticated/timer")({
 function Ring({
   progress, children, running, tone = "primary",
 }: { progress: number; children: React.ReactNode; running?: boolean; tone?: "primary" | "warning" }) {
-  const size = 280, stroke = 12, r = (size - stroke) / 2;
+  const size = 176, stroke = 10, r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const p = Math.max(0, Math.min(1, progress));
-  const color = tone === "warning" ? "hsl(var(--warning, 38 92% 50%))" : "hsl(var(--primary))";
+  const color = tone === "warning" ? "var(--warning)" : "var(--primary)";
   return (
     <div className="relative mx-auto" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--muted)" strokeWidth={stroke} />
         <circle
           cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
           strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - p)}
           className="transition-[stroke-dashoffset] duration-500 ease-linear"
         />
       </svg>
-      <div className="absolute inset-0 grid place-items-center text-center px-6">
+      <div className="absolute inset-0 grid place-items-center text-center px-4">
         <div>{children}</div>
       </div>
       {running && (
