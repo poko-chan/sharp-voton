@@ -2,6 +2,8 @@ import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
+import { cellToWorld } from "@/lib/town-economy";
+
 
 /* ============================================================
    Study# City — a small but "properly designed" city simulation.
