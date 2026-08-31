@@ -14,6 +14,11 @@ import { cn } from "@/lib/utils";
 import { useTimer, fmtMs } from "@/lib/timer-context";
 import { MaterialPicker } from "@/components/MaterialPicker";
 import { useOrderedSubjects } from "@/lib/subjects";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
+import { localDateStr } from "@/lib/date";
+import { PowerBar } from "@/components/RadialGauge";
 
 export const Route = createFileRoute("/_authenticated/timer")({
   component: TimerPage,
@@ -74,6 +79,37 @@ function RecordFields({
         <MaterialPicker variant="large" value={materialIds} onChange={setMaterialIds} disabled={disabled} />
       </div>
     </div>
+  );
+}
+
+/* ---------------- 今日のサマリー ---------------- */
+
+function TodaySummary() {
+  const { user } = useAuth();
+  const { data } = useQuery({
+    queryKey: ["timer-today", user?.id],
+    enabled: !!user?.id,
+    staleTime: 30_000,
+    queryFn: async () => {
+      const { data } = await supabase.from("study_logs")
+        .select("duration_minutes").eq("user_id", user!.id).eq("date", localDateStr());
+      const rows = data ?? [];
+      return {
+        minutes: rows.reduce((s, r) => s + (r.duration_minutes ?? 0), 0),
+        sessions: rows.length,
+      };
+    },
+  });
+  const goal = Number(typeof window !== "undefined" ? localStorage.getItem("dashboard.dailyGoalMinutes") : 0) || 120;
+  const min = data?.minutes ?? 0;
+  return (
+    <Card className="p-3.5 mb-3">
+      <div className="flex items-center justify-between text-xs mb-1.5">
+        <span className="text-muted-foreground">今日の記録 <b className="text-foreground">{min}分</b> / 目標 {goal}分</span>
+        <span className="text-muted-foreground tabular-nums">{data?.sessions ?? 0} セッション</span>
+      </div>
+      <PowerBar value={Math.min(100, (min / goal) * 100)} height={10} striped={false} />
+    </Card>
   );
 }
 
@@ -141,6 +177,8 @@ function TimerPage() {
           </Button>
         </div>
       </div>
+
+      <TodaySummary />
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList className="w-full grid grid-cols-4">
