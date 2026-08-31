@@ -288,13 +288,16 @@ function Dashboard() {
 
   return (
     <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
+      {/* ===== 一番上: 左=1日の目標 / 右=あなたの街 ===== */}
+      <div className="grid gap-5 xl:grid-cols-2 items-start">
       {/* ===== ヒーロー ===== */}
       <Card className="relative overflow-hidden liquid-card p-0">
         <div
           className="absolute inset-0 opacity-[0.18] pointer-events-none"
           style={{ background: "radial-gradient(1000px 320px at 12% -10%, oklch(0.7 0.2 150), transparent 60%), radial-gradient(800px 320px at 92% 0%, oklch(0.62 0.22 275), transparent 60%)" }}
         />
-        <div className="relative p-5 md:p-7 grid gap-6 lg:grid-cols-[auto_1fr_auto] items-center">
+        <div className="relative p-5 md:p-7 grid gap-6 md:grid-cols-[auto_1fr] items-center">
+
           {/* 今日のリング */}
           <div className="flex items-center gap-5 justify-center lg:justify-start">
             <RadialGauge
