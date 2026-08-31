@@ -697,8 +697,8 @@ function Dashboard() {
         </Card>
       )}
 
-      <Town />
       <TodayBreakdownChart />
+
       <WeeklySubjectDiff />
       <DashboardRanking />
 
