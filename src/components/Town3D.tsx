@@ -33,9 +33,11 @@ function gridRadius(stage: number) {
 function roadLines(stage: number) {
   const r = gridRadius(stage);
   const lines: number[] = [];
-  for (let i = -r; i <= r; i++) lines.push(i * CELL + CELL / 2 - CELL / 2);
-  return lines.map((_, i) => (i - r) * CELL);
+  // 道路はブロックの「境界」に置く（ブロック中心を貫かないように）
+  for (let i = -r - 1; i <= r; i++) lines.push((i + 0.5) * CELL);
+  return lines;
 }
+
 
 // ---------- time of day ----------
 type Sky = {
