@@ -1,7 +1,7 @@
 {
-  "name": "Study# — 学習をもっと賢く、楽しく",
+  "name": "Study# — 学習のすべてを、ひとつに。",
   "short_name": "Study#",
-  "description": "勉強記録・タイマー・AI問題生成・AI家庭教師まで揃った学習プラットフォーム。",
+  "description": "分析力が圧倒的な総合的学習プラットフォーム。",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
