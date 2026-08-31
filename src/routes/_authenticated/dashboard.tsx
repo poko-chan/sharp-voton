@@ -24,6 +24,7 @@ import { buildReport } from "@/lib/report-pdf";
 import { TodayBreakdownChart } from "@/components/TodayBreakdownChart";
 import { WeeklySubjectDiff } from "@/components/WeeklySubjectDiff";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { FocusPanel } from "@/components/dashboard/FocusPanel";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -370,7 +371,8 @@ function Dashboard() {
       </div>
       </div>
 
-
+      {/* ===== タイマー & 学習時間の集約 ===== */}
+      <FocusPanel dailyGoal={dailyGoal} />
 
       {/* ===== インサイト ===== */}
       {insights.length > 0 && (
