@@ -341,7 +341,7 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
 
           </div>
 
-          <Tabs defaultValue="economy" className="mt-2">
+          <Tabs defaultValue="build" className="mt-2">
             <TabsList>
               <TabsTrigger value="economy"><TrendingUp className="h-3.5 w-3.5 mr-1" />経済</TabsTrigger>
               <TabsTrigger value="policy"><Landmark className="h-3.5 w-3.5 mr-1" />政策</TabsTrigger>
@@ -496,7 +496,7 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
                   radius={radius}
                   buildings={buildings}
                   selected={selected}
-                  onPick={(gx, gz) => { setSelected([gx, gz]); setBuildMode(true); }}
+                  onPick={(gx, gz) => { setBuildMode(true); onCell(gx, gz); }}
                   size={280}
                 />
                 <div className="text-sm space-y-2 min-w-0">
