@@ -115,8 +115,8 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
     <Dialog>
       <DialogTrigger asChild>
         <button className="w-full text-left group">
-          <Suspense fallback={<Skeleton className="h-[280px] w-full rounded-none" />}>
-            <Town3D stage={town.stage} />
+          <Suspense fallback={<Skeleton className="h-[340px] w-full rounded-none" />}>
+            <Town3D stage={town.stage} height={340} />
           </Suspense>
           <div className="p-4 flex items-center justify-between gap-3 border-t bg-card">
             <div className="min-w-0">
@@ -138,7 +138,7 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
           <DialogTitle>{town.name} — {stageName(town.stage)}</DialogTitle>
         </DialogHeader>
         <Suspense fallback={<Skeleton className="h-[280px] w-full" />}>
-          <Town3D stage={town.stage} />
+          <Town3D stage={town.stage} height={340} />
         </Suspense>
         <div className="space-y-3 text-sm">
           <p className="text-muted-foreground">{stageDescription(town.stage)}</p>
