@@ -200,20 +200,33 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
     ? buildings.find((b) => b.gx === selected[0] && b.gz === selected[1]) ?? null
     : null;
 
-  const build = async () => {
-    if (!picked || !selected) return;
-    const def = buildDef(picked)!;
-    if (selectedBuilding) return toast.error("この区画にはすでに建物があります");
+  const buildAt = async (gx: number, gz: number, kind?: string) => {
+    const k = kind ?? picked;
+    if (!k) return toast.info("先に建てる建物を選んでください");
+    const def = buildDef(k)!;
+    if (buildings.some((b) => b.gx === gx && b.gz === gz)) return toast.error("この区画にはすでに建物があります");
     if (town.stage < def.minStage) return toast.error(`ステージ ${def.minStage} 以上で建設できます`);
     if (coins < def.cost) return toast.error(`コインが足りません (必要 ${def.cost})`);
     setBusy(true);
     const { error } = await (supabase as any).rpc("town_build", {
-      _town_id: town.id, _kind: def.kind, _gx: selected[0], _gz: selected[1], _cost: def.cost,
+      _town_id: town.id, _kind: def.kind, _gx: gx, _gz: gz, _cost: def.cost,
     });
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success(`${def.label} を建設しました (-${def.cost} コイン)`);
     reload();
+  };
+
+  const build = async () => {
+    if (!selected) return toast.info("区画を選んでください");
+    await buildAt(selected[0], selected[1]);
+  };
+
+  /** 区画クリック：建物を選んでいて空き区画ならその場で建設、それ以外は選択のみ */
+  const onCell = (gx: number, gz: number) => {
+    setSelected([gx, gz]);
+    const occupied = buildings.some((b) => b.gx === gx && b.gz === gz);
+    if (picked && !occupied && !busy) void buildAt(gx, gz);
   };
 
   const demolish = async () => {
@@ -229,6 +242,7 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
     setSelected(null);
     reload();
   };
+
 
   const togglePolicy = async (key: string, on: boolean) => {
     const { data: userRes } = await supabase.auth.getUser();
