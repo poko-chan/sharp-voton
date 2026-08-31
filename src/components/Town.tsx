@@ -411,58 +411,82 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
 
             {/* 建設 */}
             <TabsContent value="build" className="mt-3 space-y-3">
-              <div className="flex items-center gap-2 text-xs">
+              <div className="rounded-lg border bg-muted/20 p-2.5 flex flex-wrap items-center gap-2 text-xs sticky top-0 z-10 backdrop-blur">
                 <Button size="sm" variant={buildMode ? "default" : "outline"} onClick={() => setBuildMode((v) => !v)}>
-                  <Hammer className="h-3.5 w-3.5 mr-1" />建設モード{buildMode ? "を終了" : "を開始"}
+                  <Hammer className="h-3.5 w-3.5 mr-1" />建設モード{buildMode ? "ON" : "OFF"}
                 </Button>
-                <span className="text-muted-foreground">
-                  選択中の区画: {selected ? `(${selected[0]}, ${selected[1]})` : "なし"}
+                <span className="font-medium">
+                  {picked ? `${buildDef(picked)?.emoji} ${buildDef(picked)?.label} を選択中` : "建物を選んでください"}
+                </span>
+                {picked && (
+                  <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setPicked(null)}>選択解除</Button>
+                )}
+                <span className="text-muted-foreground ml-auto">
+                  区画 {selected ? `(${selected[0]}, ${selected[1]})` : "未選択"}
                   {selectedBuilding && ` ・ ${buildDef(selectedBuilding.kind)?.label ?? selectedBuilding.kind}`}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {BUILD_DEFS.map((d) => {
-                  const locked = town.stage < d.minStage;
-                  const poor = coins < d.cost;
-                  return (
-                    <button
-                      key={d.kind}
-                      onClick={() => { setPicked(d.kind); setBuildMode(true); }}
-                      disabled={locked}
-                      className={`text-left rounded-lg border p-3 transition ${picked === d.kind ? "border-primary ring-1 ring-primary" : "hover:bg-muted/40"} ${locked ? "opacity-50" : ""}`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">{d.emoji}</span>
-                        <span className="font-semibold text-sm">{d.label}</span>
-                        <span className={`ml-auto text-xs tabular-nums flex items-center gap-0.5 ${poor ? "text-destructive" : "text-amber-600"}`}>
-                          <Coins className="h-3 w-3" />{d.cost}
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-muted-foreground mt-1">{d.desc}</div>
-                      <div className="text-[11px] mt-1 tabular-nums">
-                        人口 {sign(d.pop)} ・ GDP {sign(d.gdp)} ・ CO2 {sign(d.co2)}
-                      </div>
-                      {locked && <div className="text-[10px] text-amber-600 mt-1">Stage {d.minStage} で解放</div>}
-                    </button>
-                  );
-                })}
-              </div>
+              <div className="flex flex-col lg:flex-row gap-4">
+                {/* 建てる場所（2Dマップ：クリックで即建設） */}
+                <div className="shrink-0 space-y-2">
+                  <TownMap
+                    radius={radius}
+                    buildings={buildings}
+                    selected={selected}
+                    onPick={onCell}
+                    size={300}
+                  />
+                  <p className="text-[11px] text-muted-foreground max-w-[300px]">
+                    グレーの線は道路です。マス（区画）をクリックすると、選択中の建物をその場に建設します。建物のあるマスを押すと詳細と解体ができます。
+                  </p>
+                  {selectedBuilding && (
+                    <Button size="sm" variant="outline" className="text-destructive" onClick={demolish} disabled={busy}>
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      解体（+{refundOf(buildDef(selectedBuilding.kind)?.cost ?? 0)}コイン）
+                    </Button>
+                  )}
+                  {!selectedBuilding && selected && picked && (
+                    <Button size="sm" onClick={build} disabled={busy}>
+                      {busy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Hammer className="h-4 w-4 mr-1" />}
+                      ここに建設（{buildDef(picked)?.cost}コイン）
+                    </Button>
+                  )}
+                </div>
 
-              <div className="flex items-center gap-2">
-                <Button disabled={!picked || !selected || !!selectedBuilding || busy} onClick={build}>
-                  {busy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Hammer className="h-4 w-4 mr-1" />}
-                  ここに建設{picked ? `（${buildDef(picked)?.label} / ${buildDef(picked)?.cost}コイン）` : ""}
-                </Button>
-                {selectedBuilding && (
-                  <Button variant="outline" className="text-destructive" onClick={demolish} disabled={busy}>
-                    <Trash2 className="h-4 w-4 mr-1" />解体（{refundOf(buildDef(selectedBuilding.kind)?.cost ?? 0)}コイン返金）
-                  </Button>
-                )}
+                {/* 建物パレット */}
+                <div className="grid grid-cols-2 xl:grid-cols-3 gap-2 flex-1 min-w-0 content-start">
+                  {BUILD_DEFS.map((d) => {
+                    const locked = town.stage < d.minStage;
+                    const poor = coins < d.cost;
+                    return (
+                      <button
+                        key={d.kind}
+                        onClick={() => { setPicked(d.kind); setBuildMode(true); }}
+                        disabled={locked}
+                        className={`text-left rounded-lg border p-2.5 transition ${picked === d.kind ? "border-primary ring-2 ring-primary/40 bg-primary/5" : "hover:bg-muted/40"} ${locked ? "opacity-50" : ""}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{d.emoji}</span>
+                          <span className="font-semibold text-sm">{d.label}</span>
+                          <span className={`ml-auto text-xs tabular-nums flex items-center gap-0.5 ${poor ? "text-destructive" : "text-amber-600"}`}>
+                            <Coins className="h-3 w-3" />{d.cost}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{d.desc}</div>
+                        <div className="text-[11px] mt-1 tabular-nums">
+                          人口 {sign(d.pop)} ・ GDP {sign(d.gdp)} ・ CO2 {sign(d.co2)}
+                        </div>
+                        {locked && <div className="text-[10px] text-amber-600 mt-1">Stage {d.minStage} で解放</div>}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               <p className="text-[11px] text-muted-foreground">
                 コインはミッションや学習報酬で貯まります。建てた建物は3Dの街にそのまま反映されます。
               </p>
+
             </TabsContent>
 
             {/* 地図 */}
