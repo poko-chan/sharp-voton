@@ -33,9 +33,11 @@ function gridRadius(stage: number) {
 function roadLines(stage: number) {
   const r = gridRadius(stage);
   const lines: number[] = [];
-  for (let i = -r; i <= r; i++) lines.push(i * CELL + CELL / 2 - CELL / 2);
-  return lines.map((_, i) => (i - r) * CELL);
+  // 道路はブロックの「境界」に置く（ブロック中心を貫かないように）
+  for (let i = -r - 1; i <= r; i++) lines.push((i + 0.5) * CELL);
+  return lines;
 }
+
 
 // ---------- time of day ----------
 type Sky = {
@@ -317,7 +319,7 @@ function StreetLamps({ stage, night }: { stage: number; night: number }) {
   const lines = roadLines(stage);
   if (stage < 3) return null;
   const pts: [number, number][] = [];
-  lines.forEach((z) => lines.forEach((x) => pts.push([x + ROAD / 2 + 0.5, z + ROAD / 2 + 0.5])));
+  lines.forEach((z) => lines.forEach((x) => pts.push([x + ROAD / 2 - 0.3, z + ROAD / 2 - 0.3])));
   return (
     <group>
       {pts.map(([x, z], i) => (
@@ -357,7 +359,7 @@ function TrafficLights({ stage }: { stage: number }) {
   });
   if (stage < 5) return null;
   const pts: [number, number][] = [];
-  lines.forEach((z) => lines.forEach((x) => pts.push([x - ROAD / 2 - 0.5, z - ROAD / 2 - 0.5])));
+  lines.forEach((z) => lines.forEach((x) => pts.push([x - ROAD / 2 + 0.3, z - ROAD / 2 + 0.3])));
   return (
     <group ref={ref}>
       {pts.map(([x, z], i) => (

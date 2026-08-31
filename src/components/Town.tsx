@@ -200,20 +200,33 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
     ? buildings.find((b) => b.gx === selected[0] && b.gz === selected[1]) ?? null
     : null;
 
-  const build = async () => {
-    if (!picked || !selected) return;
-    const def = buildDef(picked)!;
-    if (selectedBuilding) return toast.error("この区画にはすでに建物があります");
+  const buildAt = async (gx: number, gz: number, kind?: string) => {
+    const k = kind ?? picked;
+    if (!k) return toast.info("先に建てる建物を選んでください");
+    const def = buildDef(k)!;
+    if (buildings.some((b) => b.gx === gx && b.gz === gz)) return toast.error("この区画にはすでに建物があります");
     if (town.stage < def.minStage) return toast.error(`ステージ ${def.minStage} 以上で建設できます`);
     if (coins < def.cost) return toast.error(`コインが足りません (必要 ${def.cost})`);
     setBusy(true);
     const { error } = await (supabase as any).rpc("town_build", {
-      _town_id: town.id, _kind: def.kind, _gx: selected[0], _gz: selected[1], _cost: def.cost,
+      _town_id: town.id, _kind: def.kind, _gx: gx, _gz: gz, _cost: def.cost,
     });
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success(`${def.label} を建設しました (-${def.cost} コイン)`);
     reload();
+  };
+
+  const build = async () => {
+    if (!selected) return toast.info("区画を選んでください");
+    await buildAt(selected[0], selected[1]);
+  };
+
+  /** 区画クリック：建物を選んでいて空き区画ならその場で建設、それ以外は選択のみ */
+  const onCell = (gx: number, gz: number) => {
+    setSelected([gx, gz]);
+    const occupied = buildings.some((b) => b.gx === gx && b.gz === gz);
+    if (picked && !occupied && !busy) void buildAt(gx, gz);
   };
 
   const demolish = async () => {
@@ -229,6 +242,7 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
     setSelected(null);
     reload();
   };
+
 
   const togglePolicy = async (key: string, on: boolean) => {
     const { data: userRes } = await supabase.auth.getUser();
@@ -308,7 +322,7 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
                 buildMode={buildMode}
                 selected={selected}
                 autoRotate={!buildMode}
-                onPick={(gx, gz) => setSelected([gx, gz])}
+                onPick={onCell}
                 onSelectBuilding={(b) => setSelected([b.gx, b.gz])}
               />
             </Suspense>
@@ -318,13 +332,16 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
               </Button>
             </div>
             {buildMode && (
-              <div className="absolute left-3 bottom-3 text-[11px] px-2 py-1 rounded bg-background/80 border">
-                区画をクリックして選択 → 下の建物を選んで建設
+              <div className="absolute left-3 bottom-3 text-[11px] px-2 py-1 rounded bg-background/85 border">
+                {picked
+                  ? `${buildDef(picked)?.emoji} ${buildDef(picked)?.label} を選択中 — 空き区画をクリックすると即建設`
+                  : "「建設」タブで建物を選ぶと、区画クリックで即建設できます"}
               </div>
             )}
+
           </div>
 
-          <Tabs defaultValue="economy" className="mt-2">
+          <Tabs defaultValue="build" className="mt-2">
             <TabsList>
               <TabsTrigger value="economy"><TrendingUp className="h-3.5 w-3.5 mr-1" />経済</TabsTrigger>
               <TabsTrigger value="policy"><Landmark className="h-3.5 w-3.5 mr-1" />政策</TabsTrigger>
@@ -394,58 +411,82 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
 
             {/* 建設 */}
             <TabsContent value="build" className="mt-3 space-y-3">
-              <div className="flex items-center gap-2 text-xs">
+              <div className="rounded-lg border bg-muted/20 p-2.5 flex flex-wrap items-center gap-2 text-xs sticky top-0 z-10 backdrop-blur">
                 <Button size="sm" variant={buildMode ? "default" : "outline"} onClick={() => setBuildMode((v) => !v)}>
-                  <Hammer className="h-3.5 w-3.5 mr-1" />建設モード{buildMode ? "を終了" : "を開始"}
+                  <Hammer className="h-3.5 w-3.5 mr-1" />建設モード{buildMode ? "ON" : "OFF"}
                 </Button>
-                <span className="text-muted-foreground">
-                  選択中の区画: {selected ? `(${selected[0]}, ${selected[1]})` : "なし"}
+                <span className="font-medium">
+                  {picked ? `${buildDef(picked)?.emoji} ${buildDef(picked)?.label} を選択中` : "建物を選んでください"}
+                </span>
+                {picked && (
+                  <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setPicked(null)}>選択解除</Button>
+                )}
+                <span className="text-muted-foreground ml-auto">
+                  区画 {selected ? `(${selected[0]}, ${selected[1]})` : "未選択"}
                   {selectedBuilding && ` ・ ${buildDef(selectedBuilding.kind)?.label ?? selectedBuilding.kind}`}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {BUILD_DEFS.map((d) => {
-                  const locked = town.stage < d.minStage;
-                  const poor = coins < d.cost;
-                  return (
-                    <button
-                      key={d.kind}
-                      onClick={() => { setPicked(d.kind); setBuildMode(true); }}
-                      disabled={locked}
-                      className={`text-left rounded-lg border p-3 transition ${picked === d.kind ? "border-primary ring-1 ring-primary" : "hover:bg-muted/40"} ${locked ? "opacity-50" : ""}`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">{d.emoji}</span>
-                        <span className="font-semibold text-sm">{d.label}</span>
-                        <span className={`ml-auto text-xs tabular-nums flex items-center gap-0.5 ${poor ? "text-destructive" : "text-amber-600"}`}>
-                          <Coins className="h-3 w-3" />{d.cost}
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-muted-foreground mt-1">{d.desc}</div>
-                      <div className="text-[11px] mt-1 tabular-nums">
-                        人口 {sign(d.pop)} ・ GDP {sign(d.gdp)} ・ CO2 {sign(d.co2)}
-                      </div>
-                      {locked && <div className="text-[10px] text-amber-600 mt-1">Stage {d.minStage} で解放</div>}
-                    </button>
-                  );
-                })}
-              </div>
+              <div className="flex flex-col lg:flex-row gap-4">
+                {/* 建てる場所（2Dマップ：クリックで即建設） */}
+                <div className="shrink-0 space-y-2">
+                  <TownMap
+                    radius={radius}
+                    buildings={buildings}
+                    selected={selected}
+                    onPick={onCell}
+                    size={300}
+                  />
+                  <p className="text-[11px] text-muted-foreground max-w-[300px]">
+                    グレーの線は道路です。マス（区画）をクリックすると、選択中の建物をその場に建設します。建物のあるマスを押すと詳細と解体ができます。
+                  </p>
+                  {selectedBuilding && (
+                    <Button size="sm" variant="outline" className="text-destructive" onClick={demolish} disabled={busy}>
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      解体（+{refundOf(buildDef(selectedBuilding.kind)?.cost ?? 0)}コイン）
+                    </Button>
+                  )}
+                  {!selectedBuilding && selected && picked && (
+                    <Button size="sm" onClick={build} disabled={busy}>
+                      {busy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Hammer className="h-4 w-4 mr-1" />}
+                      ここに建設（{buildDef(picked)?.cost}コイン）
+                    </Button>
+                  )}
+                </div>
 
-              <div className="flex items-center gap-2">
-                <Button disabled={!picked || !selected || !!selectedBuilding || busy} onClick={build}>
-                  {busy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Hammer className="h-4 w-4 mr-1" />}
-                  ここに建設{picked ? `（${buildDef(picked)?.label} / ${buildDef(picked)?.cost}コイン）` : ""}
-                </Button>
-                {selectedBuilding && (
-                  <Button variant="outline" className="text-destructive" onClick={demolish} disabled={busy}>
-                    <Trash2 className="h-4 w-4 mr-1" />解体（{refundOf(buildDef(selectedBuilding.kind)?.cost ?? 0)}コイン返金）
-                  </Button>
-                )}
+                {/* 建物パレット */}
+                <div className="grid grid-cols-2 xl:grid-cols-3 gap-2 flex-1 min-w-0 content-start">
+                  {BUILD_DEFS.map((d) => {
+                    const locked = town.stage < d.minStage;
+                    const poor = coins < d.cost;
+                    return (
+                      <button
+                        key={d.kind}
+                        onClick={() => { setPicked(d.kind); setBuildMode(true); }}
+                        disabled={locked}
+                        className={`text-left rounded-lg border p-2.5 transition ${picked === d.kind ? "border-primary ring-2 ring-primary/40 bg-primary/5" : "hover:bg-muted/40"} ${locked ? "opacity-50" : ""}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{d.emoji}</span>
+                          <span className="font-semibold text-sm">{d.label}</span>
+                          <span className={`ml-auto text-xs tabular-nums flex items-center gap-0.5 ${poor ? "text-destructive" : "text-amber-600"}`}>
+                            <Coins className="h-3 w-3" />{d.cost}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{d.desc}</div>
+                        <div className="text-[11px] mt-1 tabular-nums">
+                          人口 {sign(d.pop)} ・ GDP {sign(d.gdp)} ・ CO2 {sign(d.co2)}
+                        </div>
+                        {locked && <div className="text-[10px] text-amber-600 mt-1">Stage {d.minStage} で解放</div>}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               <p className="text-[11px] text-muted-foreground">
                 コインはミッションや学習報酬で貯まります。建てた建物は3Dの街にそのまま反映されます。
               </p>
+
             </TabsContent>
 
             {/* 地図 */}
@@ -455,7 +496,7 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
                   radius={radius}
                   buildings={buildings}
                   selected={selected}
-                  onPick={(gx, gz) => { setSelected([gx, gz]); setBuildMode(true); }}
+                  onPick={(gx, gz) => { setBuildMode(true); onCell(gx, gz); }}
                   size={280}
                 />
                 <div className="text-sm space-y-2 min-w-0">
