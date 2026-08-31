@@ -637,7 +637,206 @@ function Stars({ night }: { night: number }) {
   );
 }
 
-function SceneInner({ stage, sky }: { stage: number; sky: Sky }) {
+// ---------- user-built structures ----------
+function UserBuilding({ b, selected, onClick }: { b: UserBuildingRow; selected: boolean; onClick: () => void }) {
+  const [x, z] = cellToWorld(b.gx, b.gz);
+  const lv = b.level ?? 1;
+  const body = (() => {
+    switch (b.kind) {
+      case "road":
+        return <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.09, 0]} receiveShadow><planeGeometry args={[2.6, 2.6]} /><meshStandardMaterial color="#43474e" roughness={1} /></mesh>;
+      case "park":
+        return (
+          <group>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.06, 0]} receiveShadow><planeGeometry args={[2.6, 2.6]} /><meshStandardMaterial color="#5f9e56" roughness={1} /></mesh>
+            {[[-0.7, -0.6], [0.6, 0.5], [0.7, -0.7]].map(([px, pz], i) => (
+              <group key={i} position={[px, 0, pz]}>
+                <mesh position={[0, 0.3, 0]} castShadow><cylinderGeometry args={[0.06, 0.09, 0.6, 6]} /><meshStandardMaterial color="#6a4a2a" /></mesh>
+                <mesh position={[0, 0.75, 0]} castShadow><icosahedronGeometry args={[0.42, 0]} /><meshStandardMaterial color="#3d8a42" flatShading /></mesh>
+              </group>
+            ))}
+          </group>
+        );
+      case "solar":
+        return (
+          <group>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.06, 0]}><planeGeometry args={[2.6, 2.6]} /><meshStandardMaterial color="#7d7f74" /></mesh>
+            {[-0.7, 0, 0.7].map((pz) => (
+              <mesh key={pz} position={[0, 0.35, pz]} rotation={[-0.5, 0, 0]} castShadow>
+                <boxGeometry args={[2.2, 0.06, 0.7]} />
+                <meshStandardMaterial color="#1e3a6e" metalness={0.7} roughness={0.2} emissive="#1b4a8a" emissiveIntensity={0.2} />
+              </mesh>
+            ))}
+          </group>
+        );
+      case "wind":
+        return <WindTurbine />;
+      case "station":
+        return (
+          <group>
+            <mesh position={[0, 0.6, 0]} castShadow><boxGeometry args={[2.6, 1.2, 1.8]} /><meshStandardMaterial color="#e8e2d4" /></mesh>
+            <mesh position={[0, 1.35, 0]} castShadow><boxGeometry args={[3.0, 0.2, 2.2]} /><meshStandardMaterial color="#a8341f" /></mesh>
+            <mesh position={[0, 0.75, 0.92]}><planeGeometry args={[1.8, 0.3]} /><meshStandardMaterial color="#ffffff" emissive="#9fe3ff" emissiveIntensity={0.7} /></mesh>
+          </group>
+        );
+      case "factory":
+        return (
+          <group>
+            <mesh position={[0, 0.8, 0]} castShadow><boxGeometry args={[2.5, 1.6, 2.0]} /><meshStandardMaterial color="#9aa0a6" /></mesh>
+            <mesh position={[0.9, 2.0, 0]} castShadow><cylinderGeometry args={[0.2, 0.26, 1.6, 10]} /><meshStandardMaterial color="#c8cdd2" /></mesh>
+            <Smoke />
+          </group>
+        );
+      case "hospital":
+        return (
+          <group>
+            <mesh position={[0, 1.1, 0]} castShadow><boxGeometry args={[2.2, 2.2, 2.0]} /><meshStandardMaterial color="#f4f7fa" /></mesh>
+            <mesh position={[0, 1.6, 1.02]}><boxGeometry args={[0.8, 0.2, 0.05]} /><meshStandardMaterial color="#e23b3b" emissive="#e23b3b" emissiveIntensity={0.5} /></mesh>
+            <mesh position={[0, 1.6, 1.02]}><boxGeometry args={[0.2, 0.8, 0.05]} /><meshStandardMaterial color="#e23b3b" emissive="#e23b3b" emissiveIntensity={0.5} /></mesh>
+          </group>
+        );
+      case "school":
+        return (
+          <group>
+            <mesh position={[0, 0.8, 0]} castShadow><boxGeometry args={[2.6, 1.6, 1.6]} /><meshStandardMaterial color="#efe2c8" /></mesh>
+            <mesh position={[0, 1.75, 0]} rotation={[0, Math.PI / 4, 0]} castShadow><coneGeometry args={[1.6, 0.6, 4]} /><meshStandardMaterial color="#8c4a34" /></mesh>
+            <mesh position={[0, 2.4, 0]}><cylinderGeometry args={[0.03, 0.03, 0.9, 6]} /><meshStandardMaterial color="#9aa0a6" /></mesh>
+          </group>
+        );
+      default: {
+        const h = b.kind === "tower" ? 6 + lv : b.kind === "office" ? 3.4 : b.kind === "apartment" ? 3.0 : 1.4;
+        const color = b.kind === "tower" ? "#dfe8ff" : b.kind === "office" ? "#cfd6e0" : b.kind === "apartment" ? "#e2dccd" : "#e8d3b0";
+        return (
+          <group>
+            <mesh position={[0, h / 2, 0]} castShadow receiveShadow>
+              <boxGeometry args={[b.kind === "house" ? 1.7 : 2.2, h, b.kind === "house" ? 1.7 : 2.0]} />
+              <meshStandardMaterial color={color} roughness={0.7} emissive="#ffd79a" emissiveIntensity={0.06} />
+            </mesh>
+            {b.kind === "house" ? (
+              <mesh position={[0, h + 0.28, 0]} rotation={[0, Math.PI / 4, 0]} castShadow><coneGeometry args={[1.32, 0.6, 4]} /><meshStandardMaterial color="#7a3a2a" /></mesh>
+            ) : (
+              <mesh position={[0, h + 0.08, 0]} castShadow><boxGeometry args={[2.3, 0.14, 2.1]} /><meshStandardMaterial color="#31363d" /></mesh>
+            )}
+          </group>
+        );
+      }
+    }
+  })();
+
+  return (
+    <group
+      position={[x, 0, z]}
+      onClick={(e) => { e.stopPropagation(); onClick(); }}
+      onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = "pointer"; }}
+      onPointerOut={() => { document.body.style.cursor = "auto"; }}
+    >
+      {body}
+      {selected && (
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.12, 0]}>
+          <ringGeometry args={[1.5, 1.75, 32]} />
+          <meshBasicMaterial color="#38e08a" transparent opacity={0.9} />
+        </mesh>
+      )}
+    </group>
+  );
+}
+
+function WindTurbine() {
+  const ref = useRef<THREE.Group>(null);
+  useFrame((_, dt) => { if (ref.current) ref.current.rotation.z += dt * 2.2; });
+  return (
+    <group>
+      <mesh position={[0, 1.6, 0]} castShadow><cylinderGeometry args={[0.08, 0.14, 3.2, 8]} /><meshStandardMaterial color="#f2f4f7" /></mesh>
+      <group ref={ref} position={[0, 3.2, 0.18]}>
+        {[0, 1, 2].map((i) => (
+          <mesh key={i} rotation={[0, 0, (i * Math.PI * 2) / 3]} position={[0, 0, 0]} castShadow>
+            <boxGeometry args={[0.12, 1.5, 0.05]} />
+            <meshStandardMaterial color="#ffffff" />
+          </mesh>
+        ))}
+      </group>
+    </group>
+  );
+}
+
+function Smoke() {
+  const ref = useRef<THREE.Group>(null);
+  useFrame((_, dt) => {
+    if (!ref.current) return;
+    ref.current.children.forEach((c) => {
+      c.position.y += dt * 0.5;
+      const s = 1 + (c.position.y - 2.8) * 0.4;
+      c.scale.setScalar(Math.max(0.2, s));
+      if (c.position.y > 5) c.position.y = 2.8;
+    });
+  });
+  return (
+    <group ref={ref} position={[0.9, 0, 0]}>
+      {[2.9, 3.6, 4.3].map((y) => (
+        <mesh key={y} position={[0, y, 0]}>
+          <sphereGeometry args={[0.22, 8, 8]} />
+          <meshStandardMaterial color="#d8d8d8" transparent opacity={0.4} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function BuildGrid({ stage, occupied, onPick, selected }: {
+  stage: number;
+  occupied: Set<string>;
+  onPick: (gx: number, gz: number) => void;
+  selected: [number, number] | null;
+}) {
+  const r = gridRadius(stage);
+  const cells: [number, number][] = [];
+  for (let gx = -r * 3 - 1; gx <= r * 3 + 1; gx++) {
+    for (let gz = -r * 3 - 1; gz <= r * 3 + 1; gz++) {
+      if (Math.abs(gx - Math.round(gx / 3) * 3) > 1) continue;
+      if (Math.abs(gz - Math.round(gz / 3) * 3) > 1) continue;
+      cells.push([gx, gz]);
+    }
+  }
+  return (
+    <group>
+      {cells.map(([gx, gz]) => {
+        const [x, z] = cellToWorld(gx, gz);
+        const used = occupied.has(`${gx},${gz}`);
+        const sel = selected && selected[0] === gx && selected[1] === gz;
+        return (
+          <mesh
+            key={`${gx},${gz}`}
+            rotation={[-Math.PI / 2, 0, 0]}
+            position={[x, 0.13, z]}
+            onClick={(e) => { e.stopPropagation(); onPick(gx, gz); }}
+            onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = "pointer"; }}
+            onPointerOut={() => { document.body.style.cursor = "auto"; }}
+          >
+            <planeGeometry args={[2.7, 2.7]} />
+            <meshBasicMaterial
+              color={sel ? "#38e08a" : used ? "#ff6b6b" : "#7fd4ff"}
+              transparent
+              opacity={sel ? 0.55 : used ? 0.18 : 0.22}
+            />
+          </mesh>
+        );
+      })}
+    </group>
+  );
+}
+
+export type UserBuildingRow = { id: string; kind: string; gx: number; gz: number; level: number };
+
+function SceneInner({
+  stage, sky, userBuildings, buildMode, selected, onPick, onSelectBuilding,
+}: {
+  stage: number; sky: Sky;
+  userBuildings: UserBuildingRow[];
+  buildMode: boolean;
+  selected: [number, number] | null;
+  onPick: (gx: number, gz: number) => void;
+  onSelectBuilding: (b: UserBuildingRow) => void;
+}) {
   const { buildings, parks } = useMemo(() => generateCity(stage), [stage]);
   const texByEra = useMemo(() => {
     if (typeof document === "undefined") return {} as Record<number, THREE.Texture>;
@@ -645,6 +844,16 @@ function SceneInner({ stage, sky }: { stage: number; sky: Sky }) {
     [1, 2, 3, 4, 5].forEach((e) => { map[e] = facadeTexture(e, e * 77 + stage, sky.night); });
     return map;
   }, [stage, Math.round(sky.night * 4)]);
+
+  const occupied = useMemo(
+    () => new Set(userBuildings.map((b) => `${b.gx},${b.gz}`)),
+    [userBuildings],
+  );
+  // ユーザーが建てた区画には自動生成の建物を出さない
+  const visible = useMemo(() => {
+    const pts = userBuildings.map((b) => cellToWorld(b.gx, b.gz));
+    return buildings.filter((b) => !pts.some(([x, z]) => Math.hypot(b.x - x, b.z - z) < 1.7));
+  }, [buildings, userBuildings]);
 
   return (
     <>
@@ -671,14 +880,41 @@ function SceneInner({ stage, sky }: { stage: number; sky: Sky }) {
       <RailLine stage={stage} />
       {parks.map((p, i) => <Park key={i} x={p.x} z={p.z} stage={stage} />)}
       <People stage={stage} />
-      {buildings.map((b, i) => (
+      {visible.map((b, i) => (
         <BuildingMesh key={i} b={b} tex={texByEra[b.era] ?? null} />
       ))}
+      {userBuildings.map((b) => (
+        <UserBuilding
+          key={b.id}
+          b={b}
+          selected={!!selected && selected[0] === b.gx && selected[1] === b.gz}
+          onClick={() => onSelectBuilding(b)}
+        />
+      ))}
+      {buildMode && <BuildGrid stage={stage} occupied={occupied} onPick={onPick} selected={selected} />}
     </>
   );
 }
 
-export default function Town3D({ stage, height = 280 }: { stage: number; height?: number }) {
+export default function Town3D({
+  stage,
+  height = 280,
+  userBuildings = [],
+  buildMode = false,
+  selected = null,
+  onPick,
+  onSelectBuilding,
+  autoRotate = true,
+}: {
+  stage: number;
+  height?: number;
+  userBuildings?: UserBuildingRow[];
+  buildMode?: boolean;
+  selected?: [number, number] | null;
+  onPick?: (gx: number, gz: number) => void;
+  onSelectBuilding?: (b: UserBuildingRow) => void;
+  autoRotate?: boolean;
+}) {
   const hour = timeOfDay();
   const sky = useMemo(() => skyOf(hour), [Math.round(hour * 4)]);
   const dist = 18 + gridRadius(stage) * 7;
@@ -697,22 +933,31 @@ export default function Town3D({ stage, height = 280 }: { stage: number; height?
         <color attach="background" args={[sky.bottom]} />
         <fog attach="fog" args={[sky.fog, 45, 135]} />
         <Suspense fallback={null}>
-          <SceneInner stage={stage} sky={sky} />
+          <SceneInner
+            stage={stage}
+            sky={sky}
+            userBuildings={userBuildings}
+            buildMode={buildMode}
+            selected={selected}
+            onPick={(gx, gz) => onPick?.(gx, gz)}
+            onSelectBuilding={(b) => onSelectBuilding?.(b)}
+          />
         </Suspense>
         <OrbitControls
-          enablePan={false}
+          enablePan={buildMode}
           enableZoom
-          minDistance={12}
+          minDistance={10}
           maxDistance={90}
-          autoRotate
+          autoRotate={autoRotate && !buildMode}
           autoRotateSpeed={0.35}
           maxPolarAngle={Math.PI / 2.25}
-          minPolarAngle={Math.PI / 5}
+          minPolarAngle={Math.PI / 6}
         />
       </Canvas>
-      <div className="absolute left-3 top-3 text-[11px] px-2 py-1 rounded-full bg-background/70 backdrop-blur border border-border/60 tabular-nums">
+      <div className="absolute left-3 top-3 text-[11px] px-2 py-1 rounded-full bg-background/70 backdrop-blur border border-border/60 tabular-nums pointer-events-none">
         {String(Math.floor(hour)).padStart(2, "0")}:{String(Math.floor((hour % 1) * 60)).padStart(2, "0")} ・ {sky.night > 0.5 ? "夜" : sky.night > 0.15 ? "夕方" : "昼"}
       </div>
     </div>
   );
 }
+
