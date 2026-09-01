@@ -30,6 +30,32 @@ export function applyFontFamily(value?: string) {
   document.body.style.fontFamily = opt.css;
 }
 
+/** 色が明るいか（＝濃い文字色を載せるべきか）を判定する */
+export function isLightColor(color: string): boolean {
+  const c = color.trim();
+  const hex = c.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (hex) {
+    let h = hex[1];
+    if (h.length === 3) h = h.split("").map((x) => x + x).join("");
+    const r = parseInt(h.slice(0, 2), 16) / 255;
+    const g = parseInt(h.slice(2, 4), 16) / 255;
+    const b = parseInt(h.slice(4, 6), 16) / 255;
+    const lin = (v: number) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+    return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b) > 0.45;
+  }
+  const ok = c.match(/^oklch\(\s*([0-9.]+)%?/i);
+  if (ok) {
+    const l = parseFloat(ok[1]);
+    return (l > 1 ? l / 100 : l) > 0.68;
+  }
+  const rgb = c.match(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/i);
+  if (rgb) {
+    const [r, g, b] = [1, 2, 3].map((i) => Number(rgb[i]) / 255);
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.6;
+  }
+  return false;
+}
+
 export type UserPrefs = {
   widgets: string[];
   font_scale: number;
@@ -79,8 +105,17 @@ export function useUserPrefs() {
     document.documentElement.style.fontSize = `${prefs.font_scale * 16}px`;
     document.documentElement.classList.toggle("high-contrast", prefs.high_contrast);
     // カスタム色が未設定のときはインラインスタイルを外し、テーマ側の配色を有効にする
-    if (prefs.theme_color) document.documentElement.style.setProperty("--primary", prefs.theme_color);
-    else document.documentElement.style.removeProperty("--primary");
+    if (prefs.theme_color) {
+      document.documentElement.style.setProperty("--primary", prefs.theme_color);
+      // 明るい色を選んだときに白文字が読めなくなるのを防ぐ
+      document.documentElement.style.setProperty(
+        "--primary-foreground",
+        isLightColor(prefs.theme_color) ? "oklch(0.15 0 0)" : "oklch(1 0 0)",
+      );
+    } else {
+      document.documentElement.style.removeProperty("--primary");
+      document.documentElement.style.removeProperty("--primary-foreground");
+    }
     applyFontFamily(prefs.font_family);
   }, [prefs.font_scale, prefs.high_contrast, prefs.theme_color, prefs.font_family]);
   const save = async (patch: Partial<UserPrefs>) => {
