@@ -106,6 +106,17 @@ export type LocalPrefs = {
   list_page_size: number;
   reduce_motion: boolean;
   compact_mode: boolean;
+  readable_font: boolean;
+  text_spacing: boolean;
+  line_height: number;
+  letter_spacing: number;
+  underline_links: boolean;
+  large_targets: boolean;
+  focus_ring: boolean;
+  big_cursor: boolean;
+  color_filter: "none" | "grayscale" | "protanopia" | "deuteranopia" | "tritanopia";
+  hide_images: boolean;
+  tts_enabled: boolean;
 };
 
 export const DASHBOARD_CARD_OPTIONS: { value: string; label: string }[] = [
@@ -128,6 +139,17 @@ export const DEFAULT_LOCAL_PREFS: LocalPrefs = {
   list_page_size: 20,
   reduce_motion: false,
   compact_mode: false,
+  readable_font: false,
+  text_spacing: false,
+  line_height: 1.6,
+  letter_spacing: 0,
+  underline_links: false,
+  large_targets: false,
+  focus_ring: false,
+  big_cursor: false,
+  color_filter: "none",
+  hide_images: false,
+  tts_enabled: false,
 };
 
 const LOCAL_PREFS_KEY = "voton_local_prefs_v1";
@@ -148,6 +170,20 @@ function applyLocalPrefsEffects(prefs: LocalPrefs) {
   if (typeof document === "undefined") return;
   document.documentElement.classList.toggle("reduce-motion", prefs.reduce_motion);
   document.documentElement.classList.toggle("compact-mode", prefs.compact_mode);
+  const el = document.documentElement;
+  el.classList.toggle("a11y-readable-font", prefs.readable_font);
+  el.classList.toggle("a11y-spacing", prefs.text_spacing);
+  el.classList.toggle("a11y-underline-links", prefs.underline_links);
+  el.classList.toggle("a11y-large-targets", prefs.large_targets);
+  el.classList.toggle("a11y-focus-ring", prefs.focus_ring);
+  el.classList.toggle("a11y-big-cursor", prefs.big_cursor);
+  el.classList.toggle("a11y-hide-images", prefs.hide_images);
+  for (const f of ["grayscale", "protanopia", "deuteranopia", "tritanopia"]) {
+    el.classList.toggle(`a11y-filter-${f}`, prefs.color_filter === f);
+  }
+  el.style.setProperty("--a11y-line-height", String(prefs.line_height));
+  el.style.setProperty("--a11y-letter-spacing", `${prefs.letter_spacing}em`);
+  el.style.setProperty("--a11y-word-spacing", `${prefs.letter_spacing * 2}em`);
 }
 
 export function useLocalPrefs() {
@@ -155,7 +191,11 @@ export function useLocalPrefs() {
 
   useEffect(() => {
     applyLocalPrefsEffects(prefs);
-  }, [prefs.reduce_motion, prefs.compact_mode]);
+  }, [
+    prefs.reduce_motion, prefs.compact_mode, prefs.readable_font, prefs.text_spacing,
+    prefs.line_height, prefs.letter_spacing, prefs.underline_links, prefs.large_targets,
+    prefs.focus_ring, prefs.big_cursor, prefs.color_filter, prefs.hide_images,
+  ]);
 
   useEffect(() => {
     const listener = () => setPrefs(readLocalPrefs());
