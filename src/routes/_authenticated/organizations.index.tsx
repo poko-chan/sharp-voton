@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { ROLE_LABEL } from "@/lib/org-roles";
 import { APP_STATUS_LABEL, ORG_TYPE_LABEL } from "@/lib/org-application";
 import { OrgApplicationThread } from "@/components/org/OrgApplicationThread";
-import { Building2, Check, X, Mail, Plus, KeyRound, Clock, MessageSquare } from "lucide-react";
+import { Building2, Check, X, Mail, Plus, KeyRound, Clock, MessageSquare, QrCode } from "lucide-react";
+import { QrScannerDialog } from "@/components/QrScannerDialog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/organizations/")({
@@ -39,6 +40,7 @@ function OrgsPage() {
   const [apps, setApps] = useState<any[]>([]);
   const [openApp, setOpenApp] = useState<string | null>(null);
   const [code, setCode] = useState("");
+  const [qrOpen, setQrOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const load = async () => {
