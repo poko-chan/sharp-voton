@@ -426,6 +426,7 @@ export type Database = {
           edited_at: string | null
           group_id: string
           id: string
+          reply_to_id: string | null
           sender_id: string
         }
         Insert: {
@@ -435,6 +436,7 @@ export type Database = {
           edited_at?: string | null
           group_id: string
           id?: string
+          reply_to_id?: string | null
           sender_id: string
         }
         Update: {
@@ -444,6 +446,7 @@ export type Database = {
           edited_at?: string | null
           group_id?: string
           id?: string
+          reply_to_id?: string | null
           sender_id?: string
         }
         Relationships: [
@@ -452,6 +455,13 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "chat_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_group_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "chat_group_messages"
             referencedColumns: ["id"]
           },
         ]
@@ -486,6 +496,7 @@ export type Database = {
           id: string
           read_at: string | null
           recipient_id: string
+          reply_to_id: string | null
           sender_id: string
         }
         Insert: {
@@ -496,6 +507,7 @@ export type Database = {
           id?: string
           read_at?: string | null
           recipient_id: string
+          reply_to_id?: string | null
           sender_id: string
         }
         Update: {
@@ -506,7 +518,43 @@ export type Database = {
           id?: string
           read_at?: string | null
           recipient_id?: string
+          reply_to_id?: string | null
           sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          scope: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          scope: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          scope?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -6793,6 +6841,10 @@ export type Database = {
       can_create_questions: { Args: { _user_id: string }; Returns: boolean }
       can_moderate_chat: {
         Args: { _thread: string; _user: string }
+        Returns: boolean
+      }
+      can_see_chat_message: {
+        Args: { _message_id: string; _scope: string }
         Returns: boolean
       }
       can_see_org_post: {
