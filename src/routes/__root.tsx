@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { ColorFilterDefs } from "@/components/a11y/ColorFilterDefs";
+import { SelectionSpeaker } from "@/components/a11y/SelectionSpeaker";
 
 
 import appCss from "../styles.css?url";
@@ -137,6 +138,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
         <a href="#main-content" className="skip-link">本文へスキップ</a>
         <ColorFilterDefs />
         {children}
+        <SelectionSpeaker />
         <Scripts />
       </body>
 
