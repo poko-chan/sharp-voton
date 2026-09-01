@@ -126,3 +126,37 @@ export async function fetchGroupInfo(groupId: string) {
   if (error) throw error;
   return data;
 }
+
+// ===== 返信 / リアクション =====
+export type ChatScope = "dm" | "group";
+export type ChatReaction = { id: string; scope: ChatScope; message_id: string; user_id: string; emoji: string };
+
+export const REACTION_EMOJIS = ["👍", "❤️", "😂", "🎉", "😢", "🙏"];
+
+export async function setReplyTo(scope: ChatScope, messageId: string, replyToId: string) {
+  const table = scope === "dm" ? "chat_messages" : "chat_group_messages";
+  const { error } = await (supabase as any).from(table).update({ reply_to_id: replyToId }).eq("id", messageId);
+  if (error) throw error;
+}
+
+export async function fetchReactions(scope: ChatScope, messageIds: string[]): Promise<ChatReaction[]> {
+  if (messageIds.length === 0) return [];
+  const { data, error } = await (supabase as any)
+    .from("chat_reactions").select("*").eq("scope", scope).in("message_id", messageIds);
+  if (error) throw error;
+  return (data ?? []) as ChatReaction[];
+}
+
+export async function toggleReaction(scope: ChatScope, messageId: string, emoji: string, userId: string) {
+  const { data } = await (supabase as any)
+    .from("chat_reactions").select("id")
+    .eq("scope", scope).eq("message_id", messageId).eq("user_id", userId).eq("emoji", emoji).maybeSingle();
+  if (data?.id) {
+    const { error } = await (supabase as any).from("chat_reactions").delete().eq("id", data.id);
+    if (error) throw error;
+  } else {
+    const { error } = await (supabase as any)
+      .from("chat_reactions").insert({ scope, message_id: messageId, user_id: userId, emoji });
+    if (error) throw error;
+  }
+}
