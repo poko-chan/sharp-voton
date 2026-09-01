@@ -377,7 +377,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </aside>
       )}
 
-      <main className="flex-1 overflow-auto min-w-0">
+      <main id="main-content" tabIndex={-1} className="flex-1 overflow-auto min-w-0">
         <TimerIndicator />
         {/* Desktop top bar */}
         {!isMobile && (
