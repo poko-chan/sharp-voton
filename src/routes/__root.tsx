@@ -132,9 +132,12 @@ function RootShell({ children }: { children: React.ReactNode }) {
     <html lang="ja">
       <head><HeadContent /></head>
       <body>
+        <a href="#main-content" className="skip-link">本文へスキップ</a>
+        <ColorFilterDefs />
         {children}
         <Scripts />
       </body>
+
     </html>
   );
 }
