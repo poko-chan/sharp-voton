@@ -2765,7 +2765,7 @@ export type Database = {
           started_at: string
           total_points: number | null
           total_score: number | null
-          unit_id: string
+          unit_id: string | null
           user_id: string
           xp_awarded: number
         }
@@ -2784,7 +2784,7 @@ export type Database = {
           started_at?: string
           total_points?: number | null
           total_score?: number | null
-          unit_id: string
+          unit_id?: string | null
           user_id: string
           xp_awarded?: number
         }
@@ -2803,7 +2803,7 @@ export type Database = {
           started_at?: string
           total_points?: number | null
           total_score?: number | null
-          unit_id?: string
+          unit_id?: string | null
           user_id?: string
           xp_awarded?: number
         }
