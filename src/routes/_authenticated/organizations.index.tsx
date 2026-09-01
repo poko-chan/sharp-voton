@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { ROLE_LABEL } from "@/lib/org-roles";
 import { APP_STATUS_LABEL, ORG_TYPE_LABEL } from "@/lib/org-application";
 import { OrgApplicationThread } from "@/components/org/OrgApplicationThread";
-import { Building2, Check, X, Mail, Plus, KeyRound, Clock, MessageSquare } from "lucide-react";
+import { Building2, Check, X, Mail, Plus, KeyRound, Clock, MessageSquare, QrCode } from "lucide-react";
+import { QrScannerDialog } from "@/components/QrScannerDialog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/organizations/")({
@@ -39,6 +40,7 @@ function OrgsPage() {
   const [apps, setApps] = useState<any[]>([]);
   const [openApp, setOpenApp] = useState<string | null>(null);
   const [code, setCode] = useState("");
+  const [qrOpen, setQrOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const load = async () => {
@@ -95,9 +97,20 @@ function OrgsPage() {
           <div className="font-bold flex items-center gap-1"><KeyRound className="h-4 w-4" />参加コードで参加</div>
           <div className="flex gap-2">
             <Input placeholder="例: A1B2C3" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} maxLength={6} />
+            <Button variant="outline" size="icon" onClick={() => setQrOpen(true)} aria-label="QRコードを読み取る"><QrCode className="h-4 w-4" /></Button>
             <Button onClick={join} disabled={busy || code.length < 4}>申請</Button>
           </div>
-          <p className="text-[11px] text-muted-foreground">経営者・共同管理者が承認するとメンバーになります。</p>
+          <p className="text-[11px] text-muted-foreground">経営者・共同管理者が承認するとメンバーになります。QRコードからも入力できます。</p>
+          <QrScannerDialog
+            open={qrOpen}
+            onOpenChange={setQrOpen}
+            title="参加コードのQRを読み取る"
+            description="組織から共有されたQRコードをカメラに向けてください。"
+            onResult={(v) => {
+              const m = v.match(/[A-Za-z0-9]{4,8}$/);
+              setCode((m ? m[0] : v).toUpperCase().slice(0, 6));
+            }}
+          />
         </Card>
 
         <Card className="p-4 space-y-2">

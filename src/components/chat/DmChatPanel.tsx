@@ -1,13 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Pencil, Trash2, Check, X } from "lucide-react";
+import { Send, Pencil, Trash2, Check, X, Reply } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { jstDateStr, jstDayLabel } from "@/lib/date";
-import { sendDm, type DmMessage } from "@/lib/chat.functions";
+import { sendDm, setReplyTo, fetchReactions, toggleReaction, type DmMessage } from "@/lib/chat.functions";
+import { ReactionBar, ReactionPicker } from "./MessageReactions";
 
 export function DmChatPanel({
   userId,
@@ -25,6 +26,7 @@ export function DmChatPanel({
   const endRef = useRef<HTMLDivElement>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
+  const [replyTo, setReplyToMsg] = useState<DmMessage | null>(null);
 
   const messages = useQuery({
     queryKey: ["chat-dm", partnerId],
@@ -39,6 +41,22 @@ export function DmChatPanel({
     },
   });
 
+  const msgIds = useMemo(() => (messages.data ?? []).map((m) => m.id), [messages.data]);
+  const reactions = useQuery({
+    queryKey: ["chat-dm-reactions", partnerId, msgIds.length],
+    queryFn: () => fetchReactions("dm", msgIds),
+    enabled: msgIds.length > 0,
+  });
+  const byId = useMemo(() => new Map((messages.data ?? []).map((m) => [m.id, m])), [messages.data]);
+
+  const onToggleReaction = async (id: string, emoji: string) => {
+    try {
+      await toggleReaction("dm", id, emoji, userId);
+      qc.invalidateQueries({ queryKey: ["chat-dm-reactions", partnerId] });
+      reactions.refetch();
+    } catch (e: any) { toast.error(e.message ?? "リアクションに失敗しました"); }
+  };
+
   useEffect(() => {
     const ch = supabase
       .channel(`chat-dm-${partnerId}`)
@@ -51,6 +69,9 @@ export function DmChatPanel({
           qc.invalidateQueries({ queryKey: ["chat-dm", partnerId] });
           qc.invalidateQueries({ queryKey: ["chat-conversations"] });
         }
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "chat_reactions" }, () => {
+        reactions.refetch();
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
@@ -88,9 +109,11 @@ export function DmChatPanel({
   const send = async () => {
     const t = text.trim();
     if (!t) return;
-    setText("");
+    const replyId = replyTo?.id ?? null;
+    setText(""); setReplyToMsg(null);
     try {
-      await sendDm(partnerId, t);
+      const id = await sendDm(partnerId, t);
+      if (replyId && id) await setReplyTo("dm", id, replyId).catch(() => {});
       qc.invalidateQueries({ queryKey: ["chat-dm", partnerId] });
       qc.invalidateQueries({ queryKey: ["chat-conversations"] });
     } catch (e: any) {
@@ -124,10 +147,16 @@ export function DmChatPanel({
             const mine = m.sender_id === userId;
             const isDeleted = !!m.deleted_at;
             const isEditing = editingId === m.id;
+            const parent = (m as any).reply_to_id ? byId.get((m as any).reply_to_id as string) : null;
             nodes.push(
               <div key={m.id} className={`flex group ${mine ? "justify-end" : "justify-start"}`}>
                 <div className={`max-w-[80%] sm:max-w-[70%] space-y-0.5 ${mine ? "items-end" : "items-start"} flex flex-col`}>
-                  <Card className={`px-3 py-2 ${mine ? "bg-primary text-primary-foreground" : ""} ${isDeleted ? "opacity-60 italic" : ""}`}>
+                  <Card className={`px-3 py-2 ${mine ? "!bg-primary !text-primary-foreground border-primary" : ""} ${isDeleted ? "opacity-60 italic" : ""}`}>
+                    {parent && (
+                      <div className={`mb-1 border-l-2 pl-2 text-[11px] line-clamp-2 ${mine ? "border-primary-foreground/60 opacity-80" : "border-muted-foreground/40 text-muted-foreground"}`}>
+                        {parent.sender_id === userId ? "自分" : partnerName}: {parent.content}
+                      </div>
+                    )}
                     {isEditing ? (
                       <div className="flex gap-1 items-center min-w-[160px] sm:min-w-[200px]">
                         <Input
@@ -142,15 +171,20 @@ export function DmChatPanel({
                     ) : (
                       <div className="flex items-end gap-2">
                         <span className="text-sm whitespace-pre-wrap break-words">{m.content}</span>
-                        {mine && !isDeleted && (
-                          <div className="hidden group-hover:flex gap-1 shrink-0">
-                            <button onClick={() => startEdit(m)} className="opacity-70 hover:opacity-100"><Pencil className="h-3 w-3" /></button>
-                            <button onClick={() => removeMsg(m.id)} className="opacity-70 hover:opacity-100"><Trash2 className="h-3 w-3" /></button>
+                        {!isDeleted && (
+                          <div className="hidden group-hover:flex gap-1.5 shrink-0 items-center">
+                            <ReactionPicker onPick={(e) => onToggleReaction(m.id, e)} />
+                            <button onClick={() => setReplyToMsg(m)} className="opacity-70 hover:opacity-100" aria-label="返信"><Reply className="h-3.5 w-3.5" /></button>
+                            {mine && <>
+                              <button onClick={() => startEdit(m)} className="opacity-70 hover:opacity-100" aria-label="編集"><Pencil className="h-3 w-3" /></button>
+                              <button onClick={() => removeMsg(m.id)} className="opacity-70 hover:opacity-100" aria-label="削除"><Trash2 className="h-3 w-3" /></button>
+                            </>}
                           </div>
                         )}
                       </div>
                     )}
                   </Card>
+                  <ReactionBar reactions={reactions.data ?? []} messageId={m.id} scope="dm" userId={userId} onToggle={(e) => onToggleReaction(m.id, e)} />
                   <span className="text-[10px] text-muted-foreground px-1 flex items-center gap-1">
                     {mine && !isDeleted && (
                       <span className={m.read_at ? "text-primary font-medium" : "opacity-60"}>
@@ -169,6 +203,15 @@ export function DmChatPanel({
         })()}
         <div ref={endRef} />
       </div>
+      {replyTo && (
+        <div className="border-t px-3 py-2 flex items-center gap-2 bg-muted/50">
+          <Reply className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <span className="text-xs text-muted-foreground truncate flex-1">
+            {replyTo.sender_id === userId ? "自分" : partnerName} に返信: {replyTo.content}
+          </span>
+          <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setReplyToMsg(null)} aria-label="返信をやめる"><X className="h-3.5 w-3.5" /></Button>
+        </div>
+      )}
       <div className="border-t p-3 flex gap-2">
         <Input
           value={text}
@@ -176,7 +219,7 @@ export function DmChatPanel({
           onKeyDown={(e) => { if (e.key === "Enter") send(); }}
           placeholder="メッセージを入力"
         />
-        <Button onClick={send} size="icon"><Send className="h-4 w-4" /></Button>
+        <Button onClick={send} size="icon" aria-label="送信"><Send className="h-4 w-4" /></Button>
       </div>
     </>
   );

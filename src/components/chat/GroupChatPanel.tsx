@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Pencil, Trash2, Check, X, Users } from "lucide-react";
+import { Send, Pencil, Trash2, Check, X, Users, Reply } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { jstDateStr, jstDayLabel } from "@/lib/date";
@@ -14,8 +14,12 @@ import {
   fetchGroupMembers,
   type GroupMessage,
   type GroupMember,
+  setReplyTo,
+  fetchReactions,
+  toggleReaction,
   type Profile,
 } from "@/lib/chat.functions";
+import { ReactionBar, ReactionPicker } from "./MessageReactions";
 
 
 export function GroupChatPanel({
@@ -36,6 +40,7 @@ export function GroupChatPanel({
   const endRef = useRef<HTMLDivElement>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
+  const [replyTo, setReplyToMsg] = useState<GroupMessage | null>(null);
 
   const messages = useQuery({
     queryKey: ["chat-group-msgs", groupId],
@@ -73,6 +78,20 @@ export function GroupChatPanel({
       (r: GroupMember) => r.user_id !== m.sender_id && r.last_read_at && new Date(r.last_read_at) >= new Date(m.created_at),
     ).length;
 
+  const msgIds = useMemo(() => (messages.data ?? []).map((m) => m.id), [messages.data]);
+  const byId = useMemo(() => new Map((messages.data ?? []).map((m) => [m.id, m])), [messages.data]);
+  const reactions = useQuery({
+    queryKey: ["chat-group-reactions", groupId, msgIds.length],
+    queryFn: () => fetchReactions("group", msgIds),
+    enabled: msgIds.length > 0,
+  });
+  const onToggleReaction = async (id: string, emoji: string) => {
+    try {
+      await toggleReaction("group", id, emoji, userId);
+      reactions.refetch();
+    } catch (e: any) { toast.error(e.message ?? "リアクションに失敗しました"); }
+  };
+
 
   useEffect(() => {
 
@@ -82,6 +101,7 @@ export function GroupChatPanel({
         qc.invalidateQueries({ queryKey: ["chat-group-msgs", groupId] });
         qc.invalidateQueries({ queryKey: ["chat-conversations"] });
       })
+      .on("postgres_changes", { event: "*", schema: "public", table: "chat_reactions" }, () => { reactions.refetch(); })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [groupId, qc]);
@@ -114,9 +134,11 @@ export function GroupChatPanel({
   const send = async () => {
     const t = text.trim();
     if (!t) return;
-    setText("");
+    const replyId = replyTo?.id ?? null;
+    setText(""); setReplyToMsg(null);
     try {
-      await sendGroupMessage(groupId, t);
+      const newId = await sendGroupMessage(groupId, t);
+      if (replyId && newId) await setReplyTo("group", newId, replyId).catch(() => {});
       qc.invalidateQueries({ queryKey: ["chat-group-msgs", groupId] });
       qc.invalidateQueries({ queryKey: ["chat-conversations"] });
     } catch (e: any) {
@@ -150,11 +172,17 @@ export function GroupChatPanel({
             const mine = m.sender_id === userId;
             const isDeleted = !!m.deleted_at;
             const isEditing = editingId === m.id;
+            const parent = (m as any).reply_to_id ? byId.get((m as any).reply_to_id as string) : null;
             nodes.push(
               <div key={m.id} className={`flex group ${mine ? "justify-end" : "justify-start"}`}>
                 <div className={`max-w-[80%] sm:max-w-[70%] space-y-0.5 ${mine ? "items-end" : "items-start"} flex flex-col`}>
                   {!mine && <span className="text-[11px] text-muted-foreground px-1">{nameOf(m.sender_id)}</span>}
-                  <Card className={`px-3 py-2 ${mine ? "bg-primary text-primary-foreground" : ""} ${isDeleted ? "opacity-60 italic" : ""}`}>
+                  <Card className={`px-3 py-2 ${mine ? "!bg-primary !text-primary-foreground border-primary" : ""} ${isDeleted ? "opacity-60 italic" : ""}`}>
+                    {parent && (
+                      <div className={`mb-1 border-l-2 pl-2 text-[11px] line-clamp-2 ${mine ? "border-primary-foreground/60 opacity-80" : "border-muted-foreground/40 text-muted-foreground"}`}>
+                        {nameOf(parent.sender_id)}: {parent.content}
+                      </div>
+                    )}
                     {isEditing ? (
                       <div className="flex gap-1 items-center min-w-[160px] sm:min-w-[200px]">
                         <Input
@@ -169,15 +197,20 @@ export function GroupChatPanel({
                     ) : (
                       <div className="flex items-end gap-2">
                         <span className="text-sm whitespace-pre-wrap break-words">{m.content}</span>
-                        {mine && !isDeleted && (
-                          <div className="hidden group-hover:flex gap-1 shrink-0">
-                            <button onClick={() => startEdit(m)} className="opacity-70 hover:opacity-100"><Pencil className="h-3 w-3" /></button>
-                            <button onClick={() => removeMsg(m.id)} className="opacity-70 hover:opacity-100"><Trash2 className="h-3 w-3" /></button>
+                        {!isDeleted && (
+                          <div className="hidden group-hover:flex gap-1.5 shrink-0 items-center">
+                            <ReactionPicker onPick={(e) => onToggleReaction(m.id, e)} />
+                            <button onClick={() => setReplyToMsg(m)} className="opacity-70 hover:opacity-100" aria-label="返信"><Reply className="h-3.5 w-3.5" /></button>
+                            {mine && <>
+                              <button onClick={() => startEdit(m)} className="opacity-70 hover:opacity-100" aria-label="編集"><Pencil className="h-3 w-3" /></button>
+                              <button onClick={() => removeMsg(m.id)} className="opacity-70 hover:opacity-100" aria-label="削除"><Trash2 className="h-3 w-3" /></button>
+                            </>}
                           </div>
                         )}
                       </div>
                     )}
                   </Card>
+                  <ReactionBar reactions={reactions.data ?? []} messageId={m.id} scope="group" userId={userId} onToggle={(e) => onToggleReaction(m.id, e)} />
                   <span className="text-[10px] text-muted-foreground px-1 flex items-center gap-1">
                     {mine && !isDeleted && readCount(m) > 0 && (
                       <span className="text-primary font-medium">既読 {readCount(m)}</span>
@@ -194,6 +227,13 @@ export function GroupChatPanel({
         })()}
         <div ref={endRef} />
       </div>
+      {replyTo && (
+        <div className="border-t px-3 py-2 flex items-center gap-2 bg-muted/50">
+          <Reply className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <span className="text-xs text-muted-foreground truncate flex-1">{nameOf(replyTo.sender_id)} に返信: {replyTo.content}</span>
+          <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setReplyToMsg(null)} aria-label="返信をやめる"><X className="h-3.5 w-3.5" /></Button>
+        </div>
+      )}
       <div className="border-t p-3 flex gap-2">
         <Input
           value={text}
