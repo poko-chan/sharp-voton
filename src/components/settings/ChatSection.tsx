@@ -37,14 +37,13 @@ export function ChatSection() {
         />
         <div className="space-y-2">
           <Label>吹き出しの文字サイズ: {Math.round(prefs.chat_font_scale * 100)}%</Label>
-          <Slider
-            value={[prefs.chat_font_scale]}
-            min={0.85}
-            max={1.4}
-            step={0.05}
-            onValueChange={([v]) => save({ chat_font_scale: v })}
-          />
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={() => save({ chat_font_scale: Math.max(0.85, +(prefs.chat_font_scale - 0.05).toFixed(2)) })}>−</Button>
+            <Button size="sm" variant="outline" onClick={() => save({ chat_font_scale: 1 })}>標準</Button>
+            <Button size="sm" variant="outline" onClick={() => save({ chat_font_scale: Math.min(1.4, +(prefs.chat_font_scale + 0.05).toFixed(2)) })}>+</Button>
+          </div>
         </div>
+
       </Card>
     </div>
   );
