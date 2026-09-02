@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useLocalPrefs } from "@/lib/user-prefs";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
 import {
@@ -259,6 +260,7 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
   };
 
   const radius = Math.min(3, 1 + Math.floor(town.stage / 3));
+  const { prefs: localPrefs } = useLocalPrefs();
 
   return (
     <>
@@ -324,7 +326,7 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
                 userBuildings={buildings as any}
                 buildMode={buildMode}
                 selected={selected}
-                autoRotate={!buildMode}
+                autoRotate={!buildMode && localPrefs.town_auto_rotate}
                 onPick={onCell}
                 onSelectBuilding={(b) => setSelected([b.gx, b.gz])}
               />
@@ -344,7 +346,7 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
 
           </div>
 
-          <Tabs defaultValue="build" className="mt-2">
+          <Tabs defaultValue={localPrefs.town_default_tab} className="mt-2">
             <TabsList>
               <TabsTrigger value="economy"><TrendingUp className="h-3.5 w-3.5 mr-1" />経済</TabsTrigger>
               <TabsTrigger value="policy"><Landmark className="h-3.5 w-3.5 mr-1" />政策</TabsTrigger>
