@@ -198,7 +198,7 @@ export const fmtNum = (n: number) =>
   : n.toLocaleString("ja-JP");
 
 // ---------------- 区画グリッド ----------------
-// gx/gz は整数。3区画で1ブロック。world 座標に変換する。
+// gx/gz は整数。1ブロック = 3x3 の区画で、ブロックとブロックの間が道路になる。
 export const CELL = 12.2;
 export const LOT = 3.0;
 export function cellToWorld(gx: number, gz: number): [number, number] {
@@ -211,3 +211,27 @@ export function worldToCell(x: number, z: number): [number, number] {
   const iz = Math.max(-1, Math.min(1, Math.round((z - bz * CELL) / LOT)));
   return [bx * 3 + ix, bz * 3 + iz];
 }
+
+/** その区画が属するブロックと、ブロック内のオフセット(-1..1) */
+export function cellBlock(g: number): { block: number; offset: number } {
+  const block = Math.round(g / 3);
+  return { block, offset: g - block * 3 };
+}
+
+/** 建設できる区画かどうか（道路の上や範囲外は不可） */
+export function isBuildableCell(gx: number, gz: number, radius: number): boolean {
+  const a = cellBlock(gx), b = cellBlock(gz);
+  if (Math.abs(a.offset) > 1 || Math.abs(b.offset) > 1) return false;
+  return Math.abs(a.block) <= radius && Math.abs(b.block) <= radius;
+}
+
+/** 指定半径内の全区画（ブロック順） */
+export function cellsInRadius(radius: number): [number, number][] {
+  const out: [number, number][] = [];
+  for (let bz = -radius; bz <= radius; bz++)
+    for (let oz = -1; oz <= 1; oz++)
+      for (let bx = -radius; bx <= radius; bx++)
+        for (let ox = -1; ox <= 1; ox++) out.push([bx * 3 + ox, bz * 3 + oz]);
+  return out;
+}
+

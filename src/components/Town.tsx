@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useLocalPrefs } from "@/lib/user-prefs";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
 import {
@@ -18,9 +19,10 @@ import { useAuth } from "@/lib/auth-context";
 import { listTowns, recomputeTown, getTownHistory } from "@/lib/town.functions";
 import { stageName, stageDescription, MAX_STAGE } from "@/lib/town";
 import {
-  BUILD_DEFS, POLICY_DEFS, buildDef, refundOf, computeMetrics, fmtNum,
+  BUILD_DEFS, POLICY_DEFS, buildDef, refundOf, computeMetrics, fmtNum, isBuildableCell,
   type BuildingRow, type Metrics, type StudyInput,
 } from "@/lib/town-economy";
+
 import { TownMap } from "@/components/town/TownMap";
 import { localDateStr, addDaysStr } from "@/lib/date";
 
@@ -204,9 +206,11 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
     const k = kind ?? picked;
     if (!k) return toast.info("先に建てる建物を選んでください");
     const def = buildDef(k)!;
+    if (!isBuildableCell(gx, gz, radius)) return toast.error("道路や街の外には建設できません");
     if (buildings.some((b) => b.gx === gx && b.gz === gz)) return toast.error("この区画にはすでに建物があります");
     if (town.stage < def.minStage) return toast.error(`ステージ ${def.minStage} 以上で建設できます`);
     if (coins < def.cost) return toast.error(`コインが足りません (必要 ${def.cost})`);
+
     setBusy(true);
     const { error } = await (supabase as any).rpc("town_build", {
       _town_id: town.id, _kind: def.kind, _gx: gx, _gz: gz, _cost: def.cost,
@@ -256,6 +260,7 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
   };
 
   const radius = Math.min(3, 1 + Math.floor(town.stage / 3));
+  const { prefs: localPrefs } = useLocalPrefs();
 
   return (
     <>
@@ -321,7 +326,7 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
                 userBuildings={buildings as any}
                 buildMode={buildMode}
                 selected={selected}
-                autoRotate={!buildMode}
+                autoRotate={!buildMode && localPrefs.town_auto_rotate}
                 onPick={onCell}
                 onSelectBuilding={(b) => setSelected([b.gx, b.gz])}
               />
@@ -341,7 +346,7 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
 
           </div>
 
-          <Tabs defaultValue="build" className="mt-2">
+          <Tabs defaultValue={localPrefs.town_default_tab} className="mt-2">
             <TabsList>
               <TabsTrigger value="economy"><TrendingUp className="h-3.5 w-3.5 mr-1" />経済</TabsTrigger>
               <TabsTrigger value="policy"><Landmark className="h-3.5 w-3.5 mr-1" />政策</TabsTrigger>

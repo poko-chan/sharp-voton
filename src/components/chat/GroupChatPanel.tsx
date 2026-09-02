@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Pencil, Trash2, Check, X, Users, Reply } from "lucide-react";
+import { Pencil, Trash2, Check, X, Users, Reply, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { jstDateStr, jstDayLabel } from "@/lib/date";
@@ -20,6 +20,8 @@ import {
   type Profile,
 } from "@/lib/chat.functions";
 import { ReactionBar, ReactionPicker } from "./MessageReactions";
+import { ChatComposer, ChatSearchBar } from "./ChatComposer";
+import { useLocalPrefs } from "@/lib/user-prefs";
 
 
 export function GroupChatPanel({
@@ -41,6 +43,8 @@ export function GroupChatPanel({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [replyTo, setReplyToMsg] = useState<GroupMessage | null>(null);
+  const [query, setQuery] = useState("");
+  const { prefs } = useLocalPrefs();
 
   const messages = useQuery({
     queryKey: ["chat-group-msgs", groupId],
@@ -150,13 +154,15 @@ export function GroupChatPanel({
   return (
     <>
       <div className="border-b p-3 font-medium flex items-center justify-between gap-2">
-        <span className="truncate flex items-center gap-1.5"><Users className="h-4 w-4 shrink-0" />{groupName}</span>
+        <span className="truncate flex items-center gap-1.5 flex-1 min-w-0"><Users className="h-4 w-4 shrink-0" />{groupName}</span>
+        <ChatSearchBar value={query} onChange={setQuery} />
         <Button size="sm" variant="outline" onClick={onOpenMembers}>メンバー ({memberCount})</Button>
       </div>
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div className={`flex-1 overflow-y-auto p-4 ${prefs.chat_compact ? "space-y-0.5" : "space-y-2"}`} style={{ fontSize: `${prefs.chat_font_scale}em` }}>
         {(() => {
           let lastDay = "";
-          return messages.data?.flatMap((m) => {
+          const list = (messages.data ?? []).filter((m) => !query.trim() || m.content?.toLowerCase().includes(query.trim().toLowerCase()));
+          return list.flatMap((m) => {
             const day = jstDateStr(new Date(m.created_at));
             const nodes: React.ReactNode[] = [];
             if (day !== lastDay) {
@@ -198,9 +204,10 @@ export function GroupChatPanel({
                       <div className="flex items-end gap-2">
                         <span className="text-sm whitespace-pre-wrap break-words">{m.content}</span>
                         {!isDeleted && (
-                          <div className="hidden group-hover:flex gap-1.5 shrink-0 items-center">
+                          <div className="flex gap-1.5 shrink-0 items-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                             <ReactionPicker onPick={(e) => onToggleReaction(m.id, e)} />
                             <button onClick={() => setReplyToMsg(m)} className="opacity-70 hover:opacity-100" aria-label="返信"><Reply className="h-3.5 w-3.5" /></button>
+                            <button onClick={() => { navigator.clipboard?.writeText(m.content); toast.success("コピーしました"); }} className="opacity-70 hover:opacity-100" aria-label="コピー"><Copy className="h-3 w-3" /></button>
                             {mine && <>
                               <button onClick={() => startEdit(m)} className="opacity-70 hover:opacity-100" aria-label="編集"><Pencil className="h-3 w-3" /></button>
                               <button onClick={() => removeMsg(m.id)} className="opacity-70 hover:opacity-100" aria-label="削除"><Trash2 className="h-3 w-3" /></button>
@@ -215,7 +222,7 @@ export function GroupChatPanel({
                     {mine && !isDeleted && readCount(m) > 0 && (
                       <span className="text-primary font-medium">既読 {readCount(m)}</span>
                     )}
-                    {new Date(m.created_at).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}
+                    {prefs.chat_show_time && new Date(m.created_at).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}
                     {m.edited_at && !isDeleted ? " (編集済み)" : ""}
                   </span>
 
@@ -234,15 +241,7 @@ export function GroupChatPanel({
           <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setReplyToMsg(null)} aria-label="返信をやめる"><X className="h-3.5 w-3.5" /></Button>
         </div>
       )}
-      <div className="border-t p-3 flex gap-2">
-        <Input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") send(); }}
-          placeholder="メッセージを入力"
-        />
-        <Button onClick={send} size="icon"><Send className="h-4 w-4" /></Button>
-      </div>
+      <ChatComposer value={text} onChange={setText} onSend={send} />
     </>
   );
 }

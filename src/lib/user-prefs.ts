@@ -152,7 +152,18 @@ export type LocalPrefs = {
   color_filter: "none" | "grayscale" | "protanopia" | "deuteranopia" | "tritanopia";
   hide_images: boolean;
   tts_enabled: boolean;
+  // チャット
+  chat_enter_send: boolean;      // Enterで送信（OFFなら Ctrl+Enter で送信）
+  chat_compact: boolean;         // コンパクト表示
+  chat_show_time: boolean;       // 時刻を表示
+  chat_font_scale: number;       // 吹き出しの文字サイズ倍率
+  chat_send_sound: boolean;      // 送信時の効果音
+  // 街
+  town_auto_rotate: boolean;     // 3Dの自動回転
+  town_show_labels: boolean;     // 建物名ラベル
+  town_default_tab: "economy" | "policy" | "build" | "map" | "info";
 };
+
 
 export const DASHBOARD_CARD_OPTIONS: { value: string; label: string }[] = [
   { value: "streak", label: "連続記録" },
@@ -185,7 +196,16 @@ export const DEFAULT_LOCAL_PREFS: LocalPrefs = {
   color_filter: "none",
   hide_images: false,
   tts_enabled: false,
+  chat_enter_send: true,
+  chat_compact: false,
+  chat_show_time: true,
+  chat_font_scale: 1,
+  chat_send_sound: false,
+  town_auto_rotate: true,
+  town_show_labels: true,
+  town_default_tab: "economy",
 };
+
 
 const LOCAL_PREFS_KEY = "voton_local_prefs_v1";
 const localPrefsListeners = new Set<() => void>();
