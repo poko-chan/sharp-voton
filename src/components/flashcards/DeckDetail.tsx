@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Upload, Pencil, Trash2, PlayCircle } from "lucide-react";
+import { ArrowLeft, Plus, Upload, Pencil, Trash2, PlayCircle, Shuffle, RotateCcw, Repeat } from "lucide-react";
 import { toast } from "sonner";
 import {
   createCard,
@@ -11,6 +11,7 @@ import {
   fetchDueCardsForDeck,
   updateCard,
   bulkCreateCards,
+  resetDeckProgress,
   type Flashcard,
   type FlashcardDeck,
 } from "@/lib/flashcards.functions";
@@ -83,12 +84,28 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
     }
   };
 
-  const startStudy = async () => {
+  const startStudy = async (mode: "due" | "all", shuffled: boolean) => {
     try {
-      const due = await fetchDueCardsForDeck(userId, deck.id);
-      setStudyCards(due);
+      const list = mode === "due" ? await fetchDueCardsForDeck(userId, deck.id) : cards;
+      if (list.length === 0) {
+        toast.info("学習できるカードがありません");
+        return;
+      }
+      setStudyShuffled(shuffled);
+      setStudyCards(list);
     } catch {
       toast.error("読み込みに失敗しました");
+    }
+  };
+
+  const handleReset = async () => {
+    if (!confirm("このデッキの判定（習得度・復習間隔）をすべて初期化しますか？")) return;
+    try {
+      await resetDeckProgress(userId, deck.id);
+      await load();
+      toast.success("判定をリセットしました");
+    } catch {
+      toast.error("リセットに失敗しました");
     }
   };
 
@@ -97,6 +114,7 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
       <StudySession
         deckName={deck.name}
         cards={studyCards}
+        shuffled={studyShuffled}
         onExit={() => { setStudyCards(null); load(); }}
       />
     );
