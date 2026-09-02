@@ -154,6 +154,32 @@ export async function deleteCard(id: string) {
   if (error) throw error;
 }
 
+/** デッキ内の全カードの判定（習得度・復習間隔）を初期状態に戻す */
+export async function resetDeckProgress(userId: string, deckId: string) {
+  const { error } = await supabase
+    .from("flashcards")
+    .update({
+      ease: 2.5,
+      interval_days: 0,
+      next_review_at: new Date().toISOString(),
+      last_reviewed_at: null,
+      reviews: 0,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", userId)
+    .eq("deck_id", deckId);
+  if (error) throw error;
+}
+
+export function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 // ---------- SRS ----------
 
 const GRADE_Q: Record<Grade, 0 | 3 | 4 | 5> = {
