@@ -205,9 +205,11 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
     const k = kind ?? picked;
     if (!k) return toast.info("先に建てる建物を選んでください");
     const def = buildDef(k)!;
+    if (!isBuildableCell(gx, gz, radius)) return toast.error("道路や街の外には建設できません");
     if (buildings.some((b) => b.gx === gx && b.gz === gz)) return toast.error("この区画にはすでに建物があります");
     if (town.stage < def.minStage) return toast.error(`ステージ ${def.minStage} 以上で建設できます`);
     if (coins < def.cost) return toast.error(`コインが足りません (必要 ${def.cost})`);
+
     setBusy(true);
     const { error } = await (supabase as any).rpc("town_build", {
       _town_id: town.id, _kind: def.kind, _gx: gx, _gz: gz, _cost: def.cost,
