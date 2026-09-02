@@ -1,8 +1,9 @@
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
 import { useLocalPrefs } from "@/lib/user-prefs";
 import { SectionHeading, SettingRow } from "./shared";
+
 
 export function ChatSection() {
   const { prefs, save } = useLocalPrefs();
