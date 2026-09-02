@@ -196,7 +196,16 @@ export const DEFAULT_LOCAL_PREFS: LocalPrefs = {
   color_filter: "none",
   hide_images: false,
   tts_enabled: false,
+  chat_enter_send: true,
+  chat_compact: false,
+  chat_show_time: true,
+  chat_font_scale: 1,
+  chat_send_sound: false,
+  town_auto_rotate: true,
+  town_show_labels: true,
+  town_default_tab: "economy",
 };
+
 
 const LOCAL_PREFS_KEY = "voton_local_prefs_v1";
 const localPrefsListeners = new Set<() => void>();
