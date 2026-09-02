@@ -137,16 +137,35 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {dueCount > 0 && <Badge className="bg-primary text-primary-foreground">今日 {dueCount}枚</Badge>}
-          <Button onClick={startStudy} disabled={dueCount === 0}><PlayCircle className="h-4 w-4 mr-1" />学習を始める</Button>
+          <Button onClick={() => startStudy("due", false)} disabled={dueCount === 0}>
+            <PlayCircle className="h-4 w-4 mr-1" />学習を始める
+          </Button>
         </div>
       </Card>
 
+      <Card className="p-3 flex flex-wrap gap-4 text-xs text-muted-foreground">
+        <span>カード {cards.length}枚</span>
+        <span>解いた回数 {totalReviews}回</span>
+        <span>学習済み {studiedCount}枚</span>
+        <span>未学習 {cards.length - studiedCount}枚</span>
+        <span className="text-destructive">要復習 {weakCount}枚</span>
+      </Card>
+
       <div className="flex flex-wrap gap-2">
+        <Button size="sm" variant="secondary" onClick={() => startStudy("all", true)}>
+          <Shuffle className="h-4 w-4 mr-1" />シャッフルで練習
+        </Button>
+        <Button size="sm" variant="secondary" onClick={() => startStudy("all", false)}>
+          <Repeat className="h-4 w-4 mr-1" />全カードで繰り返し
+        </Button>
         <Button size="sm" onClick={() => { setEditingCard(null); setCardDialogOpen(true); }}>
           <Plus className="h-4 w-4 mr-1" />カード追加
         </Button>
         <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
           <Upload className="h-4 w-4 mr-1" />一括インポート
+        </Button>
+        <Button size="sm" variant="outline" onClick={handleReset}>
+          <RotateCcw className="h-4 w-4 mr-1" />判定をリセット
         </Button>
       </div>
 
