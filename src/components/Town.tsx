@@ -18,9 +18,10 @@ import { useAuth } from "@/lib/auth-context";
 import { listTowns, recomputeTown, getTownHistory } from "@/lib/town.functions";
 import { stageName, stageDescription, MAX_STAGE } from "@/lib/town";
 import {
-  BUILD_DEFS, POLICY_DEFS, buildDef, refundOf, computeMetrics, fmtNum,
+  BUILD_DEFS, POLICY_DEFS, buildDef, refundOf, computeMetrics, fmtNum, isBuildableCell,
   type BuildingRow, type Metrics, type StudyInput,
 } from "@/lib/town-economy";
+
 import { TownMap } from "@/components/town/TownMap";
 import { localDateStr, addDaysStr } from "@/lib/date";
 
