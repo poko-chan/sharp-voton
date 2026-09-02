@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Upload, Pencil, Trash2, PlayCircle } from "lucide-react";
+import { ArrowLeft, Plus, Upload, Pencil, Trash2, PlayCircle, Shuffle, RotateCcw, Repeat } from "lucide-react";
 import { toast } from "sonner";
 import {
   createCard,
@@ -11,6 +11,7 @@ import {
   fetchDueCardsForDeck,
   updateCard,
   bulkCreateCards,
+  resetDeckProgress,
   type Flashcard,
   type FlashcardDeck,
 } from "@/lib/flashcards.functions";
@@ -31,6 +32,7 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
   const [editingCard, setEditingCard] = useState<Flashcard | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [studyCards, setStudyCards] = useState<Flashcard[] | null>(null);
+  const [studyShuffled, setStudyShuffled] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -47,6 +49,9 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
   useEffect(() => { load(); }, [deck.id]);
 
   const dueCount = cards.filter((c) => new Date(c.next_review_at) <= new Date()).length;
+  const totalReviews = cards.reduce((sum, c) => sum + (c.reviews ?? 0), 0);
+  const studiedCount = cards.filter((c) => (c.reviews ?? 0) > 0).length;
+  const weakCount = cards.filter((c) => (c.reviews ?? 0) > 0 && c.interval_days <= 1).length;
 
   const handleCreateOrUpdate = async (front: string, back: string) => {
     try {
@@ -82,12 +87,28 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
     }
   };
 
-  const startStudy = async () => {
+  const startStudy = async (mode: "due" | "all", shuffled: boolean) => {
     try {
-      const due = await fetchDueCardsForDeck(userId, deck.id);
-      setStudyCards(due);
+      const list = mode === "due" ? await fetchDueCardsForDeck(userId, deck.id) : cards;
+      if (list.length === 0) {
+        toast.info("学習できるカードがありません");
+        return;
+      }
+      setStudyShuffled(shuffled);
+      setStudyCards(list);
     } catch {
       toast.error("読み込みに失敗しました");
+    }
+  };
+
+  const handleReset = async () => {
+    if (!confirm("このデッキの判定（習得度・復習間隔）をすべて初期化しますか？")) return;
+    try {
+      await resetDeckProgress(userId, deck.id);
+      await load();
+      toast.success("判定をリセットしました");
+    } catch {
+      toast.error("リセットに失敗しました");
     }
   };
 
@@ -96,6 +117,7 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
       <StudySession
         deckName={deck.name}
         cards={studyCards}
+        shuffled={studyShuffled}
         onExit={() => { setStudyCards(null); load(); }}
       />
     );
@@ -118,16 +140,35 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {dueCount > 0 && <Badge className="bg-primary text-primary-foreground">今日 {dueCount}枚</Badge>}
-          <Button onClick={startStudy} disabled={dueCount === 0}><PlayCircle className="h-4 w-4 mr-1" />学習を始める</Button>
+          <Button onClick={() => startStudy("due", false)} disabled={dueCount === 0}>
+            <PlayCircle className="h-4 w-4 mr-1" />学習を始める
+          </Button>
         </div>
       </Card>
 
+      <Card className="p-3 flex flex-wrap gap-4 text-xs text-muted-foreground">
+        <span>カード {cards.length}枚</span>
+        <span>解いた回数 {totalReviews}回</span>
+        <span>学習済み {studiedCount}枚</span>
+        <span>未学習 {cards.length - studiedCount}枚</span>
+        <span className="text-destructive">要復習 {weakCount}枚</span>
+      </Card>
+
       <div className="flex flex-wrap gap-2">
+        <Button size="sm" variant="secondary" onClick={() => startStudy("all", true)}>
+          <Shuffle className="h-4 w-4 mr-1" />シャッフルで練習
+        </Button>
+        <Button size="sm" variant="secondary" onClick={() => startStudy("all", false)}>
+          <Repeat className="h-4 w-4 mr-1" />全カードで繰り返し
+        </Button>
         <Button size="sm" onClick={() => { setEditingCard(null); setCardDialogOpen(true); }}>
           <Plus className="h-4 w-4 mr-1" />カード追加
         </Button>
         <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
           <Upload className="h-4 w-4 mr-1" />一括インポート
+        </Button>
+        <Button size="sm" variant="outline" onClick={handleReset}>
+          <RotateCcw className="h-4 w-4 mr-1" />判定をリセット
         </Button>
       </div>
 
