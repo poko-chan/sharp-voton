@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Search, User, KeyRound, Palette, Bell, BookOpen, Shield, Sparkles, Languages, Accessibility, Database, AlertTriangle } from "lucide-react";
+import { Search, User, KeyRound, Palette, Bell, BookOpen, Shield, Sparkles, Languages, Accessibility, Database, AlertTriangle, MessageSquare, Building2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { SettingsNav } from "@/components/settings/SettingsNav";
 import type { SettingsCategory, SettingsCategoryId } from "@/components/settings/types";
@@ -10,6 +10,8 @@ import { LoginMethodsSection } from "@/components/settings/LoginMethodsSection";
 import { AppearanceSection } from "@/components/settings/AppearanceSection";
 import { NotificationsSection } from "@/components/settings/NotificationsSection";
 import { StudySection } from "@/components/settings/StudySection";
+import { ChatSection } from "@/components/settings/ChatSection";
+import { TownSection } from "@/components/settings/TownSection";
 import { PrivacySection } from "@/components/settings/PrivacySection";
 import { AiSection } from "@/components/settings/AiSection";
 import { LanguageSection } from "@/components/settings/LanguageSection";
@@ -23,6 +25,8 @@ const CATEGORIES: SettingsCategory[] = [
   { id: "appearance", label: "外観・テーマ", icon: Palette, keywords: ["外観", "テーマ", "配色", "ダークモード", "フォント", "文字サイズ", "コンパクト", "ダッシュボード", "theme"] },
   { id: "notifications", label: "通知", icon: Bell, keywords: ["通知", "リマインダー", "お知らせ", "チャット", "ストリーク", "notification"] },
   { id: "study", label: "学習", icon: BookOpen, keywords: ["学習", "勉強", "タイマー", "教科", "休憩", "週の開始", "効果音", "目標", "study", "timer"] },
+  { id: "chat", label: "チャット", icon: MessageSquare, keywords: ["チャット", "メッセージ", "送信", "enter", "リアクション", "chat"] },
+  { id: "town", label: "街", icon: Building2, keywords: ["街", "まち", "3D", "回転", "都市", "town"] },
   { id: "privacy", label: "プライバシー", icon: Shield, keywords: ["プライバシー", "公開", "フレンド", "非公開", "privacy"] },
   { id: "ai", label: "AI", icon: Sparkles, keywords: ["AI", "モデル", "端末内", "webllm", "gemini", "nano", "ダウンロード", "容量"] },
   { id: "language", label: "言語・翻訳", icon: Languages, keywords: ["言語", "翻訳", "language", "translate", "日本語", "english"] },
@@ -37,6 +41,8 @@ const SECTIONS: Record<SettingsCategoryId, React.ComponentType> = {
   appearance: AppearanceSection,
   notifications: NotificationsSection,
   study: StudySection,
+  chat: ChatSection,
+  town: TownSection,
   privacy: PrivacySection,
   ai: AiSection,
   language: LanguageSection,
