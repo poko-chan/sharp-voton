@@ -49,6 +49,9 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
   useEffect(() => { load(); }, [deck.id]);
 
   const dueCount = cards.filter((c) => new Date(c.next_review_at) <= new Date()).length;
+  const totalReviews = cards.reduce((sum, c) => sum + (c.reviews ?? 0), 0);
+  const studiedCount = cards.filter((c) => (c.reviews ?? 0) > 0).length;
+  const weakCount = cards.filter((c) => (c.reviews ?? 0) > 0 && c.interval_days <= 1).length;
 
   const handleCreateOrUpdate = async (front: string, back: string) => {
     try {
