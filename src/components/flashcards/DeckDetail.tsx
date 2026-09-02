@@ -31,6 +31,7 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
   const [editingCard, setEditingCard] = useState<Flashcard | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [studyCards, setStudyCards] = useState<Flashcard[] | null>(null);
+  const [studyShuffled, setStudyShuffled] = useState(false);
 
   const load = async () => {
     setLoading(true);
