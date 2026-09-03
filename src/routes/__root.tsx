@@ -209,11 +209,8 @@ function RootComponent() {
 }
 
 function DockedWidgets() {
-  const path = useRS({ select: (s) => s.location.pathname });
-  // フィードバックはログイン画面と設定画面のみに表示する。
-  const showFeedback = path === "/login" || path === "/settings";
+  // フィードバック（サポート）はどのページでも表示する。
   const { prefs } = useUserPrefs();
-  if (!showFeedback) return null;
-  const dock = (prefs as any).right_dock ?? ["ambient","feedback"];
+  const dock = (prefs as any).right_dock ?? ["ambient", "feedback"];
   return <>{dock.includes("feedback") && <FeedbackWidget />}</>;
 }
