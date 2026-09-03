@@ -25,7 +25,7 @@ import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { AmbientSound } from "@/components/AmbientSound";
 import { loadAndApplyUserTheme } from "@/lib/theme";
-import { useRouterState as useRS } from "@tanstack/react-router";
+
 import { useUserPrefs } from "@/lib/user-prefs";
 import { I18nProvider } from "@/lib/i18n";
 
@@ -209,11 +209,8 @@ function RootComponent() {
 }
 
 function DockedWidgets() {
-  const path = useRS({ select: (s) => s.location.pathname });
-  // フィードバックはログイン画面と設定画面のみに表示する。
-  const showFeedback = path === "/login" || path === "/settings";
+  // フィードバック（サポート）はどのページでも表示する。
   const { prefs } = useUserPrefs();
-  if (!showFeedback) return null;
-  const dock = (prefs as any).right_dock ?? ["ambient","feedback"];
+  const dock = (prefs as any).right_dock ?? ["ambient", "feedback"];
   return <>{dock.includes("feedback") && <FeedbackWidget />}</>;
 }

@@ -61,12 +61,12 @@ export function FeedbackWidget() {
       <DialogTrigger asChild>
         <button
           aria-label="フィードバック / サポート"
-          className="fixed top-3 right-3 md:top-4 md:right-4 z-50 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-br from-primary via-primary to-primary/70 text-primary-foreground shadow-[0_8px_30px_-8px_hsl(var(--primary)/0.6)] backdrop-blur-xl px-3.5 py-2 text-sm hover:scale-105 hover:shadow-[0_12px_40px_-8px_hsl(var(--primary)/0.7)] transition-all duration-300 border border-white/30 ring-1 ring-white/10"
+          className="fixed top-1.5 right-2 z-50 inline-flex items-center gap-1 rounded-full bg-primary/90 text-primary-foreground backdrop-blur px-2.5 py-1 text-xs leading-none shadow-sm border border-white/20 hover:bg-primary transition-colors"
         >
-          <MessageCircleQuestion className="h-4 w-4 drop-shadow" />
+          <MessageCircleQuestion className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">サポート</span>
           {count > 0 && (
-            <span className="ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
+            <span className="ml-0.5 inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
               {count > 99 ? "99+" : count}
             </span>
           )}
