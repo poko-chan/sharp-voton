@@ -25,7 +25,7 @@ import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { AmbientSound } from "@/components/AmbientSound";
 import { loadAndApplyUserTheme } from "@/lib/theme";
-import { useRouterState as useRS } from "@tanstack/react-router";
+
 import { useUserPrefs } from "@/lib/user-prefs";
 import { I18nProvider } from "@/lib/i18n";
 
