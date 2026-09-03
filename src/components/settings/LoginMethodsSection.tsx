@@ -44,7 +44,20 @@ export function LoginMethodsSection() {
       provider,
       options: { redirectTo: `${window.location.origin}/settings` },
     });
-    if (error) toast.error(error.message ?? "連携に失敗しました");
+    if (error) {
+      // 手動リンクが無効な環境では、同じメールアドレスでのサインインによる
+      // 自動リンクにフォールバックする。
+      const msg = String(error.message ?? "");
+      if (/manual linking/i.test(msg)) {
+        const r = await lovable.auth.signInWithOAuth(provider, {
+          redirect_uri: `${window.location.origin}/settings`,
+        });
+        if ((r as any)?.error) toast.error((r as any).error.message ?? "連携に失敗しました");
+        else await load();
+      } else {
+        toast.error(msg || "連携に失敗しました");
+      }
+    }
     setBusy(null);
   };
 
