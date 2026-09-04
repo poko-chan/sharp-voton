@@ -10,6 +10,7 @@ import { jstDateStr, jstDayLabel } from "@/lib/date";
 import { sendDm, setReplyTo, fetchReactions, toggleReaction, type DmMessage } from "@/lib/chat.functions";
 import { ReactionBar, ReactionPicker } from "./MessageReactions";
 import { ChatComposer, ChatSearchBar } from "./ChatComposer";
+import { playSendSound } from "@/lib/chat-sound";
 import { useLocalPrefs } from "@/lib/user-prefs";
 
 export function DmChatPanel({
@@ -117,6 +118,7 @@ export function DmChatPanel({
     setText(""); setReplyToMsg(null);
     try {
       const id = await sendDm(partnerId, t);
+      if (prefs.chat_send_sound) playSendSound();
       if (replyId && id) await setReplyTo("dm", id, replyId).catch(() => {});
       qc.invalidateQueries({ queryKey: ["chat-dm", partnerId] });
       qc.invalidateQueries({ queryKey: ["chat-conversations"] });

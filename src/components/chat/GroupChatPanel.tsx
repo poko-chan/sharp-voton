@@ -21,6 +21,7 @@ import {
 } from "@/lib/chat.functions";
 import { ReactionBar, ReactionPicker } from "./MessageReactions";
 import { ChatComposer, ChatSearchBar } from "./ChatComposer";
+import { playSendSound } from "@/lib/chat-sound";
 import { useLocalPrefs } from "@/lib/user-prefs";
 
 
@@ -142,6 +143,7 @@ export function GroupChatPanel({
     setText(""); setReplyToMsg(null);
     try {
       const newId = await sendGroupMessage(groupId, t);
+      if (prefs.chat_send_sound) playSendSound();
       if (replyId && newId) await setReplyTo("group", newId, replyId).catch(() => {});
       qc.invalidateQueries({ queryKey: ["chat-group-msgs", groupId] });
       qc.invalidateQueries({ queryKey: ["chat-conversations"] });
