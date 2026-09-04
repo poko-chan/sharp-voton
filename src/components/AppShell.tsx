@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Timer, CalendarDays, BookOpen, Brain, MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy, Megaphone, GraduationCap, Menu, X, MoreHorizontal, StickyNote, Users, Ban, HelpCircle, ClipboardList, PanelLeft, PanelLeftClose } from "lucide-react";
+import { LayoutDashboard, Timer, CalendarDays, BookOpen, Brain, MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy, Megaphone, GraduationCap, Menu, X, MoreHorizontal, StickyNote, Users, Ban, HelpCircle, ClipboardList, PanelLeft, PanelLeftClose, NotebookPen } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
