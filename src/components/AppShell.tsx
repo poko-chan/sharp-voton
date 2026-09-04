@@ -35,6 +35,7 @@ export const NAV = [
   { to: "/tutor", labelKey: "nav.tutor" as const, icon: Sparkles },
   { to: "/classroom", labelKey: "nav.classroom" as const, icon: GraduationCap },
   { to: "/chat", labelKey: "nav.chat" as const, icon: MessagesSquare },
+  { to: "/notebooks", labelKey: "nav.dashboard" as const, icon: NotebookPen, override: "ノート" },
   { to: "/notes", labelKey: "nav.notes" as const, icon: StickyNote },
   { to: "/announcements", labelKey: "nav.announcements" as const, icon: Megaphone },
   { to: "/missions", labelKey: "nav.dashboard" as const, icon: Target, override: "ミッション" },
@@ -48,7 +49,7 @@ export const NAV = [
 // Map prefix -> service key (for filtering hidden services)
 const ROUTE_SERVICE: Record<string, string> = {
   "/timer": "timer", "/tutor": "tutor", "/classroom": "classroom",
-  "/classchat": "classchat", "/chat": "chat", "/notes": "notes",
+  "/classchat": "classchat", "/chat": "chat", "/notes": "notes", "/notebooks": "notes",
   "/practice": "practice", "/questions": "questions",
 };
 
