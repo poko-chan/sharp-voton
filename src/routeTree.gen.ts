@@ -23,6 +23,7 @@ import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FeaturesIndexRouteImport } from './routes/features.index'
+import { Route as CatalogIndexRouteImport } from './routes/catalog.index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as FeaturesSlugRouteImport } from './routes/features.$slug'
@@ -154,6 +155,11 @@ const IndexRoute = IndexRouteImport.update({
 const FeaturesIndexRoute = FeaturesIndexRouteImport.update({
   id: '/features/',
   path: '/features/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CatalogIndexRoute = CatalogIndexRouteImport.update({
+  id: '/catalog/',
+  path: '/catalog/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShareTokenRoute = ShareTokenRouteImport.update({
@@ -551,6 +557,7 @@ export interface FileRoutesByFullPath {
   '/features/$slug': typeof FeaturesSlugRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
+  '/catalog/': typeof CatalogIndexRoute
   '/features/': typeof FeaturesIndexRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/exams/$examId': typeof AuthenticatedExamsExamIdRoute
@@ -625,6 +632,7 @@ export interface FileRoutesByTo {
   '/features/$slug': typeof FeaturesSlugRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
+  '/catalog': typeof CatalogIndexRoute
   '/features': typeof FeaturesIndexRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/exams/$examId': typeof AuthenticatedExamsExamIdRoute
@@ -703,6 +711,7 @@ export interface FileRoutesById {
   '/features/$slug': typeof FeaturesSlugRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
+  '/catalog/': typeof CatalogIndexRoute
   '/features/': typeof FeaturesIndexRoute
   '/_authenticated/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/_authenticated/exams/$examId': typeof AuthenticatedExamsExamIdRoute
@@ -783,6 +792,7 @@ export interface FileRouteTypes {
     | '/features/$slug'
     | '/r/$code'
     | '/share/$token'
+    | '/catalog/'
     | '/features/'
     | '/classroom/$classId'
     | '/exams/$examId'
@@ -857,6 +867,7 @@ export interface FileRouteTypes {
     | '/features/$slug'
     | '/r/$code'
     | '/share/$token'
+    | '/catalog'
     | '/features'
     | '/classroom/$classId'
     | '/exams/$examId'
@@ -934,6 +945,7 @@ export interface FileRouteTypes {
     | '/features/$slug'
     | '/r/$code'
     | '/share/$token'
+    | '/catalog/'
     | '/features/'
     | '/_authenticated/classroom/$classId'
     | '/_authenticated/exams/$examId'
@@ -981,6 +993,7 @@ export interface RootRouteChildren {
   FeaturesSlugRoute: typeof FeaturesSlugRoute
   RCodeRoute: typeof RCodeRoute
   ShareTokenRoute: typeof ShareTokenRoute
+  CatalogIndexRoute: typeof CatalogIndexRoute
   FeaturesIndexRoute: typeof FeaturesIndexRoute
 }
 
@@ -1082,6 +1095,13 @@ declare module '@tanstack/react-router' {
       path: '/features'
       fullPath: '/features/'
       preLoaderRoute: typeof FeaturesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/catalog/': {
+      id: '/catalog/'
+      path: '/catalog'
+      fullPath: '/catalog/'
+      preLoaderRoute: typeof CatalogIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/share/$token': {
@@ -1750,6 +1770,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesSlugRoute: FeaturesSlugRoute,
   RCodeRoute: RCodeRoute,
   ShareTokenRoute: ShareTokenRoute,
+  CatalogIndexRoute: CatalogIndexRoute,
   FeaturesIndexRoute: FeaturesIndexRoute,
 }
 export const routeTree = rootRouteImport
