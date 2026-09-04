@@ -49,8 +49,8 @@ export const Route = createFileRoute("/features/$slug")({
 function FeatureDetail() {
   const { feature } = Route.useLoaderData();
   const index = ALL.findIndex((f) => f.name === feature.name);
-  const prev = index > 0 ? CORE[index - 1] : undefined;
-  const next = index < ALL.length - 1 ? CORE[index + 1] : undefined;
+  const prev = index > 0 ? ALL[index - 1] : undefined;
+  const next = index < ALL.length - 1 ? ALL[index + 1] : undefined;
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
