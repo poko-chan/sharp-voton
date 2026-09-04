@@ -29,7 +29,7 @@ function SeriesPage() {
         const { data: ss } = await (supabase as any).from("exam_subjects").select("*").in("exam_id", examIds);
         setSubjects(ss ?? []);
       }
-      const { data: ll } = await supabase.from("study_logs").select("date,subject_id,minutes").eq("user_id", user.id);
+      const { data: ll } = await supabase.from("study_logs").select("date,subject_id,duration_minutes").eq("user_id", user.id);
       setLogs(ll ?? []);
     })();
   }, [seriesId, user?.id]);
@@ -49,7 +49,7 @@ function SeriesPage() {
           const cutoff = ex.start_date;
           const totalMin = logs
             .filter((l) => ids.includes(l.subject_id) && l.date <= cutoff)
-            .reduce((a, b) => a + (b.minutes ?? 0), 0);
+            .reduce((a, b) => a + (b.duration_minutes ?? 0), 0);
           row[`${sub.name}_時間h`] = Math.round((totalMin / 60) * 10) / 10;
         }
       });

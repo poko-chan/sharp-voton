@@ -61,7 +61,7 @@ export function FeedbackWidget() {
       <DialogTrigger asChild>
         <button
           aria-label="フィードバック / サポート"
-          className="fixed top-1.5 right-2 z-50 inline-flex items-center gap-1 rounded-full bg-primary/90 text-primary-foreground backdrop-blur px-2.5 py-1 text-xs leading-none shadow-sm border border-white/20 hover:bg-primary transition-colors"
+          className="fixed bottom-20 right-2 md:bottom-4 z-40 inline-flex items-center gap-1 rounded-full bg-primary/90 text-primary-foreground backdrop-blur px-2.5 py-1 text-xs leading-none shadow-sm border border-white/20 hover:bg-primary transition-colors"
         >
           <MessageCircleQuestion className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">サポート</span>

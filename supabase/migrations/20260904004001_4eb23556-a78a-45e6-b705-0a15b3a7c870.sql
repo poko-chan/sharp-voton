@@ -1,0 +1,1 @@
+CREATE POLICY "fl_update_follower" ON public.follows FOR UPDATE TO authenticated USING (auth.uid() = follower_id) WITH CHECK (auth.uid() = follower_id);

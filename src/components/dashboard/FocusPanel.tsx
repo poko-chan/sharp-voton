@@ -31,13 +31,13 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
         supabase.from("study_logs").select("date, duration_minutes, subject_id, start_time")
           .eq("user_id", user!.id).gte("date", since).order("date", { ascending: true }),
         supabase.from("town_buildings").select("id, kind, gx, gz, level").eq("user_id", user!.id),
-        supabase.from("town_policies").select("policy_key").eq("user_id", user!.id),
+        supabase.from("town_policies").select("key, enabled").eq("user_id", user!.id),
         supabase.from("towns").select("stage").eq("user_id", user!.id).maybeSingle(),
       ]);
       return {
         logs: logs.data ?? [],
         buildings: (builds.data ?? []) as BuildingRow[],
-        policies: (pols.data ?? []).map((p: any) => p.policy_key as string),
+        policies: (pols.data ?? []).filter((p: any) => p.enabled !== false).map((p: any) => p.key as string),
         stage: town.data?.stage ?? 1,
       };
     },
