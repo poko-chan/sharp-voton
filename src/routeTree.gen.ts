@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SecurityRouteImport } from './routes/security'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LoginRouteImport } from './routes/login'
@@ -19,11 +20,17 @@ import { Route as GuideRouteImport } from './routes/guide'
 import { Route as ForgotRouteImport } from './routes/forgot'
 import { Route as ForSchoolsRouteImport } from './routes/for-schools'
 import { Route as AllServicesRouteImport } from './routes/all-services'
+import { Route as AiRouteImport } from './routes/ai'
 import { Route as AdminLoginRouteImport } from './routes/admin-login'
+import { Route as AccessibilityRouteImport } from './routes/accessibility'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FeaturesIndexRouteImport } from './routes/features.index'
+import { Route as CatalogIndexRouteImport } from './routes/catalog.index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as RCodeRouteImport } from './routes/r.$code'
+import { Route as FeaturesSlugRouteImport } from './routes/features.$slug'
+import { Route as CatalogKeyRouteImport } from './routes/catalog.$key'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiAiStreamRouteImport } from './routes/api/ai-stream'
 import { Route as AuthenticatedUpdatesRouteImport } from './routes/_authenticated/updates'
@@ -95,6 +102,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SecurityRoute = SecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -135,9 +147,19 @@ const AllServicesRoute = AllServicesRouteImport.update({
   path: '/all-services',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AiRoute = AiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin-login',
   path: '/admin-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccessibilityRoute = AccessibilityRouteImport.update({
+  id: '/accessibility',
+  path: '/accessibility',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -149,6 +171,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeaturesIndexRoute = FeaturesIndexRouteImport.update({
+  id: '/features/',
+  path: '/features/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CatalogIndexRoute = CatalogIndexRouteImport.update({
+  id: '/catalog/',
+  path: '/catalog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShareTokenRoute = ShareTokenRouteImport.update({
   id: '/share/$token',
   path: '/share/$token',
@@ -157,6 +189,16 @@ const ShareTokenRoute = ShareTokenRouteImport.update({
 const RCodeRoute = RCodeRouteImport.update({
   id: '/r/$code',
   path: '/r/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesSlugRoute = FeaturesSlugRouteImport.update({
+  id: '/features/$slug',
+  path: '/features/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CatalogKeyRoute = CatalogKeyRouteImport.update({
+  id: '/catalog/$key',
+  path: '/catalog/$key',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -490,7 +532,9 @@ const AuthenticatedMakronPackPackIdDashboardRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/accessibility': typeof AccessibilityRoute
   '/admin-login': typeof AdminLoginRoute
+  '/ai': typeof AiRoute
   '/all-services': typeof AllServicesRoute
   '/for-schools': typeof ForSchoolsRoute
   '/forgot': typeof ForgotRoute
@@ -499,6 +543,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -536,8 +581,12 @@ export interface FileRoutesByFullPath {
   '/updates': typeof AuthenticatedUpdatesRoute
   '/api/ai-stream': typeof ApiAiStreamRoute
   '/api/chat': typeof ApiChatRoute
+  '/catalog/$key': typeof CatalogKeyRoute
+  '/features/$slug': typeof FeaturesSlugRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
+  '/catalog/': typeof CatalogIndexRoute
+  '/features/': typeof FeaturesIndexRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/exams/$examId': typeof AuthenticatedExamsExamIdRoute
   '/makron/admin': typeof AuthenticatedMakronAdminRoute
@@ -566,7 +615,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/accessibility': typeof AccessibilityRoute
   '/admin-login': typeof AdminLoginRoute
+  '/ai': typeof AiRoute
   '/all-services': typeof AllServicesRoute
   '/for-schools': typeof ForSchoolsRoute
   '/forgot': typeof ForgotRoute
@@ -575,6 +626,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -608,8 +660,12 @@ export interface FileRoutesByTo {
   '/updates': typeof AuthenticatedUpdatesRoute
   '/api/ai-stream': typeof ApiAiStreamRoute
   '/api/chat': typeof ApiChatRoute
+  '/catalog/$key': typeof CatalogKeyRoute
+  '/features/$slug': typeof FeaturesSlugRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
+  '/catalog': typeof CatalogIndexRoute
+  '/features': typeof FeaturesIndexRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/exams/$examId': typeof AuthenticatedExamsExamIdRoute
   '/makron/admin': typeof AuthenticatedMakronAdminRoute
@@ -638,7 +694,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/accessibility': typeof AccessibilityRoute
   '/admin-login': typeof AdminLoginRoute
+  '/ai': typeof AiRoute
   '/all-services': typeof AllServicesRoute
   '/for-schools': typeof ForSchoolsRoute
   '/forgot': typeof ForgotRoute
@@ -647,6 +705,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -684,8 +743,12 @@ export interface FileRoutesById {
   '/_authenticated/updates': typeof AuthenticatedUpdatesRoute
   '/api/ai-stream': typeof ApiAiStreamRoute
   '/api/chat': typeof ApiChatRoute
+  '/catalog/$key': typeof CatalogKeyRoute
+  '/features/$slug': typeof FeaturesSlugRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
+  '/catalog/': typeof CatalogIndexRoute
+  '/features/': typeof FeaturesIndexRoute
   '/_authenticated/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/_authenticated/exams/$examId': typeof AuthenticatedExamsExamIdRoute
   '/_authenticated/makron/admin': typeof AuthenticatedMakronAdminRoute
@@ -716,7 +779,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/accessibility'
     | '/admin-login'
+    | '/ai'
     | '/all-services'
     | '/for-schools'
     | '/forgot'
@@ -725,6 +790,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy'
     | '/reset-password'
+    | '/security'
     | '/sitemap.xml'
     | '/terms'
     | '/admin'
@@ -762,8 +828,12 @@ export interface FileRouteTypes {
     | '/updates'
     | '/api/ai-stream'
     | '/api/chat'
+    | '/catalog/$key'
+    | '/features/$slug'
     | '/r/$code'
     | '/share/$token'
+    | '/catalog/'
+    | '/features/'
     | '/classroom/$classId'
     | '/exams/$examId'
     | '/makron/admin'
@@ -792,7 +862,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/accessibility'
     | '/admin-login'
+    | '/ai'
     | '/all-services'
     | '/for-schools'
     | '/forgot'
@@ -801,6 +873,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy'
     | '/reset-password'
+    | '/security'
     | '/sitemap.xml'
     | '/terms'
     | '/admin'
@@ -834,8 +907,12 @@ export interface FileRouteTypes {
     | '/updates'
     | '/api/ai-stream'
     | '/api/chat'
+    | '/catalog/$key'
+    | '/features/$slug'
     | '/r/$code'
     | '/share/$token'
+    | '/catalog'
+    | '/features'
     | '/classroom/$classId'
     | '/exams/$examId'
     | '/makron/admin'
@@ -863,7 +940,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/accessibility'
     | '/admin-login'
+    | '/ai'
     | '/all-services'
     | '/for-schools'
     | '/forgot'
@@ -872,6 +951,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy'
     | '/reset-password'
+    | '/security'
     | '/sitemap.xml'
     | '/terms'
     | '/_authenticated/admin'
@@ -909,8 +989,12 @@ export interface FileRouteTypes {
     | '/_authenticated/updates'
     | '/api/ai-stream'
     | '/api/chat'
+    | '/catalog/$key'
+    | '/features/$slug'
     | '/r/$code'
     | '/share/$token'
+    | '/catalog/'
+    | '/features/'
     | '/_authenticated/classroom/$classId'
     | '/_authenticated/exams/$examId'
     | '/_authenticated/makron/admin'
@@ -941,7 +1025,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AccessibilityRoute: typeof AccessibilityRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  AiRoute: typeof AiRoute
   AllServicesRoute: typeof AllServicesRoute
   ForSchoolsRoute: typeof ForSchoolsRoute
   ForgotRoute: typeof ForgotRoute
@@ -950,12 +1036,17 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SecurityRoute: typeof SecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   ApiAiStreamRoute: typeof ApiAiStreamRoute
   ApiChatRoute: typeof ApiChatRoute
+  CatalogKeyRoute: typeof CatalogKeyRoute
+  FeaturesSlugRoute: typeof FeaturesSlugRoute
   RCodeRoute: typeof RCodeRoute
   ShareTokenRoute: typeof ShareTokenRoute
+  CatalogIndexRoute: typeof CatalogIndexRoute
+  FeaturesIndexRoute: typeof FeaturesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -972,6 +1063,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/security': {
+      id: '/security'
+      path: '/security'
+      fullPath: '/security'
+      preLoaderRoute: typeof SecurityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -1030,11 +1128,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AllServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ai': {
+      id: '/ai'
+      path: '/ai'
+      fullPath: '/ai'
+      preLoaderRoute: typeof AiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin-login': {
       id: '/admin-login'
       path: '/admin-login'
       fullPath: '/admin-login'
       preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/accessibility': {
+      id: '/accessibility'
+      path: '/accessibility'
+      fullPath: '/accessibility'
+      preLoaderRoute: typeof AccessibilityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -1051,6 +1163,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/features/': {
+      id: '/features/'
+      path: '/features'
+      fullPath: '/features/'
+      preLoaderRoute: typeof FeaturesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/catalog/': {
+      id: '/catalog/'
+      path: '/catalog'
+      fullPath: '/catalog/'
+      preLoaderRoute: typeof CatalogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/share/$token': {
       id: '/share/$token'
       path: '/share/$token'
@@ -1063,6 +1189,20 @@ declare module '@tanstack/react-router' {
       path: '/r/$code'
       fullPath: '/r/$code'
       preLoaderRoute: typeof RCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features/$slug': {
+      id: '/features/$slug'
+      path: '/features/$slug'
+      fullPath: '/features/$slug'
+      preLoaderRoute: typeof FeaturesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/catalog/$key': {
+      id: '/catalog/$key'
+      path: '/catalog/$key'
+      fullPath: '/catalog/$key'
+      preLoaderRoute: typeof CatalogKeyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -1694,7 +1834,9 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AccessibilityRoute: AccessibilityRoute,
   AdminLoginRoute: AdminLoginRoute,
+  AiRoute: AiRoute,
   AllServicesRoute: AllServicesRoute,
   ForSchoolsRoute: ForSchoolsRoute,
   ForgotRoute: ForgotRoute,
@@ -1703,12 +1845,17 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SecurityRoute: SecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   ApiAiStreamRoute: ApiAiStreamRoute,
   ApiChatRoute: ApiChatRoute,
+  CatalogKeyRoute: CatalogKeyRoute,
+  FeaturesSlugRoute: FeaturesSlugRoute,
   RCodeRoute: RCodeRoute,
   ShareTokenRoute: ShareTokenRoute,
+  CatalogIndexRoute: CatalogIndexRoute,
+  FeaturesIndexRoute: FeaturesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

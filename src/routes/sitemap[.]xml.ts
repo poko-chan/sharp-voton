@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
+import { CORE, MORE, SERVICE_CATALOG, featureSlug } from "@/content/services";
 
 const BASE_URL = "https://sharp-voton.lovable.app";
 
@@ -16,6 +17,21 @@ export const Route = createFileRoute("/sitemap.xml")({
         const entries: SitemapEntry[] = [
           { path: "/", changefreq: "weekly", priority: "1.0" },
           { path: "/all-services", changefreq: "weekly", priority: "0.9" },
+          { path: "/features", changefreq: "weekly", priority: "0.9" },
+          ...[...CORE, ...MORE].map((f) => ({
+            path: `/features/${featureSlug(f.name)}`,
+            changefreq: "monthly" as const,
+            priority: "0.7",
+          })),
+          { path: "/catalog", changefreq: "monthly", priority: "0.8" },
+          ...SERVICE_CATALOG.map((c) => ({
+            path: `/catalog/${c.key}`,
+            changefreq: "monthly" as const,
+            priority: "0.6",
+          })),
+          { path: "/ai", changefreq: "monthly", priority: "0.7" },
+          { path: "/security", changefreq: "monthly", priority: "0.7" },
+          { path: "/accessibility", changefreq: "monthly", priority: "0.6" },
           { path: "/guide", changefreq: "monthly", priority: "0.8" },
           { path: "/for-schools", changefreq: "monthly", priority: "0.8" },
           { path: "/help", changefreq: "weekly", priority: "0.7" },

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 type NavKey = "features" | "all-services" | "for-schools" | "guide" | "help";
 
 const NAV: { key: NavKey; label: string; to: string }[] = [
+  { key: "features", label: "機能", to: "/features" },
   { key: "all-services", label: "全機能", to: "/all-services" },
   { key: "guide", label: "使い方", to: "/guide" },
   { key: "for-schools", label: "学校・塾の方へ", to: "/for-schools" },
@@ -67,6 +68,8 @@ export function PublicFooter({ width = "max-w-6xl" }: { width?: string }) {
         <FooterCol
           title="サービス"
           links={[
+            ["機能一覧", "/features"],
+            ["カテゴリ別ガイド", "/catalog"],
             ["全機能一覧", "/all-services"],
             ["使い方ガイド", "/guide"],
             ["学校・塾の方へ", "/for-schools"],
@@ -76,6 +79,9 @@ export function PublicFooter({ width = "max-w-6xl" }: { width?: string }) {
           title="サポート"
           links={[
             ["ヘルプセンター", "/help"],
+            ["AIの仕組み", "/ai"],
+            ["安全性とデータ", "/security"],
+            ["アクセシビリティ", "/accessibility"],
             ["ログイン / 新規登録", "/login"],
             ["パスワードをお忘れの方", "/forgot"],
           ]}
