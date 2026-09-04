@@ -25,6 +25,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as FeaturesIndexRouteImport } from './routes/features.index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as RCodeRouteImport } from './routes/r.$code'
+import { Route as FeaturesSlugRouteImport } from './routes/features.$slug'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiAiStreamRouteImport } from './routes/api/ai-stream'
 import { Route as AuthenticatedUpdatesRouteImport } from './routes/_authenticated/updates'
@@ -163,6 +164,11 @@ const ShareTokenRoute = ShareTokenRouteImport.update({
 const RCodeRoute = RCodeRouteImport.update({
   id: '/r/$code',
   path: '/r/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesSlugRoute = FeaturesSlugRouteImport.update({
+  id: '/features/$slug',
+  path: '/features/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -542,6 +548,7 @@ export interface FileRoutesByFullPath {
   '/updates': typeof AuthenticatedUpdatesRoute
   '/api/ai-stream': typeof ApiAiStreamRoute
   '/api/chat': typeof ApiChatRoute
+  '/features/$slug': typeof FeaturesSlugRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/features/': typeof FeaturesIndexRoute
@@ -615,6 +622,7 @@ export interface FileRoutesByTo {
   '/updates': typeof AuthenticatedUpdatesRoute
   '/api/ai-stream': typeof ApiAiStreamRoute
   '/api/chat': typeof ApiChatRoute
+  '/features/$slug': typeof FeaturesSlugRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/features': typeof FeaturesIndexRoute
@@ -692,6 +700,7 @@ export interface FileRoutesById {
   '/_authenticated/updates': typeof AuthenticatedUpdatesRoute
   '/api/ai-stream': typeof ApiAiStreamRoute
   '/api/chat': typeof ApiChatRoute
+  '/features/$slug': typeof FeaturesSlugRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/features/': typeof FeaturesIndexRoute
@@ -771,6 +780,7 @@ export interface FileRouteTypes {
     | '/updates'
     | '/api/ai-stream'
     | '/api/chat'
+    | '/features/$slug'
     | '/r/$code'
     | '/share/$token'
     | '/features/'
@@ -844,6 +854,7 @@ export interface FileRouteTypes {
     | '/updates'
     | '/api/ai-stream'
     | '/api/chat'
+    | '/features/$slug'
     | '/r/$code'
     | '/share/$token'
     | '/features'
@@ -920,6 +931,7 @@ export interface FileRouteTypes {
     | '/_authenticated/updates'
     | '/api/ai-stream'
     | '/api/chat'
+    | '/features/$slug'
     | '/r/$code'
     | '/share/$token'
     | '/features/'
@@ -966,6 +978,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ApiAiStreamRoute: typeof ApiAiStreamRoute
   ApiChatRoute: typeof ApiChatRoute
+  FeaturesSlugRoute: typeof FeaturesSlugRoute
   RCodeRoute: typeof RCodeRoute
   ShareTokenRoute: typeof ShareTokenRoute
   FeaturesIndexRoute: typeof FeaturesIndexRoute
@@ -1083,6 +1096,13 @@ declare module '@tanstack/react-router' {
       path: '/r/$code'
       fullPath: '/r/$code'
       preLoaderRoute: typeof RCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features/$slug': {
+      id: '/features/$slug'
+      path: '/features/$slug'
+      fullPath: '/features/$slug'
+      preLoaderRoute: typeof FeaturesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -1727,6 +1747,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ApiAiStreamRoute: ApiAiStreamRoute,
   ApiChatRoute: ApiChatRoute,
+  FeaturesSlugRoute: FeaturesSlugRoute,
   RCodeRoute: RCodeRoute,
   ShareTokenRoute: ShareTokenRoute,
   FeaturesIndexRoute: FeaturesIndexRoute,
