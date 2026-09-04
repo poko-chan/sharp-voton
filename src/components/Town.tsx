@@ -267,7 +267,7 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
       <div className="w-full text-left group">
         <div className="relative">
           <Suspense fallback={<Skeleton className="h-[340px] w-full rounded-none" />}>
-            <Town3D stage={town.stage} height={340} userBuildings={buildings as any} />
+            <Town3D stage={town.stage} height={340} userBuildings={buildings as any} showLabels={localPrefs.town_show_labels} />
           </Suspense>
           <Button
             size="sm" variant="secondary"
@@ -327,6 +327,7 @@ function TownCard({ town, onUpdate }: { town: TownRow; onUpdate: () => void }) {
                 buildMode={buildMode}
                 selected={selected}
                 autoRotate={!buildMode && localPrefs.town_auto_rotate}
+                showLabels={localPrefs.town_show_labels}
                 onPick={onCell}
                 onSelectBuilding={(b) => setSelected([b.gx, b.gz])}
               />

@@ -1,6 +1,6 @@
 import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { Html, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { cellToWorld } from "@/lib/town-economy";
 
@@ -642,7 +642,13 @@ function Stars({ night }: { night: number }) {
 }
 
 // ---------- user-built structures ----------
-function UserBuilding({ b, selected, onClick }: { b: UserBuildingRow; selected: boolean; onClick: () => void }) {
+const KIND_LABEL: Record<string, string> = {
+  house: "住宅", apartment: "集合住宅", office: "オフィス", tower: "タワー",
+  shop: "商店", factory: "工場", hospital: "病院", school: "学校",
+  park: "公園", road: "道路", solar: "太陽光", wind: "風力",
+};
+
+function UserBuilding({ b, selected, showLabel, onClick }: { b: UserBuildingRow; selected: boolean; showLabel?: boolean; onClick: () => void }) {
   const [x, z] = cellToWorld(b.gx, b.gz);
   const lv = b.level ?? 1;
   const body = (() => {
@@ -735,6 +741,13 @@ function UserBuilding({ b, selected, onClick }: { b: UserBuildingRow; selected: 
       onPointerOut={() => { document.body.style.cursor = "auto"; }}
     >
       {body}
+      {showLabel && (
+        <Html position={[0, 2.6, 0]} center distanceFactor={26} zIndexRange={[10, 0]}>
+          <div className="pointer-events-none rounded bg-background/85 px-1.5 py-0.5 text-[10px] font-medium text-foreground shadow">
+            {KIND_LABEL[b.kind] ?? b.kind}{(b.level ?? 1) > 1 ? ` Lv${b.level}` : ""}
+          </div>
+        </Html>
+      )}
       {selected && (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.12, 0]}>
           <ringGeometry args={[1.5, 1.75, 32]} />
@@ -832,9 +845,10 @@ function BuildGrid({ stage, occupied, onPick, selected }: {
 export type UserBuildingRow = { id: string; kind: string; gx: number; gz: number; level: number };
 
 function SceneInner({
-  stage, sky, userBuildings, buildMode, selected, onPick, onSelectBuilding,
+  stage, sky, userBuildings, buildMode, selected, showLabels, onPick, onSelectBuilding,
 }: {
   stage: number; sky: Sky;
+  showLabels?: boolean;
   userBuildings: UserBuildingRow[];
   buildMode: boolean;
   selected: [number, number] | null;
@@ -864,6 +878,11 @@ function SceneInner({
     );
   }, [buildings, userBuildings]);
 
+  const visibleParks = useMemo(() => {
+    const pts = userBuildings.map((b) => cellToWorld(b.gx, b.gz));
+    return parks.filter((p) => !pts.some(([x, z]) => Math.abs(p.x - x) < 4.5 && Math.abs(p.z - z) < 4.5));
+  }, [parks, userBuildings]);
+
   return (
     <>
       <hemisphereLight args={[sky.top, "#4a4436", 0.45 + (1 - sky.night) * 0.3]} />
@@ -887,7 +906,7 @@ function SceneInner({
       <TrafficLights stage={stage} />
       <Traffic stage={stage} night={sky.night} />
       <RailLine stage={stage} />
-      {parks.map((p, i) => <Park key={i} x={p.x} z={p.z} stage={stage} />)}
+      {visibleParks.map((p, i) => <Park key={i} x={p.x} z={p.z} stage={stage} />)}
       <People stage={stage} />
       {visible.map((b, i) => (
         <BuildingMesh key={i} b={b} tex={texByEra[b.era] ?? null} />
@@ -897,6 +916,7 @@ function SceneInner({
           key={b.id}
           b={b}
           selected={!!selected && selected[0] === b.gx && selected[1] === b.gz}
+          showLabel={showLabels}
           onClick={() => onSelectBuilding(b)}
         />
       ))}
@@ -914,6 +934,7 @@ export default function Town3D({
   onPick,
   onSelectBuilding,
   autoRotate = true,
+  showLabels = true,
 }: {
   stage: number;
   height?: number;
@@ -923,6 +944,7 @@ export default function Town3D({
   onPick?: (gx: number, gz: number) => void;
   onSelectBuilding?: (b: UserBuildingRow) => void;
   autoRotate?: boolean;
+  showLabels?: boolean;
 }) {
   const hour = timeOfDay();
   const sky = useMemo(() => skyOf(hour), [Math.round(hour * 4)]);
@@ -948,6 +970,7 @@ export default function Town3D({
             userBuildings={userBuildings}
             buildMode={buildMode}
             selected={selected}
+            showLabels={showLabels}
             onPick={(gx, gz) => onPick?.(gx, gz)}
             onSelectBuilding={(b) => onSelectBuilding?.(b)}
           />
