@@ -452,3 +452,25 @@ export const SCHOOL_OUTCOMES = [
   { t: "宿題の質が変わる", d: "「解いて出す」から「間違いを直して出す」へ。誤答の記録が残るので、次回の指導につながります。" },
   { t: "連絡の抜け漏れが減る", d: "お知らせ・課題・行事が同じポータルに集まり、既読と提出状況が見えます。" },
 ];
+
+/** 機能詳細ページ（/features/$slug）のスラッグ。CORE の name と 1:1 で対応する。 */
+export const FEATURE_SLUGS: Record<string, string> = {
+  "ダッシュボード": "dashboard",
+  "集中タイマー": "timer",
+  "勉強記録": "study-log",
+  "Makron（問題演習）": "makron",
+  "AIチャット": "ai-chat",
+  "学習目標・試験トラッカー": "goals",
+  "組織（学校・塾・チーム）": "organizations",
+  "Makron for education": "makron-education",
+  "カレンダー": "calendar",
+  "教材データベース": "materials",
+  "ゲーミフィケーション": "gamification",
+  "ソーシャル": "social",
+  "保護者モード": "parent",
+  "安心して使うために": "safety",
+};
+
+export function featureSlug(name: string): string {
+  return FEATURE_SLUGS[name] ?? encodeURIComponent(name);
+}
