@@ -856,7 +856,12 @@ function SceneInner({
   // ユーザーが建てた区画には自動生成の建物を出さない
   const visible = useMemo(() => {
     const pts = userBuildings.map((b) => cellToWorld(b.gx, b.gz));
-    return buildings.filter((b) => !pts.some(([x, z]) => Math.hypot(b.x - x, b.z - z) < 1.7));
+    // ユーザー区画（1辺 LOT）と footprint が重なる自動生成建物は描画しない
+    const HALF = 1.5;
+    return buildings.filter(
+      (b) => !pts.some(([x, z]) =>
+        Math.abs(b.x - x) < b.w / 2 + HALF && Math.abs(b.z - z) < b.d / 2 + HALF),
+    );
   }, [buildings, userBuildings]);
 
   return (

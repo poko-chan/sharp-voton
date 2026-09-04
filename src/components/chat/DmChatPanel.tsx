@@ -133,7 +133,7 @@ export function DmChatPanel({
         <ChatSearchBar value={query} onChange={setQuery} />
         {headerExtra}
       </div>
-      <div className={`flex-1 overflow-y-auto p-4 ${prefs.chat_compact ? "space-y-0.5" : "space-y-2"}`} style={{ fontSize: `${prefs.chat_font_scale}em` }}>
+      <div className={`flex-1 overflow-y-auto p-4 ${prefs.chat_compact ? "space-y-0.5" : "space-y-2"}`} style={{ fontSize: `${Math.round(14 * prefs.chat_font_scale)}px` }}>
         {(() => {
           let lastDay = "";
           const list = (messages.data ?? []).filter((m) => !query.trim() || m.content?.toLowerCase().includes(query.trim().toLowerCase()));
@@ -176,7 +176,7 @@ export function DmChatPanel({
                       </div>
                     ) : (
                       <div className="flex items-end gap-2">
-                        <span className="text-sm whitespace-pre-wrap break-words">{m.content}</span>
+                        <span className="text-[1em] leading-relaxed whitespace-pre-wrap break-words">{m.content}</span>
                         {!isDeleted && (
                           <div className="flex gap-1.5 shrink-0 items-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                             <ReactionPicker onPick={(e) => onToggleReaction(m.id, e)} />
