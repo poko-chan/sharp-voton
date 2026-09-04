@@ -12,7 +12,7 @@ import { COVER_COLORS, PAPER_COLORS, PAPER_TYPES, type Notebook, type PaperType 
 import { fetchPublicProfiles } from "@/lib/public-profiles";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/notebooks")({
+export const Route = createFileRoute("/_authenticated/notebooks/")({
   head: () => ({
     meta: [
       { title: "ノート｜Study#" },
