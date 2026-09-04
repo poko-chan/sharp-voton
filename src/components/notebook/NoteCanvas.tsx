@@ -235,7 +235,7 @@ export function NoteCanvas({
         <div
           ref={wrapRef}
           className="relative mx-auto shadow-xl"
-          style={{ width: `${Math.round(100 * zoom)}%`, maxWidth: zoom <= 1 ? "100%" : "none", aspectRatio: `${PAGE_W} / ${PAGE_H}` }}
+          style={{ width: `${Math.round(100 * zoom)}%`, maxWidth: zoom <= 1 ? "100%" : "none", aspectRatio: `${PAGE_W} / ${PAGE_H}`, containerType: "inline-size" }}
         >
           <canvas
             ref={canvasRef}
