@@ -1,12 +1,14 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { CORE, featureSlug } from "@/content/services";
+import { CORE, MORE, featureSlug } from "@/content/services";
+
+const ALL = [...CORE, ...MORE];
 import { PublicAmbient, PublicFooter, PublicHeader } from "@/components/public/PublicShell";
 
 const BASE = "https://sharp-voton.lovable.app";
 
 export const Route = createFileRoute("/features/$slug")({
   loader: ({ params }) => {
-    const feature = CORE.find((f) => featureSlug(f.name) === params.slug);
+    const feature = ALL.find((f) => featureSlug(f.name) === params.slug);
     if (!feature) throw notFound();
     return { feature };
   },
@@ -46,9 +48,9 @@ export const Route = createFileRoute("/features/$slug")({
 
 function FeatureDetail() {
   const { feature } = Route.useLoaderData();
-  const index = CORE.findIndex((f) => f.name === feature.name);
+  const index = ALL.findIndex((f) => f.name === feature.name);
   const prev = index > 0 ? CORE[index - 1] : undefined;
-  const next = index < CORE.length - 1 ? CORE[index + 1] : undefined;
+  const next = index < ALL.length - 1 ? CORE[index + 1] : undefined;
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">

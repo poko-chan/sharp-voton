@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PublicAmbient, PublicFooter, PublicHeader } from "@/components/public/PublicShell";
-import { SAFETY } from "@/content/services";
+import { TRUST } from "@/content/services";
 
 const URL = "https://sharp-voton.lovable.app/security";
 const TITLE = "安全性とデータの扱い｜Study#";
@@ -71,11 +71,11 @@ function SecurityPage() {
           ))}
         </div>
 
-        {SAFETY.length > 0 && (
+        {TRUST.length > 0 && (
           <section className="mt-10">
             <h2 className="font-display text-2xl font-black tracking-tight">安心して使うための仕組み</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {SAFETY.map((s) => (
+              {TRUST.map((s) => (
                 <div key={s.t} className="surface p-5">
                   <h3 className="font-semibold">{s.t}</h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{s.d}</p>

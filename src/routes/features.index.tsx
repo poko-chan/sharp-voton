@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CORE, featureSlug } from "@/content/services";
+import { CORE, MORE, featureSlug } from "@/content/services";
+
+const ALL = [...CORE, ...MORE];
 import { PublicAmbient, PublicFooter, PublicHeader } from "@/components/public/PublicShell";
 
 const URL = "https://sharp-voton.lovable.app/features";
@@ -44,7 +46,7 @@ function FeaturesIndex() {
         </p>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {CORE.map((f) => (
+          {ALL.map((f) => (
             <Link
               key={f.name}
               to="/features/$slug"
