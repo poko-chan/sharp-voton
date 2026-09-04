@@ -3196,6 +3196,44 @@ export type Database = {
         }
         Relationships: []
       }
+      notebook_pages: {
+        Row: {
+          id: string
+          notebook_id: string
+          page_index: number
+          strokes: Json
+          texts: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          notebook_id: string
+          page_index?: number
+          strokes?: Json
+          texts?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          notebook_id?: string
+          page_index?: number
+          strokes?: Json
+          texts?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notebook_pages_notebook_id_fkey"
+            columns: ["notebook_id"]
+            isOneToOne: false
+            referencedRelation: "notebooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notebook_photos: {
         Row: {
           created_at: string
@@ -3225,6 +3263,115 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      notebook_shares: {
+        Row: {
+          can_edit: boolean
+          created_at: string
+          id: string
+          notebook_id: string
+          owner_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          can_edit?: boolean
+          created_at?: string
+          id?: string
+          notebook_id: string
+          owner_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          can_edit?: boolean
+          created_at?: string
+          id?: string
+          notebook_id?: string
+          owner_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notebook_shares_notebook_id_fkey"
+            columns: ["notebook_id"]
+            isOneToOne: false
+            referencedRelation: "notebooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notebook_subjects: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notebooks: {
+        Row: {
+          archived: boolean
+          cover_color: string
+          created_at: string
+          id: string
+          owner_id: string
+          paper_color: string
+          paper_type: string
+          subject_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          archived?: boolean
+          cover_color?: string
+          created_at?: string
+          id?: string
+          owner_id: string
+          paper_color?: string
+          paper_type?: string
+          subject_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          archived?: boolean
+          cover_color?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          paper_color?: string
+          paper_type?: string
+          subject_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notebooks_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "notebook_subjects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notification_categories: {
         Row: {
@@ -7183,6 +7330,8 @@ export type Database = {
       }
       my_org_ids: { Args: never; Returns: string[] }
       my_profile_private: { Args: never; Returns: Json }
+      notebook_can_edit: { Args: { _nb: string }; Returns: boolean }
+      notebook_can_view: { Args: { _nb: string }; Returns: boolean }
       org_application_submit: { Args: { _payload: Json }; Returns: string }
       org_assignment_progress: {
         Args: { _assignment: string }
