@@ -22,6 +22,7 @@ import { Route as AllServicesRouteImport } from './routes/all-services'
 import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FeaturesIndexRouteImport } from './routes/features.index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -147,6 +148,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesIndexRoute = FeaturesIndexRouteImport.update({
+  id: '/features/',
+  path: '/features/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShareTokenRoute = ShareTokenRouteImport.update({
@@ -538,6 +544,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
+  '/features/': typeof FeaturesIndexRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/exams/$examId': typeof AuthenticatedExamsExamIdRoute
   '/makron/admin': typeof AuthenticatedMakronAdminRoute
@@ -610,6 +617,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
+  '/features': typeof FeaturesIndexRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/exams/$examId': typeof AuthenticatedExamsExamIdRoute
   '/makron/admin': typeof AuthenticatedMakronAdminRoute
@@ -686,6 +694,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
+  '/features/': typeof FeaturesIndexRoute
   '/_authenticated/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/_authenticated/exams/$examId': typeof AuthenticatedExamsExamIdRoute
   '/_authenticated/makron/admin': typeof AuthenticatedMakronAdminRoute
@@ -764,6 +773,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/r/$code'
     | '/share/$token'
+    | '/features/'
     | '/classroom/$classId'
     | '/exams/$examId'
     | '/makron/admin'
@@ -836,6 +846,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/r/$code'
     | '/share/$token'
+    | '/features'
     | '/classroom/$classId'
     | '/exams/$examId'
     | '/makron/admin'
@@ -911,6 +922,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/r/$code'
     | '/share/$token'
+    | '/features/'
     | '/_authenticated/classroom/$classId'
     | '/_authenticated/exams/$examId'
     | '/_authenticated/makron/admin'
@@ -956,6 +968,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   RCodeRoute: typeof RCodeRoute
   ShareTokenRoute: typeof ShareTokenRoute
+  FeaturesIndexRoute: typeof FeaturesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1049,6 +1062,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features/': {
+      id: '/features/'
+      path: '/features'
+      fullPath: '/features/'
+      preLoaderRoute: typeof FeaturesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/share/$token': {
@@ -1709,6 +1729,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   RCodeRoute: RCodeRoute,
   ShareTokenRoute: ShareTokenRoute,
+  FeaturesIndexRoute: FeaturesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
