@@ -21,6 +21,7 @@ import { Route as ForSchoolsRouteImport } from './routes/for-schools'
 import { Route as AllServicesRouteImport } from './routes/all-services'
 import { Route as AiRouteImport } from './routes/ai'
 import { Route as AdminLoginRouteImport } from './routes/admin-login'
+import { Route as AccessibilityRouteImport } from './routes/accessibility'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FeaturesIndexRouteImport } from './routes/features.index'
@@ -148,6 +149,11 @@ const AiRoute = AiRouteImport.update({
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin-login',
   path: '/admin-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccessibilityRoute = AccessibilityRouteImport.update({
+  id: '/accessibility',
+  path: '/accessibility',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -520,6 +526,7 @@ const AuthenticatedMakronPackPackIdDashboardRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/accessibility': typeof AccessibilityRoute
   '/admin-login': typeof AdminLoginRoute
   '/ai': typeof AiRoute
   '/all-services': typeof AllServicesRoute
@@ -601,6 +608,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/accessibility': typeof AccessibilityRoute
   '/admin-login': typeof AdminLoginRoute
   '/ai': typeof AiRoute
   '/all-services': typeof AllServicesRoute
@@ -678,6 +686,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/accessibility': typeof AccessibilityRoute
   '/admin-login': typeof AdminLoginRoute
   '/ai': typeof AiRoute
   '/all-services': typeof AllServicesRoute
@@ -761,6 +770,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/accessibility'
     | '/admin-login'
     | '/ai'
     | '/all-services'
@@ -842,6 +852,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/accessibility'
     | '/admin-login'
     | '/ai'
     | '/all-services'
@@ -918,6 +929,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/accessibility'
     | '/admin-login'
     | '/ai'
     | '/all-services'
@@ -1001,6 +1013,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AccessibilityRoute: typeof AccessibilityRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AiRoute: typeof AiRoute
   AllServicesRoute: typeof AllServicesRoute
@@ -1107,6 +1120,13 @@ declare module '@tanstack/react-router' {
       path: '/admin-login'
       fullPath: '/admin-login'
       preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/accessibility': {
+      id: '/accessibility'
+      path: '/accessibility'
+      fullPath: '/accessibility'
+      preLoaderRoute: typeof AccessibilityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -1794,6 +1814,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AccessibilityRoute: AccessibilityRoute,
   AdminLoginRoute: AdminLoginRoute,
   AiRoute: AiRoute,
   AllServicesRoute: AllServicesRoute,
