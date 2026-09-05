@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Shield, Eye, EyeOff } from "lucide-react";
+import { Shield, Eye, EyeOff, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import { signInWithUsername, checkUsernameAvailable } from "@/lib/username.functions";
 import { EmailVerifyNotice } from "@/components/auth/EmailVerifyNotice";
@@ -176,6 +176,11 @@ function LoginPage() {
             </div>
           </Card>
         )}
+        {announcements.length === 0 && (
+          <div className="px-1 text-center text-xs text-muted-foreground" aria-live="polite">
+            現在、お知らせはありません
+          </div>
+        )}
         {pendingEmail ? (
           <EmailVerifyNotice
             email={pendingEmail}
@@ -185,7 +190,8 @@ function LoginPage() {
             }}
           />
         ) : (
-          <Card className="w-full p-8 space-y-6">
+          <Card className={`login-card w-full p-8 space-y-6 ${busy ? "login-card--busy" : ""}`}>
+            {busy && <div className="login-card__progress" aria-hidden="true" />}
             <div className="text-center space-y-2">
               <img
                 src={logoUrl}
@@ -194,7 +200,7 @@ function LoginPage() {
                 height={64}
                 decoding="async"
                 fetchPriority="high"
-                className="mx-auto h-16 w-16 rounded-2xl shadow-md"
+                className={`login-card__logo mx-auto h-16 w-16 rounded-2xl shadow-md ${busy ? "login-card__logo--busy" : ""}`}
               />
               <h1 className="text-3xl font-bold">Study# — 学習記録と演習をまとめる学習プラットフォーム</h1>
               <p className="text-sm text-muted-foreground">
@@ -339,7 +345,8 @@ function LoginPage() {
                 </label>
               )}
               <Button type="submit" className="w-full" disabled={busy || (mode === "signup" && !agreed)}>
-                {mode === "signin" ? "ログイン" : "登録する"}
+                {busy && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
+                {busy ? "認証中…" : mode === "signin" ? "ログイン" : "登録する"}
               </Button>
             </form>
 

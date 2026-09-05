@@ -152,6 +152,38 @@
 }
 
 @layer utilities {
+  .login-card {
+    position: relative;
+    overflow: hidden;
+  }
+  .login-card__progress {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    overflow: hidden;
+    background: color-mix(in oklab, var(--signal) 16%, transparent);
+  }
+  .login-card__progress::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 -35%;
+    width: 35%;
+    background: linear-gradient(90deg, transparent, #10c8f2, #a8ff32, transparent);
+    box-shadow: 0 0 12px #10c8f2;
+    animation: login-progress-sweep 900ms ease-in-out infinite;
+  }
+  .login-card__logo--busy {
+    animation: login-logo-pulse 900ms ease-in-out infinite;
+  }
+  @keyframes login-progress-sweep {
+    from { transform: translateX(0); }
+    to { transform: translateX(385%); }
+  }
+  @keyframes login-logo-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 12px -4px color-mix(in oklab, var(--signal) 35%, transparent); }
+    50% { transform: scale(1.06) rotate(2deg); box-shadow: 0 8px 22px -5px color-mix(in oklab, var(--signal) 65%, transparent); }
+  }
+
   /* ===== Voton mark loader ===== */
   .voton-loading__logo {
     position: relative;
