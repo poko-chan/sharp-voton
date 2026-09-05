@@ -28,7 +28,7 @@ export const PAGE_H = 1754;
 export type Point = { x: number; y: number; p?: number };
 export type Stroke = {
   id: string;
-  tool: "pen" | "marker" | "highlighter";
+  tool: "pen" | "pencil" | "marker" | "highlighter";
   color: string;
   width: number;
   points: Point[];
@@ -154,8 +154,11 @@ export function drawStroke(ctx: CanvasRenderingContext2D, s: Stroke) {
   for (let i = 1; i < s.points.length; i++) {
     const a = s.points[i - 1];
     const b = s.points[i];
-    const pressure = s.tool === "pen" ? (b.p ?? 0.5) : 0.5;
-    ctx.lineWidth = s.tool === "pen" ? s.width * (0.55 + pressure) : s.width;
+    const pressure = s.tool === "pen" || s.tool === "pencil" ? (b.p ?? 0.5) : 0.5;
+    ctx.lineWidth = s.tool === "pen" ? s.width * (0.55 + pressure)
+      : s.tool === "pencil" ? s.width * (0.5 + pressure * 0.8)
+      : s.width;
+    if (s.tool === "pencil") ctx.globalAlpha = 0.55 + ((i * 37) % 20) / 100;
     ctx.beginPath();
     ctx.moveTo(a.x, a.y);
     ctx.lineTo(b.x, b.y);
@@ -204,4 +207,29 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxW: number) {
 /** 2点間の距離（消しゴム判定用） */
 export function distToStroke(s: Stroke, x: number, y: number, r: number) {
   return s.points.some((p) => Math.hypot(p.x - x, p.y - y) <= r);
+}
+
+/**
+ * 本物の消しゴムのように、触れた部分だけを削る。
+ * 線を丸ごと消さず、消した箇所で線を分割して残りを保持する。
+ */
+export function eraseAt(strokes: Stroke[], x: number, y: number, radius: number): Stroke[] {
+  let changed = false;
+  const out: Stroke[] = [];
+  for (const s of strokes) {
+    const r = radius + s.width / 2;
+    if (!s.points.some((p) => Math.hypot(p.x - x, p.y - y) <= r)) { out.push(s); continue; }
+    changed = true;
+    let run: Point[] = [];
+    const flush = () => {
+      if (run.length >= 2) out.push({ ...s, id: crypto.randomUUID(), points: run });
+      run = [];
+    };
+    for (const p of s.points) {
+      if (Math.hypot(p.x - x, p.y - y) <= r) flush();
+      else run.push(p);
+    }
+    flush();
+  }
+  return changed ? out : strokes;
 }

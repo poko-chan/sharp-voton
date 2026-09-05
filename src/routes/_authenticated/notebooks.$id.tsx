@@ -11,6 +11,7 @@ import {
   ArrowLeft, ChevronLeft, ChevronRight, Plus, Share2, Save, Trash2, Archive, Settings2,
 } from "lucide-react";
 import { NoteCanvas } from "@/components/notebook/NoteCanvas";
+import { NoteShell } from "@/components/notebook/NoteShell";
 import {
   PAPER_COLORS, PAPER_TYPES, type Notebook, type NotePage, type PaperType,
   type Stroke, type TextBox,
@@ -21,7 +22,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/notebooks/$id")({
   head: () => ({
     meta: [
-      { title: "ノートを書く｜Study#" },
+      { title: "ノートを書く｜Voton Cnote" },
       { name: "description", content: "手書きとテキストで書けるノートエディタ。" },
       { name: "robots", content: "noindex,nofollow" },
     ],
@@ -148,34 +149,39 @@ function NotebookEditor() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-4 p-3 md:p-6">
-      <div className="flex flex-wrap items-center gap-2">
-        <Link to="/notebooks"><Button variant="ghost" size="icon"><ArrowLeft className="h-4 w-4" /></Button></Link>
-        <span className="h-6 w-2 rounded" style={{ background: nb.cover_color }} />
-        <Input
-          value={nb.title}
-          readOnly={readOnly}
-          onChange={(e) => setNb({ ...nb, title: e.target.value })}
-          onBlur={() => patchNotebook({ title: nb.title })}
-          className="h-9 max-w-xs font-semibold"
-        />
-        <Badge variant="secondary">{PAPER_TYPES.find((p) => p.key === nb.paper_type)?.label}</Badge>
-        {readOnly && <Badge>閲覧のみ</Badge>}
-        <span className="ml-auto text-xs text-muted-foreground">
-          {saving === "saving" ? "保存中..." : saving === "saved" ? "保存済み" : saving === "dirty" ? "未保存の変更" : ""}
+    <NoteShell
+      back="/notebooks"
+      title={
+        <span className="flex items-center gap-2">
+          <span className="h-4 w-1.5 rounded" style={{ background: nb.cover_color }} />
+          <Input
+            value={nb.title}
+            readOnly={readOnly}
+            onChange={(e) => setNb({ ...nb, title: e.target.value })}
+            onBlur={() => patchNotebook({ title: nb.title })}
+            className="h-8 max-w-[220px] border-transparent bg-transparent px-1 font-semibold focus-visible:border-input"
+          />
+          <Badge variant="secondary" className="hidden sm:inline-flex">{PAPER_TYPES.find((p) => p.key === nb.paper_type)?.label}</Badge>
+          {readOnly && <Badge>閲覧のみ</Badge>}
         </span>
-        {!readOnly && page && (
-          <Button size="sm" variant="outline" onClick={() => savePage(page)}><Save className="mr-1 h-4 w-4" />保存</Button>
-        )}
-        {isOwner && (
-          <Button size="sm" variant="outline" onClick={() => setShowSettings((v) => !v)}>
-            <Settings2 className="mr-1 h-4 w-4" />設定
-          </Button>
-        )}
-      </div>
-
+      }
+      subtitle={saving === "saving" ? "保存中..." : saving === "saved" ? "保存済み" : saving === "dirty" ? "未保存の変更" : `${idx + 1} / ${pages.length} ページ`}
+      right={
+        <div className="flex items-center gap-1">
+          {!readOnly && page && (
+            <Button size="sm" variant="outline" onClick={() => savePage(page)}><Save className="mr-1 h-4 w-4" />保存</Button>
+          )}
+          {isOwner && (
+            <Button size="sm" variant="outline" onClick={() => setShowSettings((v) => !v)}>
+              <Settings2 className="mr-1 h-4 w-4" />設定
+            </Button>
+          )}
+        </div>
+      }
+    >
+      <div className="relative flex h-full min-h-0 flex-col">
       {showSettings && isOwner && (
-        <Card className="space-y-4 p-4">
+        <Card className="absolute right-2 top-2 z-20 max-h-[80%] w-[min(420px,92vw)] space-y-4 overflow-y-auto p-4 shadow-2xl">
           <div>
             <p className="mb-1 text-xs text-muted-foreground">紙の形式</p>
             <div className="flex flex-wrap gap-2">
@@ -226,20 +232,22 @@ function NotebookEditor() {
         </Card>
       )}
 
-      {page && (
-        <NoteCanvas
+      <div className="min-h-0 flex-1">
+        {page && (
+          <NoteCanvas
           key={page.id}
           strokes={page.strokes}
           texts={page.texts}
           paper={nb.paper_type}
           paperColor={nb.paper_color}
           readOnly={readOnly}
-          onChange={onChange}
-          title={nb.title}
-        />
-      )}
+            onChange={onChange}
+            title={nb.title}
+          />
+        )}
+      </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 border-t bg-card/70 px-3 py-2">
         <Button variant="outline" size="sm" onClick={() => setIdx((i) => Math.max(0, i - 1))} disabled={idx === 0}>
           <ChevronLeft className="h-4 w-4" />前
         </Button>
@@ -257,6 +265,7 @@ function NotebookEditor() {
         {!readOnly && <Button size="sm" onClick={addPage}><Plus className="mr-1 h-4 w-4" />ページ追加</Button>}
         {!readOnly && <Button size="sm" variant="ghost" className="text-destructive" onClick={deletePage}><Trash2 className="mr-1 h-4 w-4" />ページ削除</Button>}
       </div>
-    </div>
+      </div>
+    </NoteShell>
   );
 }

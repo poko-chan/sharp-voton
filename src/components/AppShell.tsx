@@ -35,7 +35,7 @@ export const NAV = [
   { to: "/tutor", labelKey: "nav.tutor" as const, icon: Sparkles },
   { to: "/classroom", labelKey: "nav.classroom" as const, icon: GraduationCap },
   { to: "/chat", labelKey: "nav.chat" as const, icon: MessagesSquare },
-  { to: "/notebooks", labelKey: "nav.dashboard" as const, icon: NotebookPen, override: "ノート" },
+  { to: "/notebooks", labelKey: "nav.dashboard" as const, icon: NotebookPen, override: "Voton Cnote" },
   { to: "/notes", labelKey: "nav.notes" as const, icon: StickyNote },
   { to: "/announcements", labelKey: "nav.announcements" as const, icon: Megaphone },
   { to: "/missions", labelKey: "nav.dashboard" as const, icon: Target, override: "ミッション" },
