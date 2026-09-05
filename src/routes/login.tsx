@@ -31,11 +31,15 @@ export const Route = createFileRoute("/login")({
         { property: "og:url", content: url },
       ],
       links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          src: "https://static.mywot.com/website_owners_badges/websiteOwnersBadge.js",
+          async: true,
+        },
+      ],
     };
   },
-  component: () => (
-      <LoginPage />
-  ),
+  component: () => <LoginPage />,
 });
 
 function LoginPage() {
@@ -302,7 +306,6 @@ function LoginPage() {
                     type="button"
                     aria-label={showPassword ? "パスワードを隠す" : "パスワードを表示"}
                     onClick={() => setShowPassword((v) => !v)}
-
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     tabIndex={-1}
                   >
@@ -357,6 +360,30 @@ function LoginPage() {
               </div>
             )}
 
+            {/* ログインフォームカード内の安全バッジ（フォームの直後で安心感を与える位置） */}
+            <div className="flex justify-center pt-2">
+              <a
+                id="wot-badge2"
+                className="wot-badge"
+                href="https://www.mywot.com/scorecard/sharp-voton.lovable.app?wot_badge=2_white"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <div className="wot-secured-container">
+                  <div className="wot-shield-background"></div>
+                  <div className="wot-text-container">
+                    <p className="wot-secured-bold">Verified Site</p>
+                    <div className="wot-trusted-container">
+                      <div className="wot-trusted">Trusted by</div>
+                      <div className="wot-logo"></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="wot-vertical"></div>
+                <p className="wot-report">See Report</p>
+              </a>
+            </div>
+
             <div className="text-center text-[11px] text-muted-foreground space-x-3">
               <Link to="/privacy" className="hover:underline">
                 プライバシー
@@ -372,6 +399,7 @@ function LoginPage() {
       <div className="absolute top-4 right-4">
         <GoogleTranslateWidget />
       </div>
+
       <Link
         to="/admin-login"
         className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-md border bg-background/80 backdrop-blur px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition"
