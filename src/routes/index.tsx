@@ -44,6 +44,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:title", content: TITLE },
       { name: "twitter:description", content: DESC },
       { name: "gridinsoft-key", content: "w2xxfuv75eiz41ywqjw6ciuxwbdwj754d9rh7qtw5q2z3ptjcywc5i6338v74g86" },
+      { name: "wot-verification", content: "b90b06f9dc6ed5f77aed" },
     ],
     links: [{ rel: "canonical", href: "https://sharp-voton.lovable.app/" }],
     // 3. head 内に構造化データの <script> を挿入する
