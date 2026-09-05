@@ -41,16 +41,26 @@ export function RouteLoading() {
       </div>
       {/* 全画面: タップ封じ + うっすらブラー */}
       <div
-        className="fixed inset-0 z-[99] bg-background/40 backdrop-blur-[2px] flex items-center justify-center animate-in fade-in"
+        className="voton-loading fixed inset-0 z-[99] flex items-center justify-center bg-background/55 backdrop-blur-[3px] animate-in fade-in"
         aria-busy="true"
         aria-live="polite"
       >
-        <div className="flex flex-col items-center gap-3">
-          <div className="relative h-12 w-12">
-            <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
-            <div className="absolute inset-0 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+        <div className="voton-loading__content flex flex-col items-center gap-5">
+          <div className="voton-loading__logo" aria-hidden="true">
+            <div className="voton-loading__orbit" />
+            <div className="voton-loading__mark">
+              <span className="voton-loading__stroke voton-loading__stroke--horizontal voton-loading__stroke--top" />
+              <span className="voton-loading__stroke voton-loading__stroke--horizontal voton-loading__stroke--bottom" />
+              <span className="voton-loading__stroke voton-loading__stroke--vertical voton-loading__stroke--left" />
+              <span className="voton-loading__stroke voton-loading__stroke--vertical voton-loading__stroke--right" />
+            </div>
+            <span className="voton-loading__spark voton-loading__spark--one" />
+            <span className="voton-loading__spark voton-loading__spark--two" />
           </div>
-          <p className="text-xs text-muted-foreground">読み込み中…</p>
+          <div className="flex flex-col items-center gap-1">
+            <p className="text-sm font-bold tracking-[0.18em] text-foreground">読み込み中</p>
+            <p className="text-[10px] tracking-[0.28em] text-muted-foreground uppercase">Voton</p>
+          </div>
         </div>
       </div>
     </>
