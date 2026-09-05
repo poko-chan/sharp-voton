@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/notebooks/")({
   head: () => ({
     meta: [
-      { title: "ノート｜Study#" },
+      { title: "Voton Cnote｜Study#" },
       { name: "description", content: "教科ごとに手書きノートを作成・共有できるノート機能。" },
       { name: "robots", content: "noindex,nofollow" },
     ],
@@ -132,7 +132,7 @@ function NotebooksPage() {
     <div className="mx-auto max-w-6xl space-y-6 p-4 md:p-8">
       <div className="flex items-center gap-3">
         <NotebookPen className="h-7 w-7 text-primary" />
-        <h1 className="text-2xl font-bold">ノート</h1>
+        <h1 className="text-2xl font-bold"><span className="text-primary">Voton</span> Cnote</h1>
       </div>
 
       {invites.length > 0 && (
