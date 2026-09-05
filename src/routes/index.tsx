@@ -108,7 +108,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
               Study<span className="text-gradient">#</span>
             </span>
           </div>
-          <nav className="flex items-center gap-1 text-sm">
+          <nav className="flex items-center gap-1.5 text-sm">
             <a
               href="#features"
               className="hidden rounded-full px-3.5 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:inline-block"
@@ -149,6 +149,30 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
               </Link>
             )}
             <GoogleTranslateWidget />
+
+            {/* 配置案1: ヘッダー右端（スクロール時も目に入る位置） */}
+            <div className="hidden lg:flex items-center ml-1 shrink-0 scale-90">
+              <a
+                id="wot-badge2"
+                className="wot-badge"
+                href="https://www.mywot.com/scorecard/sharp-voton.lovable.app?wot_badge=2_white"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <div className="wot-secured-container">
+                  <div className="wot-shield-background"></div>
+                  <div className="wot-text-container">
+                    <p className="wot-secured-bold">Verified Site</p>
+                    <div className="wot-trusted-container">
+                      <div className="wot-trusted">Trusted by</div>
+                      <div className="wot-logo"></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="wot-vertical"></div>
+                <p className="wot-report">See Report</p>
+              </a>
+            </div>
           </nav>
         </div>
       </header>
@@ -378,7 +402,34 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
         {/* Trust */}
         <section className="mx-auto max-w-6xl px-4 pb-4 sm:pb-8">
           <p className="section-eyebrow">Safety</p>
-          <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">安心して使えるように</h2>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">安心して使えるように</h2>
+
+            {/* 配置案2: 安全性（Safety）セクションの見出し横（文脈的に一番説得力が出る位置） */}
+            <div className="shrink-0">
+              <a
+                id="wot-badge2"
+                className="wot-badge"
+                href="https://www.mywot.com/scorecard/sharp-voton.lovable.app?wot_badge=2_white"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <div className="wot-secured-container">
+                  <div className="wot-shield-background"></div>
+                  <div className="wot-text-container">
+                    <p className="wot-secured-bold">Verified Site</p>
+                    <div className="wot-trusted-container">
+                      <div className="wot-trusted">Trusted by</div>
+                      <div className="wot-logo"></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="wot-vertical"></div>
+                <p className="wot-report">See Report</p>
+              </a>
+            </div>
+          </div>
+
           <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {TRUST.map((t) => (
               <div key={t.t} className="surface p-6">
@@ -432,30 +483,6 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
                   {t("landing.start")}
                 </Link>
               )}
-
-              {/* WOT Web Badge */}
-              <div className="mt-10 flex justify-center">
-                <a
-                  id="wot-badge2"
-                  className="wot-badge"
-                  href="https://www.mywot.com/scorecard/sharp-voton.lovable.app?wot_badge=2_white"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <div className="wot-secured-container">
-                    <div className="wot-shield-background"></div>
-                    <div className="wot-text-container">
-                      <p className="wot-secured-bold">Verified Site</p>
-                      <div className="wot-trusted-container">
-                        <div className="wot-trusted">Trusted by</div>
-                        <div className="wot-logo"></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="wot-vertical"></div>
-                  <p className="wot-report">See Report</p>
-                </a>
-              </div>
             </div>
           </div>
         </section>
