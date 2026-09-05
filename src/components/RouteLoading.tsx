@@ -47,7 +47,9 @@ export function RouteLoading() {
       >
         <div className="voton-loading__content flex flex-col items-center gap-5">
           <div className="voton-loading__logo" aria-hidden="true">
-            <div className="voton-loading__orbit" />
+            <span className="voton-loading__orbit voton-loading__orbit--outer" />
+            <span className="voton-loading__orbit voton-loading__orbit--inner" />
+            <span className="voton-loading__halo" />
             <div className="voton-loading__mark">
               <span className="voton-loading__stroke voton-loading__stroke--horizontal voton-loading__stroke--top" />
               <span className="voton-loading__stroke voton-loading__stroke--horizontal voton-loading__stroke--bottom" />
@@ -56,6 +58,7 @@ export function RouteLoading() {
             </div>
             <span className="voton-loading__spark voton-loading__spark--one" />
             <span className="voton-loading__spark voton-loading__spark--two" />
+            <span className="voton-loading__spark voton-loading__spark--three" />
           </div>
           <div className="flex flex-col items-center gap-1">
             <p className="text-sm font-bold tracking-[0.18em] text-foreground">読み込み中</p>
