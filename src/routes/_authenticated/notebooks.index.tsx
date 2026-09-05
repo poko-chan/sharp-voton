@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { NotebookPen, Plus, Trash2, Users, Search, Inbox, Archive } from "lucide-react";
+import { NotebookPen, Plus, Trash2, Users, Search, Inbox, Archive, ChevronDown } from "lucide-react";
 import { COVER_COLORS, PAPER_COLORS, PAPER_TYPES, type Notebook, type PaperType } from "@/lib/notebooks";
 import { fetchPublicProfiles } from "@/lib/public-profiles";
 import { cn } from "@/lib/utils";
@@ -38,6 +38,7 @@ function NotebooksPage() {
   const [filter, setFilter] = useState<string | "all">("all");
   const [q, setQ] = useState("");
   const [showArchived, setShowArchived] = useState(false);
+  const [showCreate, setShowCreate] = useState(true);
 
   // 新規ノート設定
   const [title, setTitle] = useState("");
@@ -130,9 +131,19 @@ function NotebooksPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-4 md:p-8">
-      <div className="flex items-center gap-3">
-        <NotebookPen className="h-7 w-7 text-primary" />
-        <h1 className="text-2xl font-bold"><span className="text-primary">Voton</span> Cnote</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/15">
+            <NotebookPen className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold"><span className="text-primary">Voton</span> Cnote</h1>
+            <p className="text-xs text-muted-foreground">書く、整理する、あとから見つける。</p>
+          </div>
+        </div>
+        <Button onClick={() => setShowCreate((v) => !v)} variant={showCreate ? "outline" : "default"}>
+          <Plus className="mr-1 h-4 w-4" />新しいノート
+        </Button>
       </div>
 
       {invites.length > 0 && (
@@ -178,8 +189,12 @@ function NotebooksPage() {
         </Card>
 
         <div className="space-y-5">
-          <Card className="space-y-3 p-4">
-            <h2 className="font-semibold">新しいノートを作る</h2>
+          <Card className="space-y-3 border-primary/15 p-4 shadow-[0_18px_45px_-35px_color-mix(in_oklab,var(--primary)_60%,transparent)]">
+            <button onClick={() => setShowCreate((v) => !v)} className="flex w-full items-center justify-between text-left font-semibold" aria-expanded={showCreate}>
+              <span className="flex items-center gap-2"><Plus className="h-4 w-4 text-primary" />新しいノートを作る</span>
+              <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", showCreate && "rotate-180")} />
+            </button>
+            {showCreate && <div className="space-y-3">
             <div className="grid gap-2 sm:grid-cols-2">
               <Input placeholder="ノート名（例: 数学I ノート1）" value={title} onChange={(e) => setTitle(e.target.value)} />
               <select
@@ -222,13 +237,15 @@ function NotebooksPage() {
               </div>
             </div>
             <Button onClick={createNotebook}><Plus className="mr-1 h-4 w-4" />ノートを作成</Button>
+            </div>}
           </Card>
 
           <div className="flex flex-wrap items-center gap-2">
-            <div className="relative flex-1 min-w-[180px]">
+            <div className="relative min-w-[180px] flex-1">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input className="pl-8" placeholder="ノートを検索" value={q} onChange={(e) => setQ(e.target.value)} />
             </div>
+            <span className="text-xs tabular-nums text-muted-foreground">{visible.length}件</span>
             <Button variant={showArchived ? "default" : "outline"} size="sm" onClick={() => setShowArchived((v) => !v)}>
               <Archive className="mr-1 h-4 w-4" />{showArchived ? "アーカイブ表示中" : "アーカイブ"}
             </Button>
@@ -262,6 +279,7 @@ function Section({
             <Link to="/notebooks/$id" params={{ id: n.id }} className="block">
               <div
                 className="relative aspect-[3/4] overflow-hidden rounded-lg shadow-md transition group-hover:-translate-y-1 group-hover:shadow-xl"
+                aria-label={`${n.title}を開く`}
                 style={{ background: n.cover_color }}
               >
                 <div className="absolute inset-y-0 left-0 w-4 bg-black/25" />
@@ -279,7 +297,7 @@ function Section({
             {onDelete && (
               <button
                 onClick={() => onDelete(n.id)}
-                className="absolute right-2 top-2 rounded-md bg-black/40 p-1.5 text-white opacity-0 transition group-hover:opacity-100"
+                className="absolute right-2 top-2 rounded-md bg-black/40 p-1.5 text-white opacity-0 transition focus-visible:opacity-100 group-hover:opacity-100"
                 aria-label="ノートを削除"
               >
                 <Trash2 className="h-4 w-4" />

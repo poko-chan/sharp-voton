@@ -247,11 +247,11 @@ function NotebookEditor() {
         )}
       </div>
 
-      <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 border-t bg-card/70 px-3 py-2">
+      <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 border-t bg-card/70 px-3 py-2 shadow-[0_-8px_24px_-20px_var(--foreground)]">
         <Button variant="outline" size="sm" onClick={() => setIdx((i) => Math.max(0, i - 1))} disabled={idx === 0}>
           <ChevronLeft className="h-4 w-4" />前
         </Button>
-        <div className="flex flex-wrap gap-1">
+        <div className="flex max-w-[min(55vw,520px)] gap-1 overflow-x-auto py-0.5">
           {pages.map((p, i) => (
             <button key={p.id} onClick={() => setIdx(i)}
               className={cn("h-8 w-8 rounded border text-xs", i === idx ? "bg-primary text-primary-foreground" : "hover:bg-muted")}>
