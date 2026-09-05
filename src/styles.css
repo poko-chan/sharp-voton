@@ -223,15 +223,11 @@
   /* ===== Voton mark loader ===== */
   .voton-loading__logo {
     position: relative;
-    width: 7rem;
-    height: 7rem;
+    width: 8rem;
+    height: 8rem;
     display: grid;
     place-items: center;
-    border-radius: 2rem;
-    background: var(--ink);
-    box-shadow: 0 22px 60px -20px color-mix(in oklab, var(--signal) 70%, transparent),
-      0 0 0 1px color-mix(in oklab, var(--signal) 22%, transparent) inset;
-    overflow: hidden;
+    background: transparent;
   }
   .voton-loading__logo::before {
     content: "";
@@ -287,6 +283,7 @@
     transform: skewX(-8deg);
     filter: drop-shadow(0 0 11px color-mix(in oklab, var(--signal) 70%, transparent));
     animation: voton-loader-mark 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+    will-change: transform, filter;
   }
   .voton-loading__stroke {
     position: absolute;
@@ -346,8 +343,16 @@
     50% { opacity: 1; transform: scale(1.06); }
   }
   @keyframes voton-loader-mark {
-    0%, 100% { transform: skewX(-8deg) scale(0.92); }
-    50% { transform: skewX(-8deg) scale(1.04); }
+    0%, 100% {
+      transform: skewX(-8deg) scale(0.86) rotate(-5deg);
+      filter: drop-shadow(0 0 5px color-mix(in oklab, var(--signal) 45%, transparent));
+    }
+    24% { transform: skewX(-8deg) scale(1.02) rotate(2deg); }
+    48% {
+      transform: skewX(-8deg) scale(1.1) rotate(-1deg);
+      filter: drop-shadow(0 0 22px color-mix(in oklab, var(--accent) 90%, transparent));
+    }
+    72% { transform: skewX(-8deg) scale(0.98) rotate(4deg); }
   }
   @keyframes voton-loader-halo {
     0%, 100% { opacity: 0.45; transform: scale(0.92); }
