@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Timer, CalendarDays, BookOpen, Brain, MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy, Megaphone, GraduationCap, Menu, X, MoreHorizontal, StickyNote, Users, Ban, HelpCircle, ClipboardList, PanelLeft, PanelLeftClose, NotebookPen } from "lucide-react";
+import { LayoutDashboard, Timer, CalendarDays, BookOpen, Brain, MessagesSquare, LogOut, Shield, Sparkles, Target, Settings, Trophy, Megaphone, GraduationCap, Menu, X, MoreHorizontal, StickyNote, Users, Ban, HelpCircle, ClipboardList, PanelLeft, PanelLeftClose, NotebookPen, BellRing } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -20,6 +20,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useAdminNavConfig } from "@/lib/admin-nav";
 import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
 import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
+import { toast } from "sonner";
 
 export const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
@@ -153,6 +154,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
         (payload: any) => {
           const n = payload.new;
+          toast(n.title || "新しい通知", {
+            description: n.body || "通知を確認してください",
+            duration: 3200,
+            icon: <BellRing className="h-4 w-4 text-primary" />,
+            className: "app-notification-toast",
+          });
           try {
             if (typeof Notification !== "undefined" && Notification.permission === "granted") {
               new Notification(n.title || "通知", { body: n.body || "", icon: "/favicon.ico", tag: n.id });
@@ -370,10 +377,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="app-frame flex min-h-screen bg-background">
       {/* Desktop sidebar */}
       {!isMobile && navOpen && (
-        <aside className="w-64 shrink-0 border-r liquid-bar text-sidebar-foreground flex flex-col sticky top-0 h-screen self-start">
+        <aside className="app-sidebar w-64 shrink-0 border-r liquid-bar text-sidebar-foreground flex flex-col sticky top-0 h-screen self-start">
           {sidebarContent}
         </aside>
       )}
@@ -382,7 +389,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <TimerIndicator />
         {/* Desktop top bar */}
         {!isMobile && (
-          <div className="sticky top-0 z-30 flex h-12 items-center gap-2 px-4 border-b liquid-bar">
+          <div className="app-topbar sticky top-0 z-30 flex h-12 items-center gap-2 px-4 border-b liquid-bar">
             <button
               onClick={toggleNav}
               title={navOpen ? "メニューを閉じる" : "メニューを開く"}
@@ -403,7 +410,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         {/* Mobile top bar (hamburger + clock) */}
         {isMobile && (
-          <header className="sticky top-0 z-40 flex items-center gap-2 px-3 py-2 liquid-bar border-b">
+          <header className="app-topbar sticky top-0 z-40 flex items-center gap-2 px-3 py-2 liquid-bar border-b">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <button aria-label={t("common.menu")} className="h-10 w-10 inline-flex items-center justify-center rounded-xl transition hover:bg-accent active:scale-95">
