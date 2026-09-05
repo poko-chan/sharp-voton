@@ -205,6 +205,13 @@
     background: radial-gradient(circle, color-mix(in oklab, var(--signal) 18%, transparent), transparent 68%);
     animation: voton-loader-breathe 2.2s ease-in-out infinite;
   }
+  .voton-loading__content {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+  }
   .voton-loading__orbit {
     position: absolute;
     inset: -1rem;
@@ -215,61 +222,40 @@
     opacity: 0.9;
     animation: voton-loader-orbit 1.35s linear infinite;
   }
-  .voton-loading__mark {
-    position: relative;
-    width: 9rem;
-    height: 9rem;
-    transform: skewX(-8deg);
-    filter: drop-shadow(0 0 10px color-mix(in oklab, var(--signal) 50%, transparent));
-    isolation: isolate;
-    background: linear-gradient(110deg, var(--signal), color-mix(in oklab, var(--signal) 45%, var(--accent)) 52%, var(--accent));
-    opacity: 0;
-    animation: voton-loader-draw 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  .voton-loading__orbit--outer {
+    inset: -1.6rem;
+    opacity: 0.55;
+    animation-duration: 2.6s;
   }
-  .voton-loading__stroke--horizontal {
-    left: 0;
-    width: 100%;
-    height: 0.72rem;
-    transform-origin: left center;
-    inset: 20%;
-  }
-    background: radial-gradient(circle, color-mix(in oklab, var(--signal) 28%, transparent), transparent 68%);
-    filter: blur(14px);
-    animation: voton-loader-breathe 1.8s ease-in-out infinite;
-  .voton-loading__stroke--vertical {
-    top: 0;
-    width: 0.72rem;
-    inset: 0.2rem;
-    transform-origin: center bottom;
-    transform: scaleY(0);
-    border-top-color: #10c8f2;
-    border-right-color: #a8ff32;
-    opacity: 0.8;
-  .voton-loading__stroke--right { right: 0.9rem; animation-delay: 1.1s; }
-  .voton-loading__spark {
   .voton-loading__orbit--inner {
     inset: 1.1rem;
     border-width: 1px;
-    border-top-color: #a8ff32;
-    border-right-color: #10c8f2;
+    border-top-color: color-mix(in oklab, var(--accent) 85%, transparent);
+    border-right-color: var(--signal);
     opacity: 0.45;
     animation-duration: 2.1s;
     animation-direction: reverse;
   }
   .voton-loading__halo {
     position: absolute;
-    inset: 1.65rem;
+    inset: 0.6rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in oklab, var(--signal) 28%, transparent), transparent 68%);
+    filter: blur(14px);
+    animation: voton-loader-halo 1.8s ease-in-out infinite;
+  }
+  .voton-loading__mark {
+    position: relative;
     width: 5.8rem;
     height: 5.8rem;
     transform: skewX(-8deg);
-    filter: drop-shadow(0 0 11px color-mix(in oklab, #10c8f2 75%, transparent))
-      drop-shadow(0 0 24px color-mix(in oklab, #a8ff32 45%, transparent));
+    filter: drop-shadow(0 0 11px color-mix(in oklab, var(--signal) 70%, transparent));
     animation: voton-loader-mark 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   }
   .voton-loading__stroke {
     position: absolute;
     display: block;
-    background: linear-gradient(110deg, #10c8f2 0%, #18d4d4 42%, #a8ff32 100%);
+    background: linear-gradient(110deg, var(--signal) 0%, color-mix(in oklab, var(--signal) 45%, var(--accent)) 52%, var(--accent) 100%);
     opacity: 0;
     animation: voton-loader-draw 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   }
@@ -292,6 +278,20 @@
   }
   .voton-loading__stroke--left { left: 1.15rem; animation-delay: 0.6s; }
   .voton-loading__stroke--right { right: 1.15rem; animation-delay: 0.86s; }
+  .voton-loading__spark {
+    position: absolute;
+    width: 0.35rem;
+    height: 0.35rem;
+    border-radius: 9999px;
+    z-index: 2;
+    background: var(--accent);
+    box-shadow: 0 0 14px 4px color-mix(in oklab, var(--accent) 75%, transparent);
+    animation: voton-loader-spark 1.8s ease-in-out infinite;
+  }
+  .voton-loading__spark--one { top: 1.7rem; left: 1.6rem; animation-delay: 0.2s; }
+  .voton-loading__spark--two { right: 1.6rem; bottom: 1.7rem; animation-delay: 0.8s; }
+  .voton-loading__spark--three { right: 1.1rem; top: 2.2rem; animation-delay: 1.3s; }
+
   @keyframes voton-loader-draw {
     0%, 10% { opacity: 0; transform: scaleX(0); }
     28%, 72% { opacity: 1; transform: scaleX(1); }
@@ -301,16 +301,29 @@
     0%, 10% { opacity: 0; transform: scaleY(0); }
     28%, 72% { opacity: 1; transform: scaleY(1); }
     86%, 100% { opacity: 0; transform: scaleY(1); }
-    width: 0.35rem;
-    z-index: 1;
-    width: 5.8rem;
-    height: 5.8rem;
-    object-fit: contain;
-    border-radius: 1.35rem;
-    filter: drop-shadow(0 0 11px color-mix(in oklab, #10c8f2 75%, transparent))
-      drop-shadow(0 0 24px color-mix(in oklab, #a8ff32 45%, transparent));
-    animation: voton-loader-mark 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   }
+  @keyframes voton-loader-orbit {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes voton-loader-breathe {
+    0%, 100% { opacity: 0.45; transform: scale(0.94); }
+    50% { opacity: 1; transform: scale(1.06); }
+  }
+  @keyframes voton-loader-mark {
+    0%, 100% { transform: skewX(-8deg) scale(0.92); }
+    50% { transform: skewX(-8deg) scale(1.04); }
+  }
+  @keyframes voton-loader-halo {
+    0%, 100% { opacity: 0.45; transform: scale(0.92); }
+    50% { opacity: 1; transform: scale(1.08); }
+  }
+  @keyframes voton-loader-spark {
+    0%, 100% { opacity: 0.2; transform: scale(0.7); }
+    50% { opacity: 1; transform: scale(1.25); }
+  }
+
+  /* ===== Dashboard entrance ===== */
+  .dashboard-page > * { animation: dashboard-rise 320ms cubic-bezier(0.22, 1, 0.36, 1) both; }
   .dashboard-page > *:nth-child(2) { animation-delay: 45ms; }
   .dashboard-page > *:nth-child(3) { animation-delay: 90ms; }
   .dashboard-page > *:nth-child(4) { animation-delay: 135ms; }
@@ -471,29 +484,17 @@
     bottom: 22%;
     width: 3px;
     border-radius: 9999px;
-    z-index: 2;
-    background: #a8ff32;
-    box-shadow: 0 0 14px 4px color-mix(in oklab, #a8ff32 75%, transparent);
-    animation: voton-loader-spark 1.8s ease-in-out infinite;
+    background: var(--signal);
+  }
+
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
-  .voton-loading__spark--one { top: 1.7rem; left: 1.6rem; animation-delay: 0.2s; }
-  .voton-loading__spark--two { right: 1.6rem; bottom: 1.7rem; animation-delay: 0.8s; }
-  .voton-loading__spark--three { right: 1.1rem; top: 2.2rem; animation-delay: 1.3s; }
+}
 
 :where(a, button, [role="button"], input, select, textarea):focus-visible {
   outline: 2px solid color-mix(in oklab, var(--signal) 80%, transparent);
   outline-offset: 2px;
   border-radius: var(--radius-md);
 }
-  @keyframes voton-loader-mark {
-    0%, 100% { transform: scale(0.88) rotate(-4deg); }
-    45% { transform: scale(1.04) rotate(2deg); }
-    70% { transform: scale(0.97) rotate(0deg); }
-  }
-  @keyframes voton-loader-halo {
-    0%, 100% { opacity: 0.45; transform: scale(0.92) rotate(-5deg); }
-    50% { opacity: 1; transform: scale(1.08) rotate(5deg); }
-  }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
