@@ -112,14 +112,14 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
   const liveLabel = state ? (state.kind === "stopwatch" ? fmtMs(elapsedMs) : fmtMs(remainingMs)) : null;
 
   return (
-    <Card className="p-4 md:p-5 space-y-5 liquid-card">
+    <Card className="p-4 md:p-6 space-y-5 liquid-card border-primary/15 shadow-[0_20px_55px_-38px_color-mix(in_oklab,var(--primary)_60%,transparent)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-xl bg-primary/12 text-primary grid place-items-center">
+          <div className="h-10 w-10 rounded-2xl bg-primary/12 text-primary grid place-items-center ring-1 ring-primary/15">
             <Timer className="h-4.5 w-4.5" />
           </div>
           <div>
-            <h2 className="font-bold leading-tight">タイマー & 学習時間</h2>
+            <h2 className="font-bold leading-tight text-lg">タイマー & 学習時間</h2>
             <p className="text-[11px] text-muted-foreground">記録した時間が街の指標に反映されます</p>
           </div>
         </div>
@@ -144,7 +144,7 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
         <PowerBar value={pct} height={12} />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         <Mini icon={Clock3} label="今日" value={fmtMin(view.todayMin)} />
         <Mini icon={Flame} label="今週" value={fmtMin(view.week)} />
         <Mini icon={Activity} label="セッション" value={`${view.sessions} 回`} />

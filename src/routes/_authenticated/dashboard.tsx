@@ -288,11 +288,11 @@ function Dashboard() {
   }, [stats, dailyGoal, dailyPct, diff, diffPct, byDow, topSubjects]);
 
   return (
-    <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
+    <div className="dashboard-page p-4 md:p-8 lg:p-10 space-y-8 max-w-[1480px] mx-auto">
       {/* ===== 一番上: 左=1日の目標 / 右=あなたの街 ===== */}
-      <div className="grid gap-5 xl:grid-cols-2 items-start">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.12fr)_minmax(360px,0.88fr)] items-start">
       {/* ===== ヒーロー ===== */}
-      <Card className="relative overflow-hidden liquid-card p-0">
+      <Card className="relative overflow-hidden liquid-card p-0 border-primary/15 shadow-[0_24px_60px_-36px_color-mix(in_oklab,var(--primary)_55%,transparent)]">
         <div
           className="absolute inset-0 opacity-[0.18] pointer-events-none"
           style={{ background: "radial-gradient(1000px 320px at 12% -10%, oklch(0.7 0.2 150), transparent 60%), radial-gradient(800px 320px at 92% 0%, oklch(0.62 0.22 275), transparent 60%)" }}
@@ -313,6 +313,9 @@ function Dashboard() {
 
           <div className="min-w-0 space-y-3">
             <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary/80 mb-2">
+                TODAY / 学習ダッシュボード
+              </p>
               <p className="text-xs text-muted-foreground">
                 {new Date().toLocaleDateString("ja-JP", { month: "long", day: "numeric", weekday: "long" })}
               </p>
@@ -357,7 +360,7 @@ function Dashboard() {
         </div>
 
         {/* クイックアクション */}
-        <div className="relative border-t border-border/60 grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/60">
+        <div className="relative border-t border-border/60 bg-background/25 grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/60">
           <QuickAction to="/timer" icon={Timer} label="タイマー開始" />
           <QuickAction to="/study" icon={BookOpen} label="学習を記録" />
           <QuickAction to="/makron" icon={Brain} label="Makron 演習" />
