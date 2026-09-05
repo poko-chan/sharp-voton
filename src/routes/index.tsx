@@ -47,11 +47,15 @@ export const Route = createFileRoute("/")({
       { name: "wot-verification", content: "b90b06f9dc6ed5f77aed" },
     ],
     links: [{ rel: "canonical", href: "https://sharp-voton.lovable.app/" }],
-    // 3. head 内に構造化データの <script> を挿入する
+    // 3. head 内に構造化データの <script> および WOT Badge スクリプトを挿入する
     scripts: [
       {
         type: "application/ld+json",
         children: JSON.stringify(SCHEMA_DATA),
+      },
+      {
+        src: "https://static.mywot.com/website_owners_badges/websiteOwnersBadge.js",
+        async: true,
       },
     ],
   }),
@@ -420,14 +424,38 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
                 まずは1回、タイマーを回すところから。積み上がった記録が、次の自分を連れてきます。
               </p>
               {isAuthed ? (
-                <Link to="/dashboard" className="cta mt-8">
+                <Link to="/dashboard" className="cta mt-8 inline-block">
                   {t("landing.dashboard")}
                 </Link>
               ) : (
-                <Link to="/login" className="cta mt-8">
+                <Link to="/login" className="cta mt-8 inline-block">
                   {t("landing.start")}
                 </Link>
               )}
+
+              {/* WOT Web Badge */}
+              <div className="mt-10 flex justify-center">
+                <a
+                  id="wot-badge2"
+                  className="wot-badge"
+                  href="https://www.mywot.com/scorecard/sharp-voton.lovable.app?wot_badge=2_white"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <div className="wot-secured-container">
+                    <div className="wot-shield-background"></div>
+                    <div className="wot-text-container">
+                      <p className="wot-secured-bold">Verified Site</p>
+                      <div className="wot-trusted-container">
+                        <div className="wot-trusted">Trusted by</div>
+                        <div className="wot-logo"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="wot-vertical"></div>
+                  <p className="wot-report">See Report</p>
+                </a>
+              </div>
             </div>
           </div>
         </section>
