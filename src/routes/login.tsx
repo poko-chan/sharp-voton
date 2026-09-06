@@ -73,6 +73,12 @@ function LoginPage() {
     }
     const nx = q.get("next");
     if (nx && nx.startsWith("/")) setNextPath(nx);
+    try {
+      if (sessionStorage.getItem("login.pendingOauth")) {
+        sessionStorage.removeItem("login.pendingOauth");
+        setJustSignedIn(true);
+      }
+    } catch { /* noop */ }
   }, []);
 
   // 既存セッションがある場合は自動遷移せず「おかえりなさい」画面を出す。
@@ -149,6 +155,7 @@ function LoginPage() {
           .update({ account_kind: accountKind } as any)
           .eq("id", signUpData.session.user.id);
         toast.success("登録完了！自動ログインします");
+        setJustSignedIn(true);
       } else {
         const uname = username.trim();
         if (!uname) throw new Error("ユーザー名を入力してください");
@@ -158,6 +165,7 @@ function LoginPage() {
           refresh_token: tokens.refresh_token,
         });
         if (error) throw error;
+        setJustSignedIn(true);
       }
     } catch (e: any) {
       toast.error(e.message ?? "エラーが発生しました");
@@ -168,12 +176,14 @@ function LoginPage() {
 
   const google = async () => {
     setBusy(true);
+    try { sessionStorage.setItem("login.pendingOauth", "1"); } catch { /* noop */ }
     const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/login` });
     if (r.error) toast.error("Googleログインに失敗しました");
     setBusy(false);
   };
   const apple = async () => {
     setBusy(true);
+    try { sessionStorage.setItem("login.pendingOauth", "1"); } catch { /* noop */ }
     const r = await lovable.auth.signInWithOAuth("apple", { redirect_uri: `${window.location.origin}/login` });
     if (r.error) toast.error("Appleログインに失敗しました");
     setBusy(false);
