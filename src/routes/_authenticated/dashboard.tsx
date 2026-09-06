@@ -374,8 +374,13 @@ function Dashboard() {
       </div>
       </div>
 
+      {/* ===== 最近の通知 ===== */}
+      <RecentNotifications />
+
       {/* ===== タイマー & 学習時間の集約 ===== */}
       <FocusPanel dailyGoal={dailyGoal} />
+
+
 
       {/* ===== インサイト ===== */}
       {insights.length > 0 && (
