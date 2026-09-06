@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { syncCalendarNotifications } from "@/lib/calendar-reminders";
 import logoUrl from "@/assets/logo.png";
 import { levelFromMinutes } from "@/lib/level";
 import { onProfileChange } from "@/lib/profile-events";
