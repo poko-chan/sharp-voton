@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { syncCalendarNotifications } from "@/lib/calendar-reminders";
 import logoUrl from "@/assets/logo.png";
 import { levelFromMinutes } from "@/lib/level";
 import { onProfileChange } from "@/lib/profile-events";
@@ -170,6 +171,14 @@ export function AppShell({ children }: { children: ReactNode }) {
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [user?.id]);
+
+  // 当日のカレンダー予定を通知に流し込む（1日1回・重複なし）
+  useEffect(() => {
+    if (!user) return;
+    syncCalendarNotifications(user.id).catch(() => {});
+  }, [user?.id]);
+
+
 
   // Daily reminder: fire a local browser notification once at the configured time.
   useEffect(() => {
