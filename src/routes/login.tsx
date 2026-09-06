@@ -75,12 +75,33 @@ function LoginPage() {
     if (nx && nx.startsWith("/")) setNextPath(nx);
   }, []);
 
-  useEffect(() => {
-    if (loading || !user) return;
+  // 既存セッションがある場合は自動遷移せず「おかえりなさい」画面を出す。
+  // ただし next 指定やログイン直後（justSignedIn）はそのまま進む。
+  const [justSignedIn, setJustSignedIn] = useState(false);
+  const [resumeProfile, setResumeProfile] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
+
+  const goHome = () => {
     if (nextPath) navigate({ to: nextPath as any });
     else if (myKind === "org") navigate({ to: "/organizations" });
-    else if (myKind) navigate({ to: "/dashboard" });
-  }, [user, loading, navigate, nextPath, myKind]);
+    else navigate({ to: "/dashboard" });
+  };
+
+  useEffect(() => {
+    if (loading || !user) return;
+    if (nextPath || justSignedIn) {
+      if (nextPath) navigate({ to: nextPath as any });
+      else if (myKind === "org") navigate({ to: "/organizations" });
+      else if (myKind) navigate({ to: "/dashboard" });
+      return;
+    }
+    supabase
+      .from("profiles")
+      .select("display_name, avatar_url")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => setResumeProfile((data as any) ?? { display_name: null, avatar_url: null }));
+  }, [user, loading, navigate, nextPath, myKind, justSignedIn]);
+
 
   useEffect(() => {
     supabase
