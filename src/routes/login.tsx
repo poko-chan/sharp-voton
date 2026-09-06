@@ -188,9 +188,63 @@ function LoginPage() {
     if (r.error) toast.error("Appleログインに失敗しました");
     setBusy(false);
   };
+
+  // 既存セッションがある場合：おかえりなさい画面
+  if (!loading && user && !nextPath && !justSignedIn && resumeProfile) {
+    const name = resumeProfile.display_name || (user.user_metadata as any)?.username || user.email?.split("@")[0] || "ユーザー";
+    return (
+      <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
+        <Card className="w-full max-w-sm p-8 space-y-6 text-center">
+          <div className="space-y-1">
+            <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">welcome back</div>
+            <h1 className="text-2xl font-bold">おかえりなさい</h1>
+          </div>
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-20 w-20 rounded-full overflow-hidden border border-border/60 bg-muted grid place-items-center">
+              {resumeProfile.avatar_url ? (
+                <img src={resumeProfile.avatar_url} alt={`${name} のプロフィール画像`} className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-2xl font-bold text-muted-foreground">{name.slice(0, 1)}</span>
+              )}
+            </div>
+            <div className="text-lg font-semibold">{name} さん</div>
+          </div>
+          <div className="space-y-2">
+            <Button className="w-full" onClick={goHome}>続行</Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={async () => {
+                setBusy(true);
+                await supabase.auth.signOut();
+                setResumeProfile(null);
+                setBusy(false);
+              }}
+            >
+              別のアカウントで続行
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
+      {busy && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-background/70 backdrop-blur-sm" aria-live="polite">
+          <div className="flex flex-col items-center gap-3">
+            <span className="relative flex h-14 w-14 items-center justify-center">
+              <span className="absolute inset-0 rounded-full border-2 border-primary/25" />
+              <span className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
+              <img src={logoUrl} alt="" width={28} height={28} className="rounded" />
+            </span>
+            <p className="text-sm text-muted-foreground animate-pulse">ログイン中…</p>
+          </div>
+        </div>
+      )}
       <div className="w-full max-w-md space-y-4">
+
         {announcements.length > 0 && (
           <Card className="p-4 space-y-2 border-primary/30">
             <div className="text-xs font-semibold text-primary">📣 お知らせ</div>
