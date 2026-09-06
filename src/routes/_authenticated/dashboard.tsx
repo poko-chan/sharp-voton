@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { unreadCount as nUnreadCount } from "@/lib/notifications.functions";
+import { unreadCount as nUnreadCount, listNotifications, markNotificationRead } from "@/lib/notifications.functions";
+import { useQueryClient } from "@tanstack/react-query";
 import { RadialGauge, PowerBar } from "@/components/RadialGauge";
 import {
   BookOpen, Clock, Flame, TrendingUp, Award, Target, Megaphone,
@@ -871,6 +872,63 @@ function DashboardRanking() {
           ))}
         </div>
       </div>
+    </Card>
+  );
+}
+
+function RecentNotifications() {
+  const list = useServerFn(listNotifications);
+  const mark = useServerFn(markNotificationRead);
+  const qc = useQueryClient();
+  const { data: items = [] } = useQuery({
+    queryKey: ["notifications", "recent"],
+    queryFn: () => list(),
+    staleTime: 30_000,
+    refetchOnWindowFocus: true,
+  });
+  const recent = (items as any[]).slice(0, 5);
+  const unread = (items as any[]).filter((n) => !n.read_at).length;
+
+  const readAll = async () => {
+    await mark({ data: { all: true } });
+    qc.invalidateQueries({ queryKey: ["notifications"] });
+    qc.invalidateQueries({ queryKey: ["notif-unread"] });
+  };
+
+  return (
+    <Card className="p-4 md:p-5 space-y-3">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <h3 className="font-bold flex items-center gap-2">
+          <Bell className="h-4 w-4 text-primary" />最近の通知
+          {unread > 0 && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-destructive text-destructive-foreground font-bold">
+              未読 {unread}
+            </span>
+          )}
+        </h3>
+        <div className="flex gap-2">
+          {unread > 0 && <Button size="sm" variant="outline" onClick={readAll}>すべて既読</Button>}
+          <Button size="sm" variant="ghost" asChild><Link to="/notifications">すべて見る<ChevronRight className="h-3 w-3" /></Link></Button>
+        </div>
+      </div>
+      {recent.length === 0 ? (
+        <p className="text-xs text-muted-foreground">通知はありません</p>
+      ) : (
+        <div className="divide-y">
+          {recent.map((n: any) => (
+            <div key={n.id} className={`py-2 flex items-start gap-2 ${n.read_at ? "opacity-60" : ""}`}>
+              <span className={`mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 ${n.read_at ? "bg-muted-foreground/40" : "bg-primary"}`} />
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium truncate">{n.title}</div>
+                {n.body && <div className="text-xs text-muted-foreground truncate">{n.body}</div>}
+              </div>
+              <div className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
+                {new Date(n.created_at).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </Card>
   );
 }
