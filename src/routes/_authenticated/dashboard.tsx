@@ -26,6 +26,9 @@ import { TodayBreakdownChart } from "@/components/TodayBreakdownChart";
 import { WeeklySubjectDiff } from "@/components/WeeklySubjectDiff";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { FocusPanel } from "@/components/dashboard/FocusPanel";
+import { GettingStartedCard } from "@/components/dashboard/GettingStartedCard";
+import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
