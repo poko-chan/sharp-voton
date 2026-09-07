@@ -417,11 +417,14 @@ export function AppShell({ children }: { children: ReactNode }) {
             </button>
             {!navOpen && <img src={logoUrl} alt="" className="h-7 w-7 rounded-lg shadow-sm" />}
             <div className="ml-auto flex items-center gap-2">
+              <SearchBar />
               <ChromeAiStatusBadge compact />
               <div className="mx-2 h-4 w-px bg-border/70" />
+              <AppLauncher />
               <GoogleTranslateWidget />
             </div>
           </div>
+
         )}
 
 
