@@ -59,7 +59,8 @@ function SecurityPage() {
           安全性と<span className="text-gradient">データの扱い</span>
         </h1>
         <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
-          学習記録は、続けるほど大切になっていくデータです。Study# がどのようにデータを守っているかを、できるだけ具体的に説明します。
+          学習記録は、続けるほど大切になっていくデータです。Study#
+          がどのようにデータを守っているかを、できるだけ具体的に説明します。
         </p>
 
         <div className="mt-10 space-y-3">
@@ -73,7 +74,9 @@ function SecurityPage() {
 
         {TRUST.length > 0 && (
           <section className="mt-10">
-            <h2 className="font-display text-2xl font-black tracking-tight">安心して使うための仕組み</h2>
+            <h2 className="font-display text-2xl font-black tracking-tight">
+              安心して使うための仕組み
+            </h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {TRUST.map((s) => (
                 <div key={s.t} className="surface p-5">

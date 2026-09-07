@@ -27,10 +27,16 @@ import {
   WEBLLM_MODELS,
   webLlmRecommendScore,
   type WebLlmTag,
-
 } from "@/lib/web-llm";
 import { ollamaModels, ollamaDiagnostics, createOllamaSession } from "@/lib/ollama";
-import { aiRunStart, aiRunChars, aiRunDone, aiRunError, aiRunModelLoading, aiRunIdle } from "@/lib/ai-status";
+import {
+  aiRunStart,
+  aiRunChars,
+  aiRunDone,
+  aiRunError,
+  aiRunModelLoading,
+  aiRunIdle,
+} from "@/lib/ai-status";
 
 export type AiEngine = "nano" | "webllm" | "ollama" | "none";
 
@@ -61,7 +67,9 @@ export function setAiSelection(sel: AiSelection) {
   if (sel.startsWith("webllm:")) setWebLlmModelId(sel.slice("webllm:".length));
   try {
     window.dispatchEvent(new CustomEvent("ai-engine-pref-changed", { detail: sel }));
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
 }
 
 // 旧 API 互換
@@ -90,7 +98,6 @@ export type AiModelEntry = {
   /** パラメータ数（B） */
   params?: number;
 };
-
 
 /** 端末で扱える AI モデルを全部並べる（使える／ダウンロードが必要 の両方） */
 export async function listAiModels(): Promise<AiModelEntry[]> {
@@ -145,7 +152,6 @@ export async function listAiModels(): Promise<AiModelEntry[]> {
     });
   }
 
-
   return out;
 }
 
@@ -159,7 +165,11 @@ function labelFor(engine: AiEngine, modelId: string): string {
 export async function resolveAiTarget(): Promise<AiTarget> {
   const sel = getAiSelection();
   const models = await listAiModels();
-  const pick = (e: AiModelEntry): AiTarget => ({ engine: e.engine, modelId: e.modelId, modelLabel: labelFor(e.engine, e.modelId) });
+  const pick = (e: AiModelEntry): AiTarget => ({
+    engine: e.engine,
+    modelId: e.modelId,
+    modelLabel: labelFor(e.engine, e.modelId),
+  });
 
   if (sel !== "auto") {
     const exact = models.find((m) => m.key === sel);
@@ -216,7 +226,11 @@ export async function aiEnsureReady(
       if ((await chromeAiStatus()) !== "available") {
         await chromeAiEnsureDownloaded((l, t) => {
           onProgress?.(l, t);
-          aiRunModelLoading("nano", t > 0 ? Math.round((l / t) * 100) : null, "Gemini Nano を取得中…");
+          aiRunModelLoading(
+            "nano",
+            t > 0 ? Math.round((l / t) * 100) : null,
+            "Gemini Nano を取得中…",
+          );
         });
       }
     } else if (target.engine === "webllm") {
@@ -260,7 +274,10 @@ export async function createAiSession(opts?: {
       maxTokens: gen.maxTokens,
       frequencyPenalty: gen.frequencyPenalty,
     });
-    return Object.assign(withStatus(s, "ollama"), { engine: "ollama" as const, modelLabel: target.modelLabel });
+    return Object.assign(withStatus(s, "ollama"), {
+      engine: "ollama" as const,
+      modelLabel: target.modelLabel,
+    });
   }
 
   if (target.engine === "nano") {
@@ -268,19 +285,32 @@ export async function createAiSession(opts?: {
       if ((await chromeAiStatus()) !== "available") {
         aiRunModelLoading("nano", null, "Gemini Nano を準備中…");
         await chromeAiEnsureDownloaded((l, t) =>
-          aiRunModelLoading("nano", t > 0 ? Math.round((l / t) * 100) : null, "Gemini Nano を取得中…"),
+          aiRunModelLoading(
+            "nano",
+            t > 0 ? Math.round((l / t) * 100) : null,
+            "Gemini Nano を取得中…",
+          ),
         );
       }
       const s = await createChromeAiSession({ ...opts, temperature: gen.temperature });
-      return Object.assign(withStatus(s, "nano"), { engine: "nano" as const, modelLabel: target.modelLabel });
+      return Object.assign(withStatus(s, "nano"), {
+        engine: "nano" as const,
+        modelLabel: target.modelLabel,
+      });
     } catch (err: any) {
       const web = await webLlmStatus();
       if (web === "available" || web === "downloadable" || web === "downloading") {
         const fallbackId = getWebLlmModelId();
         aiRunModelLoading("webllm", null, "Gemini Nano から WebLLM へ切替中…");
-        await webLlmEnsureLoaded((p, text) => aiRunModelLoading("webllm", Math.round(p * 100), text), fallbackId);
+        await webLlmEnsureLoaded(
+          (p, text) => aiRunModelLoading("webllm", Math.round(p * 100), text),
+          fallbackId,
+        );
         const s = await createWebLlmSession({ system: opts?.system, ...gen, modelId: fallbackId });
-        return Object.assign(withStatus(s, "webllm"), { engine: "webllm" as const, modelLabel: labelFor("webllm", fallbackId) });
+        return Object.assign(withStatus(s, "webllm"), {
+          engine: "webllm" as const,
+          modelLabel: labelFor("webllm", fallbackId),
+        });
       }
       throw new Error("Gemini Nano のセッション作成に失敗しました: " + (err?.message ?? ""));
     }
@@ -288,9 +318,15 @@ export async function createAiSession(opts?: {
 
   if (target.engine === "webllm") {
     aiRunModelLoading("webllm", null, "WebLLM を準備中…");
-    await webLlmEnsureLoaded((p, text) => aiRunModelLoading("webllm", Math.round(p * 100), text), target.modelId);
+    await webLlmEnsureLoaded(
+      (p, text) => aiRunModelLoading("webllm", Math.round(p * 100), text),
+      target.modelId,
+    );
     const s = await createWebLlmSession({ system: opts?.system, ...gen, modelId: target.modelId });
-    return Object.assign(withStatus(s, "webllm"), { engine: "webllm" as const, modelLabel: target.modelLabel });
+    return Object.assign(withStatus(s, "webllm"), {
+      engine: "webllm" as const,
+      modelLabel: target.modelLabel,
+    });
   }
 
   throw new Error("使える端末内 AI がありません。AI設定からモデルをダウンロードしてください。");
@@ -301,7 +337,9 @@ function withStatus(s: AiSession, engine: AiEngine): AiSession {
   const clean = (raw: string) => {
     const out = sanitizeAiText(raw);
     if (!hasMeaningfulContent(out)) {
-      throw new Error("AIの出力が壊れました（同じ記号の繰り返し）。もう一度送信するか、AI設定で別のモデルを選んでください。");
+      throw new Error(
+        "AIの出力が壊れました（同じ記号の繰り返し）。もう一度送信するか、AI設定で別のモデルを選んでください。",
+      );
     }
     return out;
   };
@@ -317,7 +355,7 @@ function withStatus(s: AiSession, engine: AiEngine): AiSession {
         throw e;
       }
     },
-    promptJSON: async <T,>(t: string): Promise<T> => {
+    promptJSON: async <T>(t: string): Promise<T> => {
       aiRunStart(engine);
       try {
         const raw = await s.promptStreaming(t, (p) => aiRunChars(p.length));
@@ -332,11 +370,13 @@ function withStatus(s: AiSession, engine: AiEngine): AiSession {
     promptStreaming: async (t, onChunk) => {
       aiRunStart(engine);
       try {
-        const out = clean(await s.promptStreaming(t, (p) => {
-          const c = sanitizeAiText(p);
-          aiRunChars(c.length);
-          onChunk(c);
-        }));
+        const out = clean(
+          await s.promptStreaming(t, (p) => {
+            const c = sanitizeAiText(p);
+            aiRunChars(c.length);
+            onChunk(c);
+          }),
+        );
         aiRunDone(out.length);
         return out;
       } catch (e: any) {
@@ -348,15 +388,22 @@ function withStatus(s: AiSession, engine: AiEngine): AiSession {
   };
 }
 
-
 export async function aiPrompt(text: string, system?: string): Promise<string> {
   const s = await createAiSession({ system });
-  try { return await s.prompt(text); } finally { s.destroy(); }
+  try {
+    return await s.prompt(text);
+  } finally {
+    s.destroy();
+  }
 }
 
 export async function aiJSON<T = unknown>(text: string, system?: string): Promise<T> {
   const s = await createAiSession({ system });
-  try { return await s.promptJSON<T>(text); } finally { s.destroy(); }
+  try {
+    return await s.promptJSON<T>(text);
+  } finally {
+    s.destroy();
+  }
 }
 
 /** 生成途中のテキストを逐次受け取れる単発プロンプト（ストリーミング表示用） */
@@ -366,7 +413,11 @@ export async function aiStream(
   system?: string,
 ): Promise<string> {
   const s = await createAiSession({ system });
-  try { return await s.promptStreaming(text, onChunk); } finally { s.destroy(); }
+  try {
+    return await s.promptStreaming(text, onChunk);
+  } finally {
+    s.destroy();
+  }
 }
 
 export { extractJSON };

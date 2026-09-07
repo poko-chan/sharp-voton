@@ -16,5 +16,7 @@ export function playSendSound() {
     osc.start();
     osc.stop(ctx.currentTime + 0.16);
     osc.onended = () => ctx.close().catch(() => {});
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
 }

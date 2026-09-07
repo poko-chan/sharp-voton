@@ -2,7 +2,17 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Upload, Pencil, Trash2, PlayCircle, Shuffle, RotateCcw, Repeat } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  Upload,
+  Pencil,
+  Trash2,
+  PlayCircle,
+  Shuffle,
+  RotateCcw,
+  Repeat,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   createCard,
@@ -46,7 +56,9 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
     }
   };
 
-  useEffect(() => { load(); }, [deck.id]);
+  useEffect(() => {
+    load();
+  }, [deck.id]);
 
   const dueCount = cards.filter((c) => new Date(c.next_review_at) <= new Date()).length;
   const totalReviews = cards.reduce((sum, c) => sum + (c.reviews ?? 0), 0);
@@ -118,7 +130,10 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
         deckName={deck.name}
         cards={studyCards}
         shuffled={studyShuffled}
-        onExit={() => { setStudyCards(null); load(); }}
+        onExit={() => {
+          setStudyCards(null);
+          load();
+        }}
       />
     );
   }
@@ -126,7 +141,10 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" onClick={onBack}><ArrowLeft className="h-4 w-4 mr-1" />デッキ一覧</Button>
+        <Button variant="ghost" size="sm" onClick={onBack}>
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          デッキ一覧
+        </Button>
       </div>
 
       <Card className="p-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
@@ -134,14 +152,19 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
           <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: deck.color }} />
           <div className="min-w-0">
             <div className="font-bold text-lg truncate">{deck.name}</div>
-            <div className="text-xs text-muted-foreground truncate">{deck.description || "説明なし"}</div>
+            <div className="text-xs text-muted-foreground truncate">
+              {deck.description || "説明なし"}
+            </div>
           </div>
           <Badge variant="secondary">{deck.subject}</Badge>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {dueCount > 0 && <Badge className="bg-primary text-primary-foreground">今日 {dueCount}枚</Badge>}
+          {dueCount > 0 && (
+            <Badge className="bg-primary text-primary-foreground">今日 {dueCount}枚</Badge>
+          )}
           <Button onClick={() => startStudy("due", false)} disabled={dueCount === 0}>
-            <PlayCircle className="h-4 w-4 mr-1" />学習を始める
+            <PlayCircle className="h-4 w-4 mr-1" />
+            学習を始める
           </Button>
         </div>
       </Card>
@@ -156,19 +179,30 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
 
       <div className="flex flex-wrap gap-2">
         <Button size="sm" variant="secondary" onClick={() => startStudy("all", true)}>
-          <Shuffle className="h-4 w-4 mr-1" />シャッフルで練習
+          <Shuffle className="h-4 w-4 mr-1" />
+          シャッフルで練習
         </Button>
         <Button size="sm" variant="secondary" onClick={() => startStudy("all", false)}>
-          <Repeat className="h-4 w-4 mr-1" />全カードで繰り返し
+          <Repeat className="h-4 w-4 mr-1" />
+          全カードで繰り返し
         </Button>
-        <Button size="sm" onClick={() => { setEditingCard(null); setCardDialogOpen(true); }}>
-          <Plus className="h-4 w-4 mr-1" />カード追加
+        <Button
+          size="sm"
+          onClick={() => {
+            setEditingCard(null);
+            setCardDialogOpen(true);
+          }}
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          カード追加
         </Button>
         <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
-          <Upload className="h-4 w-4 mr-1" />一括インポート
+          <Upload className="h-4 w-4 mr-1" />
+          一括インポート
         </Button>
         <Button size="sm" variant="outline" onClick={handleReset}>
-          <RotateCcw className="h-4 w-4 mr-1" />判定をリセット
+          <RotateCcw className="h-4 w-4 mr-1" />
+          判定をリセット
         </Button>
       </div>
 
@@ -177,13 +211,24 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
         {loading ? (
           <div className="text-sm text-muted-foreground">読み込み中...</div>
         ) : cards.length === 0 ? (
-          <Card className="p-6 text-center text-sm text-muted-foreground">まだカードがありません</Card>
+          <Card className="p-6 text-center text-sm text-muted-foreground">
+            まだカードがありません
+          </Card>
         ) : (
           cards.map((c) => (
             <Card key={c.id} className="p-3 flex items-center gap-2 text-sm">
-              <div className="flex-1 min-w-0 truncate">{c.front} → {c.back}</div>
+              <div className="flex-1 min-w-0 truncate">
+                {c.front} → {c.back}
+              </div>
               <span className="text-xs text-muted-foreground shrink-0">×{c.reviews}</span>
-              <Button size="sm" variant="ghost" onClick={() => { setEditingCard(c); setCardDialogOpen(true); }}>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setEditingCard(c);
+                  setCardDialogOpen(true);
+                }}
+              >
                 <Pencil className="h-3.5 w-3.5" />
               </Button>
               <Button size="sm" variant="ghost" onClick={() => handleDelete(c)}>

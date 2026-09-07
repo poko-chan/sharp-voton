@@ -4,7 +4,6 @@ import { Html, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { cellToWorld } from "@/lib/town-economy";
 
-
 /* ============================================================
    Study# City — a small but "properly designed" city simulation.
    - real clock drives the day/night cycle (sun, sky, lights)
@@ -23,8 +22,8 @@ function mulberry32(seed: number) {
 }
 
 // ---------- city plan ----------
-const BLOCK = 9;          // block size
-const ROAD = 3.2;         // road width
+const BLOCK = 9; // block size
+const ROAD = 3.2; // road width
 const CELL = BLOCK + ROAD;
 
 function gridRadius(stage: number) {
@@ -38,12 +37,16 @@ function roadLines(stage: number) {
   return lines;
 }
 
-
 // ---------- time of day ----------
 type Sky = {
-  top: string; bottom: string; fog: string;
-  sun: [number, number, number]; sunColor: string; sunIntensity: number;
-  ambient: number; night: number; // 0 day .. 1 night
+  top: string;
+  bottom: string;
+  fog: string;
+  sun: [number, number, number];
+  sunColor: string;
+  sunIntensity: number;
+  ambient: number;
+  night: number; // 0 day .. 1 night
 };
 
 function timeOfDay(): number {
@@ -61,9 +64,12 @@ function skyOf(hour: number): Sky {
   const mix = (a: string, b: string, k: number) =>
     "#" + new THREE.Color(a).lerp(new THREE.Color(b), k).getHexString();
 
-  const dayTop = "#5aa9f0", dayBottom = "#cfe9ff";
-  const duskTop = "#2f4a78", duskBottom = "#ffb083";
-  const nightTop = "#0a1230", nightBottom = "#1d2a52";
+  const dayTop = "#5aa9f0",
+    dayBottom = "#cfe9ff";
+  const duskTop = "#2f4a78",
+    duskBottom = "#ffb083";
+  const nightTop = "#0a1230",
+    nightBottom = "#1d2a52";
 
   let top = mix(dayTop, duskTop, golden);
   let bottom = mix(dayBottom, duskBottom, golden);
@@ -71,7 +77,8 @@ function skyOf(hour: number): Sky {
   bottom = mix(bottom, nightBottom, night);
 
   return {
-    top, bottom,
+    top,
+    bottom,
     fog: bottom,
     sun: [Math.cos(t) * 26, Math.max(2, elev * 26), 14],
     sunColor: night > 0.6 ? "#9fb4ff" : golden > 0.35 ? "#ffb271" : "#fff3dc",
@@ -84,11 +91,13 @@ function skyOf(hour: number): Sky {
 // ---------- facade textures (windows) ----------
 function facadeTexture(era: number, seed: number, night: number) {
   const c = document.createElement("canvas");
-  c.width = 64; c.height = 128;
+  c.width = 64;
+  c.height = 128;
   const g = c.getContext("2d")!;
   const rng = mulberry32(seed);
   const base = era >= 5 ? "#c9d9f2" : era >= 4 ? "#b8c2cf" : era >= 3 ? "#d8cdb8" : "#c9a878";
-  g.fillStyle = base; g.fillRect(0, 0, 64, 128);
+  g.fillStyle = base;
+  g.fillRect(0, 0, 64, 128);
   const cols = era >= 4 ? 5 : 3;
   const rows = era >= 4 ? 12 : 6;
   const pad = 4;
@@ -97,9 +106,7 @@ function facadeTexture(era: number, seed: number, night: number) {
   for (let r = 0; r < rows; r++) {
     for (let col = 0; col < cols; col++) {
       const lit = rng() < 0.15 + night * 0.55;
-      g.fillStyle = lit
-        ? era >= 4 ? "#ffe9a8" : "#ffd58a"
-        : era >= 4 ? "#48586b" : "#6b5a45";
+      g.fillStyle = lit ? (era >= 4 ? "#ffe9a8" : "#ffd58a") : era >= 4 ? "#48586b" : "#6b5a45";
       g.fillRect(pad + col * (w + pad), pad + r * (h + pad), w, h);
     }
   }
@@ -114,9 +121,16 @@ function facadeTexture(era: number, seed: number, night: number) {
 
 // ---------- buildings ----------
 type Building = {
-  x: number; z: number; w: number; d: number; h: number;
-  era: number; kind: "tower" | "block" | "house" | "factory";
-  color: string; rot: number; roof: number;
+  x: number;
+  z: number;
+  w: number;
+  d: number;
+  h: number;
+  era: number;
+  kind: "tower" | "block" | "house" | "factory";
+  color: string;
+  rot: number;
+  roof: number;
 };
 
 function generateCity(stage: number): { buildings: Building[]; parks: { x: number; z: number }[] } {
@@ -127,9 +141,16 @@ function generateCity(stage: number): { buildings: Building[]; parks: { x: numbe
   if (stage <= 0) {
     for (let i = 0; i < 6; i++) {
       buildings.push({
-        x: (rng() - 0.5) * 16, z: (rng() - 0.5) * 14,
-        w: 1.4 + rng(), d: 1.4 + rng(), h: 0.5 + rng() * 0.7,
-        era: 0, kind: "house", color: "#8a7460", rot: rng() * Math.PI, roof: 0,
+        x: (rng() - 0.5) * 16,
+        z: (rng() - 0.5) * 14,
+        w: 1.4 + rng(),
+        d: 1.4 + rng(),
+        h: 0.5 + rng() * 0.7,
+        era: 0,
+        kind: "house",
+        color: "#8a7460",
+        rot: rng() * Math.PI,
+        roof: 0,
       });
     }
     return { buildings, parks };
@@ -137,10 +158,14 @@ function generateCity(stage: number): { buildings: Building[]; parks: { x: numbe
 
   for (let bx = -r; bx <= r; bx++) {
     for (let bz = -r; bz <= r; bz++) {
-      const cx = bx * CELL, cz = bz * CELL;
+      const cx = bx * CELL,
+        cz = bz * CELL;
       const dist = Math.hypot(bx, bz);
       // one park block
-      if (bx === -1 && bz === 1) { parks.push({ x: cx, z: cz }); continue; }
+      if (bx === -1 && bz === 1) {
+        parks.push({ x: cx, z: cz });
+        continue;
+      }
       // industry on the outer ring at higher stages
       const industry = stage >= 5 && dist >= r - 0.1 && rng() < 0.35;
 
@@ -150,9 +175,16 @@ function generateCity(stage: number): { buildings: Building[]; parks: { x: numbe
 
       if (industry) {
         buildings.push({
-          x: cx, z: cz, w: BLOCK * 0.72, d: BLOCK * 0.55,
-          h: 1.6 + rng() * 0.8, era: 3, kind: "factory",
-          color: "#9aa0a6", rot: 0, roof: 1,
+          x: cx,
+          z: cz,
+          w: BLOCK * 0.72,
+          d: BLOCK * 0.55,
+          h: 1.6 + rng() * 0.8,
+          era: 3,
+          kind: "factory",
+          color: "#9aa0a6",
+          rot: 0,
+          roof: 1,
         });
         continue;
       }
@@ -171,21 +203,29 @@ function generateCity(stage: number): { buildings: Building[]; parks: { x: numbe
 
           let era: number, kind: Building["kind"], h: number, color: string;
           if (stage <= 1) {
-            era = 1; kind = "house"; h = 0.9 + rng() * 0.5;
+            era = 1;
+            kind = "house";
+            h = 0.9 + rng() * 0.5;
             color = ["#c9a878", "#b89a6a", "#d2b48c"][Math.floor(rng() * 3)];
           } else if (stage <= 3) {
-            era = 2; kind = rng() < 0.7 ? "house" : "block"; h = 1.1 + rng() * 1.0;
+            era = 2;
+            kind = rng() < 0.7 ? "house" : "block";
+            h = 1.1 + rng() * 1.0;
             color = ["#e3c89a", "#cdb37c", "#efe0bd"][Math.floor(rng() * 3)];
           } else if (core) {
-            era = stage >= 8 ? 5 : 4; kind = "tower";
+            era = stage >= 8 ? 5 : 4;
+            kind = "tower";
             h = (3 + rng() * 3) * (1 + (stage - 4) * 0.55) * (0.5 + density);
             color = era >= 5 ? "#dfe8ff" : "#cfd6e0";
           } else if (mid) {
-            era = stage >= 8 ? 5 : 4; kind = "block";
+            era = stage >= 8 ? 5 : 4;
+            kind = "block";
             h = (1.8 + rng() * 2) * (1 + (stage - 4) * 0.22);
             color = ["#d9d2c2", "#c3ccd8", "#e6ecf4"][Math.floor(rng() * 3)];
           } else {
-            era = 3; kind = "house"; h = 1.0 + rng() * 0.9;
+            era = 3;
+            kind = "house";
+            h = 1.0 + rng() * 0.9;
             color = ["#efe6d5", "#e0d3bd", "#f4eee2"][Math.floor(rng() * 3)];
           }
           buildings.push({ x: px, z: pz, w, d, h, era, kind, color, rot: 0, roof: rng() });
@@ -210,7 +250,13 @@ function BuildingMesh({ b, tex }: { b: Building; tex: THREE.Texture | null }) {
       <mesh position={[0, b.h / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[b.w, b.h, b.d]} />
         {mat ? (
-          <meshStandardMaterial map={mat} emissiveMap={mat} emissive="#ffdca0" emissiveIntensity={0.25} roughness={0.75} />
+          <meshStandardMaterial
+            map={mat}
+            emissiveMap={mat}
+            emissive="#ffdca0"
+            emissiveIntensity={0.25}
+            roughness={0.75}
+          />
         ) : (
           <meshStandardMaterial color={b.color} roughness={0.8} />
         )}
@@ -220,7 +266,12 @@ function BuildingMesh({ b, tex }: { b: Building; tex: THREE.Texture | null }) {
       {b.kind !== "house" && (
         <mesh position={[0, 0.28, 0]}>
           <boxGeometry args={[b.w * 1.01, 0.55, b.d * 1.01]} />
-          <meshStandardMaterial color="#2c3440" emissive="#7fd9ff" emissiveIntensity={0.35} roughness={0.4} />
+          <meshStandardMaterial
+            color="#2c3440"
+            emissive="#7fd9ff"
+            emissiveIntensity={0.35}
+            roughness={0.4}
+          />
         </mesh>
       )}
 
@@ -286,7 +337,11 @@ function Streets({ stage }: { stage: number }) {
             <meshStandardMaterial color="#3c3f45" roughness={0.95} />
           </mesh>
           {Array.from({ length: Math.floor(span / 2) }).map((_, i) => (
-            <mesh key={i} position={[-span / 2 + i * 2 + 0.5, 0.07, p]} rotation={[-Math.PI / 2, 0, 0]}>
+            <mesh
+              key={i}
+              position={[-span / 2 + i * 2 + 0.5, 0.07, p]}
+              rotation={[-Math.PI / 2, 0, 0]}
+            >
               <planeGeometry args={[0.9, 0.09]} />
               <meshStandardMaterial color="#e8e2c8" emissive="#e8e2c8" emissiveIntensity={0.15} />
             </mesh>
@@ -304,7 +359,11 @@ function Streets({ stage }: { stage: number }) {
             <meshStandardMaterial color="#3c3f45" roughness={0.95} />
           </mesh>
           {Array.from({ length: Math.floor(span / 2) }).map((_, i) => (
-            <mesh key={i} position={[p, 0.071, -span / 2 + i * 2 + 0.5]} rotation={[-Math.PI / 2, 0, Math.PI / 2]}>
+            <mesh
+              key={i}
+              position={[p, 0.071, -span / 2 + i * 2 + 0.5]}
+              rotation={[-Math.PI / 2, 0, Math.PI / 2]}
+            >
               <planeGeometry args={[0.9, 0.09]} />
               <meshStandardMaterial color="#e8e2c8" emissive="#e8e2c8" emissiveIntensity={0.15} />
             </mesh>
@@ -364,10 +423,22 @@ function TrafficLights({ stage }: { stage: number }) {
     <group ref={ref}>
       {pts.map(([x, z], i) => (
         <group key={i} position={[x, 0, z]}>
-          <mesh position={[0, 0.7, 0]}><cylinderGeometry args={[0.04, 0.04, 1.4, 6]} /><meshStandardMaterial color="#3f4650" /></mesh>
-          <mesh position={[0, 1.5, 0]}><boxGeometry args={[0.16, 0.42, 0.16]} /><meshStandardMaterial color="#22262c" /></mesh>
-          <mesh name="r" position={[0, 1.62, 0.09]}><sphereGeometry args={[0.05, 8, 8]} /><meshStandardMaterial color="#ff4444" emissive="#ff2222" emissiveIntensity={0.05} /></mesh>
-          <mesh name="g" position={[0, 1.4, 0.09]}><sphereGeometry args={[0.05, 8, 8]} /><meshStandardMaterial color="#48e08a" emissive="#22cc66" emissiveIntensity={0.05} /></mesh>
+          <mesh position={[0, 0.7, 0]}>
+            <cylinderGeometry args={[0.04, 0.04, 1.4, 6]} />
+            <meshStandardMaterial color="#3f4650" />
+          </mesh>
+          <mesh position={[0, 1.5, 0]}>
+            <boxGeometry args={[0.16, 0.42, 0.16]} />
+            <meshStandardMaterial color="#22262c" />
+          </mesh>
+          <mesh name="r" position={[0, 1.62, 0.09]}>
+            <sphereGeometry args={[0.05, 8, 8]} />
+            <meshStandardMaterial color="#ff4444" emissive="#ff2222" emissiveIntensity={0.05} />
+          </mesh>
+          <mesh name="g" position={[0, 1.4, 0.09]}>
+            <sphereGeometry args={[0.05, 8, 8]} />
+            <meshStandardMaterial color="#48e08a" emissive="#22cc66" emissiveIntensity={0.05} />
+          </mesh>
         </group>
       ))}
     </group>
@@ -375,7 +446,15 @@ function TrafficLights({ stage }: { stage: number }) {
 }
 
 // ---------- traffic ----------
-type CarData = { line: number; axis: "x" | "z"; dir: 1 | -1; speed: number; offset: number; color: string; big: boolean };
+type CarData = {
+  line: number;
+  axis: "x" | "z";
+  dir: 1 | -1;
+  speed: number;
+  offset: number;
+  color: string;
+  big: boolean;
+};
 
 function Traffic({ stage, night }: { stage: number; night: number }) {
   const lines = roadLines(stage);
@@ -388,7 +467,8 @@ function Traffic({ stage, night }: { stage: number; night: number }) {
       const axis = rng() < 0.5 ? "x" : "z";
       const dir: 1 | -1 = rng() < 0.5 ? 1 : -1;
       return {
-        axis, dir,
+        axis,
+        dir,
         line: lines[Math.floor(rng() * lines.length)] + dir * 0.75,
         speed: 3.2 + rng() * 2.4,
         offset: rng() * 60,
@@ -422,7 +502,10 @@ function Traffic({ stage, night }: { stage: number; night: number }) {
         const rot = c.axis === "x" ? 0 : Math.PI / 2;
         return (
           <group key={i} rotation={[0, rot, 0]}>
-            <mesh castShadow><boxGeometry args={[L, H, W]} /><meshStandardMaterial color={c.color} metalness={0.35} roughness={0.35} /></mesh>
+            <mesh castShadow>
+              <boxGeometry args={[L, H, W]} />
+              <meshStandardMaterial color={c.color} metalness={0.35} roughness={0.35} />
+            </mesh>
             {!c.big && (
               <mesh position={[-0.05, H * 0.75, 0]} castShadow>
                 <boxGeometry args={[L * 0.55, H * 0.75, W * 0.9]} />
@@ -432,13 +515,21 @@ function Traffic({ stage, night }: { stage: number; night: number }) {
             {[-1, 1].map((s) => (
               <mesh key={s} position={[c.dir * L * 0.5, 0.02, s * W * 0.32]}>
                 <sphereGeometry args={[0.07, 6, 6]} />
-                <meshStandardMaterial color="#fff6d8" emissive="#ffeab0" emissiveIntensity={0.3 + night * 2.2} />
+                <meshStandardMaterial
+                  color="#fff6d8"
+                  emissive="#ffeab0"
+                  emissiveIntensity={0.3 + night * 2.2}
+                />
               </mesh>
             ))}
             {[-1, 1].map((s) => (
               <mesh key={"t" + s} position={[-c.dir * L * 0.5, 0.02, s * W * 0.32]}>
                 <sphereGeometry args={[0.06, 6, 6]} />
-                <meshStandardMaterial color="#ff5a5a" emissive="#ff2a2a" emissiveIntensity={0.3 + night * 1.6} />
+                <meshStandardMaterial
+                  color="#ff5a5a"
+                  emissive="#ff2a2a"
+                  emissiveIntensity={0.3 + night * 1.6}
+                />
               </mesh>
             ))}
           </group>
@@ -475,9 +566,20 @@ function RailLine({ stage }: { stage: number }) {
       <group ref={ref} position={[-60, 2.2, z]}>
         {[0, 2.6, 5.2, 7.8].map((dx, i) => (
           <group key={dx} position={[dx, 0, 0]}>
-            <mesh castShadow><boxGeometry args={[2.4, 0.62, 0.85]} /><meshStandardMaterial color={color} metalness={0.4} roughness={0.3} /></mesh>
-            <mesh position={[0, 0.05, 0.43]}><boxGeometry args={[2.0, 0.22, 0.02]} /><meshStandardMaterial color="#1d2b3d" emissive="#3aa0ff" emissiveIntensity={0.5} /></mesh>
-            {i === 0 && <mesh position={[1.25, 0, 0]} rotation={[0, 0, -Math.PI / 2]}><coneGeometry args={[0.42, 0.55, 8]} /><meshStandardMaterial color={color} /></mesh>}
+            <mesh castShadow>
+              <boxGeometry args={[2.4, 0.62, 0.85]} />
+              <meshStandardMaterial color={color} metalness={0.4} roughness={0.3} />
+            </mesh>
+            <mesh position={[0, 0.05, 0.43]}>
+              <boxGeometry args={[2.0, 0.22, 0.02]} />
+              <meshStandardMaterial color="#1d2b3d" emissive="#3aa0ff" emissiveIntensity={0.5} />
+            </mesh>
+            {i === 0 && (
+              <mesh position={[1.25, 0, 0]} rotation={[0, 0, -Math.PI / 2]}>
+                <coneGeometry args={[0.42, 0.55, 8]} />
+                <meshStandardMaterial color={color} />
+              </mesh>
+            )}
           </group>
         ))}
       </group>
@@ -534,12 +636,23 @@ function People({ stage }: { stage: number }) {
     if (stage < 1) return [];
     const rng = mulberry32(stage * 7 + 5);
     const n = Math.min(46, 4 + stage * 5);
-    const colors = ["#d64a4a", "#3aa86c", "#3a6cd6", "#d6a73a", "#9a4ad6", "#4ac4d6", "#e8e8ee", "#3b3f46"];
+    const colors = [
+      "#d64a4a",
+      "#3aa86c",
+      "#3a6cd6",
+      "#d6a73a",
+      "#9a4ad6",
+      "#4ac4d6",
+      "#e8e8ee",
+      "#3b3f46",
+    ];
     return Array.from({ length: n }).map(() => {
       const axis = rng() < 0.5 ? "x" : "z";
       return {
         axis,
-        line: (lines[Math.floor(rng() * lines.length)] ?? 0) + (rng() < 0.5 ? -1 : 1) * (ROAD / 2 + 0.45),
+        line:
+          (lines[Math.floor(rng() * lines.length)] ?? 0) +
+          (rng() < 0.5 ? -1 : 1) * (ROAD / 2 + 0.45),
         dir: rng() < 0.5 ? 1 : -1,
         speed: 0.8 + rng() * 0.6,
         offset: rng() * 60,
@@ -567,8 +680,14 @@ function People({ stage }: { stage: number }) {
     <group ref={group}>
       {people.map((p, i) => (
         <group key={i}>
-          <mesh castShadow><capsuleGeometry args={[0.07, 0.22, 4, 8]} /><meshStandardMaterial color={p.color} roughness={0.9} /></mesh>
-          <mesh position={[0, 0.24, 0]}><sphereGeometry args={[0.085, 10, 10]} /><meshStandardMaterial color="#f3c7a4" /></mesh>
+          <mesh castShadow>
+            <capsuleGeometry args={[0.07, 0.22, 4, 8]} />
+            <meshStandardMaterial color={p.color} roughness={0.9} />
+          </mesh>
+          <mesh position={[0, 0.24, 0]}>
+            <sphereGeometry args={[0.085, 10, 10]} />
+            <meshStandardMaterial color="#f3c7a4" />
+          </mesh>
         </group>
       ))}
     </group>
@@ -591,7 +710,10 @@ function Clouds({ night }: { night: number }) {
   const items = useMemo(() => {
     const rng = mulberry32(99);
     return Array.from({ length: 9 }).map(() => ({
-      x: (rng() - 0.5) * 90, y: 16 + rng() * 8, z: (rng() - 0.5) * 90, s: 2 + rng() * 3,
+      x: (rng() - 0.5) * 90,
+      y: 16 + rng() * 8,
+      z: (rng() - 0.5) * 90,
+      s: 2 + rng() * 3,
     }));
   }, []);
   useFrame((_, dt) => {
@@ -605,10 +727,18 @@ function Clouds({ night }: { night: number }) {
     <group ref={ref}>
       {items.map((c, i) => (
         <group key={i} position={[c.x, c.y, c.z]} scale={c.s}>
-          {[[0, 0, 0], [0.8, -0.15, 0.2], [-0.75, -0.1, -0.15]].map((o, j) => (
+          {[
+            [0, 0, 0],
+            [0.8, -0.15, 0.2],
+            [-0.75, -0.1, -0.15],
+          ].map((o, j) => (
             <mesh key={j} position={o as [number, number, number]}>
               <sphereGeometry args={[0.6, 10, 10]} />
-              <meshStandardMaterial color={night > 0.5 ? "#3a4260" : "#ffffff"} transparent opacity={0.75} />
+              <meshStandardMaterial
+                color={night > 0.5 ? "#3a4260" : "#ffffff"}
+                transparent
+                opacity={0.75}
+              />
             </mesh>
           ))}
         </group>
@@ -622,7 +752,8 @@ function Stars({ night }: { night: number }) {
     const rng = mulberry32(4242);
     const arr = new Float32Array(400 * 3);
     for (let i = 0; i < 400; i++) {
-      const th = rng() * Math.PI * 2, ph = rng() * Math.PI * 0.42;
+      const th = rng() * Math.PI * 2,
+        ph = rng() * Math.PI * 0.42;
       const r = 110;
       arr[i * 3] = Math.cos(th) * Math.cos(ph) * r;
       arr[i * 3 + 1] = Math.sin(ph) * r + 12;
@@ -643,26 +774,63 @@ function Stars({ night }: { night: number }) {
 
 // ---------- user-built structures ----------
 const KIND_LABEL: Record<string, string> = {
-  house: "住宅", apartment: "集合住宅", office: "オフィス", tower: "タワー",
-  shop: "商店", factory: "工場", hospital: "病院", school: "学校",
-  park: "公園", road: "道路", solar: "太陽光", wind: "風力",
+  house: "住宅",
+  apartment: "集合住宅",
+  office: "オフィス",
+  tower: "タワー",
+  shop: "商店",
+  factory: "工場",
+  hospital: "病院",
+  school: "学校",
+  park: "公園",
+  road: "道路",
+  solar: "太陽光",
+  wind: "風力",
 };
 
-function UserBuilding({ b, selected, showLabel, onClick }: { b: UserBuildingRow; selected: boolean; showLabel?: boolean; onClick: () => void }) {
+function UserBuilding({
+  b,
+  selected,
+  showLabel,
+  onClick,
+}: {
+  b: UserBuildingRow;
+  selected: boolean;
+  showLabel?: boolean;
+  onClick: () => void;
+}) {
   const [x, z] = cellToWorld(b.gx, b.gz);
   const lv = b.level ?? 1;
   const body = (() => {
     switch (b.kind) {
       case "road":
-        return <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.09, 0]} receiveShadow><planeGeometry args={[2.6, 2.6]} /><meshStandardMaterial color="#43474e" roughness={1} /></mesh>;
+        return (
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.09, 0]} receiveShadow>
+            <planeGeometry args={[2.6, 2.6]} />
+            <meshStandardMaterial color="#43474e" roughness={1} />
+          </mesh>
+        );
       case "park":
         return (
           <group>
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.06, 0]} receiveShadow><planeGeometry args={[2.6, 2.6]} /><meshStandardMaterial color="#5f9e56" roughness={1} /></mesh>
-            {[[-0.7, -0.6], [0.6, 0.5], [0.7, -0.7]].map(([px, pz], i) => (
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.06, 0]} receiveShadow>
+              <planeGeometry args={[2.6, 2.6]} />
+              <meshStandardMaterial color="#5f9e56" roughness={1} />
+            </mesh>
+            {[
+              [-0.7, -0.6],
+              [0.6, 0.5],
+              [0.7, -0.7],
+            ].map(([px, pz], i) => (
               <group key={i} position={[px, 0, pz]}>
-                <mesh position={[0, 0.3, 0]} castShadow><cylinderGeometry args={[0.06, 0.09, 0.6, 6]} /><meshStandardMaterial color="#6a4a2a" /></mesh>
-                <mesh position={[0, 0.75, 0]} castShadow><icosahedronGeometry args={[0.42, 0]} /><meshStandardMaterial color="#3d8a42" flatShading /></mesh>
+                <mesh position={[0, 0.3, 0]} castShadow>
+                  <cylinderGeometry args={[0.06, 0.09, 0.6, 6]} />
+                  <meshStandardMaterial color="#6a4a2a" />
+                </mesh>
+                <mesh position={[0, 0.75, 0]} castShadow>
+                  <icosahedronGeometry args={[0.42, 0]} />
+                  <meshStandardMaterial color="#3d8a42" flatShading />
+                </mesh>
               </group>
             ))}
           </group>
@@ -670,11 +838,20 @@ function UserBuilding({ b, selected, showLabel, onClick }: { b: UserBuildingRow;
       case "solar":
         return (
           <group>
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.06, 0]}><planeGeometry args={[2.6, 2.6]} /><meshStandardMaterial color="#7d7f74" /></mesh>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.06, 0]}>
+              <planeGeometry args={[2.6, 2.6]} />
+              <meshStandardMaterial color="#7d7f74" />
+            </mesh>
             {[-0.7, 0, 0.7].map((pz) => (
               <mesh key={pz} position={[0, 0.35, pz]} rotation={[-0.5, 0, 0]} castShadow>
                 <boxGeometry args={[2.2, 0.06, 0.7]} />
-                <meshStandardMaterial color="#1e3a6e" metalness={0.7} roughness={0.2} emissive="#1b4a8a" emissiveIntensity={0.2} />
+                <meshStandardMaterial
+                  color="#1e3a6e"
+                  metalness={0.7}
+                  roughness={0.2}
+                  emissive="#1b4a8a"
+                  emissiveIntensity={0.2}
+                />
               </mesh>
             ))}
           </group>
@@ -684,48 +861,108 @@ function UserBuilding({ b, selected, showLabel, onClick }: { b: UserBuildingRow;
       case "station":
         return (
           <group>
-            <mesh position={[0, 0.6, 0]} castShadow><boxGeometry args={[2.6, 1.2, 1.8]} /><meshStandardMaterial color="#e8e2d4" /></mesh>
-            <mesh position={[0, 1.35, 0]} castShadow><boxGeometry args={[3.0, 0.2, 2.2]} /><meshStandardMaterial color="#a8341f" /></mesh>
-            <mesh position={[0, 0.75, 0.92]}><planeGeometry args={[1.8, 0.3]} /><meshStandardMaterial color="#ffffff" emissive="#9fe3ff" emissiveIntensity={0.7} /></mesh>
+            <mesh position={[0, 0.6, 0]} castShadow>
+              <boxGeometry args={[2.6, 1.2, 1.8]} />
+              <meshStandardMaterial color="#e8e2d4" />
+            </mesh>
+            <mesh position={[0, 1.35, 0]} castShadow>
+              <boxGeometry args={[3.0, 0.2, 2.2]} />
+              <meshStandardMaterial color="#a8341f" />
+            </mesh>
+            <mesh position={[0, 0.75, 0.92]}>
+              <planeGeometry args={[1.8, 0.3]} />
+              <meshStandardMaterial color="#ffffff" emissive="#9fe3ff" emissiveIntensity={0.7} />
+            </mesh>
           </group>
         );
       case "factory":
         return (
           <group>
-            <mesh position={[0, 0.8, 0]} castShadow><boxGeometry args={[2.5, 1.6, 2.0]} /><meshStandardMaterial color="#9aa0a6" /></mesh>
-            <mesh position={[0.9, 2.0, 0]} castShadow><cylinderGeometry args={[0.2, 0.26, 1.6, 10]} /><meshStandardMaterial color="#c8cdd2" /></mesh>
+            <mesh position={[0, 0.8, 0]} castShadow>
+              <boxGeometry args={[2.5, 1.6, 2.0]} />
+              <meshStandardMaterial color="#9aa0a6" />
+            </mesh>
+            <mesh position={[0.9, 2.0, 0]} castShadow>
+              <cylinderGeometry args={[0.2, 0.26, 1.6, 10]} />
+              <meshStandardMaterial color="#c8cdd2" />
+            </mesh>
             <Smoke />
           </group>
         );
       case "hospital":
         return (
           <group>
-            <mesh position={[0, 1.1, 0]} castShadow><boxGeometry args={[2.2, 2.2, 2.0]} /><meshStandardMaterial color="#f4f7fa" /></mesh>
-            <mesh position={[0, 1.6, 1.02]}><boxGeometry args={[0.8, 0.2, 0.05]} /><meshStandardMaterial color="#e23b3b" emissive="#e23b3b" emissiveIntensity={0.5} /></mesh>
-            <mesh position={[0, 1.6, 1.02]}><boxGeometry args={[0.2, 0.8, 0.05]} /><meshStandardMaterial color="#e23b3b" emissive="#e23b3b" emissiveIntensity={0.5} /></mesh>
+            <mesh position={[0, 1.1, 0]} castShadow>
+              <boxGeometry args={[2.2, 2.2, 2.0]} />
+              <meshStandardMaterial color="#f4f7fa" />
+            </mesh>
+            <mesh position={[0, 1.6, 1.02]}>
+              <boxGeometry args={[0.8, 0.2, 0.05]} />
+              <meshStandardMaterial color="#e23b3b" emissive="#e23b3b" emissiveIntensity={0.5} />
+            </mesh>
+            <mesh position={[0, 1.6, 1.02]}>
+              <boxGeometry args={[0.2, 0.8, 0.05]} />
+              <meshStandardMaterial color="#e23b3b" emissive="#e23b3b" emissiveIntensity={0.5} />
+            </mesh>
           </group>
         );
       case "school":
         return (
           <group>
-            <mesh position={[0, 0.8, 0]} castShadow><boxGeometry args={[2.6, 1.6, 1.6]} /><meshStandardMaterial color="#efe2c8" /></mesh>
-            <mesh position={[0, 1.75, 0]} rotation={[0, Math.PI / 4, 0]} castShadow><coneGeometry args={[1.6, 0.6, 4]} /><meshStandardMaterial color="#8c4a34" /></mesh>
-            <mesh position={[0, 2.4, 0]}><cylinderGeometry args={[0.03, 0.03, 0.9, 6]} /><meshStandardMaterial color="#9aa0a6" /></mesh>
+            <mesh position={[0, 0.8, 0]} castShadow>
+              <boxGeometry args={[2.6, 1.6, 1.6]} />
+              <meshStandardMaterial color="#efe2c8" />
+            </mesh>
+            <mesh position={[0, 1.75, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+              <coneGeometry args={[1.6, 0.6, 4]} />
+              <meshStandardMaterial color="#8c4a34" />
+            </mesh>
+            <mesh position={[0, 2.4, 0]}>
+              <cylinderGeometry args={[0.03, 0.03, 0.9, 6]} />
+              <meshStandardMaterial color="#9aa0a6" />
+            </mesh>
           </group>
         );
       default: {
-        const h = b.kind === "tower" ? 6 + lv : b.kind === "office" ? 3.4 : b.kind === "apartment" ? 3.0 : 1.4;
-        const color = b.kind === "tower" ? "#dfe8ff" : b.kind === "office" ? "#cfd6e0" : b.kind === "apartment" ? "#e2dccd" : "#e8d3b0";
+        const h =
+          b.kind === "tower"
+            ? 6 + lv
+            : b.kind === "office"
+              ? 3.4
+              : b.kind === "apartment"
+                ? 3.0
+                : 1.4;
+        const color =
+          b.kind === "tower"
+            ? "#dfe8ff"
+            : b.kind === "office"
+              ? "#cfd6e0"
+              : b.kind === "apartment"
+                ? "#e2dccd"
+                : "#e8d3b0";
         return (
           <group>
             <mesh position={[0, h / 2, 0]} castShadow receiveShadow>
-              <boxGeometry args={[b.kind === "house" ? 1.7 : 2.2, h, b.kind === "house" ? 1.7 : 2.0]} />
-              <meshStandardMaterial color={color} roughness={0.7} emissive="#ffd79a" emissiveIntensity={0.06} />
+              <boxGeometry
+                args={[b.kind === "house" ? 1.7 : 2.2, h, b.kind === "house" ? 1.7 : 2.0]}
+              />
+              <meshStandardMaterial
+                color={color}
+                roughness={0.7}
+                emissive="#ffd79a"
+                emissiveIntensity={0.06}
+              />
             </mesh>
             {b.kind === "house" ? (
-              <mesh position={[0, h + 0.28, 0]} rotation={[0, Math.PI / 4, 0]} castShadow><coneGeometry args={[1.32, 0.6, 4]} /><meshStandardMaterial color="#7a3a2a" /></mesh>
+              <mesh position={[0, h + 0.28, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+                <coneGeometry args={[1.32, 0.6, 4]} />
+                <meshStandardMaterial color="#7a3a2a" />
+              </mesh>
             ) : (
-              <mesh position={[0, h + 0.08, 0]} castShadow><boxGeometry args={[2.3, 0.14, 2.1]} /><meshStandardMaterial color="#31363d" /></mesh>
+              <mesh position={[0, h + 0.08, 0]} castShadow>
+                <boxGeometry args={[2.3, 0.14, 2.1]} />
+                <meshStandardMaterial color="#31363d" />
+              </mesh>
             )}
           </group>
         );
@@ -736,15 +973,24 @@ function UserBuilding({ b, selected, showLabel, onClick }: { b: UserBuildingRow;
   return (
     <group
       position={[x, 0, z]}
-      onClick={(e) => { e.stopPropagation(); onClick(); }}
-      onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = "pointer"; }}
-      onPointerOut={() => { document.body.style.cursor = "auto"; }}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        document.body.style.cursor = "pointer";
+      }}
+      onPointerOut={() => {
+        document.body.style.cursor = "auto";
+      }}
     >
       {body}
       {showLabel && (
         <Html position={[0, 2.6, 0]} center distanceFactor={26} zIndexRange={[10, 0]}>
           <div className="pointer-events-none rounded bg-background/85 px-1.5 py-0.5 text-[10px] font-medium text-foreground shadow">
-            {KIND_LABEL[b.kind] ?? b.kind}{(b.level ?? 1) > 1 ? ` Lv${b.level}` : ""}
+            {KIND_LABEL[b.kind] ?? b.kind}
+            {(b.level ?? 1) > 1 ? ` Lv${b.level}` : ""}
           </div>
         </Html>
       )}
@@ -760,10 +1006,15 @@ function UserBuilding({ b, selected, showLabel, onClick }: { b: UserBuildingRow;
 
 function WindTurbine() {
   const ref = useRef<THREE.Group>(null);
-  useFrame((_, dt) => { if (ref.current) ref.current.rotation.z += dt * 2.2; });
+  useFrame((_, dt) => {
+    if (ref.current) ref.current.rotation.z += dt * 2.2;
+  });
   return (
     <group>
-      <mesh position={[0, 1.6, 0]} castShadow><cylinderGeometry args={[0.08, 0.14, 3.2, 8]} /><meshStandardMaterial color="#f2f4f7" /></mesh>
+      <mesh position={[0, 1.6, 0]} castShadow>
+        <cylinderGeometry args={[0.08, 0.14, 3.2, 8]} />
+        <meshStandardMaterial color="#f2f4f7" />
+      </mesh>
       <group ref={ref} position={[0, 3.2, 0.18]}>
         {[0, 1, 2].map((i) => (
           <mesh key={i} rotation={[0, 0, (i * Math.PI * 2) / 3]} position={[0, 0, 0]} castShadow>
@@ -799,7 +1050,12 @@ function Smoke() {
   );
 }
 
-function BuildGrid({ stage, occupied, onPick, selected }: {
+function BuildGrid({
+  stage,
+  occupied,
+  onPick,
+  selected,
+}: {
   stage: number;
   occupied: Set<string>;
   onPick: (gx: number, gz: number) => void;
@@ -825,9 +1081,17 @@ function BuildGrid({ stage, occupied, onPick, selected }: {
             key={`${gx},${gz}`}
             rotation={[-Math.PI / 2, 0, 0]}
             position={[x, 0.13, z]}
-            onClick={(e) => { e.stopPropagation(); onPick(gx, gz); }}
-            onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = "pointer"; }}
-            onPointerOut={() => { document.body.style.cursor = "auto"; }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onPick(gx, gz);
+            }}
+            onPointerOver={(e) => {
+              e.stopPropagation();
+              document.body.style.cursor = "pointer";
+            }}
+            onPointerOut={() => {
+              document.body.style.cursor = "auto";
+            }}
           >
             <planeGeometry args={[2.7, 2.7]} />
             <meshBasicMaterial
@@ -845,9 +1109,17 @@ function BuildGrid({ stage, occupied, onPick, selected }: {
 export type UserBuildingRow = { id: string; kind: string; gx: number; gz: number; level: number };
 
 function SceneInner({
-  stage, sky, userBuildings, buildMode, selected, showLabels, onPick, onSelectBuilding,
+  stage,
+  sky,
+  userBuildings,
+  buildMode,
+  selected,
+  showLabels,
+  onPick,
+  onSelectBuilding,
 }: {
-  stage: number; sky: Sky;
+  stage: number;
+  sky: Sky;
   showLabels?: boolean;
   userBuildings: UserBuildingRow[];
   buildMode: boolean;
@@ -859,7 +1131,9 @@ function SceneInner({
   const texByEra = useMemo(() => {
     if (typeof document === "undefined") return {} as Record<number, THREE.Texture>;
     const map: Record<number, THREE.Texture> = {};
-    [1, 2, 3, 4, 5].forEach((e) => { map[e] = facadeTexture(e, e * 77 + stage, sky.night); });
+    [1, 2, 3, 4, 5].forEach((e) => {
+      map[e] = facadeTexture(e, e * 77 + stage, sky.night);
+    });
     return map;
   }, [stage, Math.round(sky.night * 4)]);
 
@@ -873,14 +1147,18 @@ function SceneInner({
     // ユーザー区画（1辺 LOT）と footprint が重なる自動生成建物は描画しない
     const HALF = 1.5;
     return buildings.filter(
-      (b) => !pts.some(([x, z]) =>
-        Math.abs(b.x - x) < b.w / 2 + HALF && Math.abs(b.z - z) < b.d / 2 + HALF),
+      (b) =>
+        !pts.some(
+          ([x, z]) => Math.abs(b.x - x) < b.w / 2 + HALF && Math.abs(b.z - z) < b.d / 2 + HALF,
+        ),
     );
   }, [buildings, userBuildings]);
 
   const visibleParks = useMemo(() => {
     const pts = userBuildings.map((b) => cellToWorld(b.gx, b.gz));
-    return parks.filter((p) => !pts.some(([x, z]) => Math.abs(p.x - x) < 4.5 && Math.abs(p.z - z) < 4.5));
+    return parks.filter(
+      (p) => !pts.some(([x, z]) => Math.abs(p.x - x) < 4.5 && Math.abs(p.z - z) < 4.5),
+    );
   }, [parks, userBuildings]);
 
   return (
@@ -894,8 +1172,10 @@ function SceneInner({
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
-        shadow-camera-left={-40} shadow-camera-right={40}
-        shadow-camera-top={40} shadow-camera-bottom={-40}
+        shadow-camera-left={-40}
+        shadow-camera-right={40}
+        shadow-camera-top={40}
+        shadow-camera-bottom={-40}
         shadow-camera-far={90}
       />
       <Stars night={sky.night} />
@@ -906,7 +1186,9 @@ function SceneInner({
       <TrafficLights stage={stage} />
       <Traffic stage={stage} night={sky.night} />
       <RailLine stage={stage} />
-      {visibleParks.map((p, i) => <Park key={i} x={p.x} z={p.z} stage={stage} />)}
+      {visibleParks.map((p, i) => (
+        <Park key={i} x={p.x} z={p.z} stage={stage} />
+      ))}
       <People stage={stage} />
       {visible.map((b, i) => (
         <BuildingMesh key={i} b={b} tex={texByEra[b.era] ?? null} />
@@ -920,7 +1202,9 @@ function SceneInner({
           onClick={() => onSelectBuilding(b)}
         />
       ))}
-      {buildMode && <BuildGrid stage={stage} occupied={occupied} onPick={onPick} selected={selected} />}
+      {buildMode && (
+        <BuildGrid stage={stage} occupied={occupied} onPick={onPick} selected={selected} />
+      )}
     </>
   );
 }
@@ -987,9 +1271,10 @@ export default function Town3D({
         />
       </Canvas>
       <div className="absolute left-3 top-3 text-[11px] px-2 py-1 rounded-full bg-background/70 backdrop-blur border border-border/60 tabular-nums pointer-events-none">
-        {String(Math.floor(hour)).padStart(2, "0")}:{String(Math.floor((hour % 1) * 60)).padStart(2, "0")} ・ {sky.night > 0.5 ? "夜" : sky.night > 0.15 ? "夕方" : "昼"}
+        {String(Math.floor(hour)).padStart(2, "0")}:
+        {String(Math.floor((hour % 1) * 60)).padStart(2, "0")} ・{" "}
+        {sky.night > 0.5 ? "夜" : sky.night > 0.15 ? "夕方" : "昼"}
       </div>
     </div>
   );
 }
-

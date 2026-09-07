@@ -8,7 +8,10 @@ export type ClassroomAttachment = {
   type?: string;
 };
 
-export async function uploadClassroomFile(userId: string, file: File): Promise<ClassroomAttachment> {
+export async function uploadClassroomFile(
+  userId: string,
+  file: File,
+): Promise<ClassroomAttachment> {
   const safeName = file.name.replace(/[^\w.-]+/g, "_");
   const path = `${userId}/${Date.now()}-${safeName}`;
   const { error } = await supabase.storage.from("classroom-files").upload(path, file, {

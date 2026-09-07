@@ -16,7 +16,11 @@ export function ServiceGate({ serviceKey, children }: { serviceKey: string; chil
         variant={status.variant!}
         message={status.message}
         until={status.until}
-        title={status.variant === "stop" ? `${label} は現在利用停止中です` : `${label} へのアクセスが制限されています`}
+        title={
+          status.variant === "stop"
+            ? `${label} は現在利用停止中です`
+            : `${label} へのアクセスが制限されています`
+        }
       />
     );
   }

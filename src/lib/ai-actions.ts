@@ -4,8 +4,8 @@ import { aiJSON } from "@/lib/ai-provider";
 /** AI が提案できる操作（ユーザーが許可したときだけ実行される） */
 export type StudyLogAction = {
   kind: "add_study_log";
-  date: string;          // YYYY-MM-DD
-  subject: string;       // 教科名（存在しなければ作成）
+  date: string; // YYYY-MM-DD
+  subject: string; // 教科名（存在しなければ作成）
   minutes: number;
   content: string;
   material: string | null; // 教材名（部分一致で検索）
@@ -52,7 +52,11 @@ export function looksLikeActionRequest(text: string): boolean {
   if (!verb.test(t)) return false;
   if (!target.test(t)) return false;
   // 質問文だけのケース（「どう記録するの？」など）は除外
-  if (/(方法|やり方|どうやって|どうすれば|できますか|とは|なぜ|教えて.*方法)/.test(t) && !/(して|してください|お願い|しといて|してね)/.test(t)) return false;
+  if (
+    /(方法|やり方|どうやって|どうすれば|できますか|とは|なぜ|教えて.*方法)/.test(t) &&
+    !/(して|してください|お願い|しといて|してね)/.test(t)
+  )
+    return false;
   return true;
 }
 
@@ -60,14 +64,19 @@ export function looksLikeActionRequest(text: string): boolean {
 export function parseCommonActionRequest(text: string, subjects: string[]): AiAction | null {
   if (!looksLikeActionRequest(text)) return null;
   const normalized = text.replace(/[、。]/g, " ");
-  const isGoal = /(目標|ゴール)/.test(normalized) && /(作って|作成|設定|追加|登録)/.test(normalized);
+  const isGoal =
+    /(目標|ゴール)/.test(normalized) && /(作って|作成|設定|追加|登録)/.test(normalized);
   if (isGoal) {
     const hours = normalized.match(/(\d+(?:\.\d+)?)\s*時間/);
     const minutes = normalized.match(/(\d+)\s*分/);
     const target = hours ? Math.round(Number(hours[1]) * 60) : minutes ? Number(minutes[1]) : 600;
     return {
       kind: "add_goal",
-      title: normalized.replace(/(目標|ゴール).*/, "").trim().slice(0, 100) || "新しい学習目標",
+      title:
+        normalized
+          .replace(/(目標|ゴール).*/, "")
+          .trim()
+          .slice(0, 100) || "新しい学習目標",
       target_minutes: Math.max(1, target),
       deadline: null,
     };
@@ -77,11 +86,17 @@ export function parseCommonActionRequest(text: string, subjects: string[]): AiAc
   const minutes = normalized.match(/(\d+)\s*分/);
   const duration = hours
     ? Math.round(Number(hours[1]) * 60 + (/時間半/.test(hours[0]) ? 30 : 0))
-    : minutes ? Number(minutes[1]) : 0;
+    : minutes
+      ? Number(minutes[1])
+      : 0;
   if (!duration) return null;
   const subject = subjects.find((name) => normalized.includes(name)) ?? "";
   const date = /昨日/.test(normalized)
-    ? (() => { const d = new Date(); d.setDate(d.getDate() - 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; })()
+    ? (() => {
+        const d = new Date();
+        d.setDate(d.getDate() - 1);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      })()
     : today();
   return {
     kind: "add_study_log",
@@ -94,14 +109,23 @@ export function parseCommonActionRequest(text: string, subjects: string[]): AiAc
 }
 
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
+  return Promise.race([
+    p,
+    new Promise<T>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms)),
+  ]);
 }
 
 /** ユーザーの最後の発言から操作提案を抽出する。提案がなければ null */
-export async function detectAiAction(userText: string, subjects: string[]): Promise<AiAction | null> {
+export async function detectAiAction(
+  userText: string,
+  subjects: string[],
+): Promise<AiAction | null> {
   if (!looksLikeActionRequest(userText)) return null;
   try {
-    const raw = await withTimeout(aiJSON<any>(`ユーザーの発言:\n${userText}\n\nJSON:`, actionSystem(subjects)), 30000);
+    const raw = await withTimeout(
+      aiJSON<any>(`ユーザーの発言:\n${userText}\n\nJSON:`, actionSystem(subjects)),
+      30000,
+    );
     if (!raw || typeof raw !== "object") return null;
 
     if (raw.kind === "add_study_log") {
@@ -113,7 +137,10 @@ export async function detectAiAction(userText: string, subjects: string[]): Prom
         subject: String(raw.subject ?? "").trim() || "その他",
         minutes,
         content: String(raw.content ?? "").trim(),
-        material: raw.material && String(raw.material).toLowerCase() !== "null" ? String(raw.material).trim() : null,
+        material:
+          raw.material && String(raw.material).toLowerCase() !== "null"
+            ? String(raw.material).trim()
+            : null,
       };
     }
     if (raw.kind === "add_goal" && String(raw.title ?? "").trim()) {
@@ -137,7 +164,11 @@ export async function fetchSubjectNames(userId: string): Promise<{ id: string; n
 
 export async function findMaterial(name: string): Promise<{ id: string; title: string } | null> {
   const { data } = await (supabase as any)
-    .from("materials").select("id,title").eq("status", "approved").ilike("title", `%${name}%`).limit(1);
+    .from("materials")
+    .select("id,title")
+    .eq("status", "approved")
+    .ilike("title", `%${name}%`)
+    .limit(1);
   return (data ?? [])[0] ?? null;
 }
 
@@ -145,7 +176,9 @@ export async function findMaterial(name: string): Promise<{ id: string; title: s
 export async function applyAiAction(action: AiAction, userId: string): Promise<string> {
   if (action.kind === "add_study_log") {
     const subs = await fetchSubjectNames(userId);
-    const subject = subs.find((s) => s.name === action.subject) ?? subs.find((s) => s.name.includes(action.subject));
+    const subject =
+      subs.find((s) => s.name === action.subject) ??
+      subs.find((s) => s.name.includes(action.subject));
     if (!subject) {
       throw new Error("登録済みの教科を選択してください");
     }

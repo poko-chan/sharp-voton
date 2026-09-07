@@ -31,12 +31,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else {
       setRole("user");
     }
-    const { data: prof } = await supabase.from("profiles").select("account_kind" as any).eq("id", userId).maybeSingle();
+    const { data: prof } = await supabase
+      .from("profiles")
+      .select("account_kind" as any)
+      .eq("id", userId)
+      .maybeSingle();
     setAccountKind(((prof as any)?.account_kind as any) ?? "child");
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
       if (s?.user) {
         setTimeout(() => fetchRole(s.user.id), 0);

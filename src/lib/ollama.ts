@@ -73,13 +73,16 @@ export type OllamaSession = {
   destroy: () => void;
 };
 
-export function createOllamaSession(model: string, opts?: {
-  system?: string;
-  temperature?: number;
-  topP?: number;
-  maxTokens?: number;
-  frequencyPenalty?: number;
-}): OllamaSession {
+export function createOllamaSession(
+  model: string,
+  opts?: {
+    system?: string;
+    temperature?: number;
+    topP?: number;
+    maxTokens?: number;
+    frequencyPenalty?: number;
+  },
+): OllamaSession {
   const history: Array<{ role: string; content: string }> = [];
   if (opts?.system) history.push({ role: "system", content: opts.system });
 
@@ -116,8 +119,13 @@ export function createOllamaSession(model: string, opts?: {
         try {
           const j = JSON.parse(line);
           const delta = j?.message?.content ?? "";
-          if (delta) { full += delta; onChunk?.(full); }
-        } catch { /* noop */ }
+          if (delta) {
+            full += delta;
+            onChunk?.(full);
+          }
+        } catch {
+          /* noop */
+        }
       }
     }
     const answer = full.trim();
@@ -127,12 +135,16 @@ export function createOllamaSession(model: string, opts?: {
 
   return {
     prompt: (t) => complete(t),
-    promptJSON: async <T,>(t: string): Promise<T> => {
-      const out = await complete(`${t}\n\n出力は JSON のみ。説明文やコードフェンスは書かないこと。`);
+    promptJSON: async <T>(t: string): Promise<T> => {
+      const out = await complete(
+        `${t}\n\n出力は JSON のみ。説明文やコードフェンスは書かないこと。`,
+      );
       const { extractJSON } = await import("@/lib/chrome-ai");
       return extractJSON<T>(out);
     },
     promptStreaming: (t, onChunk) => complete(t, onChunk),
-    destroy: () => { history.length = 0; },
+    destroy: () => {
+      history.length = 0;
+    },
   };
 }

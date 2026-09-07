@@ -2,7 +2,17 @@
 // 名前は基本配列 → 越えたら "Lv N" サフィックスで拡張。
 
 const STAGE_NAMES = [
-  "廃墟", "荒地", "小集落", "村", "町", "都市", "大都市", "巨大都市", "連邦首都", "軌道都市", "銀河都市",
+  "廃墟",
+  "荒地",
+  "小集落",
+  "村",
+  "町",
+  "都市",
+  "大都市",
+  "巨大都市",
+  "連邦首都",
+  "軌道都市",
+  "銀河都市",
 ] as const;
 
 export function stageName(stage: number): string {
@@ -30,7 +40,19 @@ export function stageDescription(stage: number): string {
 }
 
 export function stageColor(stage: number): string {
-  const palette = ["#6b5b4f", "#9c8b73", "#a8b572", "#7fb069", "#65a07a", "#4a90a4", "#3a5e8c", "#6a4a9a", "#a04a8c", "#3aa0d8", "#d8a04a"];
+  const palette = [
+    "#6b5b4f",
+    "#9c8b73",
+    "#a8b572",
+    "#7fb069",
+    "#65a07a",
+    "#4a90a4",
+    "#3a5e8c",
+    "#6a4a9a",
+    "#a04a8c",
+    "#3aa0d8",
+    "#d8a04a",
+  ];
   return palette[Math.min(stage, palette.length - 1)];
 }
 

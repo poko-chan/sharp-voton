@@ -36,11 +36,16 @@ export function AccountSection() {
     try {
       const ext = file.name.split(".").pop() || "png";
       const path = `${user.id}/avatar-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
       const url = pub.publicUrl;
-      const { error } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ avatar_url: url })
+        .eq("id", user.id);
       if (error) throw error;
       setProfile((p) => ({ ...p, avatar_url: url }));
       emitProfileChange();
@@ -56,8 +61,14 @@ export function AccountSection() {
     if (!user) return;
     const name = profile.display_name.trim();
     if (!name) return toast.error("表示名を入力してください");
-    const { error } = await supabase.from("profiles").update({ display_name: name }).eq("id", user.id);
-    if (error) { toast.error(error.message); return; }
+    const { error } = await supabase
+      .from("profiles")
+      .update({ display_name: name })
+      .eq("id", user.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     emitProfileChange();
     toast.success("プロフィールを保存しました");
   };
@@ -66,13 +77,20 @@ export function AccountSection() {
 
   return (
     <div className="space-y-6">
-      <SectionHeading title="アカウント / プロフィール" desc="表示名やアイコン、プランや招待コードを管理します" />
+      <SectionHeading
+        title="アカウント / プロフィール"
+        desc="表示名やアイコン、プランや招待コードを管理します"
+      />
       <Card className="p-6 space-y-5">
-        <div className="flex items-center gap-2 font-semibold"><User className="h-4 w-4" /> {t("settings.profile")}</div>
+        <div className="flex items-center gap-2 font-semibold">
+          <User className="h-4 w-4" /> {t("settings.profile")}
+        </div>
         <div className="flex items-center gap-4">
           <Avatar className="h-20 w-20">
             <AvatarImage src={profile.avatar_url ?? undefined} alt={profile.display_name} />
-            <AvatarFallback>{(profile.display_name || "U").slice(0, 1).toUpperCase()}</AvatarFallback>
+            <AvatarFallback>
+              {(profile.display_name || "U").slice(0, 1).toUpperCase()}
+            </AvatarFallback>
           </Avatar>
           <div className="space-y-2">
             <input
@@ -82,7 +100,12 @@ export function AccountSection() {
               hidden
               onChange={(e) => e.target.files?.[0] && onAvatarPick(e.target.files[0])}
             />
-            <Button variant="outline" size="sm" disabled={uploading} onClick={() => fileRef.current?.click()}>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={uploading}
+              onClick={() => fileRef.current?.click()}
+            >
               <Upload className="mr-2 h-4 w-4" />
               {uploading ? t("settings.uploading") : t("settings.changeIcon")}
             </Button>
@@ -91,7 +114,11 @@ export function AccountSection() {
         </div>
         <div className="space-y-1">
           <Label>{t("settings.displayName")}</Label>
-          <Input value={profile.display_name} onChange={(e) => setProfile({ ...profile, display_name: e.target.value })} maxLength={40} />
+          <Input
+            value={profile.display_name}
+            onChange={(e) => setProfile({ ...profile, display_name: e.target.value })}
+            maxLength={40}
+          />
         </div>
         <Button onClick={saveProfile}>{t("settings.saveProfile")}</Button>
       </Card>
@@ -107,7 +134,9 @@ function PlanPanel() {
   const [plan, setPlan] = useState<string>("free");
   useEffect(() => {
     if (!user) return;
-    (supabase as any).rpc("my_profile_private").then(({ data }: any) => setPlan(data?.current_plan ?? "free"));
+    (supabase as any)
+      .rpc("my_profile_private")
+      .then(({ data }: any) => setPlan(data?.current_plan ?? "free"));
   }, [user?.id]);
   return (
     <Card className="p-6 space-y-3">
@@ -116,7 +145,9 @@ function PlanPanel() {
         <span className="text-2xl font-bold">{plan === "free" ? "無料プラン" : plan}</span>
         <span className="text-xs px-2 py-0.5 rounded bg-muted">{plan.toUpperCase()}</span>
       </div>
-      <p className="text-sm text-muted-foreground">有料プランは現在準備中です。すべての機能を無料でご利用いただけます。</p>
+      <p className="text-sm text-muted-foreground">
+        有料プランは現在準備中です。すべての機能を無料でご利用いただけます。
+      </p>
     </Card>
   );
 }
@@ -130,7 +161,10 @@ function InvitePanel() {
     (async () => {
       const { data } = await (supabase as any).rpc("my_profile_private");
       setCode((data as any)?.referral_code ?? "");
-      const { count: c } = await (supabase as any).from("user_referrals").select("*", { count: "exact", head: true }).eq("referrer_id", user.id);
+      const { count: c } = await (supabase as any)
+        .from("user_referrals")
+        .select("*", { count: "exact", head: true })
+        .eq("referrer_id", user.id);
       setCount(c ?? 0);
     })();
   }, [user?.id]);
@@ -138,10 +172,19 @@ function InvitePanel() {
   return (
     <Card className="p-6 space-y-3">
       <div className="font-semibold">友達を招待 (+10コイン)</div>
-      <p className="text-sm text-muted-foreground">招待リンクから登録された方とあなたの両方に 10 コインがプレゼントされます。</p>
+      <p className="text-sm text-muted-foreground">
+        招待リンクから登録された方とあなたの両方に 10 コインがプレゼントされます。
+      </p>
       <div className="flex gap-2">
         <Input value={link} readOnly onClick={(e) => (e.target as HTMLInputElement).select()} />
-        <Button onClick={() => { navigator.clipboard.writeText(link); toast.success("コピーしました"); }}>コピー</Button>
+        <Button
+          onClick={() => {
+            navigator.clipboard.writeText(link);
+            toast.success("コピーしました");
+          }}
+        >
+          コピー
+        </Button>
       </div>
       <div className="text-xs text-muted-foreground">これまでに {count} 人を招待しました</div>
     </Card>

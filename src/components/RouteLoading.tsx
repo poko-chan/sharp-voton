@@ -12,7 +12,10 @@ export function RouteLoading() {
       // 完了演出
       if (visible) {
         setProgress(100);
-        const t = setTimeout(() => { setVisible(false); setProgress(0); }, 250);
+        const t = setTimeout(() => {
+          setVisible(false);
+          setProgress(0);
+        }, 250);
         return () => clearTimeout(t);
       }
       return;

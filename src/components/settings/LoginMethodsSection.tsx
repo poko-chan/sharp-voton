@@ -28,7 +28,7 @@ export function LoginMethodsSection() {
 
   const load = useCallback(async () => {
     const { data, error } = await supabase.auth.getUserIdentities();
-    if (!error) setIdentities(((data?.identities ?? []) as any[]) as Identity[]);
+    if (!error) setIdentities((data?.identities ?? []) as any[] as Identity[]);
     setLoading(false);
   }, []);
 
@@ -129,11 +129,18 @@ export function LoginMethodsSection() {
                 )}
                 <div>
                   <div className="text-sm font-medium">{p.label}</div>
-                  <div className="text-xs text-muted-foreground">{linked(p.id) ? "連携済み" : "未連携"}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {linked(p.id) ? "連携済み" : "未連携"}
+                  </div>
                 </div>
               </div>
               {linked(p.id) ? (
-                <Button variant="outline" size="sm" disabled={busy === p.id} onClick={() => unlink(p.id)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={busy === p.id}
+                  onClick={() => unlink(p.id)}
+                >
                   <Unlink className="mr-2 h-4 w-4" /> 解除
                 </Button>
               ) : (
@@ -156,11 +163,21 @@ export function LoginMethodsSection() {
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1">
             <Label>新しいパスワード</Label>
-            <Input type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="new-password" />
+            <Input
+              type="password"
+              value={pw}
+              onChange={(e) => setPw(e.target.value)}
+              autoComplete="new-password"
+            />
           </div>
           <div className="space-y-1">
             <Label>確認のため再入力</Label>
-            <Input type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} autoComplete="new-password" />
+            <Input
+              type="password"
+              value={pw2}
+              onChange={(e) => setPw2(e.target.value)}
+              autoComplete="new-password"
+            />
           </div>
         </div>
         <Button onClick={savePassword} disabled={busy === "password"}>

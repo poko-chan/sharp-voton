@@ -3,10 +3,19 @@ import { Database, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
 import { SCOPE_DEFS, type ChatPrefs, type ScopeKey } from "@/lib/tutor-prefs";
 
 function Segmented<T extends string | number>({
-  value, options, onChange,
-}: { value: T; options: { v: T; label: string; hint?: string }[]; onChange: (v: T) => void }) {
+  value,
+  options,
+  onChange,
+}: {
+  value: T;
+  options: { v: T; label: string; hint?: string }[];
+  onChange: (v: T) => void;
+}) {
   return (
-    <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0,1fr))` }}>
+    <div
+      className="grid gap-1.5"
+      style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0,1fr))` }}
+    >
       {options.map((o) => (
         <button
           key={String(o.v)}
@@ -17,18 +26,34 @@ function Segmented<T extends string | number>({
           }`}
         >
           <span className="block text-xs font-semibold">{o.label}</span>
-          {o.hint && <span className="mt-0.5 block text-[10px] leading-snug text-muted-foreground">{o.hint}</span>}
+          {o.hint && (
+            <span className="mt-0.5 block text-[10px] leading-snug text-muted-foreground">
+              {o.hint}
+            </span>
+          )}
         </button>
       ))}
     </div>
   );
 }
 
-function Section({ icon: Icon, title, desc, children }: { icon: any; title: string; desc: string; children: React.ReactNode }) {
+function Section({
+  icon: Icon,
+  title,
+  desc,
+  children,
+}: {
+  icon: any;
+  title: string;
+  desc: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-2">
       <div className="flex items-start gap-2">
-        <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary"><Icon className="h-3.5 w-3.5" /></span>
+        <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+          <Icon className="h-3.5 w-3.5" />
+        </span>
         <div className="min-w-0">
           <p className="text-sm font-semibold leading-tight">{title}</p>
           <p className="text-[11px] leading-snug text-muted-foreground">{desc}</p>
@@ -39,19 +64,25 @@ function Section({ icon: Icon, title, desc, children }: { icon: any; title: stri
   );
 }
 
-export function ChatSettingsPanel({ prefs, onChange }: { prefs: ChatPrefs; onChange: (p: ChatPrefs) => void }) {
+export function ChatSettingsPanel({
+  prefs,
+  onChange,
+}: {
+  prefs: ChatPrefs;
+  onChange: (p: ChatPrefs) => void;
+}) {
   const set = (patch: Partial<ChatPrefs>) => onChange({ ...prefs, ...patch });
   const toggleScope = (k: ScopeKey) =>
-    set({ scopes: prefs.scopes.includes(k) ? prefs.scopes.filter((x) => x !== k) : [...prefs.scopes, k] });
+    set({
+      scopes: prefs.scopes.includes(k) ? prefs.scopes.filter((x) => x !== k) : [...prefs.scopes, k],
+    });
 
   return (
     <div className="space-y-5">
       <p className="rounded-xl bg-muted/60 p-2.5 text-[11px] leading-relaxed text-muted-foreground">
-        ここは「毎回は変えない」設定です。品質（Flash / Think / Pro）、Web検索、学習データ、回答の長さなどは、入力欄のすぐ下のボタンからすぐ切り替えられます。
+        ここは「毎回は変えない」設定です。品質（Flash / Think /
+        Pro）、Web検索、学習データ、回答の長さなどは、入力欄のすぐ下のボタンからすぐ切り替えられます。
       </p>
-
-
-
 
       <Section icon={Sparkles} title="回答の長さ" desc="用途に合わせて情報量を切り替えます。">
         <Segmented
@@ -81,40 +112,63 @@ export function ChatSettingsPanel({ prefs, onChange }: { prefs: ChatPrefs; onCha
         <label className="flex items-center justify-between gap-3">
           <span className="min-w-0">
             <span className="block text-xs font-semibold">答えを先に教える</span>
-            <span className="block text-[11px] text-muted-foreground">オフのときは、まずヒントと考え方から案内します。</span>
+            <span className="block text-[11px] text-muted-foreground">
+              オフのときは、まずヒントと考え方から案内します。
+            </span>
           </span>
           <Switch checked={prefs.directAnswer} onCheckedChange={(v) => set({ directAnswer: v })} />
         </label>
         <label className="flex items-center justify-between gap-3 border-t pt-2">
           <span className="min-w-0">
             <span className="block text-xs font-semibold">思考プロセスを表示する</span>
-            <span className="block text-[11px] text-muted-foreground">生成中の考えを最初から開いた状態で表示します（Liteでは表示しません）。</span>
+            <span className="block text-[11px] text-muted-foreground">
+              生成中の考えを最初から開いた状態で表示します（Liteでは表示しません）。
+            </span>
           </span>
-          <Switch checked={prefs.autoOpenThinking} onCheckedChange={(v) => set({ autoOpenThinking: v })} />
+          <Switch
+            checked={prefs.autoOpenThinking}
+            onCheckedChange={(v) => set({ autoOpenThinking: v })}
+          />
         </label>
         <label className="flex items-center justify-between gap-3 border-t pt-2">
           <span className="min-w-0">
             <span className="block text-xs font-semibold">出典リンクを表示する</span>
-            <span className="block text-[11px] text-muted-foreground">Webを参照したとき、回答の下に情報源のリンクを付けます。</span>
+            <span className="block text-[11px] text-muted-foreground">
+              Webを参照したとき、回答の下に情報源のリンクを付けます。
+            </span>
           </span>
           <Switch checked={prefs.showSources} onCheckedChange={(v) => set({ showSources: v })} />
         </label>
       </div>
 
-
-      <Section icon={ShieldCheck} title="AIに見せてよい情報" desc="オフにした情報は、どの設定でもAIへ渡しません。">
+      <Section
+        icon={ShieldCheck}
+        title="AIに見せてよい情報"
+        desc="オフにした情報は、どの設定でもAIへ渡しません。"
+      >
         <div className="grid gap-2">
           {SCOPE_DEFS.map((s) => {
             const on = prefs.scopes.includes(s.key);
             const Icon = s.icon;
             return (
-              <label key={s.key} className={`flex cursor-pointer items-start gap-2.5 rounded-xl border p-2.5 transition ${on ? "border-primary/30 bg-primary/[0.06]" : "bg-background/70"}`}>
-                <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${on ? "text-primary" : "text-muted-foreground"}`} />
+              <label
+                key={s.key}
+                className={`flex cursor-pointer items-start gap-2.5 rounded-xl border p-2.5 transition ${on ? "border-primary/30 bg-primary/[0.06]" : "bg-background/70"}`}
+              >
+                <Icon
+                  className={`mt-0.5 h-4 w-4 shrink-0 ${on ? "text-primary" : "text-muted-foreground"}`}
+                />
                 <span className="min-w-0 flex-1">
                   <span className="block text-xs font-semibold">{s.label}</span>
-                  <span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground">{s.desc}</span>
+                  <span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground">
+                    {s.desc}
+                  </span>
                 </span>
-                <Switch checked={on} onCheckedChange={() => toggleScope(s.key)} aria-label={`${s.label}の参照許可`} />
+                <Switch
+                  checked={on}
+                  onCheckedChange={() => toggleScope(s.key)}
+                  aria-label={`${s.label}の参照許可`}
+                />
               </label>
             );
           })}

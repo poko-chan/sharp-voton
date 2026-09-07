@@ -14,7 +14,9 @@ export const Route = createFileRoute("/features/$slug")({
   },
   head: ({ loaderData, params }) => {
     if (!loaderData) {
-      return { meta: [{ title: "機能が見つかりません｜Study#" }, { name: "robots", content: "noindex" }] };
+      return {
+        meta: [{ title: "機能が見つかりません｜Study#" }, { name: "robots", content: "noindex" }],
+      };
     }
     const f = loaderData.feature;
     const title = `${f.name}｜Study# の機能`;
@@ -39,7 +41,10 @@ export const Route = createFileRoute("/features/$slug")({
   notFoundComponent: () => (
     <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
       お探しの機能ページが見つかりませんでした。
-      <Link to="/features" className="font-semibold text-primary underline-offset-4 hover:underline">
+      <Link
+        to="/features"
+        className="font-semibold text-primary underline-offset-4 hover:underline"
+      >
         機能一覧へ戻る
       </Link>
     </div>
@@ -72,9 +77,13 @@ function FeatureDetail() {
         <div className="mt-6 text-4xl" aria-hidden>
           {feature.emoji}
         </div>
-        <h1 className="mt-3 font-display text-4xl font-black tracking-tight sm:text-5xl">{feature.name}</h1>
+        <h1 className="mt-3 font-display text-4xl font-black tracking-tight sm:text-5xl">
+          {feature.name}
+        </h1>
         <p className="mt-3 text-lg font-semibold text-primary">{feature.lead}</p>
-        <p className="mt-5 text-sm leading-relaxed text-muted-foreground sm:text-base">{feature.detail}</p>
+        <p className="mt-5 text-sm leading-relaxed text-muted-foreground sm:text-base">
+          {feature.detail}
+        </p>
 
         <section className="surface mt-8 p-6">
           <h2 className="font-display text-lg font-extrabold">この機能のポイント</h2>
@@ -91,7 +100,9 @@ function FeatureDetail() {
         <section className="surface mt-6 border-primary/30 p-6">
           <h2 className="font-display text-lg font-extrabold">使ってみる</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            ログインすると <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{feature.path}</code> から利用できます。
+            ログインすると{" "}
+            <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{feature.path}</code>{" "}
+            から利用できます。
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Link to="/login" className="cta px-5 py-2 text-sm">

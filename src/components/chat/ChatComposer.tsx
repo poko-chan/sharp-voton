@@ -54,7 +54,13 @@ export function ChatComposer({
 }
 
 /** メッセージ検索バー */
-export function ChatSearchBar({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+export function ChatSearchBar({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
   return (
     <input
       value={value}

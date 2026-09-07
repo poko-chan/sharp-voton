@@ -36,16 +36,15 @@ export function getStoredTheme(): ThemeName {
 export async function loadAndApplyUserTheme(userId: string | undefined) {
   applyTheme(getStoredTheme());
   if (!userId) return;
-  const { data } = await supabase
-    .from("profiles")
-    .select("theme")
-    .eq("id", userId)
-    .maybeSingle();
+  const { data } = await supabase.from("profiles").select("theme").eq("id", userId).maybeSingle();
   const t = ((data as { theme?: string } | null)?.theme as ThemeName) ?? "default";
   applyTheme(t);
 }
 
 export async function saveUserTheme(userId: string, theme: ThemeName) {
   applyTheme(theme);
-  await supabase.from("profiles").update({ theme } as never).eq("id", userId);
+  await supabase
+    .from("profiles")
+    .update({ theme } as never)
+    .eq("id", userId);
 }

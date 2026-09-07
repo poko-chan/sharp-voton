@@ -28,7 +28,8 @@ export async function syncCalendarNotifications(userId: string): Promise<void> {
       .eq("date", today),
   ]);
 
-  const rows: Array<{ user_id: string; type: string; title: string; body: string; link: string }> = [];
+  const rows: Array<{ user_id: string; type: string; title: string; body: string; link: string }> =
+    [];
   const marked: string[] = [];
   const hhmm = (t?: string | null) => (t ? String(t).slice(0, 5) : null);
 
@@ -64,12 +65,20 @@ export async function syncCalendarNotifications(userId: string): Promise<void> {
 
   if (rows.length === 0) {
     if (marked.length) {
-      try { localStorage.setItem(key, JSON.stringify([...done, ...marked])); } catch { /* noop */ }
+      try {
+        localStorage.setItem(key, JSON.stringify([...done, ...marked]));
+      } catch {
+        /* noop */
+      }
     }
     return;
   }
 
   const { error } = await supabase.from("notifications").insert(rows as any);
   if (error) return;
-  try { localStorage.setItem(key, JSON.stringify([...done, ...marked])); } catch { /* noop */ }
+  try {
+    localStorage.setItem(key, JSON.stringify([...done, ...marked]));
+  } catch {
+    /* noop */
+  }
 }

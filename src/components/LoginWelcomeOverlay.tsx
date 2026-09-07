@@ -26,7 +26,10 @@ export function LoginWelcomeOverlay() {
     if (typeof sessionStorage !== "undefined" && sessionStorage.getItem(SESSION_KEY)) return;
     (async () => {
       const { data: settings } = await (supabase as any)
-        .from("app_settings").select("login_overlay_enabled").limit(1).maybeSingle();
+        .from("app_settings")
+        .select("login_overlay_enabled")
+        .limit(1)
+        .maybeSingle();
       const on = settings?.login_overlay_enabled ?? true;
       setEnabled(on);
       if (!on) return;
@@ -53,14 +56,21 @@ export function LoginWelcomeOverlay() {
       let seenIds: string[] = [];
       if (ids.length) {
         const { data: seen } = await (supabase as any)
-          .from("user_board_seen").select("board_id").eq("user_id", user.id).in("board_id", ids);
+          .from("user_board_seen")
+          .select("board_id")
+          .eq("user_id", user.id)
+          .in("board_id", ids);
         seenIds = (seen ?? []).map((s: any) => s.board_id);
       }
       const fresh = list.filter((b) => !seenIds.includes(b.id));
       setBoards(fresh);
       setNotifs((nData ?? []) as any);
 
-      try { sessionStorage.setItem(SESSION_KEY, String(Date.now())); } catch { /* noop */ }
+      try {
+        sessionStorage.setItem(SESSION_KEY, String(Date.now()));
+      } catch {
+        /* noop */
+      }
       setPhase("welcome");
       const hasContent = fresh.length > 0 || (nData ?? []).length > 0;
       if (hasContent) {
@@ -87,7 +97,10 @@ export function LoginWelcomeOverlay() {
       await supabase
         .from("notifications")
         .update({ read_at: new Date().toISOString() })
-        .in("id", notifs.map((n) => n.id));
+        .in(
+          "id",
+          notifs.map((n) => n.id),
+        );
     }
     setTimeout(() => setPhase("hidden"), 350);
   };
@@ -124,9 +137,12 @@ export function LoginWelcomeOverlay() {
         <div className="flex items-center gap-3 px-6 py-4">
           <Sparkles className="h-7 w-7 text-primary animate-pulse" />
           <div className="text-center">
-            <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">welcome back</div>
+            <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+              welcome back
+            </div>
             <div className="text-3xl sm:text-5xl font-semibold tracking-tight">
-              {displayName}<span className="text-primary">.</span>
+              {displayName}
+              <span className="text-primary">.</span>
             </div>
             <div className="text-sm text-muted-foreground mt-1">おかえりなさい</div>
           </div>
@@ -166,7 +182,11 @@ export function LoginWelcomeOverlay() {
                   <Bell className="h-4 w-4 mt-0.5 text-primary shrink-0" />
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-semibold">{n.title}</div>
-                    {n.body && <div className="text-xs text-muted-foreground whitespace-pre-wrap">{n.body}</div>}
+                    {n.body && (
+                      <div className="text-xs text-muted-foreground whitespace-pre-wrap">
+                        {n.body}
+                      </div>
+                    )}
                     <div className="text-[10px] text-muted-foreground mt-0.5">
                       {new Date(n.created_at).toLocaleString("ja-JP")}
                     </div>

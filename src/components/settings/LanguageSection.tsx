@@ -1,5 +1,11 @@
 import { Card } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useI18n, LANGS, type Lang } from "@/lib/i18n";
 import { SectionHeading } from "./shared";
 
@@ -12,10 +18,14 @@ export function LanguageSection() {
         <div className="font-semibold">{t("settings.language")}</div>
         <p className="text-xs text-muted-foreground">{t("settings.language.desc")}</p>
         <Select value={lang} onValueChange={(v) => setLang(v as Lang)}>
-          <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-48">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             {LANGS.map((l) => (
-              <SelectItem key={l.code} value={l.code}>{l.label}</SelectItem>
+              <SelectItem key={l.code} value={l.code}>
+                {l.label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>

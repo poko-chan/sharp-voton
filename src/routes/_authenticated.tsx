@@ -26,13 +26,15 @@ export const Route = createFileRoute("/_authenticated")({
   head: () => ({
     meta: [
       { title: "マイページ｜Study#" },
-      { name: "description", content: "Study#のアプリ画面。勉強記録・タイマー・演習・組織管理をここから利用します。" },
+      {
+        name: "description",
+        content: "Study#のアプリ画面。勉強記録・タイマー・演習・組織管理をここから利用します。",
+      },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),
   component: AuthLayout,
 });
-
 
 function AuthLayout() {
   const { user, loading, accountKind } = useAuth();
@@ -45,19 +47,37 @@ function AuthLayout() {
   // Parents can only access parent-related surfaces.
   useEffect(() => {
     if (loading || !user || accountKind !== "parent") return;
-    const allowed = ["/parent", "/settings", "/notifications", "/help", "/announcements", "/updates"];
+    const allowed = [
+      "/parent",
+      "/settings",
+      "/notifications",
+      "/help",
+      "/announcements",
+      "/updates",
+    ];
     const ok = allowed.some((p) => path === p || path.startsWith(p + "/"));
     if (!ok) navigate({ to: "/parent" });
   }, [accountKind, path, user, loading, navigate]);
   // 組織アカウントは組織管理まわりのみ。学習機能は使えない。
   useEffect(() => {
     if (loading || !user || accountKind !== "org") return;
-    const allowed = ["/organizations", "/settings", "/notifications", "/help", "/announcements", "/updates"];
+    const allowed = [
+      "/organizations",
+      "/settings",
+      "/notifications",
+      "/help",
+      "/announcements",
+      "/updates",
+    ];
     const ok = allowed.some((p) => path === p || path.startsWith(p + "/"));
     if (!ok) navigate({ to: "/organizations" });
   }, [accountKind, path, user, loading, navigate]);
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center text-muted-foreground">読み込み中...</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center text-muted-foreground">
+        読み込み中...
+      </div>
+    );
   }
   if (!user) return null;
   if (!onboarding.loading && onboarding.needsProfile) {
@@ -68,25 +88,29 @@ function AuthLayout() {
       <TutorialOverlay onDone={() => onboarding.reload()} />
     ) : null;
   const match = ROUTE_SERVICE.find(([prefix]) => path === prefix || path.startsWith(prefix + "/"));
-  const content = match
-    ? <ServiceGate serviceKey={match[1]}><Outlet /></ServiceGate>
-    : <Outlet />;
+  const content = match ? (
+    <ServiceGate serviceKey={match[1]}>
+      <Outlet />
+    </ServiceGate>
+  ) : (
+    <Outlet />
+  );
   // Makron uses its own full-screen shell, bypass AppShell.
   const isMakron = path === "/makron" || path.startsWith("/makron/");
   if (isMakron) {
     return (
-        <TimerProvider>
-          {content}
-          {tutorial}
-          <LoginWelcomeOverlay />
-        </TimerProvider>
-    );
-  }
-  return (
       <TimerProvider>
-        <AppShell>{content}</AppShell>
+        {content}
         {tutorial}
         <LoginWelcomeOverlay />
       </TimerProvider>
+    );
+  }
+  return (
+    <TimerProvider>
+      <AppShell>{content}</AppShell>
+      {tutorial}
+      <LoginWelcomeOverlay />
+    </TimerProvider>
   );
 }

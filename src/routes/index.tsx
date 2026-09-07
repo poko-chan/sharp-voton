@@ -43,7 +43,10 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: DESC },
       { name: "twitter:title", content: TITLE },
       { name: "twitter:description", content: DESC },
-      { name: "gridinsoft-key", content: "w2xxfuv75eiz41ywqjw6ciuxwbdwj754d9rh7qtw5q2z3ptjcywc5i6338v74g86" },
+      {
+        name: "gridinsoft-key",
+        content: "w2xxfuv75eiz41ywqjw6ciuxwbdwj754d9rh7qtw5q2z3ptjcywc5i6338v74g86",
+      },
       { name: "wot-verification", content: "b90b06f9dc6ed5f77aed" },
     ],
     links: [{ rel: "canonical", href: "https://sharp-voton.lovable.app/" }],
@@ -75,7 +78,9 @@ function LandingRoute() {
   useEffect(() => {
     if (loading) return;
     const raw = window.location.hash.slice(1) + "&" + window.location.search.slice(1);
-    if (/(^|&)(access_token|refresh_token|code|token_hash|type|error|error_description)=/.test(raw)) {
+    if (
+      /(^|&)(access_token|refresh_token|code|token_hash|type|error|error_description)=/.test(raw)
+    ) {
       navigate({ to: "/login", replace: true });
     }
   }, [user, loading, navigate]);
@@ -193,7 +198,8 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
                 </h1>
                 <p className="muted-on-ink mt-6 max-w-xl text-[0.95rem] leading-relaxed sm:text-lg">
                   記録する。集中する。解く。AIに聞く。仲間と続ける。学校や塾で運用する。
-                  バラバラだった学習の道具を、Voton Study Sharp（Study#）はひとつのプラットフォームにまとめました。
+                  バラバラだった学習の道具を、Voton Study
+                  Sharp（Study#）はひとつのプラットフォームにまとめました。
                 </p>
                 <div className="mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                   {isAuthed ? (
@@ -218,8 +224,13 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
                   ["24h", "AIチャット"],
                   ["4段階", "組織の役割管理"],
                 ].map(([v, l]) => (
-                  <div key={l} className="rounded-2xl border border-white/12 bg-white/[0.06] p-5 backdrop-blur-sm">
-                    <dt className="font-display text-2xl font-bold text-gradient sm:text-3xl">{v}</dt>
+                  <div
+                    key={l}
+                    className="rounded-2xl border border-white/12 bg-white/[0.06] p-5 backdrop-blur-sm"
+                  >
+                    <dt className="font-display text-2xl font-bold text-gradient sm:text-3xl">
+                      {v}
+                    </dt>
                     <dd className="muted-on-ink mt-1 text-[11px] sm:text-xs">{l}</dd>
                   </div>
                 ))}
@@ -240,7 +251,9 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
           <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {REPLACEMENTS.map((r) => (
               <article key={r.before} className="surface surface-hover flex flex-col gap-3 p-6">
-                <p className="text-sm text-muted-foreground line-through decoration-destructive/50">{r.before}</p>
+                <p className="text-sm text-muted-foreground line-through decoration-destructive/50">
+                  {r.before}
+                </p>
                 <p className="text-sm font-semibold leading-relaxed">↓ {r.after}</p>
                 <p className="mt-auto rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
                   {r.gain}
@@ -272,7 +285,9 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
         {/* Scenarios */}
         <section className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
           <p className="section-eyebrow">Real use</p>
-          <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">実際の、ある一日</h2>
+          <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">
+            実際の、ある一日
+          </h2>
           <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
             自分に近い状況を選んで、そのまま真似できるようにまとめました。
           </p>
@@ -291,7 +306,9 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
                     </li>
                   ))}
                 </ol>
-                <p className="mt-4 rounded-xl bg-accent/12 p-3 text-sm font-semibold leading-relaxed">{s.result}</p>
+                <p className="mt-4 rounded-xl bg-accent/12 p-3 text-sm font-semibold leading-relaxed">
+                  {s.result}
+                </p>
               </article>
             ))}
           </div>
@@ -300,7 +317,9 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
         {/* Core features */}
         <section id="features" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:py-24">
           <p className="section-eyebrow">Features</p>
-          <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">主要機能</h2>
+          <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">
+            主要機能
+          </h2>
           <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
             毎日の学習を回すために必要なものを、最初からすべて用意しています。
           </p>
@@ -330,7 +349,9 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
             ))}
           </div>
 
-          <h2 className="mt-20 font-display text-3xl font-black tracking-tight sm:text-4xl">さらに、こんなことも</h2>
+          <h2 className="mt-20 font-display text-3xl font-black tracking-tight sm:text-4xl">
+            さらに、こんなことも
+          </h2>
           <div className="mt-10 grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
             {MORE.map((f) => (
               <article key={f.name} className="surface surface-hover p-6">
@@ -359,7 +380,9 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
         <section id="how" className="scroll-mt-20 border-y border-border/50 bg-muted/20">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
             <p className="section-eyebrow">How it works</p>
-            <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">使い方は、5ステップ</h2>
+            <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">
+              使い方は、5ステップ
+            </h2>
             <ol className="mt-10 grid gap-4 sm:gap-5 md:grid-cols-5">
               {STEPS.map((s) => (
                 <li key={s.n} className="surface p-5">
@@ -375,7 +398,9 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
         {/* Who */}
         <section className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
           <p className="section-eyebrow">For you</p>
-          <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">こんな人のために</h2>
+          <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">
+            こんな人のために
+          </h2>
           <div className="mt-10 grid gap-4 sm:gap-5 md:grid-cols-3">
             {[
               {
@@ -403,7 +428,9 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
         <section className="mx-auto max-w-6xl px-4 pb-4 sm:pb-8">
           <p className="section-eyebrow">Safety</p>
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">安心して使えるように</h2>
+            <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">
+              安心して使えるように
+            </h2>
 
             {/* 配置案2: 安全性（Safety）セクションの見出し横（文脈的に一番説得力が出る位置） */}
             <div className="shrink-0">
@@ -444,14 +471,18 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
         <section id="faq" className="scroll-mt-20 border-t border-border/50 bg-muted/20">
           <div className="mx-auto max-w-3xl px-4 py-16 sm:py-24">
             <p className="section-eyebrow">FAQ</p>
-            <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">よくある質問</h2>
+            <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">
+              よくある質問
+            </h2>
             <div className="surface mt-8 divide-y divide-border/60 overflow-hidden">
               {FAQ.map((f) => (
                 <details key={f.q} className="group p-5 transition hover:bg-muted/40">
                   <summary className="flex cursor-pointer list-none items-start gap-2 font-semibold">
                     <span className="text-primary">Q.</span>
                     <span className="flex-1">{f.q}</span>
-                    <span className="text-muted-foreground transition group-open:rotate-45">＋</span>
+                    <span className="text-muted-foreground transition group-open:rotate-45">
+                      ＋
+                    </span>
                   </summary>
                   <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{f.a}</p>
                 </details>

@@ -27,7 +27,7 @@ export function SettingsNav({
                   ? "bg-primary/10 text-primary font-medium"
                   : "text-muted-foreground hover:bg-accent hover:text-foreground",
                 c.danger && isActive && "bg-destructive/10 text-destructive",
-                c.danger && !isActive && "hover:text-destructive"
+                c.danger && !isActive && "hover:text-destructive",
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />
@@ -51,7 +51,9 @@ export function SettingsNav({
                 isActive
                   ? "bg-primary text-primary-foreground border-primary"
                   : "border-border text-muted-foreground hover:bg-accent",
-                c.danger && isActive && "bg-destructive text-destructive-foreground border-destructive"
+                c.danger &&
+                  isActive &&
+                  "bg-destructive text-destructive-foreground border-destructive",
               )}
             >
               <Icon className="h-3.5 w-3.5" />

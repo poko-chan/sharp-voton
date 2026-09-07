@@ -11,7 +11,16 @@ import { useTimer, fmtMs } from "@/lib/timer-context";
 import { localDateStr, addDaysStr } from "@/lib/date";
 import { computeMetrics, fmtNum, type BuildingRow } from "@/lib/town-economy";
 import {
-  AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
+  AreaChart,
+  Area,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
 } from "recharts";
 import { Timer, Play, Users, Coins, Leaf, Clock3, Flame, Activity } from "lucide-react";
 
@@ -28,8 +37,12 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
     queryFn: async () => {
       const since = addDaysStr(new Date(), -59);
       const [logs, builds, pols, town] = await Promise.all([
-        supabase.from("study_logs").select("date, duration_minutes, subject_id, start_time")
-          .eq("user_id", user!.id).gte("date", since).order("date", { ascending: true }),
+        supabase
+          .from("study_logs")
+          .select("date, duration_minutes, subject_id, start_time")
+          .eq("user_id", user!.id)
+          .gte("date", since)
+          .order("date", { ascending: true }),
         supabase.from("town_buildings").select("id, kind, gx, gz, level").eq("user_id", user!.id),
         supabase.from("town_policies").select("key, enabled").eq("user_id", user!.id),
         supabase.from("towns").select("stage").eq("user_id", user!.id).maybeSingle(),
@@ -37,7 +50,9 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
       return {
         logs: logs.data ?? [],
         buildings: (builds.data ?? []) as BuildingRow[],
-        policies: (pols.data ?? []).filter((p: any) => p.enabled !== false).map((p: any) => p.key as string),
+        policies: (pols.data ?? [])
+          .filter((p: any) => p.enabled !== false)
+          .map((p: any) => p.key as string),
         stage: town.data?.stage ?? 1,
       };
     },
@@ -59,11 +74,14 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
     const base = new Date();
     const todayMin = dayMap.get(today) ?? 0;
 
-    const series: { day: string; minutes: number; population: number; gdp: number; co2: number }[] = [];
+    const series: { day: string; minutes: number; population: number; gdp: number; co2: number }[] =
+      [];
     for (let i = 13; i >= 0; i--) {
       const key = addDaysStr(base, -i);
       // その日までの直近30日を使って街の指標を再現する
-      let minutes30 = 0, activeDays30 = 0, streak = 0;
+      let minutes30 = 0,
+        activeDays30 = 0,
+        streak = 0;
       const subj = new Set<string>();
       for (let j = 0; j < 30; j++) {
         const k = addDaysStr(new Date(key + "T00:00:00"), -j);
@@ -99,17 +117,30 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
     const avgSession = sessions ? Math.round(todayMin / sessions) : 0;
 
     return {
-      todayMin, week, sessions, avgSession, series,
+      todayMin,
+      week,
+      sessions,
+      avgSession,
+      series,
       metrics: last,
-      delta: last && prev
-        ? { population: last.population - prev.population, gdp: last.gdp - prev.gdp, co2: last.co2 - prev.co2 }
-        : { population: 0, gdp: 0, co2: 0 },
+      delta:
+        last && prev
+          ? {
+              population: last.population - prev.population,
+              gdp: last.gdp - prev.gdp,
+              co2: last.co2 - prev.co2,
+            }
+          : { population: 0, gdp: 0, co2: 0 },
     };
   }, [data]);
 
   const pct = Math.min(100, (view.todayMin / Math.max(1, dailyGoal)) * 100);
   const running = state?.running;
-  const liveLabel = state ? (state.kind === "stopwatch" ? fmtMs(elapsedMs) : fmtMs(remainingMs)) : null;
+  const liveLabel = state
+    ? state.kind === "stopwatch"
+      ? fmtMs(elapsedMs)
+      : fmtMs(remainingMs)
+    : null;
 
   return (
     <Card className="p-4 md:p-6 space-y-5 liquid-card border-primary/15 shadow-[0_20px_55px_-38px_color-mix(in_oklab,var(--primary)_60%,transparent)]">
@@ -120,7 +151,9 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
           </div>
           <div>
             <h2 className="font-bold leading-tight text-lg">タイマー & 学習時間</h2>
-            <p className="text-[11px] text-muted-foreground">記録した時間が街の指標に反映されます</p>
+            <p className="text-[11px] text-muted-foreground">
+              記録した時間が街の指標に反映されます
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -130,7 +163,10 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
             </Badge>
           )}
           <Button asChild size="sm" variant={state ? "outline" : "default"}>
-            <Link to="/timer"><Play className="h-3.5 w-3.5 mr-1" />{state ? "タイマーを見る" : "タイマー開始"}</Link>
+            <Link to="/timer">
+              <Play className="h-3.5 w-3.5 mr-1" />
+              {state ? "タイマーを見る" : "タイマー開始"}
+            </Link>
           </Button>
         </div>
       </div>
@@ -138,7 +174,10 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
       {/* 今日の進捗 */}
       <div>
         <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
-          <span>今日 <b className="text-foreground">{fmtMin(view.todayMin)}</b> / 目標 {fmtMin(dailyGoal)}</span>
+          <span>
+            今日 <b className="text-foreground">{fmtMin(view.todayMin)}</b> / 目標{" "}
+            {fmtMin(dailyGoal)}
+          </span>
           <span className="tabular-nums">{Math.round(pct)}%</span>
         </div>
         <PowerBar value={pct} height={12} />
@@ -164,14 +203,31 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="day" tick={{ fontSize: 10 }} interval={1} tickLine={false} axisLine={false} />
+              <XAxis
+                dataKey="day"
+                tick={{ fontSize: 10 }}
+                interval={1}
+                tickLine={false}
+                axisLine={false}
+              />
               <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} width={34} />
               <Tooltip
                 formatter={(v: any) => [`${v} 分`, "学習時間"]}
-                contentStyle={{ fontSize: 12, borderRadius: 10, background: "var(--popover)", border: "1px solid var(--border)" }}
+                contentStyle={{
+                  fontSize: 12,
+                  borderRadius: 10,
+                  background: "var(--popover)",
+                  border: "1px solid var(--border)",
+                }}
               />
               <ReferenceLine y={dailyGoal} stroke="var(--warning)" strokeDasharray="4 4" />
-              <Area type="monotone" dataKey="minutes" stroke="var(--primary)" strokeWidth={2} fill="url(#fp-min)" />
+              <Area
+                type="monotone"
+                dataKey="minutes"
+                stroke="var(--primary)"
+                strokeWidth={2}
+                fill="url(#fp-min)"
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -182,29 +238,88 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
         <div className="flex items-center justify-between mb-1">
           <p className="text-xs font-semibold">街の指標の推移</p>
           <div className="flex gap-2 text-[10px] text-muted-foreground">
-            <span className="inline-flex items-center gap-1"><Users className="h-3 w-3" />人口</span>
-            <span className="inline-flex items-center gap-1"><Coins className="h-3 w-3" />GDP</span>
-            <span className="inline-flex items-center gap-1"><Leaf className="h-3 w-3" />CO2</span>
+            <span className="inline-flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              人口
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Coins className="h-3 w-3" />
+              GDP
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Leaf className="h-3 w-3" />
+              CO2
+            </span>
           </div>
         </div>
         <div className="h-40">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={view.series} margin={{ top: 4, right: 6, left: -18, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="day" tick={{ fontSize: 10 }} interval={1} tickLine={false} axisLine={false} />
+              <XAxis
+                dataKey="day"
+                tick={{ fontSize: 10 }}
+                interval={1}
+                tickLine={false}
+                axisLine={false}
+              />
               <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} width={34} />
-              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 10, background: "var(--popover)", border: "1px solid var(--border)" }} />
-              <Line type="monotone" dataKey="population" name="人口" dot={false} strokeWidth={2} stroke="oklch(0.65 0.2 265)" />
-              <Line type="monotone" dataKey="gdp" name="GDP" dot={false} strokeWidth={2} stroke="oklch(0.72 0.16 160)" />
-              <Line type="monotone" dataKey="co2" name="CO2" dot={false} strokeWidth={2} stroke="oklch(0.72 0.16 40)" />
+              <Tooltip
+                contentStyle={{
+                  fontSize: 12,
+                  borderRadius: 10,
+                  background: "var(--popover)",
+                  border: "1px solid var(--border)",
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="population"
+                name="人口"
+                dot={false}
+                strokeWidth={2}
+                stroke="oklch(0.65 0.2 265)"
+              />
+              <Line
+                type="monotone"
+                dataKey="gdp"
+                name="GDP"
+                dot={false}
+                strokeWidth={2}
+                stroke="oklch(0.72 0.16 160)"
+              />
+              <Line
+                type="monotone"
+                dataKey="co2"
+                name="CO2"
+                dot={false}
+                strokeWidth={2}
+                stroke="oklch(0.72 0.16 40)"
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
         {view.metrics && (
           <div className="grid grid-cols-3 gap-2 mt-2">
-            <Metric icon={Users} label="人口" value={fmtNum(view.metrics.population)} delta={view.delta.population} />
-            <Metric icon={Coins} label="GDP" value={`${fmtNum(view.metrics.gdp)}百万`} delta={view.delta.gdp} />
-            <Metric icon={Leaf} label="CO2" value={`${fmtNum(view.metrics.co2)}t`} delta={view.delta.co2} good="down" />
+            <Metric
+              icon={Users}
+              label="人口"
+              value={fmtNum(view.metrics.population)}
+              delta={view.delta.population}
+            />
+            <Metric
+              icon={Coins}
+              label="GDP"
+              value={`${fmtNum(view.metrics.gdp)}百万`}
+              delta={view.delta.gdp}
+            />
+            <Metric
+              icon={Leaf}
+              label="CO2"
+              value={`${fmtNum(view.metrics.co2)}t`}
+              delta={view.delta.co2}
+              good="down"
+            />
           </div>
         )}
       </div>
@@ -215,20 +330,37 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
 function Mini({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
   return (
     <div className="rounded-xl border bg-card/60 px-3 py-2">
-      <div className="flex items-center gap-1 text-[10px] text-muted-foreground"><Icon className="h-3 w-3" />{label}</div>
+      <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+        <Icon className="h-3 w-3" />
+        {label}
+      </div>
       <div className="text-sm font-bold tabular-nums mt-0.5">{value}</div>
     </div>
   );
 }
 
 function Metric({
-  icon: Icon, label, value, delta, good = "up",
-}: { icon: any; label: string; value: string; delta: number; good?: "up" | "down" }) {
+  icon: Icon,
+  label,
+  value,
+  delta,
+  good = "up",
+}: {
+  icon: any;
+  label: string;
+  value: string;
+  delta: number;
+  good?: "up" | "down";
+}) {
   const positive = good === "up" ? delta > 0 : delta < 0;
-  const tone = delta === 0 ? "text-muted-foreground" : positive ? "text-emerald-600" : "text-amber-600";
+  const tone =
+    delta === 0 ? "text-muted-foreground" : positive ? "text-emerald-600" : "text-amber-600";
   return (
     <div className="rounded-xl border bg-card/60 px-3 py-2">
-      <div className="flex items-center gap-1 text-[10px] text-muted-foreground"><Icon className="h-3 w-3" />{label}</div>
+      <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+        <Icon className="h-3 w-3" />
+        {label}
+      </div>
       <div className="text-sm font-bold tabular-nums">{value}</div>
       <div className={`text-[10px] tabular-nums ${tone}`}>
         {delta === 0 ? "±0" : `${delta > 0 ? "+" : ""}${fmtNum(delta)}`} / 7日

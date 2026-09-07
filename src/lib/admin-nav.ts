@@ -25,9 +25,15 @@ export function useAdminNavConfig() {
     load();
     const ch = supabase
       .channel("admin-nav-config")
-      .on("postgres_changes", { event: "*", schema: "public", table: "admin_nav_config" }, () => { setVersion((v) => v + 1); load(); })
+      .on("postgres_changes", { event: "*", schema: "public", table: "admin_nav_config" }, () => {
+        setVersion((v) => v + 1);
+        load();
+      })
       .subscribe();
-    return () => { cancelled = true; supabase.removeChannel(ch); };
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(ch);
+    };
   }, []);
   return { map, version };
 }

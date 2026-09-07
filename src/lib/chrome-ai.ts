@@ -17,7 +17,8 @@ function getLM(): any | null {
   const w: any = window;
   if (w.LanguageModel) return w.LanguageModel;
   if (w.ai?.languageModel) return w.ai.languageModel;
-  if (typeof (globalThis as any).LanguageModel !== "undefined") return (globalThis as any).LanguageModel;
+  if (typeof (globalThis as any).LanguageModel !== "undefined")
+    return (globalThis as any).LanguageModel;
   return null;
 }
 
@@ -68,20 +69,33 @@ export async function chromeAiDiagnostics(): Promise<ChromeAiDiagnostics> {
   let reason = "";
   if (!hasApi) {
     if (!isChrome) reason = "Chrome 138+ が必要です（現在のブラウザは非対応）。";
-    else if (chromeVer && Number(chromeVer) < 138) reason = `Chrome ${chromeVer} は非対応です。138 以上に更新してください。`;
-    else reason = "内蔵 AI API が見つかりません。chrome://flags/#prompt-api-for-gemini-nano を Enabled にし、chrome://components の Optimization Guide On Device Model を最新に更新してください。";
-  } else if (status === "unavailable") reason = "モデルは利用不可（デバイス要件未達 or ダウンロード失敗の可能性）。";
-  else if (status === "downloadable") reason = "初回はモデルのダウンロード（数百MB）が必要です。ボタンを押すと開始します。";
+    else if (chromeVer && Number(chromeVer) < 138)
+      reason = `Chrome ${chromeVer} は非対応です。138 以上に更新してください。`;
+    else
+      reason =
+        "内蔵 AI API が見つかりません。chrome://flags/#prompt-api-for-gemini-nano を Enabled にし、chrome://components の Optimization Guide On Device Model を最新に更新してください。";
+  } else if (status === "unavailable")
+    reason = "モデルは利用不可（デバイス要件未達 or ダウンロード失敗の可能性）。";
+  else if (status === "downloadable")
+    reason = "初回はモデルのダウンロード（数百MB）が必要です。ボタンを押すと開始します。";
   else if (status === "downloading") reason = "モデルを取得中です…しばらくお待ちください。";
   else reason = "利用可能です。";
   if (!isSecure) reason = "HTTPS でないため利用できません。";
-  return { status, reason, hasApi, browser: isChrome ? `Chrome ${chromeVer ?? "?"}` : ua.split(" ").pop() ?? ua, isSecure };
+  return {
+    status,
+    reason,
+    hasApi,
+    browser: isChrome ? `Chrome ${chromeVer ?? "?"}` : (ua.split(" ").pop() ?? ua),
+    isSecure,
+  };
 }
 
 let downloadPromise: Promise<Status> | null = null;
 
 /** モデルを明示的にダウンロード開始する（downloadable のとき） */
-export async function chromeAiEnsureDownloaded(onProgress?: (loaded: number, total: number) => void): Promise<Status> {
+export async function chromeAiEnsureDownloaded(
+  onProgress?: (loaded: number, total: number) => void,
+): Promise<Status> {
   const lm = getLM();
   if (!lm) return "unavailable";
 
@@ -92,18 +106,33 @@ export async function chromeAiEnsureDownloaded(onProgress?: (loaded: number, tot
 
   downloadPromise = (async () => {
     try {
-      const createPromise = Promise.resolve(lm.create({
-        monitor(m: any) {
-          m.addEventListener?.("downloadprogress", (e: any) => {
-            try { onProgress?.(e.loaded ?? 0, e.total ?? 1); } catch { /* noop */ }
-          });
-        },
-      }));
+      const createPromise = Promise.resolve(
+        lm.create({
+          monitor(m: any) {
+            m.addEventListener?.("downloadprogress", (e: any) => {
+              try {
+                onProgress?.(e.loaded ?? 0, e.total ?? 1);
+              } catch {
+                /* noop */
+              }
+            });
+          },
+        }),
+      );
       const s: any = await Promise.race([
         createPromise,
-        new Promise((_, reject) => window.setTimeout(() => reject(new Error("Gemini Nano の取得が 10 分間進まなかったため中断しました")), 10 * 60 * 1000)),
+        new Promise((_, reject) =>
+          window.setTimeout(
+            () => reject(new Error("Gemini Nano の取得が 10 分間進まなかったため中断しました")),
+            10 * 60 * 1000,
+          ),
+        ),
       ]);
-      try { s.destroy?.(); } catch { /* noop */ }
+      try {
+        s.destroy?.();
+      } catch {
+        /* noop */
+      }
       return chromeAiStatus();
     } catch (e: any) {
       console.error("Chrome AI Download Error:", e);
@@ -149,7 +178,7 @@ export async function createChromeAiSession(opts?: {
       const r = await session.prompt(text);
       return typeof r === "string" ? r : String(r ?? "");
     },
-    promptJSON: async <T,>(text: string): Promise<T> => {
+    promptJSON: async <T>(text: string): Promise<T> => {
       const out = await session.prompt(text);
       const str = typeof out === "string" ? out : String(out ?? "");
       return extractJSON<T>(str);
@@ -170,18 +199,27 @@ export async function createChromeAiSession(opts?: {
         if (done) break;
         const v = typeof value === "string" ? value : String(value ?? "");
         if (!cumulative && v.startsWith(full) && v.length >= full.length) {
-          full = v; cumulative = true;
+          full = v;
+          cumulative = true;
         } else if (cumulative) {
           full = v;
         } else {
           full += v;
         }
-        try { onChunk(full); } catch { /* noop */ }
+        try {
+          onChunk(full);
+        } catch {
+          /* noop */
+        }
       }
       return full;
     },
     destroy: () => {
-      try { session.destroy?.(); } catch { /* noop */ }
+      try {
+        session.destroy?.();
+      } catch {
+        /* noop */
+      }
     },
   };
 }
@@ -210,9 +248,18 @@ export function extractJSON<T = unknown>(raw: string): T {
       else if (c === '"') inStr = false;
       continue;
     }
-    if (c === '"') { inStr = true; continue; }
+    if (c === '"') {
+      inStr = true;
+      continue;
+    }
     if (c === open) depth++;
-    else if (c === close) { depth--; if (depth === 0) { end = i; break; } }
+    else if (c === close) {
+      depth--;
+      if (depth === 0) {
+        end = i;
+        break;
+      }
+    }
   }
   const slice = end > 0 ? s.slice(start, end + 1) : s.slice(start);
   try {
@@ -225,10 +272,18 @@ export function extractJSON<T = unknown>(raw: string): T {
 /** 単発の便利関数 */
 export async function chromeAiPrompt(text: string, system?: string): Promise<string> {
   const s = await createChromeAiSession({ system });
-  try { return await s.prompt(text); } finally { s.destroy(); }
+  try {
+    return await s.prompt(text);
+  } finally {
+    s.destroy();
+  }
 }
 
 export async function chromeAiJSON<T = unknown>(text: string, system?: string): Promise<T> {
   const s = await createChromeAiSession({ system });
-  try { return await s.promptJSON<T>(text); } finally { s.destroy(); }
+  try {
+    return await s.promptJSON<T>(text);
+  } finally {
+    s.destroy();
+  }
 }

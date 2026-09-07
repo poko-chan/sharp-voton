@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -34,7 +42,9 @@ type Ctx = {
   nowMs: number;
   elapsedMs: number; // for stopwatch: total elapsed; for countdown: elapsed within target
   remainingMs: number; // for countdown / pomodoro
-  start: (init: Omit<TimerState, "running" | "startedAt" | "accumulated"> & { accumulated?: number }) => void;
+  start: (
+    init: Omit<TimerState, "running" | "startedAt" | "accumulated"> & { accumulated?: number },
+  ) => void;
   pause: () => void;
   resume: () => void;
   reset: () => void;
@@ -76,52 +86,61 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     if (state.running) return state.accumulated + Math.max(0, nowMs - state.startedAt);
     return state.accumulated;
   })();
-  const remainingMs = state && state.kind !== "stopwatch" ? Math.max(0, state.targetMs - elapsedMs) : 0;
+  const remainingMs =
+    state && state.kind !== "stopwatch" ? Math.max(0, state.targetMs - elapsedMs) : 0;
 
-  const saveSession = useCallback(async (minutes: number, kindLabel: string) => {
-    if (!user || !state) return;
-    if (!state.record || minutes <= 0) return;
-    const now = new Date();
-    const endH = String(now.getHours()).padStart(2, "0");
-    const endM = String(now.getMinutes()).padStart(2, "0");
-    const endTime = `${endH}:${endM}`;
-    // derive start time by subtracting minutes
-    const startD = new Date(now.getTime() - minutes * 60000);
-    const startTime = `${String(startD.getHours()).padStart(2, "0")}:${String(startD.getMinutes()).padStart(2, "0")}`;
-    const { error } = await supabase.from("study_logs").insert({
-      user_id: user.id,
-      subject_id: state.subjectId || null,
-      date: localDateStr(),
-      duration_minutes: minutes,
-      content: state.content || kindLabel,
-      start_time: startTime,
-      material_id: state.materialIds?.[0] || null,
-      material_ids: state.materialIds ?? [],
-    } as any);
-    if (error) toast.error(error.message);
-    else {
-      // Also snap into Today timeline as a study block (#5/#6 timer→Today auto sync)
-      try {
-        await (supabase as any).from("today_entries").insert({
-          user_id: user.id,
-          date: localDateStr(),
-          category: "study",
-          label: state.content || kindLabel,
-          color: "#22c55e",
-          start_time: startTime,
-          end_time: endTime,
-          material_ids: state.materialIds ?? [],
-        });
-      } catch {}
-      toast.success(`${minutes}分を記録しました🎉`);
-      emitProfileChange();
-    }
-  }, [user, state]);
+  const saveSession = useCallback(
+    async (minutes: number, kindLabel: string) => {
+      if (!user || !state) return;
+      if (!state.record || minutes <= 0) return;
+      const now = new Date();
+      const endH = String(now.getHours()).padStart(2, "0");
+      const endM = String(now.getMinutes()).padStart(2, "0");
+      const endTime = `${endH}:${endM}`;
+      // derive start time by subtracting minutes
+      const startD = new Date(now.getTime() - minutes * 60000);
+      const startTime = `${String(startD.getHours()).padStart(2, "0")}:${String(startD.getMinutes()).padStart(2, "0")}`;
+      const { error } = await supabase.from("study_logs").insert({
+        user_id: user.id,
+        subject_id: state.subjectId || null,
+        date: localDateStr(),
+        duration_minutes: minutes,
+        content: state.content || kindLabel,
+        start_time: startTime,
+        material_id: state.materialIds?.[0] || null,
+        material_ids: state.materialIds ?? [],
+      } as any);
+      if (error) toast.error(error.message);
+      else {
+        // Also snap into Today timeline as a study block (#5/#6 timer→Today auto sync)
+        try {
+          await (supabase as any).from("today_entries").insert({
+            user_id: user.id,
+            date: localDateStr(),
+            category: "study",
+            label: state.content || kindLabel,
+            color: "#22c55e",
+            start_time: startTime,
+            end_time: endTime,
+            material_ids: state.materialIds ?? [],
+          });
+        } catch {}
+        toast.success(`${minutes}分を記録しました🎉`);
+        emitProfileChange();
+      }
+    },
+    [user, state],
+  );
 
   const finish = useCallback(async () => {
     if (!state) return;
     const min = Math.round(elapsedMs / 60000);
-    const label = state.kind === "pomodoro" ? "ポモドーロ" : state.kind === "countdown" ? "タイマー" : "タイマー記録";
+    const label =
+      state.kind === "pomodoro"
+        ? "ポモドーロ"
+        : state.kind === "countdown"
+          ? "タイマー"
+          : "タイマー記録";
     if (state.record) await saveSession(min, label);
     setState(null);
   }, [state, elapsedMs, saveSession]);
@@ -182,11 +201,23 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         running: true,
       });
     },
-    pause: () => setState((s) => (s && s.running ? { ...s, accumulated: s.accumulated + (Date.now() - s.startedAt), running: false } : s)),
-    resume: () => setState((s) => (s && !s.running ? { ...s, startedAt: Date.now(), running: true } : s)),
-    reset: () => setState((s) => (s ? { ...s, accumulated: 0, startedAt: Date.now(), running: false, cycles: 0 } : s)),
+    pause: () =>
+      setState((s) =>
+        s && s.running
+          ? { ...s, accumulated: s.accumulated + (Date.now() - s.startedAt), running: false }
+          : s,
+      ),
+    resume: () =>
+      setState((s) => (s && !s.running ? { ...s, startedAt: Date.now(), running: true } : s)),
+    reset: () =>
+      setState((s) =>
+        s ? { ...s, accumulated: 0, startedAt: Date.now(), running: false, cycles: 0 } : s,
+      ),
     finish,
-    clear: () => { completedRef.current = false; setState(null); },
+    clear: () => {
+      completedRef.current = false;
+      setState(null);
+    },
   };
 
   return <TimerCtx.Provider value={ctx}>{children}</TimerCtx.Provider>;
@@ -200,17 +231,23 @@ export function useTimer() {
 
 export function fmtMs(ms: number) {
   const s = Math.max(0, Math.floor(ms / 1000));
-  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  const h = Math.floor(s / 3600),
+    m = Math.floor((s % 3600) / 60),
+    sec = s % 60;
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
 }
 
 function beep() {
   try {
     const ctx = new AudioContext();
-    const o = ctx.createOscillator(); const g = ctx.createGain();
-    o.frequency.value = 880; o.connect(g); g.connect(ctx.destination);
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.frequency.value = 880;
+    o.connect(g);
+    g.connect(ctx.destination);
     g.gain.setValueAtTime(0.2, ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-    o.start(); o.stop(ctx.currentTime + 0.5);
+    o.start();
+    o.stop(ctx.currentTime + 0.5);
   } catch {}
 }

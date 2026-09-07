@@ -18,7 +18,10 @@ export function ReactionPicker({ onPick }: { onPick: (emoji: string) => void }) 
             key={e}
             aria-label={`リアクション ${e}`}
             className="text-lg leading-none rounded-md px-1.5 py-1 hover:bg-muted"
-            onClick={() => { onPick(e); setOpen(false); }}
+            onClick={() => {
+              onPick(e);
+              setOpen(false);
+            }}
           >
             {e}
           </button>
@@ -56,7 +59,9 @@ export function ReactionBar({
           onClick={() => onToggle(emoji)}
           aria-label={`${emoji} ${c.n}件${c.me ? "（自分もリアクション済み）" : ""}`}
           className={`rounded-full border px-1.5 py-0.5 text-[11px] leading-none flex items-center gap-1 ${
-            c.me ? "border-primary bg-primary/10 text-foreground" : "bg-background text-muted-foreground"
+            c.me
+              ? "border-primary bg-primary/10 text-foreground"
+              : "bg-background text-muted-foreground"
           }`}
         >
           <span>{emoji}</span>

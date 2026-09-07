@@ -46,8 +46,7 @@ export function ClassFilesPanel({
     setFiles(data ?? []);
     const ids = Array.from(new Set((data ?? []).map((f) => f.uploader_id)));
     if (ids.length > 0) {
-      const { data: profs } = await supabase
-        .rpc("public_profiles_by_ids", { _ids: ids });
+      const { data: profs } = await supabase.rpc("public_profiles_by_ids", { _ids: ids });
       const map: Record<string, { name: string }> = {};
       (profs ?? []).forEach((p: any) => {
         map[p.id] = { name: p.display_name ?? p.username ?? "?" };
@@ -117,7 +116,11 @@ export function ClassFilesPanel({
           <>
             <input ref={inputRef} type="file" className="hidden" onChange={onUpload} />
             <Button onClick={() => inputRef.current?.click()} disabled={uploading} size="sm">
-              {uploading ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Upload className="h-3 w-3 mr-1" />}
+              {uploading ? (
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+              ) : (
+                <Upload className="h-3 w-3 mr-1" />
+              )}
               アップロード
             </Button>
           </>

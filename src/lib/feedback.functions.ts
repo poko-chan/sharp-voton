@@ -12,14 +12,16 @@ export const REVIEW_ONLY_CATEGORIES: FeedbackCategory[] = ["praise"];
 
 export const submitFeedback = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
-    z.object({
-      email: z.string().email().max(255).optional().nullable(),
-      category: z.enum(FEEDBACK_CATEGORIES).default("other"),
-      body: z.string().trim().min(3, "3文字以上で入力してください").max(4000),
-      route: z.string().max(500).optional().nullable(),
-      userAgent: z.string().max(500).optional().nullable(),
-      userId: z.string().uuid().optional().nullable(),
-    }).parse(d),
+    z
+      .object({
+        email: z.string().email().max(255).optional().nullable(),
+        category: z.enum(FEEDBACK_CATEGORIES).default("other"),
+        body: z.string().trim().min(3, "3文字以上で入力してください").max(4000),
+        route: z.string().max(500).optional().nullable(),
+        userAgent: z.string().max(500).optional().nullable(),
+        userId: z.string().uuid().optional().nullable(),
+      })
+      .parse(d),
   )
   .handler(async ({ data }) => {
     const { error } = await supabaseAdmin.from("feedback").insert({
@@ -36,7 +38,11 @@ export const submitFeedback = createServerFn({ method: "POST" })
 
 async function assertAdmin(userId: string) {
   const { data } = await supabaseAdmin
-    .from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle();
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .maybeSingle();
   if (!data) throw new Error("管理者権限が必要です");
 }
 
@@ -63,18 +69,23 @@ const STATUS_LABEL: Record<string, string> = {
 export const adminUpdateFeedback = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      id: z.string().uuid(),
-      status: z.enum(["open", "in_progress", "resolved", "wontfix"]).optional(),
-      adminReply: z.string().max(4000).optional().nullable(),
-    }).parse(d),
+    z
+      .object({
+        id: z.string().uuid(),
+        status: z.enum(["open", "in_progress", "resolved", "wontfix"]).optional(),
+        adminReply: z.string().max(4000).optional().nullable(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
 
     // load existing
     const { data: existing } = await supabaseAdmin
-      .from("feedback").select("user_id, status, admin_reply, body").eq("id", data.id).maybeSingle();
+      .from("feedback")
+      .select("user_id, status, admin_reply, body")
+      .eq("id", data.id)
+      .maybeSingle();
     if (!existing) throw new Error("見つかりません");
 
     const patch: any = {};
@@ -95,7 +106,10 @@ export const adminUpdateFeedback = createServerFn({ method: "POST" })
           body: existing.body?.slice(0, 120) ?? "",
         });
       }
-      if (data.adminReply !== undefined && (data.adminReply ?? "") !== (existing.admin_reply ?? "")) {
+      if (
+        data.adminReply !== undefined &&
+        (data.adminReply ?? "") !== (existing.admin_reply ?? "")
+      ) {
         events.push({
           title: "管理者から返信があります",
           body: (data.adminReply ?? "").slice(0, 200),
@@ -112,7 +126,10 @@ export const adminUpdateFeedback = createServerFn({ method: "POST" })
             link: "/notifications",
           })),
         );
-        await supabaseAdmin.from("feedback").update({ user_notified_at: new Date().toISOString() }).eq("id", data.id);
+        await supabaseAdmin
+          .from("feedback")
+          .update({ user_notified_at: new Date().toISOString() })
+          .eq("id", data.id);
       }
     }
 
@@ -168,14 +185,20 @@ export const getThreadMessages = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ feedbackId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: fb } = await supabaseAdmin
-      .from("feedback").select("user_id, category, body, status, created_at, admin_reply")
-      .eq("id", data.feedbackId).maybeSingle();
+      .from("feedback")
+      .select("user_id, category, body, status, created_at, admin_reply")
+      .eq("id", data.feedbackId)
+      .maybeSingle();
     if (!fb) throw new Error("見つかりません");
     const isOwner = fb.user_id === context.userId;
     let isAdmin = false;
     if (!isOwner) {
       const { data: r } = await supabaseAdmin
-        .from("user_roles").select("role").eq("user_id", context.userId).eq("role", "admin").maybeSingle();
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", context.userId)
+        .eq("role", "admin")
+        .maybeSingle();
       isAdmin = !!r;
     }
     if (!isOwner && !isAdmin) throw new Error("権限がありません");
@@ -197,20 +220,29 @@ export const getThreadMessages = createServerFn({ method: "POST" })
 export const postThreadMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      feedbackId: z.string().uuid(),
-      body: z.string().trim().min(1).max(4000),
-    }).parse(d),
+    z
+      .object({
+        feedbackId: z.string().uuid(),
+        body: z.string().trim().min(1).max(4000),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { data: fb } = await supabaseAdmin
-      .from("feedback").select("user_id").eq("id", data.feedbackId).maybeSingle();
+      .from("feedback")
+      .select("user_id")
+      .eq("id", data.feedbackId)
+      .maybeSingle();
     if (!fb) throw new Error("スレッドが見つかりません");
     const isOwner = fb.user_id === context.userId;
     let isAdmin = false;
     if (!isOwner) {
       const { data: r } = await supabaseAdmin
-        .from("user_roles").select("role").eq("user_id", context.userId).eq("role", "admin").maybeSingle();
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", context.userId)
+        .eq("role", "admin")
+        .maybeSingle();
       isAdmin = !!r;
     }
     if (!isOwner && !isAdmin) throw new Error("権限がありません");
@@ -237,15 +269,20 @@ export const postThreadMessage = createServerFn({ method: "POST" })
 export const startThread = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      category: z.enum(FEEDBACK_CATEGORIES).default("other"),
-      body: z.string().trim().min(1).max(4000),
-      route: z.string().max(500).optional().nullable(),
-    }).parse(d),
+    z
+      .object({
+        category: z.enum(FEEDBACK_CATEGORIES).default("other"),
+        body: z.string().trim().min(1).max(4000),
+        route: z.string().max(500).optional().nullable(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { data: prof } = await supabaseAdmin
-      .from("profiles").select("email").eq("id", context.userId).maybeSingle();
+      .from("profiles")
+      .select("email")
+      .eq("id", context.userId)
+      .maybeSingle();
     const { data: fb, error } = await supabaseAdmin
       .from("feedback")
       .insert({
@@ -255,7 +292,8 @@ export const startThread = createServerFn({ method: "POST" })
         body: data.body,
         route: data.route ?? null,
       })
-      .select("id").single();
+      .select("id")
+      .single();
     if (error || !fb) throw new Error(error?.message ?? "送信に失敗しました");
     await (supabaseAdmin as any).from("feedback_messages").insert({
       feedback_id: fb.id,
@@ -270,7 +308,9 @@ export const myThreadsUnreadCount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data: threads } = await supabaseAdmin
-      .from("feedback").select("id").eq("user_id", context.userId);
+      .from("feedback")
+      .select("id")
+      .eq("user_id", context.userId);
     const ids = (threads ?? []).map((t) => t.id);
     if (ids.length === 0) return { count: 0 };
     const { count } = await (supabaseAdmin as any)
@@ -281,4 +321,3 @@ export const myThreadsUnreadCount = createServerFn({ method: "POST" })
       .is("read_at", null);
     return { count: count ?? 0 };
   });
-

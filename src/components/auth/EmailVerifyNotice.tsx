@@ -56,7 +56,10 @@ export function EmailVerifyNotice({ email, onBack }: { email: string; onBack: ()
               className={matched ? "w-full" : "justify-start text-xs"}
             >
               <a href={p.url} target="_blank" rel="noopener noreferrer">
-                <span className="mr-2 inline-block h-2 w-2 rounded-full" style={{ background: p.color }} />
+                <span
+                  className="mr-2 inline-block h-2 w-2 rounded-full"
+                  style={{ background: p.color }}
+                />
                 {p.name}を開く
                 <ExternalLink className="ml-auto h-3.5 w-3.5 opacity-60" />
               </a>
@@ -69,7 +72,9 @@ export function EmailVerifyNotice({ email, onBack }: { email: string; onBack: ()
         <Button variant="secondary" onClick={resend} disabled={resending}>
           {resending ? "再送しています…" : "確認メールを再送する"}
         </Button>
-        <Button variant="ghost" onClick={onBack}>ログイン画面に戻る</Button>
+        <Button variant="ghost" onClick={onBack}>
+          ログイン画面に戻る
+        </Button>
       </div>
     </Card>
   );

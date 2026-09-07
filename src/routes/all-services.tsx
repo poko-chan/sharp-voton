@@ -50,7 +50,8 @@ function AllServicesPage() {
           Study# の<span className="text-gradient">全機能</span>
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-          大小あわせて {SERVICE_COUNT} 以上の機能を搭載しています。ここでは、すべてをカテゴリ別に洗いざらい掲載します。
+          大小あわせて {SERVICE_COUNT}{" "}
+          以上の機能を搭載しています。ここでは、すべてをカテゴリ別に洗いざらい掲載します。
           「これも入っているの？」を確かめるためのページです。
         </p>
 
@@ -87,7 +88,9 @@ function AllServicesPage() {
             <div className="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
               {REPLACEMENTS.map((r) => (
                 <article key={r.before} className="surface surface-hover flex flex-col gap-3 p-5">
-                  <p className="text-sm text-muted-foreground line-through decoration-destructive/50">{r.before}</p>
+                  <p className="text-sm text-muted-foreground line-through decoration-destructive/50">
+                    {r.before}
+                  </p>
                   <p className="text-sm font-semibold leading-relaxed">↓ {r.after}</p>
                   <p className="mt-auto rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
                     {r.gain}
@@ -136,7 +139,9 @@ function AllServicesPage() {
         </div>
 
         <div className="surface mt-16 p-8 text-center">
-          <h2 className="font-display text-2xl font-black">気になる機能から、試してみてください。</h2>
+          <h2 className="font-display text-2xl font-black">
+            気になる機能から、試してみてください。
+          </h2>
           <p className="mt-3 text-sm text-muted-foreground">
             アカウント作成は数十秒。主要な機能は無料で、クレジットカードの登録も要りません。
           </p>

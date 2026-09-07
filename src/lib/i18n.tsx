@@ -83,7 +83,8 @@ const dict = {
     "settings.notifPermissionNeeded": "リマインダーにはブラウザ通知の許可が必要です",
     "settings.customization": "画面カスタマイズ",
     "settings.font": "フォント（Google Fonts）",
-    "settings.fontDesc": "アプリ全体のフォントを変更します。選択時に Google Fonts から動的に読み込みます。",
+    "settings.fontDesc":
+      "アプリ全体のフォントを変更します。選択時に Google Fonts から動的に読み込みます。",
     "settings.themeColor": "テーマカラー",
     "settings.themeColorDesc": "アプリ全体のアクセントカラーを変更します。",
     "settings.rightDock": "右下のフローティング機能",
@@ -93,7 +94,8 @@ const dict = {
     "settings.sidebarItems": "左メニューに表示する項目",
     "settings.sidebarItemsDesc": "OFFにした項目は「その他」メニューから引き続きアクセスできます。",
     "settings.actAsAdmin": "管理者として実行",
-    "settings.actAsAdminDesc": "ON にすると、利用停止サービスを管理者として閲覧・操作できます。OFFでは一般ユーザーと同じ制限を受けます。",
+    "settings.actAsAdminDesc":
+      "ON にすると、利用停止サービスを管理者として閲覧・操作できます。OFFでは一般ユーザーと同じ制限を受けます。",
     "settings.themeSection": "テーマカラー",
     "settings.themeSectionDesc": "アプリの配色をお好みに切り替えできます",
     "settings.dataExport": "データ出力",
@@ -186,7 +188,8 @@ const dict = {
     "settings.notifPermissionNeeded": "Reminders require browser notification permission",
     "settings.customization": "Customization",
     "settings.font": "Font (Google Fonts)",
-    "settings.fontDesc": "Change the app's font. Loaded dynamically from Google Fonts when selected.",
+    "settings.fontDesc":
+      "Change the app's font. Loaded dynamically from Google Fonts when selected.",
     "settings.themeColor": "Theme color",
     "settings.themeColorDesc": "Change the app's accent color.",
     "settings.rightDock": "Bottom-right floating features",
@@ -194,9 +197,10 @@ const dict = {
     "settings.ambient": "Ambient sound (timer only)",
     "settings.ambientNote": "* The ambient sound button only appears on the timer page.",
     "settings.sidebarItems": "Items shown in the left menu",
-    "settings.sidebarItemsDesc": "Items turned OFF remain accessible from the \"More\" menu.",
+    "settings.sidebarItemsDesc": 'Items turned OFF remain accessible from the "More" menu.',
     "settings.actAsAdmin": "Act as admin",
-    "settings.actAsAdminDesc": "When ON, you can view/operate restricted services as an admin. When OFF, you have the same restrictions as a regular user.",
+    "settings.actAsAdminDesc":
+      "When ON, you can view/operate restricted services as an admin. When OFF, you have the same restrictions as a regular user.",
     "settings.themeSection": "Theme color",
     "settings.themeSectionDesc": "Switch the app's color scheme to your liking",
     "settings.dataExport": "Data export",
@@ -253,7 +257,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, [lang]);
   const setLang = (l: Lang) => {
     setLangState(l);
-    try { localStorage.setItem(LS_KEY, l); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(LS_KEY, l);
+    } catch {
+      /* ignore */
+    }
     // 自動翻訳レイヤーを確実に張り直すため、切替時は再読み込みする。
     if (typeof window !== "undefined") window.location.reload();
   };

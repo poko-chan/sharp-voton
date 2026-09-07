@@ -23,12 +23,19 @@ export function MakronShell({
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
       <header className="h-14 shrink-0 border-b border-border/60 bg-gradient-to-r from-primary/10 via-background to-background flex items-center gap-3 px-4">
         {back ? (
-          <Button size="icon" variant="ghost" onClick={() => navigate({ to: back as any })} title="戻る">
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => navigate({ to: back as any })}
+            title="戻る"
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
         ) : (
           <Link to="/dashboard" title="メニューへ戻る">
-            <Button size="icon" variant="ghost"><ArrowLeft className="h-5 w-5" /></Button>
+            <Button size="icon" variant="ghost">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
           </Link>
         )}
         <Link to="/makron" className="font-extrabold text-lg tracking-tight">
@@ -48,7 +55,8 @@ export function MakronShell({
           }`}
           title={isAdmin ? "管理者画面" : "管理者専用"}
         >
-          <Shield className="h-3.5 w-3.5" />管理者
+          <Shield className="h-3.5 w-3.5" />
+          管理者
         </Link>
       </header>
       <main className="flex-1 overflow-auto">{children}</main>
@@ -56,7 +64,15 @@ export function MakronShell({
   );
 }
 
-export function MakronBadge({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: ReactNode }) {
+export function MakronBadge({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: ReactNode;
+}) {
   return (
     <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-1.5">
       <Icon className="h-4 w-4 text-primary" />

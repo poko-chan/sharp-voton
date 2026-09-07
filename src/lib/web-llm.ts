@@ -29,175 +29,250 @@ export const WEBLLM_MODELS: WebLlmModel[] = [
     label: "Qwen2.5 1.5B（標準）",
     sizeLabel: "約 1.1GB",
     note: "容量が小さく失敗しにくい。まずはこれを推奨。日本語もそこそこ。",
-    params: 1.5, tags: ["balanced", "japanese"], quality: 46, japanese: 62,
+    params: 1.5,
+    tags: ["balanced", "japanese"],
+    quality: 46,
+    japanese: 62,
   },
   {
     id: "Qwen3-1.7B-q4f16_1-MLC",
     label: "Qwen3 1.7B（新世代・軽量）",
     sizeLabel: "約 1.3GB",
     note: "最新世代。軽いのに理屈立てた回答が得意。迷ったらこれか標準。",
-    params: 1.7, tags: ["balanced", "reasoning", "japanese"], quality: 55, japanese: 68,
+    params: 1.7,
+    tags: ["balanced", "reasoning", "japanese"],
+    quality: 55,
+    japanese: 68,
   },
   {
     id: "Qwen3-4B-q4f16_1-MLC",
     label: "Qwen3 4B（新世代・高品質）",
     sizeLabel: "約 2.6GB",
     note: "最新世代の中位モデル。日本語の説明が丁寧で、考える力も高い。",
-    params: 4, tags: ["reasoning", "japanese"], quality: 72, japanese: 78,
+    params: 4,
+    tags: ["reasoning", "japanese"],
+    quality: 72,
+    japanese: 78,
   },
   {
     id: "Qwen3-8B-q4f16_1-MLC",
     label: "Qwen3 8B（新世代・最上位）",
     sizeLabel: "約 5.1GB",
     note: "端末内AIでは最上位クラス。VRAM 6GB 以上の PC 向け。",
-    params: 8, tags: ["pro", "reasoning", "japanese"], quality: 88, japanese: 84,
+    params: 8,
+    tags: ["pro", "reasoning", "japanese"],
+    quality: 88,
+    japanese: 84,
   },
   {
     id: "Qwen3-0.6B-q4f16_1-MLC",
     label: "Qwen3 0.6B（超軽量・新世代）",
     sizeLabel: "約 0.5GB",
     note: "スマホや古い PC 向け。短い質問の受け答え中心。",
-    params: 0.6, tags: ["light"], quality: 30, japanese: 50,
+    params: 0.6,
+    tags: ["light"],
+    quality: 30,
+    japanese: 50,
   },
   {
     id: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
     label: "Qwen2.5 0.5B（最軽量）",
     sizeLabel: "約 0.4GB",
     note: "空き容量が少ない端末向け。品質は落ちるが確実に動く。",
-    params: 0.5, tags: ["light"], quality: 25, japanese: 46,
+    params: 0.5,
+    tags: ["light"],
+    quality: 25,
+    japanese: 46,
   },
   {
     id: "Qwen2.5-3B-Instruct-q4f16_1-MLC",
     label: "Qwen2.5 3B（高品質）",
     sizeLabel: "約 1.9GB",
     note: "日本語の品質と速度のバランスが良い。空き容量 4GB 以上推奨。",
-    params: 3, tags: ["balanced", "japanese"], quality: 62, japanese: 72,
+    params: 3,
+    tags: ["balanced", "japanese"],
+    quality: 62,
+    japanese: 72,
   },
   {
     id: "Qwen2.5-7B-Instruct-q4f16_1-MLC",
     label: "Qwen2.5 7B（最高品質）",
     sizeLabel: "約 4.4GB",
     note: "とても賢い。VRAM 6GB 以上・空き容量 10GB 以上の PC 向け。",
-    params: 7, tags: ["pro", "japanese"], quality: 82, japanese: 80,
+    params: 7,
+    tags: ["pro", "japanese"],
+    quality: 82,
+    japanese: 80,
   },
   {
     id: "DeepSeek-R1-Distill-Qwen-7B-q4f16_1-MLC",
     label: "DeepSeek R1 蒸留 7B（じっくり思考）",
     sizeLabel: "約 4.4GB",
     note: "考える過程を出しながら答える推論特化。数学・理科の難問向け（少し遅い）。",
-    params: 7, tags: ["pro", "reasoning", "math"], quality: 84, japanese: 68,
+    params: 7,
+    tags: ["pro", "reasoning", "math"],
+    quality: 84,
+    japanese: 68,
   },
   {
     id: "DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC",
     label: "DeepSeek R1 蒸留 8B（推論特化）",
     sizeLabel: "約 5.0GB",
     note: "難しい問題を段階的に解くのが得意。高性能 PC 向け。",
-    params: 8, tags: ["pro", "reasoning", "math"], quality: 85, japanese: 64,
+    params: 8,
+    tags: ["pro", "reasoning", "math"],
+    quality: 85,
+    japanese: 64,
   },
   {
     id: "gemma-2-2b-jpn-it-q4f16_1-MLC",
     label: "Gemma 2 2B 日本語版（日本語特化）",
     sizeLabel: "約 1.6GB",
     note: "Google 製の日本語チューニング版。自然な日本語の説明が得意。",
-    params: 2, tags: ["japanese", "balanced"], quality: 58, japanese: 88,
+    params: 2,
+    tags: ["japanese", "balanced"],
+    quality: 58,
+    japanese: 88,
   },
   {
     id: "gemma-2-2b-it-q4f16_1-MLC",
     label: "Gemma 2 2B",
     sizeLabel: "約 1.5GB",
     note: "Google 製。短い説明が上手。",
-    params: 2, tags: ["balanced"], quality: 50, japanese: 60,
+    params: 2,
+    tags: ["balanced"],
+    quality: 50,
+    japanese: 60,
   },
   {
     id: "gemma-2-9b-it-q4f16_1-MLC",
     label: "Gemma 2 9B",
     sizeLabel: "約 5.0GB",
     note: "Google 製の大型。高性能 PC 向け。",
-    params: 9, tags: ["pro"], quality: 80, japanese: 70,
+    params: 9,
+    tags: ["pro"],
+    quality: 80,
+    japanese: 70,
   },
   {
     id: "Qwen2.5-Math-1.5B-Instruct-q4f16_1-MLC",
     label: "Qwen2.5 Math 1.5B（数学向け）",
     sizeLabel: "約 1.1GB",
     note: "数式の計算・証明の説明が得意。数学の質問向け。",
-    params: 1.5, tags: ["math", "light"], quality: 42, japanese: 52,
+    params: 1.5,
+    tags: ["math", "light"],
+    quality: 42,
+    japanese: 52,
   },
   {
     id: "Qwen2.5-Math-7B-Instruct-q4f16_1-MLC",
     label: "Qwen2.5 Math 7B（数学・上位）",
     sizeLabel: "約 4.4GB",
     note: "数学に特化した大型モデル。入試レベルの計算・証明に強い。",
-    params: 7, tags: ["math", "pro"], quality: 78, japanese: 60,
+    params: 7,
+    tags: ["math", "pro"],
+    quality: 78,
+    japanese: 60,
   },
   {
     id: "Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC",
     label: "Qwen2.5 Coder 1.5B（プログラミング向け）",
     sizeLabel: "約 1.1GB",
     note: "コードの説明・添削が得意。情報や技術の学習向け。",
-    params: 1.5, tags: ["code", "light"], quality: 42, japanese: 52,
+    params: 1.5,
+    tags: ["code", "light"],
+    quality: 42,
+    japanese: 52,
   },
   {
     id: "Qwen2.5-Coder-7B-Instruct-q4f16_1-MLC",
     label: "Qwen2.5 Coder 7B（プログラミング・上位）",
     sizeLabel: "約 4.4GB",
     note: "本格的なコード読解・添削。情報科目や自由研究に。",
-    params: 7, tags: ["code", "pro"], quality: 79, japanese: 62,
+    params: 7,
+    tags: ["code", "pro"],
+    quality: 79,
+    japanese: 62,
   },
   {
     id: "Llama-3.2-1B-Instruct-q4f16_1-MLC",
     label: "Llama 3.2 1B",
     sizeLabel: "約 0.9GB",
     note: "軽量。英語中心の用途向け。",
-    params: 1, tags: ["light"], quality: 32, japanese: 44,
+    params: 1,
+    tags: ["light"],
+    quality: 32,
+    japanese: 44,
   },
   {
     id: "Llama-3.2-3B-Instruct-q4f16_1-MLC",
     label: "Llama 3.2 3B",
     sizeLabel: "約 2.0GB",
     note: "英語中心の用途向け。要約が得意。",
-    params: 3, tags: ["balanced"], quality: 55, japanese: 55,
+    params: 3,
+    tags: ["balanced"],
+    quality: 55,
+    japanese: 55,
   },
   {
     id: "Llama-3.1-8B-Instruct-q4f16_1-MLC",
     label: "Llama 3.1 8B",
     sizeLabel: "約 4.6GB",
     note: "高性能だが重い。ゲーミング PC 向け。",
-    params: 8, tags: ["pro"], quality: 78, japanese: 62,
+    params: 8,
+    tags: ["pro"],
+    quality: 78,
+    japanese: 62,
   },
   {
     id: "Hermes-3-Llama-3.1-8B-q4f16_1-MLC",
     label: "Hermes 3 8B（対話チューニング）",
     sizeLabel: "約 4.6GB",
     note: "会話や指示への追従が丁寧。長めの説明が得意。",
-    params: 8, tags: ["pro"], quality: 79, japanese: 60,
+    params: 8,
+    tags: ["pro"],
+    quality: 79,
+    japanese: 60,
   },
   {
     id: "Mistral-7B-Instruct-v0.3-q4f16_1-MLC",
     label: "Mistral 7B",
     sizeLabel: "約 4.5GB",
     note: "定番の大型モデル。高性能 PC 向け。",
-    params: 7, tags: ["pro"], quality: 74, japanese: 56,
+    params: 7,
+    tags: ["pro"],
+    quality: 74,
+    japanese: 56,
   },
   {
     id: "Phi-3.5-mini-instruct-q4f16_1-MLC",
     label: "Phi 3.5 mini",
     sizeLabel: "約 2.2GB",
     note: "Microsoft 製。論理的な問題に強い。",
-    params: 3.8, tags: ["reasoning", "balanced"], quality: 60, japanese: 52,
+    params: 3.8,
+    tags: ["reasoning", "balanced"],
+    quality: 60,
+    japanese: 52,
   },
   {
     id: "SmolLM2-1.7B-Instruct-q4f16_1-MLC",
     label: "SmolLM2 1.7B",
     sizeLabel: "約 1.1GB",
     note: "軽量で高速。簡単な質問向け。",
-    params: 1.7, tags: ["light"], quality: 36, japanese: 42,
+    params: 1.7,
+    tags: ["light"],
+    quality: 36,
+    japanese: 42,
   },
   {
     id: "TinyLlama-1.1B-Chat-v1.0-q4f16_1-MLC",
     label: "TinyLlama 1.1B（お試し用）",
     sizeLabel: "約 0.7GB",
     note: "とにかく軽い動作確認向け。品質は限定的。",
-    params: 1.1, tags: ["light"], quality: 20, japanese: 36,
+    params: 1.1,
+    tags: ["light"],
+    quality: 20,
+    japanese: 36,
   },
 ];
 
@@ -215,8 +290,6 @@ export const WEBLLM_TAG_LABELS: Record<WebLlmTag, string> = {
 export function webLlmRecommendScore(m: WebLlmModel): number {
   return Math.round(m.quality * 0.65 + m.japanese * 0.35);
 }
-
-
 
 /** モデル ID からおおよその必要バイト数を推定する（空き容量チェック用） */
 export function estimateModelBytes(id: string): number {
@@ -236,7 +309,11 @@ export async function storageInfo(): Promise<StorageInfo | null> {
     const usage = est.usage ?? 0;
     const quota = est.quota ?? 0;
     let persisted = false;
-    try { persisted = (await navigator.storage.persisted?.()) ?? false; } catch { /* noop */ }
+    try {
+      persisted = (await navigator.storage.persisted?.()) ?? false;
+    } catch {
+      /* noop */
+    }
     return { usage, quota, free: Math.max(0, quota - usage), persisted };
   } catch {
     return null;
@@ -246,7 +323,11 @@ export async function storageInfo(): Promise<StorageInfo | null> {
 /** 永続ストレージを要求して、モデルが勝手に消されるのを防ぐ */
 export async function requestPersistentStorage(): Promise<boolean> {
   if (typeof navigator === "undefined" || !navigator.storage?.persist) return false;
-  try { return await navigator.storage.persist(); } catch { return false; }
+  try {
+    return await navigator.storage.persist();
+  } catch {
+    return false;
+  }
 }
 
 /** ダウンロード済みモデルキャッシュを削除して容量を空ける */
@@ -263,12 +344,17 @@ export async function clearWebLlmCache(): Promise<void> {
       await Promise.all(
         (dbs ?? [])
           .filter((db: any) => db?.name && /webllm|mlc|tvmjs/i.test(db.name))
-          .map((db: any) => new Promise((res) => {
-            const req = indexedDB.deleteDatabase(db.name);
-            req.onsuccess = req.onerror = req.onblocked = () => res(null);
-          })),
+          .map(
+            (db: any) =>
+              new Promise((res) => {
+                const req = indexedDB.deleteDatabase(db.name);
+                req.onsuccess = req.onerror = req.onblocked = () => res(null);
+              }),
+          ),
       );
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   }
   if (typeof window !== "undefined") {
     for (const m of WEBLLM_MODELS) window.localStorage.removeItem(cacheKeyFor(m.id));
@@ -281,13 +367,19 @@ export async function clearWebLlmCache(): Promise<void> {
 }
 
 /** ストレージ不足系のエラーを日本語の具体的な案内に変換する */
-export function friendlyStorageError(err: unknown, info: StorageInfo | null, modelId: string): string {
+export function friendlyStorageError(
+  err: unknown,
+  info: StorageInfo | null,
+  modelId: string,
+): string {
   const msg = err instanceof Error ? err.message : String(err);
   const isQuota = /quota|QuotaExceeded|storage|space|容量/i.test(msg);
   if (!isQuota) return msg;
   const gb = (n: number) => `${(n / 1024 ** 3).toFixed(1)}GB`;
   const need = estimateModelBytes(modelId);
-  const freeText = info ? `空き ${gb(info.free)} / 上限 ${gb(info.quota)}` : "空き容量を取得できませんでした";
+  const freeText = info
+    ? `空き ${gb(info.free)} / 上限 ${gb(info.quota)}`
+    : "空き容量を取得できませんでした";
   return [
     "ブラウザの保存容量が足りずダウンロードできませんでした（Quota exceeded）。",
     `必要: 約 ${gb(need)} ／ 現在: ${freeText}`,
@@ -298,7 +390,6 @@ export function friendlyStorageError(err: unknown, info: StorageInfo | null, mod
 export const DEFAULT_WEBLLM_MODEL = WEBLLM_MODELS[0].id;
 const MODEL_KEY = "ai.webllm.model";
 const WEBLLM_CDN = "https://esm.run/@mlc-ai/web-llm@0.2.84";
-
 
 export function getWebLlmModelId(): string {
   if (typeof window === "undefined") return DEFAULT_WEBLLM_MODEL;
@@ -319,7 +410,9 @@ export function setWebLlmModelId(id: string) {
   lastProgressText = "";
   try {
     window.dispatchEvent(new CustomEvent("ai-webllm-model-changed", { detail: id }));
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
 }
 
 let modulePromise: Promise<any> | null = null;
@@ -327,7 +420,10 @@ function loadModule(): Promise<any> {
   if (!modulePromise) {
     const importPromise = import(/* @vite-ignore */ WEBLLM_CDN);
     const timeoutPromise = new Promise<never>((_, reject) => {
-      window.setTimeout(() => reject(new Error("WebLLM 本体の取得が2分間進まなかったため中断しました")), 2 * 60 * 1000);
+      window.setTimeout(
+        () => reject(new Error("WebLLM 本体の取得が2分間進まなかったため中断しました")),
+        2 * 60 * 1000,
+      );
     });
     modulePromise = Promise.race([importPromise, timeoutPromise]).catch((error: unknown) => {
       modulePromise = null;
@@ -339,9 +435,14 @@ function loadModule(): Promise<any> {
 
 let enginePromise: Promise<any> | null = null;
 const CACHE_KEY = "ai.webllm.cached";
-function cacheKeyFor(id: string) { return `${CACHE_KEY}:${id}`; }
+function cacheKeyFor(id: string) {
+  return `${CACHE_KEY}:${id}`;
+}
 function isCached() {
-  return typeof window !== "undefined" && localStorage.getItem(cacheKeyFor(getWebLlmModelId())) === "true";
+  return (
+    typeof window !== "undefined" &&
+    localStorage.getItem(cacheKeyFor(getWebLlmModelId())) === "true"
+  );
 }
 let engineReady = false;
 let engineDownloading = false;
@@ -359,13 +460,14 @@ export function isModelCached(): boolean {
 /** ダウンロード済み（すぐ使える）モデル ID の一覧 */
 export function webLlmCachedModelIds(): string[] {
   if (typeof window === "undefined") return [];
-  return WEBLLM_MODELS.filter((m) => window.localStorage.getItem(cacheKeyFor(m.id)) === "true").map((m) => m.id);
+  return WEBLLM_MODELS.filter((m) => window.localStorage.getItem(cacheKeyFor(m.id)) === "true").map(
+    (m) => m.id,
+  );
 }
 
 export function hasWebGpuSupport(): boolean {
   return hasWebGpu();
 }
-
 
 export async function webLlmStatus(): Promise<WebLlmStatus> {
   if (typeof window === "undefined") return "unavailable";
@@ -393,12 +495,18 @@ export async function webLlmDiagnostics(): Promise<WebLlmDiagnostics> {
   let reason = "";
   if (!gpu) reason = "WebGPU が利用できません（Chrome/Edge 最新版・対応 GPU が必要）。";
   else if (status === "available") reason = `利用可能です（${model?.label ?? modelId}）。`;
-  else if (status === "downloading") reason = `モデル取得中… ${Math.round(lastProgress * 100)}% ${lastProgressText}`;
-  else reason = `初回は「${model?.label ?? modelId}」（${model?.sizeLabel ?? "数百MB〜"}）のダウンロードが必要です。`;
+  else if (status === "downloading")
+    reason = `モデル取得中… ${Math.round(lastProgress * 100)}% ${lastProgressText}`;
+  else
+    reason = `初回は「${model?.label ?? modelId}」（${model?.sizeLabel ?? "数百MB〜"}）のダウンロードが必要です。`;
   return {
-    status, reason, hasWebGpu: gpu,
-    progress: lastProgress, progressText: lastProgressText,
-    modelId, modelLabel: model?.label ?? modelId,
+    status,
+    reason,
+    hasWebGpu: gpu,
+    progress: lastProgress,
+    progressText: lastProgressText,
+    modelId,
+    modelLabel: model?.label ?? modelId,
   };
 }
 
@@ -416,7 +524,6 @@ export async function webLlmEnsureLoaded(
   }
   loadedModelId = modelId;
 
-
   engineDownloading = true;
 
   enginePromise = (async () => {
@@ -433,12 +540,19 @@ export async function webLlmEnsureLoaded(
         initProgressCallback: (p: any) => {
           lastProgress = p.progress ?? 0;
           lastProgressText = p.text ?? "";
-          try { onProgress?.(lastProgress, lastProgressText); } catch { /* noop */ }
+          try {
+            onProgress?.(lastProgress, lastProgressText);
+          } catch {
+            /* noop */
+          }
         },
       });
 
       const timeoutPromise = new Promise<never>((_, reject) => {
-        window.setTimeout(() => reject(new Error("WebLLM の取得が20分間進まなかったため中断しました")), 20 * 60 * 1000);
+        window.setTimeout(
+          () => reject(new Error("WebLLM の取得が20分間進まなかったため中断しました")),
+          20 * 60 * 1000,
+        );
       });
 
       const eng = await Promise.race([loadPromise, timeoutPromise]);
@@ -453,7 +567,6 @@ export async function webLlmEnsureLoaded(
       throw new Error(friendlyStorageError(err, info, modelId));
     }
   })();
-
 
   return enginePromise;
 }
@@ -479,7 +592,6 @@ function isLooping(text: string): boolean {
   return isDegenerate(text);
 }
 
-
 export async function createWebLlmSession(opts?: {
   system?: string;
   temperature?: number;
@@ -499,12 +611,17 @@ export async function createWebLlmSession(opts?: {
     const runOnce = async (attempt: number) => {
       // system + 直近 MAX_TURNS 件だけ渡す
       const base = [history[0], ...history.slice(1).slice(-MAX_TURNS)];
-      const messages = attempt === 0
-        ? base
-        : [...base, {
-            role: "user",
-            content: "直前の出力が同じ文字・語句の繰り返しになって壊れていました。記号の連打をせず、普通の日本語の文章で、簡潔に答え直してください。",
-          }];
+      const messages =
+        attempt === 0
+          ? base
+          : [
+              ...base,
+              {
+                role: "user",
+                content:
+                  "直前の出力が同じ文字・語句の繰り返しになって壊れていました。記号の連打をせず、普通の日本語の文章で、簡潔に答え直してください。",
+              },
+            ];
       const stream = await engine.chat.completions.create({
         messages,
         stream: true,
@@ -522,10 +639,18 @@ export async function createWebLlmSession(opts?: {
         const delta = chunk.choices?.[0]?.delta?.content ?? "";
         if (delta) {
           full += delta;
-          try { onChunk?.(sanitizeAiText(full)); } catch { /* noop */ }
+          try {
+            onChunk?.(sanitizeAiText(full));
+          } catch {
+            /* noop */
+          }
           if (isDegenerate(full)) {
             broken = true;
-            try { await engine.interruptGenerate?.(); } catch { /* noop */ }
+            try {
+              await engine.interruptGenerate?.();
+            } catch {
+              /* noop */
+            }
             break;
           }
         }
@@ -535,14 +660,20 @@ export async function createWebLlmSession(opts?: {
 
     let result = await runOnce(0);
     if (result.broken || !hasMeaningfulContent(result.text)) {
-      try { result = await runOnce(1); } catch { /* 最初の結果を使う */ }
+      try {
+        result = await runOnce(1);
+      } catch {
+        /* 最初の結果を使う */
+      }
     }
 
     const answer = result.text.trim();
     if (!hasMeaningfulContent(answer)) {
       // 壊れた出力は履歴に残さない（次の生成まで巻き込まれるため）
       history.pop();
-      throw new Error("AIの出力が壊れました（同じ記号の繰り返し）。もう一度送信するか、AI設定で別のモデルを選んでください。");
+      throw new Error(
+        "AIの出力が壊れました（同じ記号の繰り返し）。もう一度送信するか、AI設定で別のモデルを選んでください。",
+      );
     }
     history.push({ role: "assistant", content: answer });
     if (history.length > MAX_TURNS * 2 + 1) {
@@ -551,10 +682,9 @@ export async function createWebLlmSession(opts?: {
     return answer;
   };
 
-
   return {
     prompt: (t) => complete(t),
-    promptJSON: async <T,>(t: string): Promise<T> => {
+    promptJSON: async <T>(t: string): Promise<T> => {
       const out = await complete(
         `${t}\n\n出力は JSON のみ。説明文・コードフェンス・前置きは一切書かないこと。`,
       );
@@ -562,6 +692,8 @@ export async function createWebLlmSession(opts?: {
       return extractJSON<T>(out);
     },
     promptStreaming: (t, onChunk) => complete(t, onChunk),
-    destroy: () => { /* engine は共有なので破棄しない */ },
+    destroy: () => {
+      /* engine は共有なので破棄しない */
+    },
   };
 }

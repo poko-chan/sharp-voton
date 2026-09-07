@@ -39,7 +39,10 @@ function FeaturesIndex() {
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
           主要な機能ごとに、何ができて、どんな場面で役立つのかを個別ページで説明しています。細かな機能まで一覧で見たい場合は
-          <Link to="/all-services" className="mx-1 font-semibold text-primary underline-offset-4 hover:underline">
+          <Link
+            to="/all-services"
+            className="mx-1 font-semibold text-primary underline-offset-4 hover:underline"
+          >
             全機能一覧
           </Link>
           をご覧ください。
@@ -58,7 +61,9 @@ function FeaturesIndex() {
               </div>
               <h2 className="mt-3 font-display text-lg font-extrabold">{f.name}</h2>
               <p className="mt-1 text-sm font-medium text-primary">{f.lead}</p>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground line-clamp-4">{f.detail}</p>
+              <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground line-clamp-4">
+                {f.detail}
+              </p>
               <span className="mt-4 text-sm font-semibold text-primary">くわしく見る →</span>
             </Link>
           ))}
@@ -69,7 +74,10 @@ function FeaturesIndex() {
           <p className="mt-2 text-sm text-muted-foreground">
             機能をカテゴリごとにまとめた解説ページもあります。
           </p>
-          <Link to="/catalog" className="mt-4 inline-block text-sm font-semibold text-primary underline-offset-4 hover:underline">
+          <Link
+            to="/catalog"
+            className="mt-4 inline-block text-sm font-semibold text-primary underline-offset-4 hover:underline"
+          >
             カテゴリ別ガイドへ →
           </Link>
         </section>

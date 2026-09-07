@@ -16,7 +16,11 @@ function read<T>(key: string, fallback: T): T {
 }
 
 function write(key: string, value: unknown) {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* noop */ }
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* noop */
+  }
 }
 
 export function getRecents(): RecentItem[] {
@@ -40,12 +44,20 @@ export function recordVisit(path: string) {
     list.push({ to: app.to, label: app.label, at: now, count: 1 });
   }
   write(KEY, list.sort((a, b) => b.at - a.at).slice(0, MAX));
-  try { window.dispatchEvent(new CustomEvent("study:recent-updated")); } catch { /* noop */ }
+  try {
+    window.dispatchEvent(new CustomEvent("study:recent-updated"));
+  } catch {
+    /* noop */
+  }
 }
 
 export function clearRecents() {
   write(KEY, []);
-  try { window.dispatchEvent(new CustomEvent("study:recent-updated")); } catch { /* noop */ }
+  try {
+    window.dispatchEvent(new CustomEvent("study:recent-updated"));
+  } catch {
+    /* noop */
+  }
 }
 
 export function getFrequent(limit = 6): RecentItem[] {
@@ -63,6 +75,10 @@ export function togglePinned(to: string): string[] {
   const cur = getPinned();
   const next = cur.includes(to) ? cur.filter((p) => p !== to) : [...cur, to].slice(0, 8);
   write(PIN_KEY, next);
-  try { window.dispatchEvent(new CustomEvent("study:recent-updated")); } catch { /* noop */ }
+  try {
+    window.dispatchEvent(new CustomEvent("study:recent-updated"));
+  } catch {
+    /* noop */
+  }
   return next;
 }

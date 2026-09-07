@@ -14,7 +14,8 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/admin-login")({
   head: () => {
     const title = "管理者ログイン｜Study#";
-    const description = "Study# の管理者専用ログインページです。一般利用者のログインは通常のログインページから行ってください。";
+    const description =
+      "Study# の管理者専用ログインページです。一般利用者のログインは通常のログインページから行ってください。";
     const url = "https://sharp-voton.lovable.app/admin-login";
     return {
       meta: [
@@ -60,7 +61,6 @@ function AdminLoginPage() {
         if (error) throw error;
       }
       toast.success("ログイン成功");
-
     } catch (e: any) {
       toast.error(e.message ?? "ログイン失敗");
     } finally {
@@ -81,20 +81,42 @@ function AdminLoginPage() {
         <form onSubmit={submit} className="space-y-3">
           <div className="space-y-1">
             <Label>ユーザー名 または メール</Label>
-            <Input value={identifier} onChange={(e) => setIdentifier(e.target.value)} required placeholder="pokochan" />
+            <Input
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              required
+              placeholder="pokochan"
+            />
           </div>
           <div className="space-y-1">
             <Label>パスワード</Label>
             <div className="relative">
-              <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required className="pr-10" />
-              <button type="button" aria-label={showPassword ? "パスワードを隠す" : "パスワードを表示"} onClick={() => setShowPassword((v) => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" tabIndex={-1}>
+              <Input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="pr-10"
+              />
+              <button
+                type="button"
+                aria-label={showPassword ? "パスワードを隠す" : "パスワードを表示"}
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                tabIndex={-1}
+              >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
-          <Button type="submit" className="w-full" disabled={busy}>ログイン</Button>
+          <Button type="submit" className="w-full" disabled={busy}>
+            ログイン
+          </Button>
         </form>
-        <Link to="/login" className="block text-center text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          to="/login"
+          className="block text-center text-sm text-muted-foreground hover:text-foreground"
+        >
           ← 通常のログインへ
         </Link>
       </Card>

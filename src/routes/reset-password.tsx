@@ -68,13 +68,27 @@ function ResetPasswordPage() {
           <form onSubmit={submit} className="space-y-3">
             <div>
               <Label>新しいパスワード</Label>
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} required />
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                minLength={6}
+                required
+              />
             </div>
             <div>
               <Label>確認用パスワード</Label>
-              <Input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} minLength={6} required />
+              <Input
+                type="password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                minLength={6}
+                required
+              />
             </div>
-            <Button type="submit" className="w-full" disabled={busy}>更新する</Button>
+            <Button type="submit" className="w-full" disabled={busy}>
+              更新する
+            </Button>
           </form>
         )}
       </Card>

@@ -26,7 +26,9 @@ function PracticePage() {
     queryKey: ["questions", "wrong"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("questions").select("*").eq("was_wrong", true)
+        .from("questions")
+        .select("*")
+        .eq("was_wrong", true)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as QRow[];
@@ -68,7 +70,10 @@ function PracticePage() {
       await clearWrong({ data: { topic } });
       toast.success("苦手履歴をクリアしました");
       qc.invalidateQueries({ queryKey: ["questions", "wrong"] });
-    } catch (e: any) { toast.error(e.message); throw e; }
+    } catch (e: any) {
+      toast.error(e.message);
+      throw e;
+    }
   };
 
   if (sessionQs) {
@@ -76,20 +81,38 @@ function PracticePage() {
       <div className="p-6 max-w-3xl mx-auto space-y-5">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Target className="h-6 w-6 text-primary" />{sessionTitle}
+            <Target className="h-6 w-6 text-primary" />
+            {sessionTitle}
           </h1>
-          <Button variant="ghost" size="sm" onClick={() => { setSessionQs(null); setResult(null); }}>終了</Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSessionQs(null);
+              setResult(null);
+            }}
+          >
+            終了
+          </Button>
         </div>
         {result ? (
           <Card className="p-8 text-center space-y-4">
-            <div className="text-3xl font-bold">{result.correct} / {result.total} 正解</div>
+            <div className="text-3xl font-bold">
+              {result.correct} / {result.total} 正解
+            </div>
             <div className="text-muted-foreground">
               {result.correct === result.total
                 ? "弱点克服！🎉"
                 : "まだ怪しいところがあります。もう一度類題を生成して、間違えた数の2倍量で補強しましょう。"}
             </div>
             <div className="flex justify-center gap-2 pt-2">
-              <Button onClick={() => { setSessionQs(null); setResult(null); qc.invalidateQueries({ queryKey: ["questions", "wrong"] }); }}>
+              <Button
+                onClick={() => {
+                  setSessionQs(null);
+                  setResult(null);
+                  qc.invalidateQueries({ queryKey: ["questions", "wrong"] });
+                }}
+              >
                 苦手一覧に戻る
               </Button>
             </div>
@@ -97,7 +120,10 @@ function PracticePage() {
         ) : (
           <PracticeSession
             questions={sessionQs}
-            onDone={(s) => { setResult(s); qc.invalidateQueries({ queryKey: ["questions", "wrong"] }); }}
+            onDone={(s) => {
+              setResult(s);
+              qc.invalidateQueries({ queryKey: ["questions", "wrong"] });
+            }}
           />
         )}
       </div>
@@ -107,13 +133,19 @@ function PracticePage() {
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-5">
       <div>
-        <h1 className="text-3xl font-bold flex items-center gap-2"><Target className="h-7 w-7 text-primary" />苦手演習</h1>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <Target className="h-7 w-7 text-primary" />
+          苦手演習
+        </h1>
         <p className="text-sm text-muted-foreground">
-          間違えた問題を分析し、AIが<strong>似たテーマの新しい問題</strong>を間違えた数の2倍量だけ生成します。再び間違えればさらに2倍に増えます。
+          間違えた問題を分析し、AIが<strong>似たテーマの新しい問題</strong>
+          を間違えた数の2倍量だけ生成します。再び間違えればさらに2倍に増えます。
         </p>
       </div>
 
-      {wrong.isLoading && <Card className="p-8 text-center text-muted-foreground">読み込み中…</Card>}
+      {wrong.isLoading && (
+        <Card className="p-8 text-center text-muted-foreground">読み込み中…</Card>
+      )}
       {!wrong.isLoading && groups.length === 0 && (
         <Card className="p-10 text-center text-muted-foreground">苦手な問題はありません 🎉</Card>
       )}
@@ -132,16 +164,22 @@ function PracticePage() {
             </div>
             <div className="flex flex-wrap gap-2">
               <Button onClick={() => similarM.mutate(g.topic)} disabled={isPending}>
-                {isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Sparkles className="h-4 w-4 mr-1" />}
+                {isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                ) : (
+                  <Sparkles className="h-4 w-4 mr-1" />
+                )}
                 類題を {g.items.length * 2} 問生成して演習
               </Button>
               <Button variant="outline" onClick={() => startWrongOnly(g.topic, g.items)}>
-                <Play className="h-4 w-4 mr-1" />元の問題をもう一度
+                <Play className="h-4 w-4 mr-1" />
+                元の問題をもう一度
               </Button>
               <ConfirmDialog
                 trigger={
                   <Button variant="ghost" className="text-destructive hover:text-destructive">
-                    <Trash2 className="h-4 w-4 mr-1" />履歴を削除
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    履歴を削除
                   </Button>
                 }
                 title={`「${g.topic}」の苦手履歴を削除しますか？`}

@@ -5,9 +5,20 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { THEMES, saveUserTheme, type ThemeName } from "@/lib/theme";
-import { useUserPrefs, useLocalPrefs, FONT_OPTIONS, DASHBOARD_CARD_OPTIONS } from "@/lib/user-prefs";
+import {
+  useUserPrefs,
+  useLocalPrefs,
+  FONT_OPTIONS,
+  DASHBOARD_CARD_OPTIONS,
+} from "@/lib/user-prefs";
 import { useI18n } from "@/lib/i18n";
 import { NAV } from "@/components/AppShell";
 import { SectionHeading, SettingRow } from "./shared";
@@ -15,7 +26,10 @@ import { SectionHeading, SettingRow } from "./shared";
 export function AppearanceSection() {
   return (
     <div className="space-y-6">
-      <SectionHeading title="外観・テーマ" desc="配色・フォント・レイアウトの見た目をカスタマイズします" />
+      <SectionHeading
+        title="外観・テーマ"
+        desc="配色・フォント・レイアウトの見た目をカスタマイズします"
+      />
       <ThemeSettings />
       <CustomizationPanel />
       <DisplayDensityPanel />
@@ -29,8 +43,14 @@ function ThemeSettings() {
   const [theme, setTheme] = useState<ThemeName>("default");
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("theme").eq("id", user.id).maybeSingle()
-      .then(({ data }) => setTheme(((data as { theme?: ThemeName } | null)?.theme ?? "default") as ThemeName));
+    supabase
+      .from("profiles")
+      .select("theme")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) =>
+        setTheme(((data as { theme?: ThemeName } | null)?.theme ?? "default") as ThemeName),
+      );
   }, [user]);
   const onPick = async (t: ThemeName) => {
     setTheme(t);
@@ -48,7 +68,9 @@ function ThemeSettings() {
             key={tm.key}
             onClick={() => onPick(tm.key)}
             className={`p-3 rounded-lg border-2 text-xs flex flex-col items-center gap-2 transition ${
-              theme === tm.key ? "border-primary ring-2 ring-primary/30" : "border-border hover:border-primary/50"
+              theme === tm.key
+                ? "border-primary ring-2 ring-primary/30"
+                : "border-border hover:border-primary/50"
             }`}
           >
             <span className="h-8 w-8 rounded-full border" style={{ background: tm.swatch }} />
@@ -66,7 +88,7 @@ function CustomizationPanel() {
   const NAV_ITEMS = useMemo(() => {
     const items = NAV.map((n) => ({
       to: n.to,
-      label: n.to === "/settings" ? t("settings.profile") : ((n as any).override || t(n.labelKey)),
+      label: n.to === "/settings" ? t("settings.profile") : (n as any).override || t(n.labelKey),
     }));
     items.sort((a, b) => (a.to === "/settings" ? -1 : b.to === "/settings" ? 1 : 0));
     return items;
@@ -74,13 +96,15 @@ function CustomizationPanel() {
   const hidden = new Set(prefs.sidebar_hidden ?? []);
   const toggleNav = (to: string) => {
     const next = new Set(hidden);
-    if (next.has(to)) next.delete(to); else next.add(to);
+    if (next.has(to)) next.delete(to);
+    else next.add(to);
     save({ sidebar_hidden: Array.from(next) });
   };
   const dock = new Set(prefs.right_dock ?? ["ambient", "feedback"]);
   const toggleDock = (k: string) => {
     const next = new Set(dock);
-    if (next.has(k)) next.delete(k); else next.add(k);
+    if (next.has(k)) next.delete(k);
+    else next.add(k);
     save({ right_dock: Array.from(next) });
   };
   return (
@@ -88,8 +112,13 @@ function CustomizationPanel() {
       <div className="font-semibold">{t("settings.customization")}</div>
       <div className="space-y-2">
         <Label>{t("settings.font")}</Label>
-        <Select value={prefs.font_family ?? "system"} onValueChange={(v) => save({ font_family: v })}>
-          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+        <Select
+          value={prefs.font_family ?? "system"}
+          onValueChange={(v) => save({ font_family: v })}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             {FONT_OPTIONS.map((f) => (
               <SelectItem key={f.value} value={f.value}>
@@ -147,7 +176,10 @@ function CustomizationPanel() {
         <p className="text-[11px] text-muted-foreground">{t("settings.sidebarItemsDesc")}</p>
         <div className="grid grid-cols-2 gap-1.5 max-h-72 overflow-auto rounded border p-2">
           {NAV_ITEMS.map((n) => (
-            <label key={n.to} className="flex items-center justify-between text-xs px-2 py-1 rounded hover:bg-accent">
+            <label
+              key={n.to}
+              className="flex items-center justify-between text-xs px-2 py-1 rounded hover:bg-accent"
+            >
               <span className="truncate">{n.label}</span>
               <Switch checked={!hidden.has(n.to)} onCheckedChange={() => toggleNav(n.to)} />
             </label>
@@ -171,12 +203,17 @@ function DisplayDensityPanel() {
       />
       <div className="space-y-1">
         <Label>ダッシュボードに表示するカード</Label>
-        <p className="text-[11px] text-muted-foreground mb-1">ホーム画面に表示する項目を選びます（この端末のみ）</p>
+        <p className="text-[11px] text-muted-foreground mb-1">
+          ホーム画面に表示する項目を選びます（この端末のみ）
+        </p>
         <div className="grid grid-cols-2 gap-1.5">
           {DASHBOARD_CARD_OPTIONS.map((c) => {
             const checked = prefs.dashboard_cards.includes(c.value);
             return (
-              <label key={c.value} className="flex items-center justify-between text-xs px-2 py-1.5 rounded border hover:bg-accent">
+              <label
+                key={c.value}
+                className="flex items-center justify-between text-xs px-2 py-1.5 rounded border hover:bg-accent"
+              >
                 <span>{c.label}</span>
                 <Switch
                   checked={checked}

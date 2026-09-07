@@ -88,7 +88,10 @@ export function GoogleTranslateWidget({ className = "" }: { className?: string }
   }, [open]);
 
   const pick = (code: string) => {
-    if (code === lang) { setOpen(false); return; }
+    if (code === lang) {
+      setOpen(false);
+      return;
+    }
     writeCookie(code);
     window.location.reload();
   };
@@ -109,7 +112,9 @@ export function GoogleTranslateWidget({ className = "" }: { className?: string }
       >
         <Globe className="h-3.5 w-3.5 opacity-70" />
         <span>{current.label}</span>
-        <ChevronDown className={`h-3.5 w-3.5 opacity-60 transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown
+          className={`h-3.5 w-3.5 opacity-60 transition-transform ${open ? "rotate-180" : ""}`}
+        />
       </button>
 
       {open && (

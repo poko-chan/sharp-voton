@@ -35,7 +35,8 @@ function MakronHub() {
             自分専用の問題づくり・自習モード。近日公開予定です。
           </p>
           <Button size="sm" className="w-full" variant="outline" disabled>
-            <Lock className="h-4 w-4 mr-1" />準備中
+            <Lock className="h-4 w-4 mr-1" />
+            準備中
           </Button>
         </Card>
 
@@ -49,7 +50,8 @@ function MakronHub() {
             学校・塾向けの教材配信と学習管理。近日公開予定です。
           </p>
           <Button size="sm" className="w-full" variant="outline" disabled>
-            <Lock className="h-4 w-4 mr-1" />準備中
+            <Lock className="h-4 w-4 mr-1" />
+            準備中
           </Button>
         </Card>
       </div>

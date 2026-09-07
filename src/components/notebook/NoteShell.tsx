@@ -22,12 +22,19 @@ export function NoteShell({
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
       <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border/60 bg-gradient-to-r from-primary/10 via-background to-background px-3">
         {back ? (
-          <Button size="icon" variant="ghost" onClick={() => navigate({ to: back as any })} title="戻る">
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => navigate({ to: back as any })}
+            title="戻る"
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
         ) : (
           <Link to="/dashboard" title="メニューへ戻る">
-            <Button size="icon" variant="ghost"><ArrowLeft className="h-5 w-5" /></Button>
+            <Button size="icon" variant="ghost">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
           </Link>
         )}
         <Link to="/notebooks" className="shrink-0 text-lg font-extrabold tracking-tight">

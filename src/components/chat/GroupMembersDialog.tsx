@@ -51,7 +51,10 @@ export function GroupMembersDialog({
     enabled: open && !!groupId,
   });
 
-  const memberIds = useMemo(() => new Set((members.data ?? []).map((m) => m.user_id)), [members.data]);
+  const memberIds = useMemo(
+    () => new Set((members.data ?? []).map((m) => m.user_id)),
+    [members.data],
+  );
   const invitable = friends.filter((f) => !memberIds.has(f.id));
 
   const refresh = () => {
@@ -109,13 +112,24 @@ export function GroupMembersDialog({
             <p className="text-sm text-muted-foreground mb-1">メンバー</p>
             <div className="max-h-40 overflow-y-auto space-y-1 rounded-md border p-2">
               {members.data?.map((m) => (
-                <div key={m.user_id} className="flex items-center justify-between px-1 py-1 text-sm">
+                <div
+                  key={m.user_id}
+                  className="flex items-center justify-between px-1 py-1 text-sm"
+                >
                   <span className="truncate">
                     {m.profile?.display_name ?? m.profile?.username ?? "(unknown)"}
-                    {m.user_id === ownerId && <span className="ml-1 text-xs text-muted-foreground">(作成者)</span>}
+                    {m.user_id === ownerId && (
+                      <span className="ml-1 text-xs text-muted-foreground">(作成者)</span>
+                    )}
                   </span>
                   {isOwner && m.user_id !== currentUserId && (
-                    <Button size="icon" variant="ghost" className="h-7 w-7" disabled={busy === m.user_id} onClick={() => remove(m.user_id)}>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7"
+                      disabled={busy === m.user_id}
+                      onClick={() => remove(m.user_id)}
+                    >
                       <UserMinus className="h-4 w-4" />
                     </Button>
                   )}
@@ -127,11 +141,21 @@ export function GroupMembersDialog({
             <div>
               <p className="text-sm text-muted-foreground mb-1">フレンドを招待</p>
               <div className="max-h-40 overflow-y-auto space-y-1 rounded-md border p-2">
-                {invitable.length === 0 && <p className="text-sm text-muted-foreground px-1 py-2">招待できるフレンドがいません</p>}
+                {invitable.length === 0 && (
+                  <p className="text-sm text-muted-foreground px-1 py-2">
+                    招待できるフレンドがいません
+                  </p>
+                )}
                 {invitable.map((f) => (
                   <div key={f.id} className="flex items-center justify-between px-1 py-1 text-sm">
                     <span className="truncate">{f.display_name ?? f.username}</span>
-                    <Button size="icon" variant="ghost" className="h-7 w-7" disabled={busy === f.id} onClick={() => invite(f.id)}>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7"
+                      disabled={busy === f.id}
+                      onClick={() => invite(f.id)}
+                    >
                       <UserPlus className="h-4 w-4" />
                     </Button>
                   </div>
@@ -147,7 +171,9 @@ export function GroupMembersDialog({
               グループを退出
             </Button>
           )}
-          <Button variant="outline" onClick={() => onOpenChange(false)}>閉じる</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            閉じる
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

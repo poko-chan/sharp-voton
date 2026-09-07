@@ -20,7 +20,9 @@ function AdminPage() {
   const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const search = useSearch({ from: "/_authenticated/admin" });
-  useEffect(() => { if (!loading && !isAdmin) navigate({ to: "/dashboard" }); }, [isAdmin, loading]);
+  useEffect(() => {
+    if (!loading && !isAdmin) navigate({ to: "/dashboard" });
+  }, [isAdmin, loading]);
   if (!isAdmin) return null;
 
   return (
@@ -29,31 +31,78 @@ function AdminPage() {
         <Shield className="h-7 w-7" />
         <h1 className="text-3xl font-bold">管理者ダッシュボード</h1>
       </div>
-      <Tabs value={search.tab} onValueChange={(v) => navigate({ to: "/admin", search: { tab: v } as any })}>
+      <Tabs
+        value={search.tab}
+        onValueChange={(v) => navigate({ to: "/admin", search: { tab: v } as any })}
+      >
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="users">ユーザー管理</TabsTrigger>
           <TabsTrigger value="maintenance">メンテナンス</TabsTrigger>
-          <TabsTrigger value="restrictions" className="data-[state=active]:bg-red-500/10 data-[state=active]:text-red-600">利用停止</TabsTrigger>
-          <TabsTrigger value="orgs"><Building2 className="h-3 w-3 mr-1" />組織</TabsTrigger>
-          <TabsTrigger value="materials"><BookOpen className="h-3 w-3 mr-1" />教材承認</TabsTrigger>
-          <TabsTrigger value="faq" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600">FAQ</TabsTrigger>
+          <TabsTrigger
+            value="restrictions"
+            className="data-[state=active]:bg-red-500/10 data-[state=active]:text-red-600"
+          >
+            利用停止
+          </TabsTrigger>
+          <TabsTrigger value="orgs">
+            <Building2 className="h-3 w-3 mr-1" />
+            組織
+          </TabsTrigger>
+          <TabsTrigger value="materials">
+            <BookOpen className="h-3 w-3 mr-1" />
+            教材承認
+          </TabsTrigger>
+          <TabsTrigger
+            value="faq"
+            className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600"
+          >
+            FAQ
+          </TabsTrigger>
           <TabsTrigger value="version">バージョン</TabsTrigger>
           <TabsTrigger value="announcements">お知らせ</TabsTrigger>
           <TabsTrigger value="feedback">フィードバック</TabsTrigger>
-          <TabsTrigger value="coingrant"><Coins className="h-3 w-3 mr-1" />コイン一括配布</TabsTrigger>
-          <TabsTrigger value="boards"><Megaphone className="h-3 w-3 mr-1" />ログイン掲示板</TabsTrigger>
+          <TabsTrigger value="coingrant">
+            <Coins className="h-3 w-3 mr-1" />
+            コイン一括配布
+          </TabsTrigger>
+          <TabsTrigger value="boards">
+            <Megaphone className="h-3 w-3 mr-1" />
+            ログイン掲示板
+          </TabsTrigger>
         </TabsList>
-        <TabsContent value="users"><UsersTab /></TabsContent>
-        <TabsContent value="maintenance"><MaintenanceTab /></TabsContent>
-        <TabsContent value="restrictions"><RestrictionsHub /></TabsContent>
-        <TabsContent value="orgs"><OrgsAdminTab /></TabsContent>
-        <TabsContent value="materials"><MaterialsReviewTab /></TabsContent>
-        <TabsContent value="faq"><FaqTab /></TabsContent>
-        <TabsContent value="version"><VersionTab /></TabsContent>
-        <TabsContent value="announcements"><AnnouncementsTab /></TabsContent>
-        <TabsContent value="feedback"><FeedbackTab /></TabsContent>
-        <TabsContent value="coingrant"><CoinGrantAllTab /></TabsContent>
-        <TabsContent value="boards"><LoginBoardsTab /></TabsContent>
+        <TabsContent value="users">
+          <UsersTab />
+        </TabsContent>
+        <TabsContent value="maintenance">
+          <MaintenanceTab />
+        </TabsContent>
+        <TabsContent value="restrictions">
+          <RestrictionsHub />
+        </TabsContent>
+        <TabsContent value="orgs">
+          <OrgsAdminTab />
+        </TabsContent>
+        <TabsContent value="materials">
+          <MaterialsReviewTab />
+        </TabsContent>
+        <TabsContent value="faq">
+          <FaqTab />
+        </TabsContent>
+        <TabsContent value="version">
+          <VersionTab />
+        </TabsContent>
+        <TabsContent value="announcements">
+          <AnnouncementsTab />
+        </TabsContent>
+        <TabsContent value="feedback">
+          <FeedbackTab />
+        </TabsContent>
+        <TabsContent value="coingrant">
+          <CoinGrantAllTab />
+        </TabsContent>
+        <TabsContent value="boards">
+          <LoginBoardsTab />
+        </TabsContent>
       </Tabs>
     </div>
   );

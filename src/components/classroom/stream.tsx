@@ -8,13 +8,33 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Trash2, Megaphone, Paperclip, Lock, MessageSquare, X } from "lucide-react";
 import { toast } from "sonner";
 import { fetchPublicProfiles } from "@/lib/public-profiles";
 
-export function Stream({ classId, isTeacher, members }: { classId: string; isTeacher: boolean; members: any[] }) {
+export function Stream({
+  classId,
+  isTeacher,
+  members,
+}: {
+  classId: string;
+  isTeacher: boolean;
+  members: any[];
+}) {
   const { user } = useAuth();
   const [posts, setPosts] = useState<any[]>([]);
   const [profMap, setProfMap] = useState<Map<string, any>>(new Map());
@@ -23,15 +43,24 @@ export function Stream({ classId, isTeacher, members }: { classId: string; isTea
   const remove = useServerFn(deletePost);
 
   const load = async () => {
-    const { data: ps } = await supabase.from("class_posts").select("*")
-      .eq("class_id", classId).order("pinned", { ascending: false }).order("created_at", { ascending: false });
+    const { data: ps } = await supabase
+      .from("class_posts")
+      .select("*")
+      .eq("class_id", classId)
+      .order("pinned", { ascending: false })
+      .order("created_at", { ascending: false });
     setPosts(ps ?? []);
     const ids = (ps ?? []).map((p) => p.id);
     if (ids.length > 0) {
-      const { data: cs } = await supabase.from("class_post_comments").select("*")
-        .in("post_id", ids).order("created_at", { ascending: true });
+      const { data: cs } = await supabase
+        .from("class_post_comments")
+        .select("*")
+        .in("post_id", ids)
+        .order("created_at", { ascending: true });
       const map: Record<string, any[]> = {};
-      (cs ?? []).forEach((c) => { (map[c.post_id] ||= []).push(c); });
+      (cs ?? []).forEach((c) => {
+        (map[c.post_id] ||= []).push(c);
+      });
       setComments(map);
       const authorIds = new Set<string>();
       (ps ?? []).forEach((p) => authorIds.add(p.author_id));
@@ -39,16 +68,22 @@ export function Stream({ classId, isTeacher, members }: { classId: string; isTea
       const profs = await fetchPublicProfiles(Array.from(authorIds));
       setProfMap(new Map((profs ?? []).map((p: any) => [p.id, p])));
     } else {
-      setComments({}); setProfMap(new Map());
+      setComments({});
+      setProfMap(new Map());
     }
   };
-  useEffect(() => { load(); }, [classId]);
-  const profName = (id: string) => profMap.get(id)?.display_name ?? profMap.get(id)?.username ?? "?";
+  useEffect(() => {
+    load();
+  }, [classId]);
+  const profName = (id: string) =>
+    profMap.get(id)?.display_name ?? profMap.get(id)?.username ?? "?";
 
   return (
     <div className="space-y-4">
       {isTeacher && <PostComposer classId={classId} onPosted={load} create={create} />}
-      {posts.length === 0 && <Card className="p-6 text-center text-muted-foreground text-sm">投稿はまだありません</Card>}
+      {posts.length === 0 && (
+        <Card className="p-6 text-center text-muted-foreground text-sm">投稿はまだありません</Card>
+      )}
       {posts.map((p) => (
         <Card key={p.id} className="p-4 space-y-2">
           <div className="flex items-start justify-between gap-3">
@@ -60,11 +95,23 @@ export function Stream({ classId, isTeacher, members }: { classId: string; isTea
               {p.title && <div className="font-semibold mt-1">{p.title}</div>}
             </div>
             {(isTeacher || p.author_id === user?.id) && (
-              <Button size="sm" variant="ghost" className="text-destructive h-7 w-7 p-0" onClick={async () => {
-                if (!confirm("投稿を削除しますか？")) return;
-                try { await remove({ data: { postId: p.id } }); toast.success("削除"); load(); }
-                catch (e: any) { toast.error(e.message); }
-              }}><Trash2 className="h-3 w-3" /></Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-destructive h-7 w-7 p-0"
+                onClick={async () => {
+                  if (!confirm("投稿を削除しますか？")) return;
+                  try {
+                    await remove({ data: { postId: p.id } });
+                    toast.success("削除");
+                    load();
+                  } catch (e: any) {
+                    toast.error(e.message);
+                  }
+                }}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
             )}
           </div>
           <p className="text-sm whitespace-pre-wrap">{p.body}</p>
@@ -85,7 +132,15 @@ export function Stream({ classId, isTeacher, members }: { classId: string; isTea
   );
 }
 
-export function PostComposer({ classId, onPosted, create }: { classId: string; onPosted: () => void; create: any }) {
+export function PostComposer({
+  classId,
+  onPosted,
+  create,
+}: {
+  classId: string;
+  onPosted: () => void;
+  create: any;
+}) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -97,47 +152,95 @@ export function PostComposer({ classId, onPosted, create }: { classId: string; o
     if (!user) return;
     if (f.size > 20 * 1024 * 1024) return toast.error("20MB以下にしてください");
     setUploading(true);
-    try { const a = await uploadClassroomFile(user.id, f); setFiles((arr) => [...arr, a]); }
-    catch (e: any) { toast.error(e.message); }
-    finally { setUploading(false); }
+    try {
+      const a = await uploadClassroomFile(user.id, f);
+      setFiles((arr) => [...arr, a]);
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setUploading(false);
+    }
   };
   const submit = async () => {
     if (!body.trim()) return toast.error("本文を入力してください");
     try {
-      await create({ data: { classId, title: title.trim(), body: body.trim(), attachments: files } });
+      await create({
+        data: { classId, title: title.trim(), body: body.trim(), attachments: files },
+      });
       toast.success("投稿しました");
-      setOpen(false); setTitle(""); setBody(""); setFiles([]); onPosted();
-    } catch (e: any) { toast.error(e.message); }
+      setOpen(false);
+      setTitle("");
+      setBody("");
+      setFiles([]);
+      onPosted();
+    } catch (e: any) {
+      toast.error(e.message);
+    }
   };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild><Button><Megaphone className="h-4 w-4 mr-2" />お知らせを投稿</Button></DialogTrigger>
+      <DialogTrigger asChild>
+        <Button>
+          <Megaphone className="h-4 w-4 mr-2" />
+          お知らせを投稿
+        </Button>
+      </DialogTrigger>
       <DialogContent className="max-w-xl">
-        <DialogHeader><DialogTitle>クラスに投稿</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>クラスに投稿</DialogTitle>
+        </DialogHeader>
         <div className="space-y-3">
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="タイトル（任意）" maxLength={200} />
-          <Textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="本文・連絡事項・参考リンクなど" rows={6} maxLength={10000} />
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="タイトル（任意）"
+            maxLength={200}
+          />
+          <Textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder="本文・連絡事項・参考リンクなど"
+            rows={6}
+            maxLength={10000}
+          />
           <FileUploader onFile={onFile} uploading={uploading} />
           {files.length > 0 && (
             <div className="space-y-1">
               {files.map((f, i) => (
-                <div key={i} className="flex items-center justify-between text-xs px-2 py-1 rounded bg-muted/40">
+                <div
+                  key={i}
+                  className="flex items-center justify-between text-xs px-2 py-1 rounded bg-muted/40"
+                >
                   <span className="truncate">📎 {f.name}</span>
-                  <button onClick={() => setFiles((arr) => arr.filter((_, j) => j !== i))} className="text-muted-foreground hover:text-destructive">
+                  <button
+                    onClick={() => setFiles((arr) => arr.filter((_, j) => j !== i))}
+                    className="text-muted-foreground hover:text-destructive"
+                  >
                     <X className="h-3 w-3" />
                   </button>
                 </div>
               ))}
             </div>
           )}
-          <Button onClick={submit} disabled={uploading} className="w-full">投稿</Button>
+          <Button onClick={submit} disabled={uploading} className="w-full">
+            投稿
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
   );
 }
 
-export function CommentSection({ postId, classId, comments, members, isTeacher, profName, currentUserId, onChange }: any) {
+export function CommentSection({
+  postId,
+  classId,
+  comments,
+  members,
+  isTeacher,
+  profName,
+  currentUserId,
+  onChange,
+}: any) {
   const [body, setBody] = useState("");
   const [privateTo, setPrivateTo] = useState<string>("");
   const add = useServerFn(addComment);
@@ -146,24 +249,49 @@ export function CommentSection({ postId, classId, comments, members, isTeacher, 
     if (!body.trim()) return;
     try {
       await add({ data: { postId, classId, body: body.trim(), privateTo: privateTo || null } });
-      setBody(""); setPrivateTo(""); onChange();
-    } catch (e: any) { toast.error(e.message); }
+      setBody("");
+      setPrivateTo("");
+      onChange();
+    } catch (e: any) {
+      toast.error(e.message);
+    }
   };
   return (
     <div className="pt-2 border-t space-y-2">
-      <div className="text-xs text-muted-foreground flex items-center gap-1"><MessageSquare className="h-3 w-3" />コメント ({comments.length})</div>
+      <div className="text-xs text-muted-foreground flex items-center gap-1">
+        <MessageSquare className="h-3 w-3" />
+        コメント ({comments.length})
+      </div>
       {comments.map((c: any) => (
-        <div key={c.id} className={`text-xs rounded p-2 ${c.private_to ? "bg-amber-500/10 border border-amber-500/30" : "bg-muted/30"}`}>
+        <div
+          key={c.id}
+          className={`text-xs rounded p-2 ${c.private_to ? "bg-amber-500/10 border border-amber-500/30" : "bg-muted/30"}`}
+        >
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="font-medium">{profName(c.author_id)}</span>
-              <span className="text-muted-foreground">{new Date(c.created_at).toLocaleString("ja-JP")}</span>
+              <span className="text-muted-foreground">
+                {new Date(c.created_at).toLocaleString("ja-JP")}
+              </span>
               {c.private_to && (
-                <span className="inline-flex items-center gap-1 text-amber-700"><Lock className="h-3 w-3" />限定 → {profName(c.private_to)}</span>
+                <span className="inline-flex items-center gap-1 text-amber-700">
+                  <Lock className="h-3 w-3" />
+                  限定 → {profName(c.private_to)}
+                </span>
               )}
             </div>
             {(c.author_id === currentUserId || isTeacher) && (
-              <button onClick={async () => { try { await del({ data: { commentId: c.id } }); onChange(); } catch (e: any) { toast.error(e.message); } }} className="text-muted-foreground hover:text-destructive">
+              <button
+                onClick={async () => {
+                  try {
+                    await del({ data: { commentId: c.id } });
+                    onChange();
+                  } catch (e: any) {
+                    toast.error(e.message);
+                  }
+                }}
+                className="text-muted-foreground hover:text-destructive"
+              >
                 <X className="h-3 w-3" />
               </button>
             )}
@@ -172,20 +300,38 @@ export function CommentSection({ postId, classId, comments, members, isTeacher, 
         </div>
       ))}
       <div className="flex gap-2 items-start">
-        <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={2} placeholder="コメントを書く..." className="text-xs flex-1" maxLength={4000} />
+        <Textarea
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          rows={2}
+          placeholder="コメントを書く..."
+          className="text-xs flex-1"
+          maxLength={4000}
+        />
         <div className="space-y-1">
           {isTeacher && (
-            <Select value={privateTo || "all"} onValueChange={(v) => setPrivateTo(v === "all" ? "" : v)}>
-              <SelectTrigger className="h-8 w-36 text-xs"><SelectValue /></SelectTrigger>
+            <Select
+              value={privateTo || "all"}
+              onValueChange={(v) => setPrivateTo(v === "all" ? "" : v)}
+            >
+              <SelectTrigger className="h-8 w-36 text-xs">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">全員に公開</SelectItem>
-                {members.filter((m: any) => m.user_id !== currentUserId).map((m: any) => (
-                  <SelectItem key={m.user_id} value={m.user_id}>🔒 {m.profile?.display_name ?? m.profile?.username ?? "?"}</SelectItem>
-                ))}
+                {members
+                  .filter((m: any) => m.user_id !== currentUserId)
+                  .map((m: any) => (
+                    <SelectItem key={m.user_id} value={m.user_id}>
+                      🔒 {m.profile?.display_name ?? m.profile?.username ?? "?"}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           )}
-          <Button size="sm" onClick={submit}>送信</Button>
+          <Button size="sm" onClick={submit}>
+            送信
+          </Button>
         </div>
       </div>
     </div>
@@ -197,7 +343,13 @@ export function AttachmentList({ attachments }: { attachments: ClassroomAttachme
   return (
     <div className="flex flex-wrap gap-2">
       {attachments.map((f, i) => (
-        <a key={i} href={f.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 px-2 py-1 rounded bg-muted/40 text-xs hover:bg-muted">
+        <a
+          key={i}
+          href={f.url}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1 px-2 py-1 rounded bg-muted/40 text-xs hover:bg-muted"
+        >
           <Paperclip className="h-3 w-3" /> {f.name}
         </a>
       ))}
@@ -205,12 +357,25 @@ export function AttachmentList({ attachments }: { attachments: ClassroomAttachme
   );
 }
 
-export function FileUploader({ onFile, uploading, accept }: { onFile: (f: File) => void; uploading: boolean; accept?: string }) {
+export function FileUploader({
+  onFile,
+  uploading,
+  accept,
+}: {
+  onFile: (f: File) => void;
+  uploading: boolean;
+  accept?: string;
+}) {
   return (
     <label className="inline-flex items-center gap-2 cursor-pointer text-xs text-primary hover:underline">
       <Paperclip className="h-3 w-3" />
       {uploading ? "アップロード中..." : "ファイルを添付"}
-      <input type="file" accept={accept} hidden onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
+      <input
+        type="file"
+        accept={accept}
+        hidden
+        onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
+      />
     </label>
   );
 }

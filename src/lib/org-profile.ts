@@ -27,15 +27,25 @@ export function yearOptions(center = Number(academicYear())): string[] {
 }
 
 export async function loadOrgFields(orgId: string): Promise<OrgField[]> {
-  const { data } = await (supabase as any).from("org_profile_fields")
-    .select("*").eq("organization_id", orgId).order("sort_order").order("created_at");
-  return (data ?? []).map((f: any) => ({ ...f, options: Array.isArray(f.options) ? f.options : [] }));
+  const { data } = await (supabase as any)
+    .from("org_profile_fields")
+    .select("*")
+    .eq("organization_id", orgId)
+    .order("sort_order")
+    .order("created_at");
+  return (data ?? []).map((f: any) => ({
+    ...f,
+    options: Array.isArray(f.options) ? f.options : [],
+  }));
 }
 
 /** ユーザーID -> 年度プロフィール値 */
 export async function loadOrgYearValues(orgId: string, year: string, userIds?: string[]) {
-  let q = (supabase as any).from("org_profile_years").select("user_id, values")
-    .eq("organization_id", orgId).eq("year", year);
+  let q = (supabase as any)
+    .from("org_profile_years")
+    .select("user_id, values")
+    .eq("organization_id", orgId)
+    .eq("year", year);
   if (userIds?.length) q = q.in("user_id", Array.from(new Set(userIds)));
   const { data } = await q;
   const map: Record<string, Record<string, string>> = {};
@@ -43,11 +53,18 @@ export async function loadOrgYearValues(orgId: string, year: string, userIds?: s
   return map;
 }
 
-export async function saveOrgYearValues(orgId: string, userId: string, year: string, values: Record<string, string>) {
-  return (supabase as any).from("org_profile_years").upsert(
-    { organization_id: orgId, user_id: userId, year, values },
-    { onConflict: "organization_id,user_id,year" },
-  );
+export async function saveOrgYearValues(
+  orgId: string,
+  userId: string,
+  year: string,
+  values: Record<string, string>,
+) {
+  return (supabase as any)
+    .from("org_profile_years")
+    .upsert(
+      { organization_id: orgId, user_id: userId, year, values },
+      { onConflict: "organization_id,user_id,year" },
+    );
 }
 
 /**

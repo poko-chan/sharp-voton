@@ -11,8 +11,16 @@ export const PAPER_TYPES: { key: PaperType; label: string; note: string }[] = [
 ];
 
 export const COVER_COLORS = [
-  "#2563eb", "#dc2626", "#16a34a", "#ca8a04", "#7c3aed",
-  "#0f766e", "#db2777", "#334155", "#ea580c", "#0891b2",
+  "#2563eb",
+  "#dc2626",
+  "#16a34a",
+  "#ca8a04",
+  "#7c3aed",
+  "#0f766e",
+  "#db2777",
+  "#334155",
+  "#ea580c",
+  "#0891b2",
 ];
 
 export const PAPER_COLORS = [
@@ -97,17 +105,25 @@ export function drawPaper(ctx: CanvasRenderingContext2D, type: PaperType, paperC
     ctx.strokeStyle = soft;
     ctx.lineWidth = 1;
     for (let x = gap; x < PAGE_W; x += gap) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, PAGE_H); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, PAGE_H);
+      ctx.stroke();
     }
     for (let y = gap; y < PAGE_H; y += gap) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(PAGE_W, y); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(PAGE_W, y);
+      ctx.stroke();
     }
   } else if (type === "dotted") {
     const gap = 36;
     ctx.fillStyle = "rgba(100,116,139,0.5)";
     for (let x = gap; x < PAGE_W; x += gap) {
       for (let y = gap; y < PAGE_H; y += gap) {
-        ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x, y, 2, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
   } else if (type === "cornell") {
@@ -115,13 +131,25 @@ export function drawPaper(ctx: CanvasRenderingContext2D, type: PaperType, paperC
     ctx.strokeStyle = line;
     ctx.lineWidth = 1.5;
     for (let y = 150; y < PAGE_H - 300; y += gap) {
-      ctx.beginPath(); ctx.moveTo(340, y); ctx.lineTo(PAGE_W - 70, y); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(340, y);
+      ctx.lineTo(PAGE_W - 70, y);
+      ctx.stroke();
     }
     ctx.strokeStyle = "rgba(239,68,68,0.45)";
     ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(320, 100); ctx.lineTo(320, PAGE_H - 300); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(70, PAGE_H - 300); ctx.lineTo(PAGE_W - 70, PAGE_H - 300); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(70, 100); ctx.lineTo(PAGE_W - 70, 100); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(320, 100);
+    ctx.lineTo(320, PAGE_H - 300);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(70, PAGE_H - 300);
+    ctx.lineTo(PAGE_W - 70, PAGE_H - 300);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(70, 100);
+    ctx.lineTo(PAGE_W - 70, 100);
+    ctx.stroke();
   } else if (type === "music") {
     ctx.strokeStyle = "rgba(30,41,59,0.55)";
     ctx.lineWidth = 1.4;
@@ -129,7 +157,10 @@ export function drawPaper(ctx: CanvasRenderingContext2D, type: PaperType, paperC
       const top = 140 + s * 160;
       for (let i = 0; i < 5; i++) {
         const y = top + i * 16;
-        ctx.beginPath(); ctx.moveTo(80, y); ctx.lineTo(PAGE_W - 80, y); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(80, y);
+        ctx.lineTo(PAGE_W - 80, y);
+        ctx.stroke();
       }
     }
   }
@@ -156,9 +187,12 @@ export function drawStroke(ctx: CanvasRenderingContext2D, s: Stroke) {
     const b = s.points[i];
     const next = s.points[i + 1] ?? b;
     const pressure = s.tool === "pen" || s.tool === "pencil" ? (b.p ?? 0.5) : 0.5;
-    ctx.lineWidth = s.tool === "pen" ? s.width * (0.55 + pressure)
-      : s.tool === "pencil" ? s.width * (0.5 + pressure * 0.8)
-      : s.width;
+    ctx.lineWidth =
+      s.tool === "pen"
+        ? s.width * (0.55 + pressure)
+        : s.tool === "pencil"
+          ? s.width * (0.5 + pressure * 0.8)
+          : s.width;
     if (s.tool === "pencil") ctx.globalAlpha = 0.55 + ((i * 37) % 20) / 100;
     const midpoint = { x: (b.x + next.x) / 2, y: (b.y + next.y) / 2 };
     ctx.beginPath();
@@ -220,7 +254,10 @@ export function eraseAt(strokes: Stroke[], x: number, y: number, radius: number)
   const out: Stroke[] = [];
   for (const s of strokes) {
     const r = radius + s.width / 2;
-    if (!s.points.some((p) => Math.hypot(p.x - x, p.y - y) <= r)) { out.push(s); continue; }
+    if (!s.points.some((p) => Math.hypot(p.x - x, p.y - y) <= r)) {
+      out.push(s);
+      continue;
+    }
     changed = true;
     let run: Point[] = [];
     const flush = () => {

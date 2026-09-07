@@ -11,14 +11,20 @@ export function SearchBar() {
   const nav = useNavigate();
   const apps = appsForAccount(accountKind);
   const results = q.trim()
-    ? apps.filter((app) => `${app.label} ${app.keywords}`.toLowerCase().includes(q.toLowerCase())).slice(0, 8)
+    ? apps
+        .filter((app) => `${app.label} ${app.keywords}`.toLowerCase().includes(q.toLowerCase()))
+        .slice(0, 8)
     : [];
   return (
     <div className="relative">
       <div className="flex items-center gap-1 bg-muted/50 rounded-md px-2 py-1">
         <Search className="h-4 w-4 text-muted-foreground" />
         <input
-          value={q} onChange={(e) => { setQ(e.target.value); setOpen(true); }}
+          value={q}
+          onChange={(e) => {
+            setQ(e.target.value);
+            setOpen(true);
+          }}
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 200)}
           placeholder="検索..."
@@ -30,9 +36,16 @@ export function SearchBar() {
           {results.map((app) => (
             <button
               key={app.to}
-              onMouseDown={(e) => { e.preventDefault(); nav({ to: app.to }); setQ(""); setOpen(false); }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                nav({ to: app.to });
+                setQ("");
+                setOpen(false);
+              }}
               className="w-full text-left px-3 py-1.5 text-sm hover:bg-muted"
-            >{app.label}</button>
+            >
+              {app.label}
+            </button>
           ))}
         </div>
       )}

@@ -14,7 +14,11 @@ function hasPatternLoop(text: string): boolean {
 /** 文単位の重複ループ */
 function hasSentenceLoop(text: string): boolean {
   if (text.length < 240) return false;
-  const parts = text.slice(-600).split(/[。．.!?！？\n]/).map((s) => s.trim()).filter((s) => s.length > 8);
+  const parts = text
+    .slice(-600)
+    .split(/[。．.!?！？\n]/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 8);
   if (parts.length < 4) return false;
   return new Set(parts).size <= Math.floor(parts.length / 2);
 }

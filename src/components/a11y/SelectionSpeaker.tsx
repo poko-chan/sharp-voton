@@ -9,11 +9,17 @@ export function SelectionSpeaker() {
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
-    if (!prefs.tts_enabled) { setPos(null); return; }
+    if (!prefs.tts_enabled) {
+      setPos(null);
+      return;
+    }
     const onUp = () => {
       const sel = window.getSelection();
       const t = sel?.toString().trim() ?? "";
-      if (!t || !sel || sel.rangeCount === 0) { setPos(null); return; }
+      if (!t || !sel || sel.rangeCount === 0) {
+        setPos(null);
+        return;
+      }
       const r = sel.getRangeAt(0).getBoundingClientRect();
       setText(t);
       setPos({ x: r.left + r.width / 2, y: r.top - 8 });
@@ -34,7 +40,9 @@ export function SelectionSpeaker() {
       const u = new SpeechSynthesisUtterance(text);
       u.lang = "ja-JP";
       window.speechSynthesis.speak(u);
-    } catch { /* 非対応ブラウザ */ }
+    } catch {
+      /* 非対応ブラウザ */
+    }
     setPos(null);
   };
 
@@ -42,10 +50,17 @@ export function SelectionSpeaker() {
     <button
       type="button"
       onClick={speak}
-      style={{ position: "fixed", left: pos.x, top: pos.y, transform: "translate(-50%, -100%)", zIndex: 90 }}
+      style={{
+        position: "fixed",
+        left: pos.x,
+        top: pos.y,
+        transform: "translate(-50%, -100%)",
+        zIndex: 90,
+      }}
       className="rounded-full bg-primary px-3 py-1.5 text-xs text-primary-foreground shadow-lg flex items-center gap-1"
     >
-      <Volume2 className="h-3.5 w-3.5" />読み上げ
+      <Volume2 className="h-3.5 w-3.5" />
+      読み上げ
     </button>
   );
 }

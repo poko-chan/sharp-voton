@@ -1,6 +1,12 @@
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useLocalPrefs, type LocalPrefs } from "@/lib/user-prefs";
 import { SectionHeading, SettingRow } from "./shared";
 
@@ -36,9 +42,15 @@ export function TownSection() {
             value={prefs.town_default_tab}
             onValueChange={(v) => save({ town_default_tab: v as LocalPrefs["town_default_tab"] })}
           >
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
-              {TABS.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+              {TABS.map((t) => (
+                <SelectItem key={t.value} value={t.value}>
+                  {t.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

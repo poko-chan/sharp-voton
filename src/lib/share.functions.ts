@@ -13,9 +13,7 @@ export type ShareSummaryRow = {
  * underlying database function is no longer callable by anonymous clients.
  */
 export const getSharedStudySummary = createServerFn({ method: "GET" })
-  .inputValidator((data: unknown) =>
-    z.object({ token: z.string().min(8).max(200) }).parse(data),
-  )
+  .inputValidator((data: unknown) => z.object({ token: z.string().min(8).max(200) }).parse(data))
   .handler(async ({ data }): Promise<ShareSummaryRow[]> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows, error } = await (supabaseAdmin as any).rpc("share_study_summary", {

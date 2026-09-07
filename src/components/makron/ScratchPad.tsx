@@ -32,7 +32,10 @@ export function ScratchPad({
   const pos = (e: React.PointerEvent) => {
     const c = ref.current!;
     const r = c.getBoundingClientRect();
-    return { x: ((e.clientX - r.left) / r.width) * c.width, y: ((e.clientY - r.top) / r.height) * c.height };
+    return {
+      x: ((e.clientX - r.left) / r.width) * c.width,
+      y: ((e.clientY - r.top) / r.height) * c.height,
+    };
   };
   const down = (e: React.PointerEvent) => {
     drawing.current = true;
@@ -52,7 +55,9 @@ export function ScratchPad({
     ctx.lineTo(x, y);
     ctx.stroke();
   };
-  const up = () => { drawing.current = false; };
+  const up = () => {
+    drawing.current = false;
+  };
 
   const clear = () => {
     const c = ref.current!;
@@ -77,13 +82,49 @@ export function ScratchPad({
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-1.5 items-center">
-        <Button size="sm" variant={mode === "pen" ? "default" : "outline"} onClick={() => setMode("pen")}><Pencil className="h-4 w-4 mr-1" />ペン</Button>
-        <Button size="sm" variant={mode === "erase" ? "default" : "outline"} onClick={() => setMode("erase")}><Eraser className="h-4 w-4 mr-1" />消しゴム</Button>
-        <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-8 w-9 rounded border" />
-        <input type="range" min={1} max={12} value={size} onChange={(e) => setSize(Number(e.target.value))} className="w-24" />
-        <Button size="sm" variant="ghost" onClick={clear}>クリア</Button>
-        <Button size="sm" variant="outline" onClick={download}><Download className="h-4 w-4 mr-1" />DL</Button>
-        {onSave && <Button size="sm" onClick={save}><Save className="h-4 w-4 mr-1" />保存</Button>}
+        <Button
+          size="sm"
+          variant={mode === "pen" ? "default" : "outline"}
+          onClick={() => setMode("pen")}
+        >
+          <Pencil className="h-4 w-4 mr-1" />
+          ペン
+        </Button>
+        <Button
+          size="sm"
+          variant={mode === "erase" ? "default" : "outline"}
+          onClick={() => setMode("erase")}
+        >
+          <Eraser className="h-4 w-4 mr-1" />
+          消しゴム
+        </Button>
+        <input
+          type="color"
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+          className="h-8 w-9 rounded border"
+        />
+        <input
+          type="range"
+          min={1}
+          max={12}
+          value={size}
+          onChange={(e) => setSize(Number(e.target.value))}
+          className="w-24"
+        />
+        <Button size="sm" variant="ghost" onClick={clear}>
+          クリア
+        </Button>
+        <Button size="sm" variant="outline" onClick={download}>
+          <Download className="h-4 w-4 mr-1" />
+          DL
+        </Button>
+        {onSave && (
+          <Button size="sm" onClick={save}>
+            <Save className="h-4 w-4 mr-1" />
+            保存
+          </Button>
+        )}
       </div>
       <canvas
         ref={ref}

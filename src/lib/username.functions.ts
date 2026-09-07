@@ -21,10 +21,12 @@ async function lookupEmail(username: string): Promise<string | null> {
 /** Sign in with a username + password. Returns session tokens, never the email. */
 export const signInWithUsername = createServerFn({ method: "POST" })
   .inputValidator((i) =>
-    z.object({
-      username: z.string().min(1).max(64),
-      password: z.string().min(1).max(200),
-    }).parse(i),
+    z
+      .object({
+        username: z.string().min(1).max(64),
+        password: z.string().min(1).max(200),
+      })
+      .parse(i),
   )
   .handler(async ({ data }) => {
     const { createClient } = await import("@supabase/supabase-js");
@@ -36,13 +38,17 @@ export const signInWithUsername = createServerFn({ method: "POST" })
       global: {
         fetch: (input: any, init: any) => {
           const h = new Headers(init?.headers);
-          if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
+          if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`)
+            h.delete("Authorization");
           h.set("apikey", key);
           return fetch(input, { ...init, headers: h });
         },
       },
     });
-    const { data: res, error } = await client.auth.signInWithPassword({ email, password: data.password });
+    const { data: res, error } = await client.auth.signInWithPassword({
+      email,
+      password: data.password,
+    });
     if (error || !res.session) throw new Error("ユーザー名またはパスワードが正しくありません");
     return {
       access_token: res.session.access_token,
@@ -56,10 +62,12 @@ export const signInWithUsername = createServerFn({ method: "POST" })
  */
 export const requestPasswordResetByUsername = createServerFn({ method: "POST" })
   .inputValidator((i) =>
-    z.object({
-      username: z.string().min(1).max(64),
-      redirectTo: z.string().url().max(500),
-    }).parse(i),
+    z
+      .object({
+        username: z.string().min(1).max(64),
+        redirectTo: z.string().url().max(500),
+      })
+      .parse(i),
   )
   .handler(async ({ data }) => {
     const email = await lookupEmail(data.username);
@@ -71,9 +79,7 @@ export const requestPasswordResetByUsername = createServerFn({ method: "POST" })
   });
 
 export const checkUsernameAvailable = createServerFn({ method: "POST" })
-  .inputValidator((i) =>
-    z.object({ username: z.string().min(1).max(64) }).parse(i),
-  )
+  .inputValidator((i) => z.object({ username: z.string().min(1).max(64) }).parse(i))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin

@@ -1,18 +1,46 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Pen, Highlighter, Eraser, Type, Undo2, Redo2, Minus, ZoomIn, ZoomOut,
-  Trash2, Download, Brush, Hand, Maximize2, Pencil,
+  Pen,
+  Highlighter,
+  Eraser,
+  Type,
+  Undo2,
+  Redo2,
+  Minus,
+  ZoomIn,
+  ZoomOut,
+  Trash2,
+  Download,
+  Brush,
+  Hand,
+  Maximize2,
+  Pencil,
 } from "lucide-react";
 import {
-  PAGE_H, PAGE_W, renderPage, drawStroke, eraseAt,
-  type PaperType, type Stroke, type TextBox,
+  PAGE_H,
+  PAGE_W,
+  renderPage,
+  drawStroke,
+  eraseAt,
+  type PaperType,
+  type Stroke,
+  type TextBox,
 } from "@/lib/notebooks";
 import { cn } from "@/lib/utils";
 
 type Tool = "pen" | "pencil" | "marker" | "highlighter" | "eraser" | "text" | "hand";
 
-const PEN_COLORS = ["#111827", "#1d4ed8", "#dc2626", "#16a34a", "#ca8a04", "#7c3aed", "#0891b2", "#ffffff"];
+const PEN_COLORS = [
+  "#111827",
+  "#1d4ed8",
+  "#dc2626",
+  "#16a34a",
+  "#ca8a04",
+  "#7c3aed",
+  "#0891b2",
+  "#ffffff",
+];
 const MARKER_COLORS = ["#fde047", "#86efac", "#93c5fd", "#f9a8d4", "#fdba74", "#c4b5fd"];
 
 const TOOLS: { key: Tool; icon: typeof Pen; label: string }[] = [
@@ -76,7 +104,9 @@ export function NoteCanvas({
     if (drawing.current) drawStroke(ctx, drawing.current);
   }, [strokes, paper, paperColor]);
 
-  useEffect(() => { redraw(); }, [redraw]);
+  useEffect(() => {
+    redraw();
+  }, [redraw]);
 
   // 初期表示は幅にフィット
   const fit = useCallback(() => {
@@ -86,7 +116,9 @@ export function NoteCanvas({
     setZoom(z);
     setPan({ x: (v.clientWidth - PAGE_W * z) / 2, y: 16 });
   }, []);
-  useEffect(() => { fit(); }, [fit]);
+  useEffect(() => {
+    fit();
+  }, [fit]);
 
   // ホイール／ピンチでのズームとスクロール
   useEffect(() => {
@@ -164,14 +196,26 @@ export function NoteCanvas({
 
   const onDown = (e: React.PointerEvent) => {
     if (penOnly && e.pointerType === "touch" && tool !== "hand") return;
-    if (tool === "hand" || e.button === 1 || (e.pointerType === "touch" && tool !== "eraser" && e.isPrimary === false)) {
+    if (
+      tool === "hand" ||
+      e.button === 1 ||
+      (e.pointerType === "touch" && tool !== "eraser" && e.isPrimary === false)
+    ) {
       startPan(e);
       return;
     }
     if (readOnly) return;
     if (tool === "text") {
       const { x, y } = toPage(e);
-      const t: TextBox = { id: crypto.randomUUID(), x, y, w: 420, text: "", size: 32, color: "#111827" };
+      const t: TextBox = {
+        id: crypto.randomUUID(),
+        x,
+        y,
+        w: 420,
+        text: "",
+        size: 32,
+        color: "#111827",
+      };
       commit({ strokes, texts: [...texts, t] });
       setActiveText(t.id);
       setTool("pen");
@@ -188,7 +232,14 @@ export function NoteCanvas({
     }
     drawing.current = {
       id: crypto.randomUUID(),
-      tool: tool === "marker" ? "marker" : tool === "highlighter" ? "highlighter" : tool === "pencil" ? "pencil" : "pen",
+      tool:
+        tool === "marker"
+          ? "marker"
+          : tool === "highlighter"
+            ? "highlighter"
+            : tool === "pencil"
+              ? "pencil"
+              : "pen",
       color: activeColor,
       width: tool === "highlighter" ? width * 8 : tool === "marker" ? width * 2.2 : width,
       points: [pt],
@@ -202,7 +253,10 @@ export function NoteCanvas({
 
   const onMove = (e: React.PointerEvent) => {
     if (panning.current) {
-      setPan({ x: panning.current.ox + (e.clientX - panning.current.x), y: panning.current.oy + (e.clientY - panning.current.y) });
+      setPan({
+        x: panning.current.ox + (e.clientX - panning.current.x),
+        y: panning.current.oy + (e.clientY - panning.current.y),
+      });
       return;
     }
     const pt = toPage(e);
@@ -225,7 +279,10 @@ export function NoteCanvas({
   };
 
   const onUp = (e: React.PointerEvent) => {
-    if (panning.current) { panning.current = null; return; }
+    if (panning.current) {
+      panning.current = null;
+      return;
+    }
     if ((e.currentTarget as any).__erasing) {
       (e.currentTarget as any).__erasing = false;
       return;
@@ -240,7 +297,11 @@ export function NoteCanvas({
     panning.current = null;
     drawing.current = null;
     (e.currentTarget as any).__erasing = false;
-    try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch { /* noop */ }
+    try {
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {
+      /* noop */
+    }
   };
 
   const updateText = (id: string, patch: Partial<TextBox>, snapshot = false) => {
@@ -255,7 +316,8 @@ export function NoteCanvas({
 
   const exportPng = () => {
     const c = document.createElement("canvas");
-    c.width = PAGE_W; c.height = PAGE_H;
+    c.width = PAGE_W;
+    c.height = PAGE_H;
     const ctx = c.getContext("2d")!;
     renderPage(ctx, { strokes, texts }, paper, paperColor, true);
     const a = document.createElement("a");
@@ -267,13 +329,26 @@ export function NoteCanvas({
   // キーボードショートカット
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
-      const typing = document.activeElement?.tagName === "TEXTAREA" || document.activeElement?.tagName === "INPUT";
+      const typing =
+        document.activeElement?.tagName === "TEXTAREA" ||
+        document.activeElement?.tagName === "INPUT";
       if (e.ctrlKey || e.metaKey) {
-        if (e.key.toLowerCase() === "z" && !typing) { e.preventDefault(); e.shiftKey ? redo() : undo(); }
+        if (e.key.toLowerCase() === "z" && !typing) {
+          e.preventDefault();
+          e.shiftKey ? redo() : undo();
+        }
         return;
       }
       if (typing) return;
-      const map: Record<string, Tool> = { p: "pen", n: "pencil", m: "marker", h: "highlighter", e: "eraser", t: "text", v: "hand" };
+      const map: Record<string, Tool> = {
+        p: "pen",
+        n: "pencil",
+        m: "marker",
+        h: "highlighter",
+        e: "eraser",
+        t: "text",
+        v: "hand",
+      };
       if (map[e.key.toLowerCase()]) setTool(map[e.key.toLowerCase()]);
       if (e.key === "0") fit();
     };
@@ -282,7 +357,8 @@ export function NoteCanvas({
   });
 
   const swatches = tool === "highlighter" ? MARKER_COLORS : PEN_COLORS;
-  const isPenTool = tool === "pen" || tool === "pencil" || tool === "marker" || tool === "highlighter";
+  const isPenTool =
+    tool === "pen" || tool === "pencil" || tool === "marker" || tool === "highlighter";
 
   return (
     <div className="flex h-full min-h-0 w-full">
@@ -296,17 +372,43 @@ export function NoteCanvas({
               onClick={() => setTool(t.key)}
               className={cn(
                 "flex h-10 w-10 items-center justify-center rounded-xl border transition",
-                tool === t.key ? "border-primary bg-primary text-primary-foreground shadow" : "border-transparent hover:bg-muted",
+                tool === t.key
+                  ? "border-primary bg-primary text-primary-foreground shadow"
+                  : "border-transparent hover:bg-muted",
               )}
             >
               <t.icon className="h-[18px] w-[18px]" />
             </button>
           ))}
           <span className="my-1 h-px w-8 bg-border" />
-          <button title="元に戻す" onClick={undo} className="flex h-9 w-10 items-center justify-center rounded-lg hover:bg-muted"><Undo2 className="h-[18px] w-[18px]" /></button>
-          <button title="やり直し" onClick={redo} className="flex h-9 w-10 items-center justify-center rounded-lg hover:bg-muted"><Redo2 className="h-[18px] w-[18px]" /></button>
-          <button title="PNG保存" onClick={exportPng} className="flex h-9 w-10 items-center justify-center rounded-lg hover:bg-muted"><Download className="h-[18px] w-[18px]" /></button>
-          <button title="ページを消去" onClick={clearPage} className="mt-auto flex h-9 w-10 items-center justify-center rounded-lg text-destructive hover:bg-destructive/10"><Trash2 className="h-[18px] w-[18px]" /></button>
+          <button
+            title="元に戻す"
+            onClick={undo}
+            className="flex h-9 w-10 items-center justify-center rounded-lg hover:bg-muted"
+          >
+            <Undo2 className="h-[18px] w-[18px]" />
+          </button>
+          <button
+            title="やり直し"
+            onClick={redo}
+            className="flex h-9 w-10 items-center justify-center rounded-lg hover:bg-muted"
+          >
+            <Redo2 className="h-[18px] w-[18px]" />
+          </button>
+          <button
+            title="PNG保存"
+            onClick={exportPng}
+            className="flex h-9 w-10 items-center justify-center rounded-lg hover:bg-muted"
+          >
+            <Download className="h-[18px] w-[18px]" />
+          </button>
+          <button
+            title="ページを消去"
+            onClick={clearPage}
+            className="mt-auto flex h-9 w-10 items-center justify-center rounded-lg text-destructive hover:bg-destructive/10"
+          >
+            <Trash2 className="h-[18px] w-[18px]" />
+          </button>
         </div>
       )}
 
@@ -314,7 +416,9 @@ export function NoteCanvas({
         {/* 上：選択中の道具の設定（その場で変更できる） */}
         {!readOnly && (
           <div className="flex flex-wrap items-center gap-2 border-b bg-card/70 px-3 py-1.5 backdrop-blur">
-            <span className="text-xs font-semibold text-muted-foreground">{TOOLS.find((t) => t.key === tool)?.label}</span>
+            <span className="text-xs font-semibold text-muted-foreground">
+              {TOOLS.find((t) => t.key === tool)?.label}
+            </span>
             {isPenTool && (
               <>
                 <span className="h-5 w-px bg-border" />
@@ -323,21 +427,50 @@ export function NoteCanvas({
                     key={c}
                     onClick={() => (tool === "highlighter" ? setHlColor(c) : setColor(c))}
                     aria-label={`色 ${c}`}
-                    className={cn("h-6 w-6 rounded-full border-2 transition", activeColor === c ? "scale-110 border-foreground" : "border-border")}
+                    className={cn(
+                      "h-6 w-6 rounded-full border-2 transition",
+                      activeColor === c ? "scale-110 border-foreground" : "border-border",
+                    )}
                     style={{ background: c }}
                   />
                 ))}
                 <input
-                  type="color" value={activeColor} aria-label="カスタム色"
-                  onChange={(e) => (tool === "highlighter" ? setHlColor(e.target.value) : setColor(e.target.value))}
+                  type="color"
+                  value={activeColor}
+                  aria-label="カスタム色"
+                  onChange={(e) =>
+                    tool === "highlighter" ? setHlColor(e.target.value) : setColor(e.target.value)
+                  }
                   className="h-7 w-8 rounded border"
                 />
                 <span className="h-5 w-px bg-border" />
                 <span className="text-[11px] text-muted-foreground">太さ</span>
-                <input type="range" min={1} max={16} value={width} onChange={(e) => setWidth(Number(e.target.value))} className="w-24" aria-label="太さ" />
+                <input
+                  type="range"
+                  min={1}
+                  max={16}
+                  value={width}
+                  onChange={(e) => setWidth(Number(e.target.value))}
+                  className="w-24"
+                  aria-label="太さ"
+                />
                 <span className="text-[11px] text-muted-foreground">補正</span>
-                <input type="range" min={0} max={8} value={stabilizer} onChange={(e) => setStabilizer(Number(e.target.value))} className="w-20" aria-label="手ぶれ補正" />
-                <Button size="sm" variant={straight ? "default" : "outline"} className="h-7" onClick={() => setStraight((s) => !s)} title="直線モード">
+                <input
+                  type="range"
+                  min={0}
+                  max={8}
+                  value={stabilizer}
+                  onChange={(e) => setStabilizer(Number(e.target.value))}
+                  className="w-20"
+                  aria-label="手ぶれ補正"
+                />
+                <Button
+                  size="sm"
+                  variant={straight ? "default" : "outline"}
+                  className="h-7"
+                  onClick={() => setStraight((s) => !s)}
+                  title="直線モード"
+                >
                   <Minus className="h-4 w-4" />
                 </Button>
               </>
@@ -346,27 +479,74 @@ export function NoteCanvas({
               <>
                 <span className="h-5 w-px bg-border" />
                 <span className="text-[11px] text-muted-foreground">消しゴムの大きさ</span>
-                <input type="range" min={8} max={120} value={eraserSize} onChange={(e) => setEraserSize(Number(e.target.value))} className="w-32" aria-label="消しゴムの大きさ" />
+                <input
+                  type="range"
+                  min={8}
+                  max={120}
+                  value={eraserSize}
+                  onChange={(e) => setEraserSize(Number(e.target.value))}
+                  className="w-32"
+                  aria-label="消しゴムの大きさ"
+                />
                 <span className="text-[11px] tabular-nums text-muted-foreground">{eraserSize}</span>
               </>
             )}
-            <Button size="sm" variant={penOnly ? "default" : "outline"} className="h-7 text-xs" onClick={() => setPenOnly((v) => !v)} title="手のひら誤入力防止">
+            <Button
+              size="sm"
+              variant={penOnly ? "default" : "outline"}
+              className="h-7 text-xs"
+              onClick={() => setPenOnly((v) => !v)}
+              title="手のひら誤入力防止"
+            >
               {penOnly ? "ペン優先" : "タッチ入力"}
             </Button>
             <div className="ml-auto flex items-center gap-1">
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => zoomBy(1 / 1.25)} title="縮小"><ZoomOut className="h-4 w-4" /></Button>
-              <span className="w-12 text-center text-xs tabular-nums">{Math.round(zoom * 100)}%</span>
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => zoomBy(1.25)} title="拡大"><ZoomIn className="h-4 w-4" /></Button>
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={fit} title="幅に合わせる"><Maximize2 className="h-4 w-4" /></Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-7 w-7"
+                onClick={() => zoomBy(1 / 1.25)}
+                title="縮小"
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              <span className="w-12 text-center text-xs tabular-nums">
+                {Math.round(zoom * 100)}%
+              </span>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-7 w-7"
+                onClick={() => zoomBy(1.25)}
+                title="拡大"
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-7 w-7"
+                onClick={fit}
+                title="幅に合わせる"
+              >
+                <Maximize2 className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         )}
 
         {/* 用紙 */}
-        <div ref={viewRef} className="relative min-h-0 flex-1 overflow-hidden bg-muted/40 touch-none">
+        <div
+          ref={viewRef}
+          className="relative min-h-0 flex-1 overflow-hidden bg-muted/40 touch-none"
+        >
           <div
             className="absolute left-0 top-0 origin-top-left shadow-2xl"
-            style={{ width: PAGE_W, height: PAGE_H, transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}
+            style={{
+              width: PAGE_W,
+              height: PAGE_H,
+              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            }}
           >
             <canvas
               ref={canvasRef}
@@ -376,14 +556,31 @@ export function NoteCanvas({
               onPointerMove={onMove}
               onPointerUp={onUp}
               onPointerCancel={cancelDrawing}
-              onPointerLeave={(e) => { setCursor(null); onUp(e); }}
+              onPointerLeave={(e) => {
+                setCursor(null);
+                onUp(e);
+              }}
               className="absolute inset-0 h-full w-full touch-none rounded-sm bg-white"
-              style={{ cursor: tool === "hand" ? "grab" : tool === "eraser" ? "none" : readOnly ? "default" : "crosshair" }}
+              style={{
+                cursor:
+                  tool === "hand"
+                    ? "grab"
+                    : tool === "eraser"
+                      ? "none"
+                      : readOnly
+                        ? "default"
+                        : "crosshair",
+              }}
             />
             {tool === "eraser" && cursor && !readOnly && (
               <div
                 className="pointer-events-none absolute rounded-full border-2 border-foreground/60 bg-foreground/5"
-                style={{ left: cursor.x - eraserSize / 2, top: cursor.y - eraserSize / 2, width: eraserSize, height: eraserSize }}
+                style={{
+                  left: cursor.x - eraserSize / 2,
+                  top: cursor.y - eraserSize / 2,
+                  width: eraserSize,
+                  height: eraserSize,
+                }}
               />
             )}
             {texts.map((t) => (
@@ -391,10 +588,34 @@ export function NoteCanvas({
                 <div className="group relative">
                   {!readOnly && (
                     <div className="absolute -top-11 left-0 z-10 hidden items-center gap-1 rounded-md border bg-card p-1 shadow group-focus-within:flex">
-                      <input type="color" value={t.color} onChange={(e) => updateText(t.id, { color: e.target.value })} className="h-7 w-8 rounded border" aria-label="文字色" />
-                      <input type="range" min={14} max={96} value={t.size} onChange={(e) => updateText(t.id, { size: Number(e.target.value) })} className="w-24" aria-label="文字サイズ" />
-                      <button className="px-1 text-sm font-bold" onClick={() => updateText(t.id, { bold: !t.bold }, true)}>B</button>
-                      <button className="px-1 text-sm text-destructive" onClick={() => removeText(t.id)}>削除</button>
+                      <input
+                        type="color"
+                        value={t.color}
+                        onChange={(e) => updateText(t.id, { color: e.target.value })}
+                        className="h-7 w-8 rounded border"
+                        aria-label="文字色"
+                      />
+                      <input
+                        type="range"
+                        min={14}
+                        max={96}
+                        value={t.size}
+                        onChange={(e) => updateText(t.id, { size: Number(e.target.value) })}
+                        className="w-24"
+                        aria-label="文字サイズ"
+                      />
+                      <button
+                        className="px-1 text-sm font-bold"
+                        onClick={() => updateText(t.id, { bold: !t.bold }, true)}
+                      >
+                        B
+                      </button>
+                      <button
+                        className="px-1 text-sm text-destructive"
+                        onClick={() => removeText(t.id)}
+                      >
+                        削除
+                      </button>
                     </div>
                   )}
                   <textarea
@@ -405,7 +626,12 @@ export function NoteCanvas({
                     onBlur={() => setActiveText(null)}
                     placeholder="テキスト..."
                     className="w-full resize-y rounded border border-dashed border-transparent bg-transparent p-1 leading-snug outline-none focus:border-primary/60 focus:bg-background/70"
-                    style={{ fontSize: t.size, color: t.color, fontWeight: t.bold ? 700 : 400, minHeight: "1.6em" }}
+                    style={{
+                      fontSize: t.size,
+                      color: t.color,
+                      fontWeight: t.bold ? 700 : 400,
+                      minHeight: "1.6em",
+                    }}
                   />
                 </div>
               </div>

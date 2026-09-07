@@ -15,7 +15,9 @@ export type QuestionKeys = {
 };
 
 export async function loadQuestionKeys(questionId: string): Promise<QuestionKeys> {
-  const { data, error } = await (supabase as any).rpc("makron_question_keys", { _ids: [questionId] });
+  const { data, error } = await (supabase as any).rpc("makron_question_keys", {
+    _ids: [questionId],
+  });
   if (error) throw new Error(error.message);
   const row = (data ?? [])[0];
   return {

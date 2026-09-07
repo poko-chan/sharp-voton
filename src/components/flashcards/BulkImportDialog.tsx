@@ -1,5 +1,11 @@
 import { useMemo, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { parseBulkImport } from "@/lib/flashcards.functions";
@@ -28,7 +34,13 @@ export function BulkImportDialog({ open, onOpenChange, onImport }: Props) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) setText(""); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        onOpenChange(v);
+        if (!v) setText("");
+      }}
+    >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>カードを一括インポート</DialogTitle>
@@ -45,7 +57,9 @@ export function BulkImportDialog({ open, onOpenChange, onImport }: Props) {
           />
           <div className="border rounded-md max-h-48 overflow-y-auto">
             {pairs.length === 0 ? (
-              <div className="p-3 text-sm text-muted-foreground">プレビューはここに表示されます</div>
+              <div className="p-3 text-sm text-muted-foreground">
+                プレビューはここに表示されます
+              </div>
             ) : (
               <div className="divide-y">
                 {pairs.map((p, i) => (
@@ -61,8 +75,12 @@ export function BulkImportDialog({ open, onOpenChange, onImport }: Props) {
           <div className="text-xs text-muted-foreground">{pairs.length}枚を検出</div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>キャンセル</Button>
-          <Button onClick={handleImport} disabled={pairs.length === 0 || saving}>{pairs.length}枚を登録</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            キャンセル
+          </Button>
+          <Button onClick={handleImport} disabled={pairs.length === 0 || saving}>
+            {pairs.length}枚を登録
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

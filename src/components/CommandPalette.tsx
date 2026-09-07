@@ -36,14 +36,19 @@ export function CommandPalette() {
       const top = apps.filter((a) => freq.includes(a.to));
       return top.length ? top : apps.slice(0, 6);
     }
-    return apps.filter(
-      (a) => a.label.toLowerCase().includes(term) || a.keywords.toLowerCase().includes(term),
-    ).slice(0, 10);
+    return apps
+      .filter(
+        (a) => a.label.toLowerCase().includes(term) || a.keywords.toLowerCase().includes(term),
+      )
+      .slice(0, 10);
   }, [q, open]);
 
   if (!open) return null;
 
-  const go = (to: string) => { setOpen(false); navigate({ to }); };
+  const go = (to: string) => {
+    setOpen(false);
+    navigate({ to });
+  };
 
   return (
     <div
@@ -59,10 +64,19 @@ export function CommandPalette() {
           <input
             autoFocus
             value={q}
-            onChange={(e) => { setQ(e.target.value); setActive(0); }}
+            onChange={(e) => {
+              setQ(e.target.value);
+              setActive(0);
+            }}
             onKeyDown={(e) => {
-              if (e.key === "ArrowDown") { e.preventDefault(); setActive((i) => Math.min(i + 1, results.length - 1)); }
-              if (e.key === "ArrowUp") { e.preventDefault(); setActive((i) => Math.max(i - 1, 0)); }
+              if (e.key === "ArrowDown") {
+                e.preventDefault();
+                setActive((i) => Math.min(i + 1, results.length - 1));
+              }
+              if (e.key === "ArrowUp") {
+                e.preventDefault();
+                setActive((i) => Math.max(i - 1, 0));
+              }
               if (e.key === "Enter" && results[active]) go(results[active].to);
             }}
             placeholder="機能やページを検索（Ctrl + K）"
@@ -71,7 +85,9 @@ export function CommandPalette() {
         </div>
         <div className="max-h-[50vh] overflow-y-auto py-1">
           {results.length === 0 && (
-            <div className="px-4 py-6 text-center text-sm text-muted-foreground">見つかりませんでした</div>
+            <div className="px-4 py-6 text-center text-sm text-muted-foreground">
+              見つかりませんでした
+            </div>
           )}
           {results.map((r, i) => (
             <button

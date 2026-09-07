@@ -52,16 +52,33 @@ const DAY = [
 ];
 
 const TIPS = [
-  { t: "記録は「完璧」より「毎日」", d: "5分でも記録に残せば連続日数は途切れません。続いている実感が、いちばんの燃料になります。" },
-  { t: "教材はとりあえず登録", d: "バーコードで数秒です。登録しておくと、タイマーや記録から選ぶだけで教材別の分析が貯まります。" },
-  { t: "AIには「どこまで分かったか」を書く", d: "「ここまでは分かるが、ここで詰まった」と伝えると、解説の精度が大きく上がります。" },
-  { t: "組織のコードは先生から", d: "学校や塾で使う場合は、6桁の参加コードか招待を受け取ってから参加します。" },
+  {
+    t: "記録は「完璧」より「毎日」",
+    d: "5分でも記録に残せば連続日数は途切れません。続いている実感が、いちばんの燃料になります。",
+  },
+  {
+    t: "教材はとりあえず登録",
+    d: "バーコードで数秒です。登録しておくと、タイマーや記録から選ぶだけで教材別の分析が貯まります。",
+  },
+  {
+    t: "AIには「どこまで分かったか」を書く",
+    d: "「ここまでは分かるが、ここで詰まった」と伝えると、解説の精度が大きく上がります。",
+  },
+  {
+    t: "組織のコードは先生から",
+    d: "学校や塾で使う場合は、6桁の参加コードか招待を受け取ってから参加します。",
+  },
 ];
 
 const FIRST_3 = [
   { n: "1", t: "タイマー", d: "押して、止める。それだけで記録になります。", to: "/timer" },
   { n: "2", t: "Makron", d: "パックを1つ選んで解く。誤答は自動で残ります。", to: "/makron" },
-  { n: "3", t: "ダッシュボード", d: "積み上がりを眺める。ここが毎日の起点になります。", to: "/dashboard" },
+  {
+    n: "3",
+    t: "ダッシュボード",
+    d: "積み上がりを眺める。ここが毎日の起点になります。",
+    to: "/dashboard",
+  },
 ];
 
 function GuidePage() {
@@ -94,7 +111,9 @@ function GuidePage() {
         </div>
 
         <section className="mt-16">
-          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">5ステップで走り出す</h2>
+          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">
+            5ステップで走り出す
+          </h2>
           <ol className="mt-6 space-y-3">
             {STEPS.map((s) => (
               <li key={s.n} className="surface flex gap-4 p-5">
@@ -109,8 +128,12 @@ function GuidePage() {
         </section>
 
         <section className="mt-16">
-          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">1日の使い方の例</h2>
-          <p className="mt-2 text-sm text-muted-foreground">全部やる必要はありません。できる時間帯だけで十分です。</p>
+          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">
+            1日の使い方の例
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            全部やる必要はありません。できる時間帯だけで十分です。
+          </p>
           <div className="mt-6 grid gap-3 md:grid-cols-2">
             {DAY.map((d) => (
               <article key={d.time} className="surface surface-hover p-5">
@@ -124,7 +147,9 @@ function GuidePage() {
 
         {/* タイプ別 */}
         <section className="mt-16">
-          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">タイプ別・実際の使い方</h2>
+          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">
+            タイプ別・実際の使い方
+          </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             自分に近い状況を選んで、そのまま真似してみてください。
           </p>
@@ -143,14 +168,18 @@ function GuidePage() {
                     </li>
                   ))}
                 </ol>
-                <p className="mt-4 rounded-xl bg-accent/12 p-3 text-sm font-semibold leading-relaxed">{s.result}</p>
+                <p className="mt-4 rounded-xl bg-accent/12 p-3 text-sm font-semibold leading-relaxed">
+                  {s.result}
+                </p>
               </article>
             ))}
           </div>
         </section>
 
         <section className="mt-16">
-          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">続けるためのコツ</h2>
+          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">
+            続けるためのコツ
+          </h2>
           <div className="mt-6 grid gap-3 md:grid-cols-2">
             {TIPS.map((t) => (
               <article key={t.t} className="surface p-5">
@@ -162,7 +191,9 @@ function GuidePage() {
         </section>
 
         <section className="mt-16">
-          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">よくある質問</h2>
+          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">
+            よくある質問
+          </h2>
           <div className="surface mt-6 divide-y divide-border/60 overflow-hidden">
             {FAQ.map((f) => (
               <details key={f.q} className="group p-5 transition hover:bg-muted/40">

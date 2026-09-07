@@ -68,7 +68,8 @@ function AccessibilityPage() {
           誰でも使える<span className="text-gradient">ユニバーサルデザイン</span>
         </h1>
         <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
-          見え方や操作のしやすさは人によって違います。Study# ではログイン後の「設定 → アクセシビリティ」から、次の項目を自分に合わせて調整できます。設定はこの端末に保存され、すぐに画面へ反映されます。
+          見え方や操作のしやすさは人によって違います。Study# ではログイン後の「設定 →
+          アクセシビリティ」から、次の項目を自分に合わせて調整できます。設定はこの端末に保存され、すぐに画面へ反映されます。
         </p>
 
         <div className="mt-10 grid gap-4 md:grid-cols-2">
@@ -78,7 +79,10 @@ function AccessibilityPage() {
               <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted-foreground">
                 {g.items.map((i) => (
                   <li key={i} className="flex gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden />
+                    <span
+                      className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+                      aria-hidden
+                    />
                     <span>{i}</span>
                   </li>
                 ))}
@@ -92,7 +96,10 @@ function AccessibilityPage() {
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             アクセシビリティの改善は続けています。使いづらい箇所があれば、アプリ内のフィードバックボタンからお知らせください。
           </p>
-          <Link to="/help" className="mt-4 inline-block text-sm font-semibold text-primary underline-offset-4 hover:underline">
+          <Link
+            to="/help"
+            className="mt-4 inline-block text-sm font-semibold text-primary underline-offset-4 hover:underline"
+          >
             ヘルプセンターへ →
           </Link>
         </section>

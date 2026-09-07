@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { QrCode, Upload, SwitchCamera } from "lucide-react";
 import { toast } from "sonner";
@@ -40,14 +46,20 @@ export function QrScannerDialog({
   };
 
   useEffect(() => {
-    if (!open) { stop(); return; }
+    if (!open) {
+      stop();
+      return;
+    }
     let cancelled = false;
 
     (async () => {
       setError(null);
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing } });
-        if (cancelled) { stream.getTracks().forEach((t) => t.stop()); return; }
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
         streamRef.current = stream;
         const v = videoRef.current;
         if (!v) return;
@@ -65,8 +77,13 @@ export function QrScannerDialog({
             canvas.height = v.videoHeight;
             ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
             const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const code = jsQR(img.data, img.width, img.height, { inversionAttempts: "attemptBoth" });
-            if (code?.data) { finish(code.data); return; }
+            const code = jsQR(img.data, img.width, img.height, {
+              inversionAttempts: "attemptBoth",
+            });
+            if (code?.data) {
+              finish(code.data);
+              return;
+            }
           }
           rafRef.current = requestAnimationFrame(tick);
         };
@@ -76,7 +93,10 @@ export function QrScannerDialog({
       }
     })();
 
-    return () => { cancelled = true; stop(); };
+    return () => {
+      cancelled = true;
+      stop();
+    };
   }, [open, facing]);
 
   const scanFile = async (file: File) => {
@@ -84,7 +104,8 @@ export function QrScannerDialog({
       const jsQR = (await import("jsqr")).default;
       const bitmap = await createImageBitmap(file);
       const canvas = document.createElement("canvas");
-      canvas.width = bitmap.width; canvas.height = bitmap.height;
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
       const ctx = canvas.getContext("2d")!;
       ctx.drawImage(bitmap, 0, 0);
       const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -97,15 +118,30 @@ export function QrScannerDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) stop(); onOpenChange(v); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) stop();
+        onOpenChange(v);
+      }}
+    >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><QrCode className="h-4 w-4" />{title}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <QrCode className="h-4 w-4" />
+            {title}
+          </DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
         <div className="relative overflow-hidden rounded-xl bg-muted aspect-square">
-          <video ref={videoRef} playsInline muted className="size-full object-cover" aria-label="QRコード読み取り用カメラ映像" />
+          <video
+            ref={videoRef}
+            playsInline
+            muted
+            className="size-full object-cover"
+            aria-label="QRコード読み取り用カメラ映像"
+          />
           <div className="pointer-events-none absolute inset-8 rounded-xl border-2 border-primary/80" />
           {error && (
             <div className="absolute inset-0 grid place-items-center p-4 text-center text-sm text-muted-foreground">
@@ -116,15 +152,28 @@ export function QrScannerDialog({
         <canvas ref={canvasRef} className="hidden" />
 
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => setFacing((f) => (f === "environment" ? "user" : "environment"))}>
-            <SwitchCamera className="h-4 w-4" />カメラ切替
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setFacing((f) => (f === "environment" ? "user" : "environment"))}
+          >
+            <SwitchCamera className="h-4 w-4" />
+            カメラ切替
           </Button>
           <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
-            <Upload className="h-4 w-4" />画像から読み取る
+            <Upload className="h-4 w-4" />
+            画像から読み取る
           </Button>
           <input
-            ref={fileRef} type="file" accept="image/*" className="hidden"
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) scanFile(f); e.target.value = ""; }}
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) scanFile(f);
+              e.target.value = "";
+            }}
           />
         </div>
       </DialogContent>

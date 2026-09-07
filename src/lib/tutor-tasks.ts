@@ -63,7 +63,7 @@ export const TASK_DEFS: Record<TaskKind, TaskDef> = {
     icon: Workflow,
     canvas: true,
     instruction:
-      "内容を図解してください。```mermaid のコードブロック1つで flowchart TD を書き、日本語ラベルは必ず [\"...\"] のように二重引用符で囲むこと。コードブロックのあとに、図の読み方を3行以内で説明すること。",
+      '内容を図解してください。```mermaid のコードブロック1つで flowchart TD を書き、日本語ラベルは必ず ["..."] のように二重引用符で囲むこと。コードブロックのあとに、図の読み方を3行以内で説明すること。',
     placeholder: "図にしたい内容を書いてください（例：細胞分裂の流れ）",
   },
   plan: {
@@ -86,7 +86,14 @@ export const TASK_GROUPS: { label: string; kinds: TaskKind[] }[] = [
 
 /** 「site:example.com」形式の検索クエリを作る */
 export function buildSiteQueries(query: string, sites: string[]): string[] {
-  const clean = sites.map((s) => s.trim().replace(/^https?:\/\//, "").replace(/\/.*$/, "")).filter(Boolean);
+  const clean = sites
+    .map((s) =>
+      s
+        .trim()
+        .replace(/^https?:\/\//, "")
+        .replace(/\/.*$/, ""),
+    )
+    .filter(Boolean);
   if (!clean.length) return [query];
   return clean.slice(0, 4).map((d) => `site:${d} ${query}`);
 }

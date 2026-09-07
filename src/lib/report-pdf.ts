@@ -63,7 +63,8 @@ export function buildReport(logs: Log[], range: ReportRange) {
     styles: { fontSize: 9 },
   });
 
-  const after = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? 60;
+  const after =
+    (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? 60;
   autoTable(doc, {
     startY: after + 10,
     head: [[L.subject, L.minutes]],
@@ -74,6 +75,10 @@ export function buildReport(logs: Log[], range: ReportRange) {
   });
 
   doc.setFontSize(8);
-  doc.text(`${L.generated}: ${new Date().toISOString()}`, 14, doc.internal.pageSize.getHeight() - 10);
+  doc.text(
+    `${L.generated}: ${new Date().toISOString()}`,
+    14,
+    doc.internal.pageSize.getHeight() - 10,
+  );
   doc.save(`study-report-${range}-${endStr}.pdf`);
 }

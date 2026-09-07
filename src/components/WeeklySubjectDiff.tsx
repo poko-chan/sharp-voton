@@ -7,20 +7,29 @@ import { ArrowUp, ArrowDown, Minus } from "lucide-react";
 /** Today vs 7-days-ago: per-subject minutes diff. */
 export function WeeklySubjectDiff() {
   const { user } = useAuth();
-  const [rows, setRows] = useState<Array<{ name: string; color: string; thisWeek: number; lastWeek: number }>>([]);
+  const [rows, setRows] = useState<
+    Array<{ name: string; color: string; thisWeek: number; lastWeek: number }>
+  >([]);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const today = new Date(); today.setHours(0, 0, 0, 0);
-      const start = new Date(today); start.setDate(start.getDate() - 13);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const start = new Date(today);
+      start.setDate(start.getDate() - 13);
       const startStr = start.toISOString().slice(0, 10);
       const { data } = await supabase
         .from("study_logs")
         .select("date, duration_minutes, subjects(name,color)")
-        .eq("user_id", user.id).gte("date", startStr);
-      const map = new Map<string, { name: string; color: string; thisWeek: number; lastWeek: number }>();
-      const mid = new Date(today); mid.setDate(mid.getDate() - 7);
+        .eq("user_id", user.id)
+        .gte("date", startStr);
+      const map = new Map<
+        string,
+        { name: string; color: string; thisWeek: number; lastWeek: number }
+      >();
+      const mid = new Date(today);
+      mid.setDate(mid.getDate() - 7);
       for (const r of (data ?? []) as any[]) {
         const s = r.subjects ?? { name: "未指定", color: "#94a3b8" };
         const key = s.name;
@@ -42,14 +51,18 @@ export function WeeklySubjectDiff() {
         {rows.map((r) => {
           const diff = r.thisWeek - r.lastWeek;
           const Icon = diff > 0 ? ArrowUp : diff < 0 ? ArrowDown : Minus;
-          const cls = diff > 0 ? "text-emerald-600" : diff < 0 ? "text-red-600" : "text-muted-foreground";
+          const cls =
+            diff > 0 ? "text-emerald-600" : diff < 0 ? "text-red-600" : "text-muted-foreground";
           return (
             <div key={r.name} className="flex items-center gap-2 text-sm">
               <span className="h-3 w-3 rounded-sm" style={{ background: r.color }} />
               <span className="flex-1 truncate">{r.name}</span>
               <span className="tabular-nums text-muted-foreground">{r.thisWeek}分</span>
-              <span className={`inline-flex items-center gap-0.5 w-16 justify-end tabular-nums ${cls}`}>
-                <Icon className="h-3 w-3" />{Math.abs(diff)}分
+              <span
+                className={`inline-flex items-center gap-0.5 w-16 justify-end tabular-nums ${cls}`}
+              >
+                <Icon className="h-3 w-3" />
+                {Math.abs(diff)}分
               </span>
             </div>
           );

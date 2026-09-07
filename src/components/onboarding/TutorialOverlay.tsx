@@ -49,7 +49,10 @@ export function TutorialOverlay({ onDone }: { onDone: () => void }) {
   const finish = async () => {
     setBusy(true);
     if (user) {
-      await supabase.from("profiles").update({ tutorial_done: true } as any).eq("id", user.id);
+      await supabase
+        .from("profiles")
+        .update({ tutorial_done: true } as any)
+        .eq("id", user.id);
     }
     setBusy(false);
     onDone();

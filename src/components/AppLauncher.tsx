@@ -17,7 +17,11 @@ export function AppLauncher() {
   useEffect(() => {
     if (!open) return;
     setPinned(getPinned());
-    setRecents(getRecents().slice(0, 5).map((r) => r.to));
+    setRecents(
+      getRecents()
+        .slice(0, 5)
+        .map((r) => r.to),
+    );
   }, [open]);
 
   const pinnedApps = apps.filter((a) => pinned.includes(a.to));
@@ -48,7 +52,12 @@ export function AppLauncher() {
         )}
         {groups.map((g) => (
           <Section key={g} title={g}>
-            <Grid apps={apps.filter((a) => a.group === g)} pinned={pinned} onPin={setPinned} onGo={() => setOpen(false)} />
+            <Grid
+              apps={apps.filter((a) => a.group === g)}
+              pinned={pinned}
+              onPin={setPinned}
+              onGo={() => setOpen(false)}
+            />
           </Section>
         ))}
         <div className="pt-1 text-[11px] text-muted-foreground">
@@ -59,7 +68,15 @@ export function AppLauncher() {
   );
 }
 
-function Section({ title, icon, children }: { title: string; icon?: React.ReactNode; children: React.ReactNode }) {
+function Section({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <div className="mb-3">
       <div className="mb-1.5 flex items-center gap-1.5 px-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -72,7 +89,10 @@ function Section({ title, icon, children }: { title: string; icon?: React.ReactN
 }
 
 function Grid({
-  apps, pinned, onPin, onGo,
+  apps,
+  pinned,
+  onPin,
+  onGo,
 }: {
   apps: AppEntry[];
   pinned: string[];
@@ -86,13 +106,18 @@ function Grid({
           key={a.to + a.label}
           to={a.to}
           onClick={onGo}
-          onContextMenu={(e) => { e.preventDefault(); onPin(togglePinned(a.to)); }}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            onPin(togglePinned(a.to));
+          }}
           className="group relative flex flex-col items-center gap-1.5 rounded-xl p-2 text-center transition hover:bg-accent active:scale-95"
         >
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <a.icon className="h-5 w-5" />
           </span>
-          <span className="text-[10px] leading-tight text-foreground/90 line-clamp-2">{a.label}</span>
+          <span className="text-[10px] leading-tight text-foreground/90 line-clamp-2">
+            {a.label}
+          </span>
           {pinned.includes(a.to) && (
             <Star className="absolute right-1 top-1 h-3 w-3 fill-current text-primary" />
           )}

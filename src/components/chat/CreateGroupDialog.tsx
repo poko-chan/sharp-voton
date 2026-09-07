@@ -30,17 +30,27 @@ export function CreateGroupDialog({
   const toggle = (id: string) => {
     setMemberIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
 
-  const reset = () => { setName(""); setMemberIds(new Set()); };
+  const reset = () => {
+    setName("");
+    setMemberIds(new Set());
+  };
 
   const submit = async () => {
     const n = name.trim();
-    if (!n) { toast.error("グループ名を入力してください"); return; }
-    if (memberIds.size === 0) { toast.error("メンバーを選択してください"); return; }
+    if (!n) {
+      toast.error("グループ名を入力してください");
+      return;
+    }
+    if (memberIds.size === 0) {
+      toast.error("メンバーを選択してください");
+      return;
+    }
     setSubmitting(true);
     try {
       const id = await createChatGroup(n, Array.from(memberIds));
@@ -56,7 +66,13 @@ export function CreateGroupDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) reset(); onOpenChange(v); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) reset();
+        onOpenChange(v);
+      }}
+    >
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>グループチャットを作成</DialogTitle>
@@ -71,9 +87,14 @@ export function CreateGroupDialog({
               )}
               <div className="space-y-1">
                 {friends.map((f) => (
-                  <label key={f.id} className="flex items-center gap-2 px-1 py-1.5 rounded hover:bg-muted cursor-pointer">
+                  <label
+                    key={f.id}
+                    className="flex items-center gap-2 px-1 py-1.5 rounded hover:bg-muted cursor-pointer"
+                  >
                     <Checkbox checked={memberIds.has(f.id)} onCheckedChange={() => toggle(f.id)} />
-                    <span className="text-sm truncate">{f.display_name ?? f.username ?? "(no name)"}</span>
+                    <span className="text-sm truncate">
+                      {f.display_name ?? f.username ?? "(no name)"}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -81,8 +102,12 @@ export function CreateGroupDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>キャンセル</Button>
-          <Button onClick={submit} disabled={submitting}>作成</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            キャンセル
+          </Button>
+          <Button onClick={submit} disabled={submitting}>
+            作成
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

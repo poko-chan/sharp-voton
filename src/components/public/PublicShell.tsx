@@ -14,12 +14,24 @@ const NAV: { key: NavKey; label: string; to: string }[] = [
 ];
 
 /** 公開ページ共通のヘッダー。current で現在地をハイライトする。 */
-export function PublicHeader({ current, width = "max-w-6xl" }: { current?: NavKey; width?: string }) {
+export function PublicHeader({
+  current,
+  width = "max-w-6xl",
+}: {
+  current?: NavKey;
+  width?: string;
+}) {
   return (
     <header className="sticky top-0 z-40 border-b liquid-bar">
       <div className={cn("mx-auto flex items-center justify-between gap-3 px-4 py-3", width)}>
         <Link to="/" className="flex items-center gap-2.5">
-          <img src={logoUrl} alt="Study# ロゴ" width={32} height={32} className="h-8 w-8 rounded-xl shadow-sm" />
+          <img
+            src={logoUrl}
+            alt="Study# ロゴ"
+            width={32}
+            height={32}
+            className="h-8 w-8 rounded-xl shadow-sm"
+          />
           <span className="font-display text-lg font-extrabold tracking-tight">
             Study<span className="text-gradient">#</span>
           </span>
@@ -56,7 +68,14 @@ export function PublicFooter({ width = "max-w-6xl" }: { width?: string }) {
       <div className={cn("mx-auto grid gap-8 px-4 sm:grid-cols-2 lg:grid-cols-4", width)}>
         <div>
           <div className="flex items-center gap-2">
-            <img src={logoUrl} alt="" width={24} height={24} loading="lazy" className="h-6 w-6 rounded-md" />
+            <img
+              src={logoUrl}
+              alt=""
+              width={24}
+              height={24}
+              loading="lazy"
+              className="h-6 w-6 rounded-md"
+            />
             <span className="font-display font-extrabold">
               Study<span className="text-gradient">#</span>
             </span>

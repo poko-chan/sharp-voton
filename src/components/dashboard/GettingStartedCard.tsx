@@ -18,7 +18,11 @@ export function GettingStartedCard() {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    try { setDismissed(localStorage.getItem(DISMISS_KEY) === "1"); } catch { /* noop */ }
+    try {
+      setDismissed(localStorage.getItem(DISMISS_KEY) === "1");
+    } catch {
+      /* noop */
+    }
   }, []);
 
   useEffect(() => {
@@ -26,18 +30,57 @@ export function GettingStartedCard() {
     (async () => {
       const [prof, logs, goals, decks, events] = await Promise.all([
         (supabase as any).rpc("my_profile_private"),
-        supabase.from("study_logs").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+        supabase
+          .from("study_logs")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id),
         supabase.from("goals").select("id", { count: "exact", head: true }).eq("user_id", user.id),
-        supabase.from("flashcard_decks").select("id", { count: "exact", head: true }).eq("user_id", user.id),
-        (supabase as any).from("events").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+        supabase
+          .from("flashcard_decks")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id),
+        (supabase as any)
+          .from("events")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id),
       ]);
       const p = (prof.data ?? {}) as any;
       setSteps([
-        { key: "avatar", label: "プロフィール写真を設定", hint: "アイコンを登録すると仲間に見つけてもらいやすくなります", to: "/settings", done: Boolean(p.avatar_url) },
-        { key: "log", label: "最初の勉強を記録", hint: "タイマーで測るだけでも記録されます", to: "/timer", done: (logs.count ?? 0) > 0 },
-        { key: "goal", label: "学習目標を作る", hint: "目標があると毎日の進み具合が見えます", to: "/goals", done: (goals.count ?? 0) > 0 },
-        { key: "deck", label: "暗記カードを1つ作る", hint: "覚えたい内容をカードにしておきましょう", to: "/flashcards", done: (decks.count ?? 0) > 0 },
-        { key: "event", label: "予定をカレンダーに入れる", hint: "当日の朝に通知でお知らせします", to: "/calendar", done: (events.count ?? 0) > 0 },
+        {
+          key: "avatar",
+          label: "プロフィール写真を設定",
+          hint: "アイコンを登録すると仲間に見つけてもらいやすくなります",
+          to: "/settings",
+          done: Boolean(p.avatar_url),
+        },
+        {
+          key: "log",
+          label: "最初の勉強を記録",
+          hint: "タイマーで測るだけでも記録されます",
+          to: "/timer",
+          done: (logs.count ?? 0) > 0,
+        },
+        {
+          key: "goal",
+          label: "学習目標を作る",
+          hint: "目標があると毎日の進み具合が見えます",
+          to: "/goals",
+          done: (goals.count ?? 0) > 0,
+        },
+        {
+          key: "deck",
+          label: "暗記カードを1つ作る",
+          hint: "覚えたい内容をカードにしておきましょう",
+          to: "/flashcards",
+          done: (decks.count ?? 0) > 0,
+        },
+        {
+          key: "event",
+          label: "予定をカレンダーに入れる",
+          hint: "当日の朝に通知でお知らせします",
+          to: "/calendar",
+          done: (events.count ?? 0) > 0,
+        },
       ]);
     })();
   }, [user?.id, dismissed]);
@@ -56,7 +99,14 @@ export function GettingStartedCard() {
           variant="ghost"
           size="sm"
           title="あとで"
-          onClick={() => { try { localStorage.setItem(DISMISS_KEY, "1"); } catch { /* noop */ } setDismissed(true); }}
+          onClick={() => {
+            try {
+              localStorage.setItem(DISMISS_KEY, "1");
+            } catch {
+              /* noop */
+            }
+            setDismissed(true);
+          }}
         >
           <X className="h-3.5 w-3.5" />
         </Button>
@@ -75,11 +125,15 @@ export function GettingStartedCard() {
               to={s.to}
               className={`flex items-start gap-3 rounded-xl px-2 py-2 transition hover:bg-accent ${s.done ? "opacity-60" : ""}`}
             >
-              {s.done
-                ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                : <Circle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />}
+              {s.done ? (
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              ) : (
+                <Circle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              )}
               <span className="min-w-0">
-                <span className={`block text-sm font-medium ${s.done ? "line-through" : ""}`}>{s.label}</span>
+                <span className={`block text-sm font-medium ${s.done ? "line-through" : ""}`}>
+                  {s.label}
+                </span>
                 {!s.done && <span className="block text-xs text-muted-foreground">{s.hint}</span>}
               </span>
             </Link>

@@ -32,14 +32,24 @@ export function RecentActivityCard() {
           <Clock className="h-4 w-4 text-primary" /> 最近の利用状況
         </CardTitle>
         {items.length > 0 && (
-          <Button variant="ghost" size="sm" onClick={() => { clearRecents(); setItems([]); }} title="履歴を消す">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              clearRecents();
+              setItems([]);
+            }}
+            title="履歴を消す"
+          >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
         )}
       </CardHeader>
       <CardContent className="space-y-1">
         {items.length === 0 && (
-          <p className="py-4 text-sm text-muted-foreground">まだ履歴はありません。いろいろ開いてみましょう。</p>
+          <p className="py-4 text-sm text-muted-foreground">
+            まだ履歴はありません。いろいろ開いてみましょう。
+          </p>
         )}
         {items.map((it) => {
           const app = APPS.find((a) => a.to === it.to);
@@ -53,7 +63,9 @@ export function RecentActivityCard() {
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 {Icon ? <Icon className="h-4 w-4" /> : null}
               </span>
-              <span className="min-w-0 flex-1 truncate text-sm font-medium">{app?.label ?? it.label}</span>
+              <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                {app?.label ?? it.label}
+              </span>
               <span className="text-xs text-muted-foreground">{ago(it.at)}</span>
               <span className="text-[10px] text-muted-foreground">×{it.count}</span>
             </Link>
