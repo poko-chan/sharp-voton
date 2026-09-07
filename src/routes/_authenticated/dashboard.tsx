@@ -26,6 +26,9 @@ import { TodayBreakdownChart } from "@/components/TodayBreakdownChart";
 import { WeeklySubjectDiff } from "@/components/WeeklySubjectDiff";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { FocusPanel } from "@/components/dashboard/FocusPanel";
+import { GettingStartedCard } from "@/components/dashboard/GettingStartedCard";
+import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -375,8 +378,15 @@ function Dashboard() {
       </div>
       </div>
 
+      {/* ===== はじめかた & 最近の利用状況 ===== */}
+      <div className="grid gap-5 lg:grid-cols-2 items-start">
+        <GettingStartedCard />
+        <RecentActivityCard />
+      </div>
+
       {/* ===== 最近の通知 ===== */}
       <RecentNotifications />
+
 
       {/* ===== タイマー & 学習時間の集約 ===== */}
       <FocusPanel dailyGoal={dailyGoal} />
