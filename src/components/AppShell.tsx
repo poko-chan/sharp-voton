@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { syncCalendarNotifications } from "@/lib/calendar-reminders";
 import logoUrl from "@/assets/logo.png";
 import { levelFromMinutes } from "@/lib/level";
 import { onProfileChange } from "@/lib/profile-events";
@@ -20,7 +21,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useAdminNavConfig } from "@/lib/admin-nav";
 import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
 import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
+import { AppLauncher } from "@/components/AppLauncher";
+import { CommandPalette } from "@/components/CommandPalette";
+import { recordVisit } from "@/lib/recent-activity";
 import { toast } from "sonner";
+
 
 export const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
@@ -170,6 +175,18 @@ export function AppShell({ children }: { children: ReactNode }) {
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [user?.id]);
+
+  // 当日のカレンダー予定を通知に流し込む（1日1回・重複なし）
+  useEffect(() => {
+    if (!user) return;
+    syncCalendarNotifications(user.id).catch(() => {});
+  }, [user?.id]);
+
+  // 最近つかった機能を端末内に記録（アクティビティ履歴）
+  useEffect(() => { recordVisit(path); }, [path]);
+
+
+
 
   // Daily reminder: fire a local browser notification once at the configured time.
   useEffect(() => {
@@ -378,6 +395,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="app-frame flex min-h-screen bg-background">
+      <CommandPalette />
+
       {/* Desktop sidebar */}
       {!isMobile && navOpen && (
         <aside className="app-sidebar w-64 shrink-0 border-r liquid-bar text-sidebar-foreground flex flex-col sticky top-0 h-screen self-start">
@@ -401,15 +420,20 @@ export function AppShell({ children }: { children: ReactNode }) {
             {!navOpen && <img src={logoUrl} alt="" className="h-7 w-7 rounded-lg shadow-sm" />}
             <div className="ml-auto flex items-center gap-2">
               <SearchBar />
+<<<<<<< HEAD
               <Link to="/help" title="サポート・ヘルプ" className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-sm transition hover:bg-accent">
                 <HelpCircle className="h-4 w-4" />
                 <span className="hidden lg:inline">サポート</span>
               </Link>
+=======
+>>>>>>> 38380b430e687e30192b568ba160034d35f3c4ec
               <ChromeAiStatusBadge compact />
               <div className="mx-2 h-4 w-px bg-border/70" />
+              <AppLauncher />
               <GoogleTranslateWidget />
             </div>
           </div>
+
         )}
 
 
@@ -434,10 +458,15 @@ export function AppShell({ children }: { children: ReactNode }) {
             <img src={logoUrl} alt="" className="h-8 w-8 rounded-lg shadow-sm" />
             <ClockHeader version={version} compact />
             <div className="ml-auto flex items-center gap-1.5">
+              <AppLauncher />
               <SearchBar />
+<<<<<<< HEAD
               <Link to="/help" title="サポート・ヘルプ" aria-label="サポート・ヘルプ" className="inline-flex h-9 w-9 items-center justify-center rounded-xl transition hover:bg-accent">
                 <HelpCircle className="h-4 w-4" />
               </Link>
+=======
+
+>>>>>>> 38380b430e687e30192b568ba160034d35f3c4ec
               <GoogleTranslateWidget />
               <Avatar className="h-9 w-9 ring-2 ring-primary/25">
                 {profile?.avatar_url ? <AvatarImage src={profile.avatar_url} alt={displayName} /> : null}
