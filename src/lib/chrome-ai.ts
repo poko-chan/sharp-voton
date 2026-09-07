@@ -3,22 +3,47 @@
 
 type Status = "unavailable" | "downloadable" | "downloading" | "available";
 
+type ChromeAiCapabilities = { available?: string } | null;
+type ChromeAiProgressEvent = { loaded?: number; total?: number };
+type ChromeAiMonitor = {
+  addEventListener?: (
+    type: "downloadprogress",
+    listener: (event: ChromeAiProgressEvent) => void,
+  ) => void;
+};
+type ChromeAiRuntimeSession = {
+  prompt: (text: string) => Promise<unknown>;
+  promptStreaming?: (text: string) => ReadableStream<unknown>;
+  destroy?: () => void;
+};
+type ChromeAiCreateOptions = {
+  initialPrompts?: Array<{ role: "system"; content: string }>;
+  temperature?: number;
+  topK?: number;
+  monitor?: (monitor: ChromeAiMonitor) => void;
+};
+type ChromeAiModel = {
+  availability?: () => Promise<string> | string;
+  capabilities?: () => Promise<ChromeAiCapabilities> | ChromeAiCapabilities;
+  create: (options?: ChromeAiCreateOptions) => Promise<ChromeAiRuntimeSession>;
+};
+
 declare global {
   // Chrome 138+
-  var LanguageModel: any;
+  var LanguageModel: ChromeAiModel | undefined;
   interface Window {
-    ai?: any;
-    LanguageModel?: any;
+    ai?: { languageModel?: ChromeAiModel };
+    LanguageModel?: ChromeAiModel;
   }
 }
 
-function getLM(): any | null {
+function getLM(): ChromeAiModel | null {
   if (typeof window === "undefined") return null;
-  const w: any = window;
-  if (w.LanguageModel) return w.LanguageModel;
-  if (w.ai?.languageModel) return w.ai.languageModel;
-  if (typeof (globalThis as any).LanguageModel !== "undefined")
-    return (globalThis as any).LanguageModel;
+  if (window.LanguageModel) return window.LanguageModel;
+  if (window.ai?.languageModel) return window.ai.languageModel;
+  const globalModel = (globalThis as typeof globalThis & { LanguageModel?: ChromeAiModel })
+    .LanguageModel;
+  if (globalModel) return globalModel;
   return null;
 }
 
@@ -108,8 +133,8 @@ export async function chromeAiEnsureDownloaded(
     try {
       const createPromise = Promise.resolve(
         lm.create({
-          monitor(m: any) {
-            m.addEventListener?.("downloadprogress", (e: any) => {
+          monitor(m: ChromeAiMonitor) {
+            m.addEventListener?.("downloadprogress", (e: ChromeAiProgressEvent) => {
               try {
                 onProgress?.(e.loaded ?? 0, e.total ?? 1);
               } catch {
@@ -119,7 +144,7 @@ export async function chromeAiEnsureDownloaded(
           },
         }),
       );
-      const s: any = await Promise.race([
+      const s = await Promise.race<ChromeAiRuntimeSession>([
         createPromise,
         new Promise((_, reject) =>
           window.setTimeout(
@@ -134,7 +159,7 @@ export async function chromeAiEnsureDownloaded(
         /* noop */
       }
       return chromeAiStatus();
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("Chrome AI Download Error:", e);
       throw e;
     } finally {
@@ -164,14 +189,14 @@ export async function createChromeAiSession(opts?: {
 }): Promise<ChromeAiSession> {
   const lm = getLM();
   if (!lm) throw new Error("Chrome Built-in AI が利用できません");
-  const init: any = {};
+  const init: ChromeAiCreateOptions = {};
   if (opts?.system) {
     init.initialPrompts = [{ role: "system", content: opts.system }];
   }
   if (typeof opts?.temperature === "number") init.temperature = opts.temperature;
   if (typeof opts?.topK === "number") init.topK = opts.topK;
 
-  const session: any = await lm.create(init);
+  const session = await lm.create(init);
 
   return {
     prompt: async (text: string) => {
@@ -190,7 +215,7 @@ export async function createChromeAiSession(opts?: {
         onChunk(s);
         return s;
       }
-      const stream: ReadableStream<string> = session.promptStreaming(text);
+      const stream = session.promptStreaming(text);
       const reader = stream.getReader();
       let full = "";
       let cumulative = false;
@@ -264,8 +289,8 @@ export function extractJSON<T = unknown>(raw: string): T {
   const slice = end > 0 ? s.slice(start, end + 1) : s.slice(start);
   try {
     return JSON.parse(slice) as T;
-  } catch (e: any) {
-    throw new Error("JSON 解析失敗: " + e.message);
+  } catch (e: unknown) {
+    throw new Error(`JSON 解析失敗: ${e instanceof Error ? e.message : String(e)}`);
   }
 }
 

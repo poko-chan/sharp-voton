@@ -20,6 +20,16 @@ export type Draft = {
   visibility: "public" | "followers" | "private";
 };
 
+type RecentLog = {
+  id: string;
+  duration_minutes: number | null;
+  subjectName?: string | null;
+  content?: string | null;
+  date: string;
+};
+
+type Organization = { id: string; name: string };
+
 export function PostComposer({
   draft,
   setDraft,
@@ -30,12 +40,12 @@ export function PostComposer({
 }: {
   draft: Draft;
   setDraft: (d: Draft) => void;
-  recentLogs: any[];
-  orgs: any[];
+  recentLogs: RecentLog[];
+  orgs: Organization[];
   busy: boolean;
   onSubmit: () => void;
 }) {
-  const useLog = (l: any) => {
+  const applyLog = (l: RecentLog) => {
     setDraft({
       ...draft,
       minutes: String(l.duration_minutes ?? ""),
@@ -60,7 +70,7 @@ export function PostComposer({
               <button
                 key={l.id}
                 type="button"
-                onClick={() => useLog(l)}
+                onClick={() => applyLog(l)}
                 className="shrink-0 rounded-lg border px-3 py-1.5 text-left text-xs hover:bg-accent transition"
               >
                 <div className="font-medium">
@@ -111,7 +121,11 @@ export function PostComposer({
         {draft.org === "none" && (
           <Select
             value={draft.visibility}
-            onValueChange={(v: any) => setDraft({ ...draft, visibility: v })}
+            onValueChange={(v) => {
+              if (v === "public" || v === "followers" || v === "private") {
+                setDraft({ ...draft, visibility: v });
+              }
+            }}
           >
             <SelectTrigger className="w-36">
               <SelectValue />
