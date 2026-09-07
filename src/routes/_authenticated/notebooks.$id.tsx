@@ -386,7 +386,8 @@ function NotebookEditor() {
           )}
         </div>
 
-        <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 border-t bg-card/70 px-3 py-2 shadow-[0_-8px_24px_-20px_var(--foreground)]">
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t bg-card/90 px-3 py-2.5 shadow-[0_-8px_24px_-20px_var(--foreground)] backdrop-blur">
+          <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -395,15 +396,17 @@ function NotebookEditor() {
           >
             <ChevronLeft className="h-4 w-4" />前
           </Button>
-          <div className="flex max-w-[min(55vw,520px)] gap-1 overflow-x-auto py-0.5">
+          <div className="flex max-w-[min(52vw,520px)] items-center gap-1 overflow-x-auto py-0.5" aria-label="ページ一覧">
             {pages.map((p, i) => (
               <button
                 key={p.id}
                 onClick={() => setIdx(i)}
                 className={cn(
-                  "h-8 w-8 rounded border text-xs",
+                  "h-8 min-w-8 rounded-md border px-2 text-xs font-medium transition",
                   i === idx ? "bg-primary text-primary-foreground" : "hover:bg-muted",
                 )}
+                aria-label={`ページ ${i + 1}`}
+                aria-current={i === idx ? "page" : undefined}
               >
                 {i + 1}
               </button>
@@ -417,8 +420,13 @@ function NotebookEditor() {
           >
             次<ChevronRight className="h-4 w-4" />
           </Button>
+          <span className="hidden text-xs font-medium tabular-nums text-muted-foreground sm:inline">
+            {idx + 1} / {pages.length} ページ
+          </span>
+          </div>
+          <div className="flex items-center gap-1">
           {!readOnly && (
-            <Button size="sm" onClick={addPage}>
+            <Button size="sm" onClick={addPage} className="shadow-sm">
               <Plus className="mr-1 h-4 w-4" />
               ページ追加
             </Button>
@@ -429,6 +437,7 @@ function NotebookEditor() {
               ページ削除
             </Button>
           )}
+          </div>
         </div>
       </div>
     </NoteShell>

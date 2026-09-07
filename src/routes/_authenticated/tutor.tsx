@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth-context";
@@ -36,6 +36,7 @@ import {
   Gem,
   AlignLeft,
   FastForward,
+  Home,
 } from "lucide-react";
 
 import ReactMarkdown from "react-markdown";
@@ -660,7 +661,6 @@ export function TutorPage() {
 
     if (requested.length > 0) {
       ctx = ctxRes;
-      if (!ctx) setFlowError("一部の学習情報を取得できなかったため、会話内容だけで回答します。");
       finishLastStep(
         ctx
           ? [
@@ -821,8 +821,12 @@ export function TutorPage() {
 
   const send = async () => {
     if (!user || (!input.trim() && pending.length === 0) || busy) return;
-    if (canAi === false) {
-      setFlowError("利用できるAIモデルがありません。AI設定でモデルを準備してください。");
+    if (canAi !== true) {
+      setFlowError(
+        canAi === false
+          ? "利用できるAIモデルがありません。AI設定でモデルを準備してください。"
+          : "AIの準備状況を確認しています。少し待ってから送信してください。",
+      );
       return;
     }
     const runId = ++runIdRef.current;
@@ -1181,6 +1185,14 @@ export function TutorPage() {
             </p>
           </div>
           <div className="ml-auto flex items-center gap-1">
+            <Link
+              to="/dashboard"
+              className="mr-1 inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
+              title="ダッシュボードへ戻る"
+            >
+              <Home className="h-4 w-4" />
+              <span className="hidden sm:inline">ダッシュボード</span>
+            </Link>
             <AiStatusBadge />
             {msgs.length > 0 && (
               <Button
@@ -1604,7 +1616,7 @@ export function TutorPage() {
                   ) : (
                     <button
                       type="submit"
-                      disabled={(!input.trim() && pending.length === 0) || canAi === false}
+                      disabled={(!input.trim() && pending.length === 0) || canAi !== true}
                       title="送信"
                       className="grid h-8 w-8 place-items-center rounded-full bg-foreground text-background transition hover:opacity-85 disabled:opacity-30"
                     >
