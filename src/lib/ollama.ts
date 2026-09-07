@@ -29,11 +29,18 @@ export async function ollamaModels(force = false): Promise<OllamaModel[]> {
     const res = await fetch(`${getOllamaUrl()}/api/tags`, { signal: ctl.signal });
     window.clearTimeout(t);
     if (!res.ok) throw new Error("bad status");
-    const json = await res.json();
-    const models: OllamaModel[] = (json?.models ?? []).map((m: any) => ({
-      name: String(m.name),
-      sizeBytes: Number(m.size ?? 0),
-    }));
+    const json: unknown = await res.json();
+    const rawModels =
+      json && typeof json === "object" && "models" in json && Array.isArray(json.models)
+        ? json.models
+        : [];
+    const models: OllamaModel[] = rawModels.map((model) => {
+      const item = model && typeof model === "object" ? model : {};
+      return {
+        name: String("name" in item ? item.name : ""),
+        sizeBytes: Number("size" in item ? item.size : 0),
+      };
+    });
     cache = { at: Date.now(), models };
     return models;
   } catch {
@@ -73,6 +80,10 @@ export type OllamaSession = {
   destroy: () => void;
 };
 
+type OllamaStreamChunk = {
+  message?: { content?: unknown };
+};
+
 export function createOllamaSession(
   model: string,
   opts?: {
@@ -84,53 +95,72 @@ export function createOllamaSession(
   },
 ): OllamaSession {
   const history: Array<{ role: string; content: string }> = [];
+  let activeController: AbortController | null = null;
   if (opts?.system) history.push({ role: "system", content: opts.system });
 
   const complete = async (text: string, onChunk?: (p: string) => void) => {
     history.push({ role: "user", content: text });
-    const res = await fetch(`${getOllamaUrl()}/api/chat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model,
-        messages: history.slice(-13),
-        stream: true,
-        options: {
-          temperature: opts?.temperature ?? 0.3,
-          top_p: opts?.topP ?? 0.9,
-          num_predict: opts?.maxTokens ?? 1024,
-          repeat_penalty: 1 + (opts?.frequencyPenalty ?? 0.4) * 0.5,
-        },
-      }),
-    });
-    if (!res.ok || !res.body) throw new Error(`Ollama への接続に失敗しました (${res.status})`);
-    const reader = res.body.getReader();
-    const dec = new TextDecoder();
-    let buf = "";
-    let full = "";
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buf += dec.decode(value, { stream: true });
-      const lines = buf.split("\n");
-      buf = lines.pop() ?? "";
-      for (const line of lines) {
-        if (!line.trim()) continue;
+    const controller = new AbortController();
+    activeController = controller;
+    const timeout = setTimeout(() => controller.abort(), 120_000);
+    try {
+      const res = await fetch(`${getOllamaUrl()}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model,
+          messages: history.slice(-13),
+          stream: true,
+          options: {
+            temperature: opts?.temperature ?? 0.3,
+            top_p: opts?.topP ?? 0.9,
+            num_predict: opts?.maxTokens ?? 1024,
+            repeat_penalty: 1 + (opts?.frequencyPenalty ?? 0.4) * 0.5,
+          },
+          keep_alive: "5m",
+        }),
+      });
+      if (!res.ok || !res.body) throw new Error(`Ollama への接続に失敗しました (${res.status})`);
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = "";
+      let full = "";
+      const consume = (line: string) => {
+        if (!line.trim()) return;
         try {
-          const j = JSON.parse(line);
-          const delta = j?.message?.content ?? "";
+          const chunk = JSON.parse(line) as OllamaStreamChunk;
+          const delta = typeof chunk.message?.content === "string" ? chunk.message.content : "";
           if (delta) {
             full += delta;
             onChunk?.(full);
           }
         } catch {
-          /* noop */
+          return;
         }
+      };
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop() ?? "";
+        lines.forEach(consume);
       }
+      consume(buf);
+      const answer = full.trim();
+      history.push({ role: "assistant", content: answer });
+      return answer;
+    } catch (error) {
+      history.pop();
+      if (controller.signal.aborted) {
+        throw new Error("AIの生成を中断しました。もう一度お試しください。");
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeout);
+      if (activeController === controller) activeController = null;
     }
-    const answer = full.trim();
-    history.push({ role: "assistant", content: answer });
-    return answer;
   };
 
   return {
@@ -144,6 +174,8 @@ export function createOllamaSession(
     },
     promptStreaming: (t, onChunk) => complete(t, onChunk),
     destroy: () => {
+      activeController?.abort();
+      activeController = null;
       history.length = 0;
     },
   };

@@ -132,6 +132,13 @@ type Msg = {
 };
 type Thread = { id: string; title: string; updated_at: string; created_at: string };
 
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error("timeout")), ms);
+    promise.then(resolve, reject).finally(() => window.clearTimeout(timer));
+  });
+}
+
 const QUICK_PROMPTS = [
   { title: "今日の勉強計画", body: "今日の勉強計画を、優先順位つきで考えて" },
   { title: "苦手を分析", body: "最近の学習記録から、私の苦手と対策を教えて" },
@@ -355,6 +362,7 @@ function TutorPage() {
   const [input, setInput] = useState("");
   const [pending, setPending] = useState<Attachment[]>([]);
   const [busy, setBusy] = useState(false);
+  const activeSessionRef = useRef<{ destroy: () => void } | null>(null);
   const [streaming, setStreaming] = useState("");
   const [uploading, setUploading] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -616,14 +624,18 @@ function TutorPage() {
     // 学習情報・Web検索・指定ページの取得は同時に行い、待ち時間を短くする
     const [ctxRes, webRes, pages] = await Promise.all([
       requested.length > 0
-        ? ctxFn({ data: { scopes: requested } }).catch(() => null)
+        ? withTimeout(ctxFn({ data: { scopes: requested } }), 12_000).catch(() => null)
         : Promise.resolve(null),
       doSearch
         ? Promise.all(
-            searchQueries.map((q) => searchFn({ data: { query: q } }).catch(() => null)),
+            searchQueries.map((q) =>
+              withTimeout(searchFn({ data: { query: q } }), 12_000).catch(() => null),
+            ),
           ).then((rs) => ({ results: rs.flatMap((r: any) => r?.results ?? []) }))
         : Promise.resolve(null),
-      Promise.all(urlsInMsg.map((u) => pageFn({ data: { url: u } }).catch(() => null))),
+      Promise.all(
+        urlsInMsg.map((u) => withTimeout(pageFn({ data: { url: u } }), 12_000).catch(() => null)),
+      ),
     ]);
 
     if (requested.length > 0) {
@@ -684,6 +696,7 @@ function TutorPage() {
       (task ? `\n\n【今回の作業】\n${task.instruction}` : "");
 
     const session = await createAiSession({ system, task: "chat" });
+    activeSessionRef.current = session;
     let text = "";
     setStreaming("");
     if (task?.canvas) {
@@ -759,6 +772,7 @@ function TutorPage() {
       text = await session.promptStreaming(finalPrompt, onPartial);
     } finally {
       session.destroy();
+      if (activeSessionRef.current === session) activeSessionRef.current = null;
       setCanvasStreaming(false);
     }
 
@@ -934,6 +948,7 @@ function TutorPage() {
 
   const stopGeneration = () => {
     cancelRef.current = true;
+    activeSessionRef.current?.destroy();
     toast.info("生成を止めています…");
   };
 
