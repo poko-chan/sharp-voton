@@ -32,6 +32,10 @@ export function isDegenerate(text: string): boolean {
 /** 反復部分を取り除いて、読める部分だけを返す */
 export function sanitizeAiText(text: string): string {
   let out = text
+    // ローカルモデルが返す内部思考は、ユーザー向け回答へ漏らさない。
+    .replace(/<think>[\s\S]*?<\/think>/gi, "")
+    .replace(/<think>[\s\S]*$/gi, "")
+    .replace(/<\/think>/gi, "")
     // 同じ文字の3連続以上は3つに圧縮（!!!! → !!!）
     .replace(/(.)\1{3,}/gsu, "$1$1$1")
     // 短いパターンの反復は1回に
