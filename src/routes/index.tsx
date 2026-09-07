@@ -1,6 +1,6 @@
 import { useI18n } from "@/lib/i18n";
 import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
-import { PublicFooter } from "@/components/public/PublicShell";
+import { PublicFooter, PublicMobileNav } from "@/components/public/PublicShell";
 
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
@@ -21,14 +21,17 @@ import {
 // 1. タイトルと説明文に「Voton Study Sharp」や表記ゆれ（VotonStudySharp, Study Sharp）を含める
 const TITLE = "Voton Study Sharp (Study#) — 学習のすべてを、ひとつに。";
 const DESC =
-  "Voton Study Sharp（VotonStudySharp / Study Sharp / Study#）は、勉強記録・タイマー・カレンダー・問題演習・AIチャット・目標管理・組織/学校運営までを1つにまとめたオールインワン学習プラットフォームです。";
+  "Voton Study Sharp（VotonStudySharp / Study Sharp / Study# / Voton Study）は、学習のすべてをひとつにまとめる総合学習プラットフォームです。勉強記録・タイマー・問題演習・AIチャット・目標管理・学校運営に対応します。";
 
 // 2. Googleに「表記ゆれ・別名」を明確に伝える構造化データ（JSON-LD）を作成
 const SCHEMA_DATA = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "Voton Study Sharp",
-  alternateName: ["VotonStudySharp", "Study Sharp", "Study#", "Voton Study+"],
+  alternateName: ["VotonStudySharp", "Study Sharp", "Study#", "Voton Study", "Voton", "Sharp"],
+  description: DESC,
+  keywords:
+    "Voton, Voton Study, Voton Study Sharp, VotonStudySharp, Study, Study Sharp, Study#, Sharp",
   applicationCategory: "EducationalApplication",
   operatingSystem: "All",
   url: "https://sharp-voton.lovable.app/",
@@ -39,6 +42,11 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: TITLE },
       { name: "description", content: DESC },
+      {
+        name: "keywords",
+        content:
+          "Voton, Voton Study, Voton Study Sharp, VotonStudySharp, Study, Study Sharp, Study#, Sharp, 学習のすべてをひとつに, 学習を賢く楽しく, 総合学習プラットフォーム",
+      },
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESC },
       { name: "twitter:title", content: TITLE },
@@ -154,6 +162,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
               </Link>
             )}
             <GoogleTranslateWidget />
+            <PublicMobileNav includeFaq />
 
             {/* 配置案1: ヘッダー右端（スクロール時も目に入る位置） */}
             <div className="hidden lg:flex items-center ml-1 shrink-0 scale-90">
@@ -236,6 +245,36 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
                 ))}
               </dl>
             </div>
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="service-message"
+          className="mx-auto max-w-6xl px-4 pt-10 sm:pt-14"
+        >
+          <div className="grid gap-4 sm:grid-cols-3">
+            <article className="surface border-l-4 border-l-signal p-5 sm:p-6">
+              <h2 id="service-message" className="font-display text-lg font-black sm:text-xl">
+                学習のすべてをひとつに
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                記録、集中、演習、AI、計画をVoton Study Sharpに集約します。
+              </p>
+            </article>
+            <article className="surface border-l-4 border-l-accent p-5 sm:p-6">
+              <h2 className="font-display text-lg font-black sm:text-xl">学習を賢く、楽しく</h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                続けやすい仕組みと見える記録で、毎日の学習を前に進めます。
+              </p>
+            </article>
+            <article className="surface border-l-4 border-l-primary p-5 sm:p-6">
+              <h2 className="font-display text-lg font-black sm:text-xl">
+                総合学習プラットフォーム
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Study#、Study Sharp、Voton Studyとして、個人から学校・塾まで使えます。
+              </p>
+            </article>
           </div>
         </section>
 

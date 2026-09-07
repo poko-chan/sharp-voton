@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import logoUrl from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
+import { Menu } from "lucide-react";
 
 type NavKey = "features" | "all-services" | "for-schools" | "guide" | "help";
 
@@ -55,9 +56,44 @@ export function PublicHeader({
             無料ではじめる
           </Link>
           <GoogleTranslateWidget />
+          <PublicMobileNav />
         </nav>
       </div>
     </header>
+  );
+}
+
+/** 小画面でも公開ページの主要導線へ到達できるメニュー。 */
+export function PublicMobileNav({ includeFaq = false }: { includeFaq?: boolean }) {
+  return (
+    <details className="relative sm:hidden">
+      <summary className="grid h-10 w-10 cursor-pointer list-none place-items-center rounded-full border border-border/60 bg-background/70 text-foreground shadow-sm [&::-webkit-details-marker]:hidden">
+        <Menu className="h-5 w-5" aria-hidden="true" />
+        <span className="sr-only">メニューを開く</span>
+      </summary>
+      <nav
+        className="absolute right-0 top-12 z-50 min-w-52 rounded-2xl border border-border/70 bg-background/95 p-2 shadow-xl backdrop-blur-xl"
+        aria-label="モバイルメニュー"
+      >
+        {NAV.map((n) => (
+          <Link
+            key={n.key}
+            to={n.to}
+            className="block rounded-xl px-3 py-2.5 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          >
+            {n.label}
+          </Link>
+        ))}
+        {includeFaq && (
+          <a
+            href="#faq"
+            className="block rounded-xl px-3 py-2.5 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          >
+            よくある質問
+          </a>
+        )}
+      </nav>
+    </details>
   );
 }
 
