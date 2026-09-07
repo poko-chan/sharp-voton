@@ -12,7 +12,7 @@ import { TutorialOverlay } from "@/components/onboarding/TutorialOverlay";
 // Map URL prefix -> service key (must match SERVICES in restriction-context).
 const ROUTE_SERVICE: Array<[string, string]> = [
   ["/timer", "timer"],
-  ["/tutor", "tutor"],
+  ["/ai-chat", "tutor"],
   ["/classroom", "classroom"],
   ["/classchat", "classchat"],
   ["/chat", "chat"],

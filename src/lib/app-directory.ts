@@ -131,7 +131,7 @@ export const APPS: AppEntry[] = [
     group: "記録・分析",
   },
   {
-    to: "/tutor",
+    to: "/ai-chat",
     label: "AIチャット",
     keywords: "ai tutor chat gpt 質問",
     icon: Sparkles,

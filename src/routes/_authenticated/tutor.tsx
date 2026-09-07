@@ -346,7 +346,7 @@ function ThinkingBlock({
   );
 }
 
-function TutorPage() {
+export function TutorPage() {
   const { user } = useAuth();
   const listFn = useServerFn(listTutorThreads);
   const createFn = useServerFn(createTutorThread);
@@ -1008,7 +1008,7 @@ function TutorPage() {
   const activeTitle = threads.find((t) => t.id === activeId)?.title ?? "新しいチャット";
 
   return (
-    <div className="flex h-[calc(100dvh-3.5rem)] overflow-hidden bg-background">
+    <div className="fixed inset-0 z-50 flex overflow-hidden bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/.12),transparent_32%),hsl(var(--background))]">
       {/* サイドバー */}
       <aside
         className={`flex h-full shrink-0 flex-col border-r bg-muted/40 transition-[width] duration-200 ${
@@ -1122,7 +1122,7 @@ function TutorPage() {
 
       {/* メイン */}
       <main className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center gap-2 px-3 py-2.5">
+        <header className="flex items-center gap-3 border-b border-border/60 bg-gradient-to-r from-primary/[0.08] via-background/90 to-background px-4 py-3 backdrop-blur-xl">
           {!sidebarOpen && (
             <Button
               variant="ghost"
@@ -1134,7 +1134,18 @@ function TutorPage() {
               <PanelLeft className="h-4 w-4" />
             </Button>
           )}
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-foreground text-background shadow-sm">
+            <Brain className="h-4 w-4" />
+          </div>
           <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
+                AI Workspace
+              </span>
+              <span className="hidden rounded-full border border-primary/20 bg-primary/5 px-2 py-0.5 text-[10px] text-primary sm:inline">
+                Private by default
+              </span>
+            </div>
             <h1 className="truncate text-sm font-semibold">{activeTitle}</h1>
             <p className="truncate text-[11px] text-muted-foreground">
               {engineLabel || "端末内AI"} ・{" "}

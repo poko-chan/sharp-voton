@@ -70,7 +70,7 @@ export const NAV = [
   { to: "/flashcards", labelKey: "nav.flashcards" as const, icon: Brain },
   { to: "/feed", labelKey: "nav.dashboard" as const, icon: Users, override: "タイムライン" },
   { to: "/friends", labelKey: "nav.friends" as const, icon: Users },
-  { to: "/tutor", labelKey: "nav.tutor" as const, icon: Sparkles },
+  { to: "/ai-chat", labelKey: "nav.tutor" as const, icon: Sparkles },
   { to: "/classroom", labelKey: "nav.classroom" as const, icon: GraduationCap },
   { to: "/chat", labelKey: "nav.chat" as const, icon: MessagesSquare },
   {
@@ -92,7 +92,7 @@ export const NAV = [
 // Map prefix -> service key (for filtering hidden services)
 const ROUTE_SERVICE: Record<string, string> = {
   "/timer": "timer",
-  "/tutor": "tutor",
+  "/ai-chat": "tutor",
   "/classroom": "classroom",
   "/classchat": "classchat",
   "/chat": "chat",
