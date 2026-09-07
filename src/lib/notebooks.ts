@@ -154,14 +154,16 @@ export function drawStroke(ctx: CanvasRenderingContext2D, s: Stroke) {
   for (let i = 1; i < s.points.length; i++) {
     const a = s.points[i - 1];
     const b = s.points[i];
+    const next = s.points[i + 1] ?? b;
     const pressure = s.tool === "pen" || s.tool === "pencil" ? (b.p ?? 0.5) : 0.5;
     ctx.lineWidth = s.tool === "pen" ? s.width * (0.55 + pressure)
       : s.tool === "pencil" ? s.width * (0.5 + pressure * 0.8)
       : s.width;
     if (s.tool === "pencil") ctx.globalAlpha = 0.55 + ((i * 37) % 20) / 100;
+    const midpoint = { x: (b.x + next.x) / 2, y: (b.y + next.y) / 2 };
     ctx.beginPath();
     ctx.moveTo(a.x, a.y);
-    ctx.lineTo(b.x, b.y);
+    ctx.quadraticCurveTo(b.x, b.y, midpoint.x, midpoint.y);
     ctx.stroke();
   }
   ctx.restore();

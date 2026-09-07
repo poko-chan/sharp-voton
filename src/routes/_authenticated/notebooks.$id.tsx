@@ -69,6 +69,9 @@ function NotebookEditor() {
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => () => {
+    if (timer.current) clearTimeout(timer.current);
+  }, []);
 
   const isOwner = nb?.owner_id === user?.id;
   const myShare = shares.find((s) => s.user_id === user?.id && s.status === "accepted");
@@ -169,7 +172,10 @@ function NotebookEditor() {
       right={
         <div className="flex items-center gap-1">
           {!readOnly && page && (
-            <Button size="sm" variant="outline" onClick={() => savePage(page)}><Save className="mr-1 h-4 w-4" />保存</Button>
+            <Button size="sm" variant="outline" onClick={() => {
+              if (timer.current) clearTimeout(timer.current);
+              savePage(page);
+            }}><Save className="mr-1 h-4 w-4" />保存</Button>
           )}
           {isOwner && (
             <Button size="sm" variant="outline" onClick={() => setShowSettings((v) => !v)}>

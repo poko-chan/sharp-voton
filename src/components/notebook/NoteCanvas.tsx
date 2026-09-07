@@ -52,6 +52,7 @@ export function NoteCanvas({
   const [eraserSize, setEraserSize] = useState(24);
   const [straight, setStraight] = useState(false);
   const [penOnly, setPenOnly] = useState(true);
+  const [stabilizer, setStabilizer] = useState(4);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [activeText, setActiveText] = useState<string | null>(null);
@@ -217,7 +218,7 @@ export function NoteCanvas({
     if (straight) d.points = [d.points[0], pt];
     else {
       const last = d.points[d.points.length - 1];
-      if (Math.hypot(pt.x - last.x, pt.y - last.y) < 1.2) return;
+      if (Math.hypot(pt.x - last.x, pt.y - last.y) < Math.max(0.8, 3.2 - stabilizer * 0.45)) return;
       d.points.push(pt);
     }
     redraw();
@@ -233,6 +234,13 @@ export function NoteCanvas({
     drawing.current = null;
     if (!d) return;
     commit({ strokes: [...strokes, d], texts });
+  };
+
+  const cancelDrawing = (e: React.PointerEvent) => {
+    panning.current = null;
+    drawing.current = null;
+    (e.currentTarget as any).__erasing = false;
+    try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch { /* noop */ }
   };
 
   const updateText = (id: string, patch: Partial<TextBox>, snapshot = false) => {
@@ -327,6 +335,8 @@ export function NoteCanvas({
                 <span className="h-5 w-px bg-border" />
                 <span className="text-[11px] text-muted-foreground">太さ</span>
                 <input type="range" min={1} max={16} value={width} onChange={(e) => setWidth(Number(e.target.value))} className="w-24" aria-label="太さ" />
+                <span className="text-[11px] text-muted-foreground">補正</span>
+                <input type="range" min={0} max={8} value={stabilizer} onChange={(e) => setStabilizer(Number(e.target.value))} className="w-20" aria-label="手ぶれ補正" />
                 <Button size="sm" variant={straight ? "default" : "outline"} className="h-7" onClick={() => setStraight((s) => !s)} title="直線モード">
                   <Minus className="h-4 w-4" />
                 </Button>
@@ -365,6 +375,7 @@ export function NoteCanvas({
               onPointerDown={onDown}
               onPointerMove={onMove}
               onPointerUp={onUp}
+              onPointerCancel={cancelDrawing}
               onPointerLeave={(e) => { setCursor(null); onUp(e); }}
               className="absolute inset-0 h-full w-full touch-none rounded-sm bg-white"
               style={{ cursor: tool === "hand" ? "grab" : tool === "eraser" ? "none" : readOnly ? "default" : "crosshair" }}
