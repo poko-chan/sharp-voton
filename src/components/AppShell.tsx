@@ -182,6 +182,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     syncCalendarNotifications(user.id).catch(() => {});
   }, [user?.id]);
 
+  // 最近つかった機能を端末内に記録（アクティビティ履歴）
+  useEffect(() => { recordVisit(path); }, [path]);
+
+
 
 
   // Daily reminder: fire a local browser notification once at the configured time.
