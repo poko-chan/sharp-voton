@@ -204,7 +204,7 @@ export function GroupChatPanel({
                       </div>
                     ) : (
                       <div className="flex items-end gap-2">
-                        <span className="text-[1em] leading-relaxed whitespace-pre-wrap break-words">{m.content}</span>
+                        <span className="text-[1em] leading-relaxed whitespace-pre-wrap break-words">{m.content.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim()}</span>
                         {!isDeleted && (
                           <div className="flex gap-1.5 shrink-0 items-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                             <ReactionPicker onPick={(e) => onToggleReaction(m.id, e)} />

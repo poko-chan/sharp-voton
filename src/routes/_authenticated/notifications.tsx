@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
@@ -6,7 +6,7 @@ import { listNotifications, markNotificationRead, deleteNotification } from "@/l
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Bell, CheckCheck, Trash2 } from "lucide-react";
+import { ArrowLeft, Bell, CheckCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
@@ -60,7 +60,12 @@ function NotificationsPage() {
   return (
     <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-3xl font-bold flex items-center gap-2"><Bell className="h-7 w-7 text-primary" />通知</h1>
+        <div className="flex items-center gap-3">
+          <Link to="/dashboard" title="ダッシュボードに戻る" aria-label="ダッシュボードに戻る">
+            <Button size="icon" variant="outline"><ArrowLeft className="h-4 w-4" /></Button>
+          </Link>
+          <h1 className="text-3xl font-bold flex items-center gap-2"><Bell className="h-7 w-7 text-primary" />通知</h1>
+        </div>
         <div className="flex gap-2 flex-wrap">
           <Button size="sm" variant="outline" onClick={() => markM.mutate({ all: true })}>
             <CheckCheck className="h-3 w-3 mr-1" />すべて既読

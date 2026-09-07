@@ -400,6 +400,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             </button>
             {!navOpen && <img src={logoUrl} alt="" className="h-7 w-7 rounded-lg shadow-sm" />}
             <div className="ml-auto flex items-center gap-2">
+              <SearchBar />
+              <Link to="/help" title="サポート・ヘルプ" className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-sm transition hover:bg-accent">
+                <HelpCircle className="h-4 w-4" />
+                <span className="hidden lg:inline">サポート</span>
+              </Link>
               <ChromeAiStatusBadge compact />
               <div className="mx-2 h-4 w-px bg-border/70" />
               <GoogleTranslateWidget />
@@ -430,6 +435,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             <ClockHeader version={version} compact />
             <div className="ml-auto flex items-center gap-1.5">
               <SearchBar />
+              <Link to="/help" title="サポート・ヘルプ" aria-label="サポート・ヘルプ" className="inline-flex h-9 w-9 items-center justify-center rounded-xl transition hover:bg-accent">
+                <HelpCircle className="h-4 w-4" />
+              </Link>
               <GoogleTranslateWidget />
               <Avatar className="h-9 w-9 ring-2 ring-primary/25">
                 {profile?.avatar_url ? <AvatarImage src={profile.avatar_url} alt={displayName} /> : null}

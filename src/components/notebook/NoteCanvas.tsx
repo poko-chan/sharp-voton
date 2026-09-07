@@ -51,6 +51,7 @@ export function NoteCanvas({
   const [width, setWidth] = useState(3);
   const [eraserSize, setEraserSize] = useState(24);
   const [straight, setStraight] = useState(false);
+  const [penOnly, setPenOnly] = useState(true);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [activeText, setActiveText] = useState<string | null>(null);
@@ -151,7 +152,7 @@ export function NoteCanvas({
     return {
       x: ((e.clientX - r.left) / r.width) * PAGE_W,
       y: ((e.clientY - r.top) / r.height) * PAGE_H,
-      p: e.pressure && e.pressure > 0 && e.pointerType === "pen" ? e.pressure : 0.5,
+      p: e.pointerType === "pen" ? Math.min(1, Math.max(0.05, e.pressure || 0.5)) : 0.5,
     };
   };
 
@@ -161,6 +162,7 @@ export function NoteCanvas({
   };
 
   const onDown = (e: React.PointerEvent) => {
+    if (penOnly && e.pointerType === "touch" && tool !== "hand") return;
     if (tool === "hand" || e.button === 1 || (e.pointerType === "touch" && tool !== "eraser" && e.isPrimary === false)) {
       startPan(e);
       return;
@@ -338,6 +340,9 @@ export function NoteCanvas({
                 <span className="text-[11px] tabular-nums text-muted-foreground">{eraserSize}</span>
               </>
             )}
+            <Button size="sm" variant={penOnly ? "default" : "outline"} className="h-7 text-xs" onClick={() => setPenOnly((v) => !v)} title="手のひら誤入力防止">
+              {penOnly ? "ペン優先" : "タッチ入力"}
+            </Button>
             <div className="ml-auto flex items-center gap-1">
               <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => zoomBy(1 / 1.25)} title="縮小"><ZoomOut className="h-4 w-4" /></Button>
               <span className="w-12 text-center text-xs tabular-nums">{Math.round(zoom * 100)}%</span>
