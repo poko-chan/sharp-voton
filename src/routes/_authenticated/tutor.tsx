@@ -133,9 +133,12 @@ type Msg = {
 };
 type Thread = { id: string; title: string; updated_at: string; created_at: string };
 
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+function withTimeout<T>(promise: Promise<T>, ms: number, onTimeout?: () => void): Promise<T> {
   return new Promise<T>((resolve, reject) => {
-    const timer = window.setTimeout(() => reject(new Error("timeout")), ms);
+    const timer = window.setTimeout(() => {
+      onTimeout?.();
+      reject(new Error("timeout"));
+    }, ms);
     promise.then(resolve, reject).finally(() => window.clearTimeout(timer));
   });
 }
@@ -370,7 +373,7 @@ export function TutorPage() {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameTitle, setRenameTitle] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<Thread | null>(null);
-  const [canAi, setCanAi] = useState(false);
+  const [canAi, setCanAi] = useState<boolean | null>(null);
   const [thinkingSteps, setThinkingSteps] = useState<ThinkingStep[]>([]);
   const [showThinking, setShowThinking] = useState(true);
   const [engineLabel, setEngineLabel] = useState("");
@@ -422,7 +425,22 @@ export function TutorPage() {
     savePrefs(prefs);
   }, [prefs]);
   useEffect(() => {
-    isAiUsable().then(setCanAi);
+    let active = true;
+    const timer = window.setTimeout(() => {
+      if (active) setCanAi(false);
+    }, 8000);
+    isAiUsable()
+      .then((usable) => {
+        if (active) setCanAi(usable);
+      })
+      .catch(() => {
+        if (active) setCanAi(false);
+      })
+      .finally(() => window.clearTimeout(timer));
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
   }, []);
   useEffect(() => {
     import("@/lib/ai-provider").then(({ resolveAiTarget }) =>
@@ -803,6 +821,10 @@ export function TutorPage() {
 
   const send = async () => {
     if (!user || (!input.trim() && pending.length === 0) || busy) return;
+    if (canAi === false) {
+      setFlowError("利用できるAIモデルがありません。AI設定でモデルを準備してください。");
+      return;
+    }
     const runId = ++runIdRef.current;
     cancelRef.current = false;
     const originalInput = input;
@@ -877,7 +899,9 @@ export function TutorPage() {
         return;
       }
 
-      await generate(tid, nextMsgs, runId);
+      await withTimeout(generate(tid, nextMsgs, runId), 180_000, () => {
+        activeSessionRef.current?.destroy();
+      });
       completedNormally = true;
 
       if (isNew && userMsg.content) {
@@ -932,7 +956,9 @@ export function TutorPage() {
       await supabase.from("tutor_messages").delete().eq("id", last.id).eq("user_id", user.id);
       const trimmed = msgs.filter((m) => m.id !== last.id);
       setMsgs(trimmed);
-      await generate(activeId, trimmed, runId);
+      await withTimeout(generate(activeId, trimmed, runId), 180_000, () => {
+        activeSessionRef.current?.destroy();
+      });
       await loadMsgs(activeId);
     } catch (e: any) {
       setFlowError(e?.message ?? "作り直しに失敗しました");
@@ -1179,7 +1205,7 @@ export function TutorPage() {
           </div>
         </header>
 
-        {!canAi && (
+        {canAi === false && (
           <div className="border-b p-3">
             <AiUnavailable feature="AIチャット" />
           </div>
@@ -1578,7 +1604,7 @@ export function TutorPage() {
                   ) : (
                     <button
                       type="submit"
-                      disabled={!canAi || (!input.trim() && pending.length === 0)}
+                      disabled={(!input.trim() && pending.length === 0) || canAi === false}
                       title="送信"
                       className="grid h-8 w-8 place-items-center rounded-full bg-foreground text-background transition hover:opacity-85 disabled:opacity-30"
                     >
