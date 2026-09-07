@@ -395,6 +395,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="app-frame flex min-h-screen bg-background">
+      <CommandPalette />
+
       {/* Desktop sidebar */}
       {!isMobile && navOpen && (
         <aside className="app-sidebar w-64 shrink-0 border-r liquid-bar text-sidebar-foreground flex flex-col sticky top-0 h-screen self-start">
