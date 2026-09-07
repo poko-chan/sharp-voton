@@ -48,7 +48,7 @@ const CAT_LABEL: Record<string, string> = {
   other: "📝 その他",
 };
 
-export function FeedbackWidget() {
+export function FeedbackWidget({ compact = false }: { compact?: boolean }) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const unreadFn = useServerFn(myThreadsUnreadCount);
@@ -77,10 +77,14 @@ export function FeedbackWidget() {
       <DialogTrigger asChild>
         <button
           aria-label="フィードバック / サポート"
-          className="fixed bottom-20 right-2 md:bottom-4 z-40 inline-flex items-center gap-1 rounded-full bg-primary/90 text-primary-foreground backdrop-blur px-2.5 py-1 text-xs leading-none shadow-sm border border-white/20 hover:bg-primary transition-colors"
+          className={
+            compact
+              ? "relative inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-sm transition hover:bg-accent"
+              : "fixed bottom-20 right-2 md:bottom-4 z-40 inline-flex items-center gap-1 rounded-full bg-primary/90 text-primary-foreground backdrop-blur px-2.5 py-1 text-xs leading-none shadow-sm border border-white/20 hover:bg-primary transition-colors"
+          }
         >
           <MessageCircleQuestion className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">サポート</span>
+          <span className={compact ? "hidden lg:inline" : "hidden sm:inline"}>サポート</span>
           {count > 0 && (
             <span className="ml-0.5 inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
               {count > 99 ? "99+" : count}

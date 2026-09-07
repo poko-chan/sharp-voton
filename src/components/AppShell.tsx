@@ -50,6 +50,7 @@ import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
 import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import { AppLauncher } from "@/components/AppLauncher";
 import { CommandPalette } from "@/components/CommandPalette";
+import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { recordVisit } from "@/lib/recent-activity";
 import { toast } from "sonner";
 
@@ -115,6 +116,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const isMobile = useIsMobile();
   const { prefs } = useUserPrefs(); // apply font scale / contrast on mount
+  const supportDock = (prefs as { right_dock?: string[] }).right_dock;
   const restriction = useRestriction();
   const { map: navCfg } = useAdminNavConfig();
   const [version, setVersion] = useState<string>("");
@@ -571,6 +573,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             {!navOpen && <img src={logoUrl} alt="" className="h-7 w-7 rounded-lg shadow-sm" />}
             <div className="ml-auto flex items-center gap-2">
               <SearchBar />
+              {supportDock?.includes("feedback") !== false && <FeedbackWidget compact />}
               <Link
                 to="/help"
                 title="サポート・ヘルプ"
@@ -616,6 +619,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="ml-auto flex items-center gap-1.5">
               <AppLauncher />
               <SearchBar />
+              {supportDock?.includes("feedback") !== false && <FeedbackWidget compact />}
               <Link
                 to="/help"
                 title="サポート・ヘルプ"

@@ -20,12 +20,10 @@ import { RestrictionProvider } from "@/lib/restriction-context";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { RouteLoading } from "@/components/RouteLoading";
-import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { AmbientSound } from "@/components/AmbientSound";
 import { loadAndApplyUserTheme } from "@/lib/theme";
 
-import { useUserPrefs } from "@/lib/user-prefs";
 import { I18nProvider } from "@/lib/i18n";
 
 function NotFoundComponent() {
@@ -208,7 +206,6 @@ function RootComponent() {
               </MaintenanceGate>
             </RestrictionProvider>
             <RouteLoading />
-            <DockedWidgets />
             <PWAInstallPrompt />
             <AmbientSound />
             <Toaster richColors position="top-center" />
@@ -217,11 +214,4 @@ function RootComponent() {
       </AuthProvider>
     </QueryClientProvider>
   );
-}
-
-function DockedWidgets() {
-  // フィードバック（サポート）はどのページでも表示する。
-  const { prefs } = useUserPrefs();
-  const dock = (prefs as any).right_dock ?? ["ambient", "feedback"];
-  return <>{dock.includes("feedback") && <FeedbackWidget />}</>;
 }
