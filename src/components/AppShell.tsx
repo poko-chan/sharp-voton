@@ -21,7 +21,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useAdminNavConfig } from "@/lib/admin-nav";
 import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
 import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
+import { AppLauncher } from "@/components/AppLauncher";
+import { CommandPalette } from "@/components/CommandPalette";
+import { recordVisit } from "@/lib/recent-activity";
 import { toast } from "sonner";
+
 
 export const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
