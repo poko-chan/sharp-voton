@@ -96,15 +96,15 @@
 /* AIチャットはMarkon/Cnoteと同じ、殻から独立した不透明な作業画面。 */
 .ai-workspace {
   --ai-panel: #111116;
-  --ai-line: rgba(211, 171, 79, 0.2);
-  --ai-gold: #d6ad55;
-  --ai-gold-bright: #f0cc72;
-  --ai-ink: #f4efe4;
-  --ai-muted: #a9a39a;
+  --ai-line: rgba(255, 255, 255, 0.12);
+  --ai-accent: #19c37d;
+  --ai-accent-bright: #63e6ad;
+  --ai-ink: #ececf1;
+  --ai-muted: #acacbe;
   color: var(--ai-ink);
   background:
-    radial-gradient(circle at 78% -10%, rgba(214, 173, 85, 0.14), transparent 34%),
-    linear-gradient(135deg, #0b0b0e 0%, #101014 55%, #0b0b0e 100%);
+    radial-gradient(circle at 78% -10%, rgba(25, 195, 125, 0.12), transparent 34%),
+    linear-gradient(135deg, #171717 0%, #202123 55%, #171717 100%);
 }
 
 .ai-workspace aside {
@@ -138,13 +138,22 @@
   color: var(--ai-muted) !important;
 }
 
+.ai-workspace .text-foreground {
+  color: var(--ai-ink) !important;
+}
+
 .ai-workspace .text-primary {
-  color: var(--ai-gold-bright) !important;
+  color: var(--ai-accent-bright) !important;
 }
 
 .ai-workspace .bg-primary {
-  background-color: var(--ai-gold) !important;
-  color: #15120c !important;
+  background-color: var(--ai-accent) !important;
+  color: #071b12 !important;
+}
+
+.ai-workspace .bg-foreground {
+  background-color: #f7f7f8 !important;
+  color: #202123 !important;
 }
 
 .ai-workspace textarea,
