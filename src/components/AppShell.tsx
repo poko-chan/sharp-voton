@@ -449,7 +449,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             <img src={logoUrl} alt="" className="h-8 w-8 rounded-lg shadow-sm" />
             <ClockHeader version={version} compact />
             <div className="ml-auto flex items-center gap-1.5">
+              <AppLauncher />
               <SearchBar />
+
               <GoogleTranslateWidget />
               <Avatar className="h-9 w-9 ring-2 ring-primary/25">
                 {profile?.avatar_url ? <AvatarImage src={profile.avatar_url} alt={displayName} /> : null}
