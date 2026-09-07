@@ -368,7 +368,7 @@ function TutorPage() {
     try {
       const ups: Attachment[] = [];
       for (const file of Array.from(e.target.files)) {
-        const safeName = file.name.replace(/[^\w.\-]+/g, "_");
+        const safeName = file.name.replace(/[^\w.-]+/g, "_");
         const path = `${user.id}/${Date.now()}-${safeName}`;
         const { error } = await supabase.storage.from("tutor-files").upload(path, file);
         if (error) throw error;
@@ -413,7 +413,7 @@ function TutorPage() {
       ? buildSiteQueries(buildSearchQuery(lastUser), deepSites.split(/[\s,、\n]+/))
       : [buildSearchQuery(lastUser)];
     // メッセージ内のURLを検出して直接読みに行く（どのサイトでも対応）
-    const urlsInMsg = Array.from(new Set(lastUser.match(/https?:\/\/[^\s　)\]}>"'〈〉「」『』【】、。]+/g) ?? []))
+    const urlsInMsg = Array.from(new Set(lastUser.match(/https?:\/\/[^\s\u3000)\]}>"'〈〉「」『』【】、。]+/g) ?? []))
       .filter((u) => !/\.(png|jpe?g|gif|webp|svg|mp4|mp3|pdf|zip)($|\?)/i.test(u))
       .slice(0, 2);
     if (requested.length > 0) {

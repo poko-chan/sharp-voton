@@ -1,26 +1,18 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Search } from "lucide-react";
-
-const ROUTES: Array<{ q: string; to: string; label: string }> = [
-  { q: "ダッシュボード dashboard", to: "/dashboard", label: "ダッシュボード" },
-  { q: "勉強記録 study", to: "/study", label: "勉強記録" },
-  { q: "タイマー timer", to: "/timer", label: "タイマー" },
-  { q: "暗記カード flashcard srs", to: "/flashcards", label: "暗記カード" },
-  { q: "友達 friends フォロー", to: "/friends", label: "フレンド" },
-  { q: "通知", to: "/notifications", label: "通知" },
-  { q: "設定 settings", to: "/settings", label: "設定" },
-  { q: "ヘルプ help", to: "/help", label: "ヘルプ" },
-  { q: "目標 goals", to: "/goals", label: "学習目標" },
-  { q: "カレンダー", to: "/calendar", label: "カレンダー" },
-  { q: "ヒートマップ", to: "/heatmap", label: "ヒートマップ" },
-];
+import { appsForAccount } from "@/lib/app-directory";
+import { useAuth } from "@/lib/auth-context";
 
 export function SearchBar() {
+  const { accountKind } = useAuth();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const nav = useNavigate();
-  const results = q.trim() ? ROUTES.filter((r) => r.q.toLowerCase().includes(q.toLowerCase())).slice(0, 8) : [];
+  const apps = appsForAccount(accountKind);
+  const results = q.trim()
+    ? apps.filter((app) => `${app.label} ${app.keywords}`.toLowerCase().includes(q.toLowerCase())).slice(0, 8)
+    : [];
   return (
     <div className="relative">
       <div className="flex items-center gap-1 bg-muted/50 rounded-md px-2 py-1">
@@ -35,12 +27,12 @@ export function SearchBar() {
       </div>
       {open && results.length > 0 && (
         <div className="absolute right-0 top-full mt-1 w-56 bg-popover border rounded-md shadow-lg z-50 py-1">
-          {results.map((r) => (
+          {results.map((app) => (
             <button
-              key={r.to}
-              onMouseDown={(e) => { e.preventDefault(); nav({ to: r.to }); setQ(""); setOpen(false); }}
+              key={app.to}
+              onMouseDown={(e) => { e.preventDefault(); nav({ to: app.to }); setQ(""); setOpen(false); }}
               className="w-full text-left px-3 py-1.5 text-sm hover:bg-muted"
-            >{r.label}</button>
+            >{app.label}</button>
           ))}
         </div>
       )}

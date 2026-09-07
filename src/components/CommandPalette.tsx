@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Search, CornerDownLeft } from "lucide-react";
-import { APPS } from "@/lib/app-directory";
+import { appsForAccount } from "@/lib/app-directory";
+import { useAuth } from "@/lib/auth-context";
 import { getFrequent } from "@/lib/recent-activity";
 
 /** Ctrl / ⌘ + K でどこからでも機能を検索して移動できるパレット */
 export function CommandPalette() {
+  const { accountKind } = useAuth();
+  const apps = appsForAccount(accountKind);
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [active, setActive] = useState(0);
@@ -30,10 +33,10 @@ export function CommandPalette() {
     const term = q.trim().toLowerCase();
     if (!term) {
       const freq = getFrequent(6).map((f) => f.to);
-      const top = APPS.filter((a) => freq.includes(a.to));
-      return top.length ? top : APPS.slice(0, 6);
+      const top = apps.filter((a) => freq.includes(a.to));
+      return top.length ? top : apps.slice(0, 6);
     }
-    return APPS.filter(
+    return apps.filter(
       (a) => a.label.toLowerCase().includes(term) || a.keywords.toLowerCase().includes(term),
     ).slice(0, 10);
   }, [q, open]);

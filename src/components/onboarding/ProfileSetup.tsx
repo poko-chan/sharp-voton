@@ -47,7 +47,7 @@ export function ProfileSetup({ onDone }: { onDone: () => void }) {
     try {
       const uname = username.trim();
       const dname = displayName.trim() || uname;
-      if (!/^[A-Za-z0-9_.\-]{2,32}$/.test(uname)) {
+      if (!/^[A-Za-z0-9_.-]{2,32}$/.test(uname)) {
         throw new Error("ユーザー名は2〜32文字の英数字・_.- のみです");
       }
       if (dname.length > 40) throw new Error("表示名は40文字以内で入力してください");

@@ -5,7 +5,6 @@ type Status = "unavailable" | "downloadable" | "downloading" | "available";
 
 declare global {
   // Chrome 138+
-  // eslint-disable-next-line no-var
   var LanguageModel: any;
   interface Window {
     ai?: any;
@@ -195,7 +194,7 @@ export function extractJSON<T = unknown>(raw: string): T {
   const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
   if (fence) s = fence[1].trim();
   // 最初の { または [ から末尾の対応する括弧まで切り出す
-  const start = s.search(/[\[{]/);
+  const start = s.search(/[[]{/);
   if (start === -1) throw new Error("JSON が見つかりません");
   const open = s[start];
   const close = open === "{" ? "}" : "]";

@@ -77,7 +77,7 @@ export function OrgPosts({ orgId, ctx }: { orgId: string; ctx: any }) {
     const urls: string[] = [];
     for (const f of Array.from(files)) {
       if (f.size > 25 * 1024 * 1024) { toast.error(`${f.name} は25MBを超えています`); continue; }
-      const path = `${user!.id}/org/${orgId}/${crypto.randomUUID()}-${f.name.replace(/[^\w.\-]/g, "_")}`;
+      const path = `${user!.id}/org/${orgId}/${crypto.randomUUID()}-${f.name.replace(/[^\w.-]/g, "_")}`;
       const { error } = await supabase.storage.from("classroom-files").upload(path, f, { upsert: false });
       if (error) { toast.error(error.message); continue; }
       const { signedUrl } = await import("@/lib/storage-url");

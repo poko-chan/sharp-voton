@@ -265,6 +265,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         { to: "/announcements", label: "お知らせ", icon: Megaphone },
         { to: "/help", label: "ヘルプ", icon: HelpCircle },
       ];
+  const mobileNav = isParent
+    ? parentNav.slice(0, 4).map((n) => ({ ...n, labelKey: null }))
+    : BOTTOM_NAV.map((n) => ({ ...n, label: null }));
 
   const renderLabel = (n: any) => n.adminLabel || n.override || t(n.labelKey);
   const renderIcon = (n: any, cls = "h-4 w-4") =>
@@ -475,7 +478,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {isMobile && (
           <nav className="fixed bottom-0 left-0 right-0 z-40 border-t liquid-bar safe-bottom">
             <div className="flex items-stretch justify-around gap-0.5 px-1.5 py-1.5">
-              {BOTTOM_NAV.map((n) => {
+              {mobileNav.map((n) => {
                 const active = path === n.to || path.startsWith(n.to + "/");
                 return (
                   <Link
@@ -486,7 +489,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     }`}
                   >
                     <n.icon className="h-5 w-5" />
-                    <span className="truncate max-w-full px-1">{t(n.labelKey)}</span>
+                    <span className="truncate max-w-full px-1">{n.label ?? t(n.labelKey)}</span>
                   </Link>
                 );
               })}

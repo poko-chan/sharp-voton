@@ -49,7 +49,7 @@ function PackDashboard() {
     const list = ses ?? [];
     // makron_sessions.user_id は auth.users を参照するため profiles を別クエリで結合
     const uids = Array.from(new Set(list.map((r: any) => r.user_id).filter(Boolean)));
-    let profMap: Record<string, any> = {};
+    const profMap: Record<string, any> = {};
     if (uids.length > 0) {
       const profs = await fetchPublicProfiles(uids as string[]);
       (profs ?? []).forEach((p: any) => { profMap[p.id] = p; });

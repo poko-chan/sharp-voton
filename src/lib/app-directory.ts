@@ -15,6 +15,7 @@ export type AppEntry = {
 
 /** ランチャー・コマンドパレット・履歴で共有するサービス一覧 */
 export const APPS: AppEntry[] = [
+  { to: "/parent", label: "保護者ダッシュボード", keywords: "parent 保護者", icon: Users, group: "その他" },
   { to: "/dashboard", label: "ダッシュボード", keywords: "dashboard home ホーム", icon: LayoutDashboard, group: "学習" },
   { to: "/timer", label: "タイマー", keywords: "timer pomodoro ポモドーロ 集中", icon: Timer, group: "学習" },
   { to: "/study", label: "勉強記録", keywords: "study log 記録", icon: BookOpen, group: "記録・分析" },
@@ -45,6 +46,15 @@ export const APPS: AppEntry[] = [
   { to: "/settings", label: "設定", keywords: "settings 設定 アカウント", icon: Settings, group: "その他" },
   { to: "/help", label: "ヘルプ", keywords: "help 使い方 サポート", icon: HelpCircle, group: "その他" },
 ];
+
+const PARENT_APPS = new Set(["/parent", "/settings", "/notifications", "/announcements", "/help"]);
+const ORG_APPS = new Set(["/organizations", "/settings", "/notifications", "/announcements", "/help"]);
+
+export function appsForAccount(accountKind?: string | null) {
+  if (accountKind === "parent") return APPS.filter((app) => PARENT_APPS.has(app.to));
+  if (accountKind === "org") return APPS.filter((app) => ORG_APPS.has(app.to));
+  return APPS.filter((app) => app.to !== "/parent");
+}
 
 export function findApp(path: string): AppEntry | undefined {
   return APPS.filter((a) => path === a.to || path.startsWith(a.to + "/"))

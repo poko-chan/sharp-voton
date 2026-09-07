@@ -2,11 +2,14 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Grid3X3, Star, Clock } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { APPS } from "@/lib/app-directory";
+import { appsForAccount, type AppEntry } from "@/lib/app-directory";
+import { useAuth } from "@/lib/auth-context";
 import { getPinned, getRecents, togglePinned } from "@/lib/recent-activity";
 
 /** Google / Microsoft のようなアプリ切り替えランチャー */
 export function AppLauncher() {
+  const { accountKind } = useAuth();
+  const apps = appsForAccount(accountKind);
   const [open, setOpen] = useState(false);
   const [pinned, setPinned] = useState<string[]>([]);
   const [recents, setRecents] = useState<string[]>([]);
@@ -17,9 +20,9 @@ export function AppLauncher() {
     setRecents(getRecents().slice(0, 5).map((r) => r.to));
   }, [open]);
 
-  const pinnedApps = APPS.filter((a) => pinned.includes(a.to));
-  const recentApps = APPS.filter((a) => recents.includes(a.to) && !pinned.includes(a.to));
-  const groups = Array.from(new Set(APPS.map((a) => a.group)));
+  const pinnedApps = apps.filter((a) => pinned.includes(a.to));
+  const recentApps = apps.filter((a) => recents.includes(a.to) && !pinned.includes(a.to));
+  const groups = Array.from(new Set(apps.map((a) => a.group)));
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -45,7 +48,7 @@ export function AppLauncher() {
         )}
         {groups.map((g) => (
           <Section key={g} title={g}>
-            <Grid apps={APPS.filter((a) => a.group === g)} pinned={pinned} onPin={setPinned} onGo={() => setOpen(false)} />
+            <Grid apps={apps.filter((a) => a.group === g)} pinned={pinned} onPin={setPinned} onGo={() => setOpen(false)} />
           </Section>
         ))}
         <div className="pt-1 text-[11px] text-muted-foreground">
@@ -71,7 +74,7 @@ function Section({ title, icon, children }: { title: string; icon?: React.ReactN
 function Grid({
   apps, pinned, onPin, onGo,
 }: {
-  apps: typeof APPS;
+  apps: AppEntry[];
   pinned: string[];
   onPin: (v: string[]) => void;
   onGo: () => void;

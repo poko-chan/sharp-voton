@@ -145,7 +145,7 @@ export async function findMaterial(name: string): Promise<{ id: string; title: s
 export async function applyAiAction(action: AiAction, userId: string): Promise<string> {
   if (action.kind === "add_study_log") {
     const subs = await fetchSubjectNames(userId);
-    let subject = subs.find((s) => s.name === action.subject) ?? subs.find((s) => s.name.includes(action.subject));
+    const subject = subs.find((s) => s.name === action.subject) ?? subs.find((s) => s.name.includes(action.subject));
     if (!subject) {
       throw new Error("登録済みの教科を選択してください");
     }
