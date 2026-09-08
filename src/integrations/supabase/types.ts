@@ -7791,6 +7791,21 @@ export type Database = {
           username: string
         }[]
       }
+      org_monitor_overview: {
+        Args: { _org: string }
+        Returns: {
+          absents_30d: number
+          display_name: string
+          health_30d: number
+          last_studied: string
+          lates_30d: number
+          minutes_30d: number
+          minutes_7d: number
+          open_flags: number
+          role: Database["public"]["Enums"]["org_role"]
+          user_id: string
+        }[]
+      }
       org_notify_members: {
         Args: {
           _app: string
