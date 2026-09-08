@@ -65,6 +65,30 @@ const QUICK_PROMPTS = [
   { title: "学習を記録する", body: "今日、数学を30分勉強したので記録して" },
 ];
 
+const getDraftKey = (threadId: string | null) => `ai.tutor.draft.${threadId ?? "new"}`;
+
+function loadDraft(threadId: string | null): string {
+  if (typeof window === "undefined") return "";
+  try {
+    const raw = window.localStorage.getItem(getDraftKey(threadId));
+    return raw ? JSON.parse(raw) as string : "";
+  } catch {
+    return "";
+  }
+}
+
+function saveDraft(threadId: string | null, value: string) {
+  if (typeof window === "undefined") return;
+  try {
+    const key = getDraftKey(threadId);
+    if (!value.trim()) {
+      window.localStorage.removeItem(key);
+      return;
+    }
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch { /* noop */ }
+}
+
 const answerSystem = (displayName: string, prefs: ChatPrefs, ctx: any | null, web: WebResult[] = []) =>
   `あなたは${displayName}さん専属の学習アシスタントです。
 
@@ -220,7 +244,7 @@ function TutorPage() {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [msgs, setMsgs] = useState<Msg[]>([]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(() => loadDraft(null));
   const [pending, setPending] = useState<Attachment[]>([]);
   const [busy, setBusy] = useState(false);
   const [streaming, setStreaming] = useState("");
@@ -238,8 +262,11 @@ function TutorPage() {
   const [prefs, setPrefs] = useState<ChatPrefs>(() => loadPrefs());
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [betaOpen, setBetaOpen] = useState(true);
+  const [betaOpen, setBetaOpen] = useState(false);
   const [threadQuery, setThreadQuery] = useState("");
+  const [messageQuery, setMessageQuery] = useState("");
+  const [summaryText, setSummaryText] = useState<string | null>(null);
+  const [pinnedNote, setPinnedNote] = useState<string | null>(null);
   const [atBottom, setAtBottom] = useState(true);
 
   // 「…」メニューの機能（特別な作業）と、右のキャンバス
@@ -272,6 +299,11 @@ function TutorPage() {
   const cancelRef = useRef(false);
 
   useEffect(() => { activeIdRef.current = activeId; }, [activeId]);
+  useEffect(() => {
+    const draft = loadDraft(activeId);
+    if (draft && !input.trim()) setInput(draft);
+  }, [activeId]);
+  useEffect(() => { saveDraft(activeId, input); }, [activeId, input]);
   useEffect(() => { savePrefs(prefs); }, [prefs]);
   useEffect(() => { isAiUsable().then(setCanAi); }, []);
   useEffect(() => {
@@ -286,8 +318,9 @@ function TutorPage() {
     else setSidebarOpen(window.innerWidth >= 1024);
   }, []);
   const toggleSidebar = () => setSidebarOpen((v) => {
-    try { window.localStorage.setItem("ai.tutor.sidebar", v ? "0" : "1"); } catch { /* noop */ }
-    return !v;
+    const next = !v;
+    try { window.localStorage.setItem("ai.tutor.sidebar", next ? "1" : "0"); } catch { /* noop */ }
+    return next;
   });
 
   // Lite は「思考プロセス」を一切残さない（最速で答えるモード）
@@ -354,9 +387,11 @@ function TutorPage() {
     if (busy) return;
     try {
       const row = (await createFn({ data: {} })) as Thread;
+      saveDraft(activeId, input);
       setThreads((t) => [row, ...t]);
       setActiveId(row.id);
       setMsgs([]);
+      setInput(loadDraft(row.id));
       setFlowError(null);
       setTimeout(() => inputRef.current?.focus(), 0);
     } catch (e: any) { toast.error(e.message); }
@@ -597,7 +632,7 @@ function TutorPage() {
       insertedMessageId = insMsg.id;
       const nextMsgs = [...msgs, insMsg];
       if (activeIdRef.current === tid) setMsgs(nextMsgs);
-      setInput(""); setPending([]); inputWasCleared = true;
+      setInput(""); saveDraft(tid, ""); setPending([]); inputWasCleared = true;
 
       if (looksLikeActionRequest(userMsg.content)) {
         addStep("登録内容を確認しています", "内容を確認したあと、許可した場合だけ保存します。");
@@ -683,13 +718,18 @@ function TutorPage() {
   };
 
   const doDelete = async () => {
-    if (!deleteTarget) return;
+    if (busy || !deleteTarget) return;
     try {
       await deleteFn({ data: { id: deleteTarget.id } });
       setThreads((t) => t.filter((x) => x.id !== deleteTarget.id));
-      if (activeId === deleteTarget.id) { setActiveId(null); setMsgs([]); }
+      if (activeId === deleteTarget.id) {
+        setActiveId(null);
+        setMsgs([]);
+        setSummaryText(null);
+        setPinnedNote(null);
+      }
       toast.success("チャットを削除しました");
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(e?.message ?? "削除に失敗しました"); }
     finally { setDeleteTarget(null); }
   };
 
@@ -698,6 +738,11 @@ function TutorPage() {
     [threads, threadQuery],
   );
 
+  const filteredMessages = useMemo(() => {
+    if (!messageQuery.trim()) return msgs;
+    const q = messageQuery.toLowerCase();
+    return msgs.filter((m) => m.content.toLowerCase().includes(q) || (m.attachments ?? []).some((a) => a.name.toLowerCase().includes(q)));
+  }, [messageQuery, msgs]);
 
   const activeTitle = threads.find((t) => t.id === activeId)?.title ?? "新しいチャット";
 
@@ -711,11 +756,11 @@ function TutorPage() {
       >
         <div className="space-y-1.5 p-3">
           <div className="flex items-center gap-1">
-            <button onClick={newChat}
+            <button type="button" onClick={newChat}
               className="flex h-9 flex-1 items-center gap-2.5 rounded-lg border bg-background px-3 text-sm font-medium shadow-sm transition hover:bg-muted/70">
               <Plus className="h-4 w-4" />新しいチャット
             </button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={toggleSidebar} title="サイドバーを閉じる">
+            <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={toggleSidebar} title="サイドバーを閉じる">
               <PanelLeftClose className="h-4 w-4" />
             </Button>
           </div>
@@ -733,7 +778,13 @@ function TutorPage() {
               className={`group flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition ${
                 activeId === t.id ? "bg-background font-medium text-foreground shadow-sm" : "text-muted-foreground hover:bg-background/60 hover:text-foreground"
               }`}
-              onClick={() => { if (!busy) { setActiveId(t.id); setFlowError(null); } }}
+              onClick={() => {
+                if (busy) return;
+                saveDraft(activeId, input);
+                setActiveId(t.id);
+                setInput(loadDraft(t.id));
+                setFlowError(null);
+              }}
             >
               <MessageSquare className="h-3.5 w-3.5 shrink-0 opacity-60" />
               {renamingId === t.id ? (
@@ -744,11 +795,11 @@ function TutorPage() {
                   className="h-6 text-xs" onClick={(e) => e.stopPropagation()}
                 />
               ) : <span className="flex-1 truncate">{t.title}</span>}
-              <button className="rounded p-1 opacity-0 transition group-hover:opacity-100 hover:bg-background"
+              <button type="button" className="rounded p-1 opacity-0 transition group-hover:opacity-100 hover:bg-background"
                 onClick={(e) => { e.stopPropagation(); setRenamingId(t.id); setRenameTitle(t.title); }} title="名前を変える">
                 <Pencil className="h-3 w-3" />
               </button>
-              <button className="rounded p-1 text-destructive opacity-0 transition group-hover:opacity-100 hover:bg-destructive/15"
+              <button type="button" className="rounded p-1 text-destructive opacity-0 transition group-hover:opacity-100 hover:bg-destructive/15"
                 onClick={(e) => { e.stopPropagation(); setDeleteTarget(t); }} title="削除">
                 <Trash2 className="h-3 w-3" />
               </button>
@@ -756,7 +807,7 @@ function TutorPage() {
           ))}
         </div>
         <div className="p-2">
-          <button className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-background/60 hover:text-foreground" onClick={() => setSettingsOpen(true)}>
+          <button type="button" className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-background/60 hover:text-foreground" onClick={() => setSettingsOpen(true)}>
             <SlidersHorizontal className="h-4 w-4" />チャットの設定
           </button>
         </div>
@@ -766,7 +817,7 @@ function TutorPage() {
       <main className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center gap-2 px-3 py-2.5">
           {!sidebarOpen && (
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleSidebar} title="サイドバーを開く">
+            <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={toggleSidebar} title="サイドバーを開く">
               <PanelLeft className="h-4 w-4" />
             </Button>
           )}
@@ -780,11 +831,16 @@ function TutorPage() {
           <div className="ml-auto flex items-center gap-1">
             <AiStatusBadge />
             {msgs.length > 0 && (
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={exportChat} title="この会話を書き出す">
-                <Download className="h-4 w-4" />
-              </Button>
+              <>
+                <Button type="button" variant="ghost" size="sm" className="h-8 px-2 text-[11px]" onClick={() => void summarizeThread()} title="この会話を要約する">
+                  要約
+                </Button>
+                <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={exportChat} title="この会話を書き出す">
+                  <Download className="h-4 w-4" />
+                </Button>
+              </>
             )}
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSettingsOpen(true)} title="設定">
+            <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSettingsOpen(true)} title="設定">
               <Settings2 className="h-4 w-4" />
             </Button>
           </div>
@@ -822,7 +878,7 @@ function TutorPage() {
                 </p>
                 <div className="mt-8 grid w-full gap-3 text-left sm:grid-cols-2">
                   {QUICK_PROMPTS.map((p) => (
-                    <button key={p.title} onClick={() => { setInput(p.body); inputRef.current?.focus(); }}
+                    <button type="button" key={p.title} onClick={() => { setInput(p.body); inputRef.current?.focus(); }}
                       className="group rounded-2xl border px-4 py-3.5 transition hover:bg-muted/60">
                       <span className="block text-sm font-medium">{p.title}</span>
                       <span className="mt-0.5 block text-xs text-muted-foreground transition group-hover:text-foreground/70">{p.body}</span>
@@ -832,8 +888,32 @@ function TutorPage() {
               </div>
             )}
 
+            {summaryText && !busy && (
+              <div className="mb-5 rounded-2xl border border-primary/25 bg-primary/[0.04] p-3">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-primary">会話の要点</p>
+                  <button type="button" onClick={() => setSummaryText(null)} className="text-[11px] text-muted-foreground underline underline-offset-2">閉じる</button>
+                </div>
+                <div className="prose prose-sm max-w-none dark:prose-invert">
+                  <ReactMarkdown>{summaryText}</ReactMarkdown>
+                </div>
+                {pinnedNote && <p className="mt-3 rounded-lg bg-background/60 p-2 text-[11px] text-muted-foreground">固定メモ: {pinnedNote}</p>}
+              </div>
+            )}
+
+            <div className="mb-4 flex items-center gap-2 rounded-2xl border bg-muted/50 px-2.5 py-2">
+              <Search className="h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                value={messageQuery}
+                onChange={(e) => setMessageQuery(e.target.value)}
+                placeholder="メッセージ内を検索"
+                className="w-full bg-transparent text-xs outline-none placeholder:text-muted-foreground"
+              />
+              {messageQuery && <button type="button" onClick={() => setMessageQuery("")} className="text-[10px] text-muted-foreground">クリア</button>}
+            </div>
+
             <div className="space-y-6">
-              {msgs.map((m, i) => {
+              {filteredMessages.map((m, i) => {
                 const mine = m.role === "user";
                 const isLastAssistant = !mine && i === msgs.length - 1;
                 return (
@@ -855,13 +935,13 @@ function TutorPage() {
                       <div className={`mt-1 flex items-center gap-1 opacity-0 transition group-hover:opacity-100 ${mine ? "justify-end" : ""}`}>
                         <CopyButton text={m.content} />
                         {mine && (
-                          <button className="rounded-md px-1.5 py-1 text-[11px] text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                          <button type="button" className="rounded-md px-1.5 py-1 text-[11px] text-muted-foreground transition hover:bg-muted hover:text-foreground"
                             onClick={() => { setInput(m.content); inputRef.current?.focus(); }}>
                             編集して送り直す
                           </button>
                         )}
                         {isLastAssistant && !busy && (
-                          <button className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                          <button type="button" className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-muted-foreground transition hover:bg-muted hover:text-foreground"
                             onClick={() => void regenerate()}>
                             <RotateCcw className="h-3 w-3" />作り直す
                           </button>
@@ -917,7 +997,7 @@ function TutorPage() {
           </div>
 
           {!atBottom && (
-            <button onClick={() => endRef.current?.scrollIntoView({ behavior: "smooth" })}
+            <button type="button" onClick={() => endRef.current?.scrollIntoView({ behavior: "smooth" })}
               className="sticky bottom-4 left-1/2 z-10 -ml-4 grid h-8 w-8 place-items-center rounded-full border bg-card shadow-md transition hover:bg-muted"
               title="最新へ">
               <ArrowDown className="h-4 w-4" />
@@ -935,7 +1015,7 @@ function TutorPage() {
                     {a.type.startsWith("image/")
                       ? <img src={a.url} className="h-16 w-16 rounded-lg object-cover" />
                       : <div className="grid h-16 place-items-center rounded-lg bg-muted px-2 text-xs">{a.name}</div>}
-                    <button onClick={() => setPending(pending.filter((_, j) => j !== i))}
+                    <button type="button" onClick={() => setPending(pending.filter((_, j) => j !== i))}
                       className="absolute -right-1 -top-1 rounded-full bg-destructive p-0.5 text-destructive-foreground">
                       <X className="h-3 w-3" />
                     </button>
@@ -978,6 +1058,20 @@ function TutorPage() {
                 <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:text-foreground" disabled={uploading} onClick={() => fileRef.current?.click()} title="ファイルを添付">
                   {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
                 </Button>
+
+                {input.trim() && (
+                  <button
+                    type="button"
+                    className="rounded-full border px-2 py-1 text-[10px] text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                    onClick={() => {
+                      setInput("");
+                      saveDraft(activeId, "");
+                    }}
+                    title="下書きを消す"
+                  >
+                    下書き削除
+                  </button>
+                )}
 
                 {/* 品質（Flash / Think / Pro） */}
                 <div className="flex shrink-0 items-center rounded-full bg-background p-0.5 shadow-sm">
@@ -1088,8 +1182,8 @@ function TutorPage() {
             className="min-h-[110px] text-sm"
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setDeepSites(""); setDeepOpen(false); }}>サイト指定なし</Button>
-            <Button onClick={() => setDeepOpen(false)}>この設定で調べる</Button>
+            <Button type="button" variant="outline" onClick={() => { setDeepSites(""); setDeepOpen(false); }}>サイト指定なし</Button>
+            <Button type="button" onClick={() => setDeepOpen(false)}>この設定で調べる</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1118,7 +1212,7 @@ function TutorPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>キャンセル</AlertDialogCancel>
-            <AlertDialogAction onClick={(e) => { e.preventDefault(); doDelete(); }}
+            <AlertDialogAction type="button" onClick={(e) => { e.preventDefault(); void doDelete(); }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90">削除する</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
