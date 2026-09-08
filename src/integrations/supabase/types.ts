@@ -1,7668 +1,7676 @@
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5";
-  };
+    PostgrestVersion: "14.5"
+  }
   public: {
     Tables: {
       admin_audit_log: {
         Row: {
-          action: string;
-          admin_id: string;
-          created_at: string;
-          details: Json | null;
-          id: string;
-          target_user: string | null;
-        };
+          action: string
+          admin_id: string
+          created_at: string
+          details: Json | null
+          id: string
+          target_user: string | null
+        }
         Insert: {
-          action: string;
-          admin_id: string;
-          created_at?: string;
-          details?: Json | null;
-          id?: string;
-          target_user?: string | null;
-        };
+          action: string
+          admin_id: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_user?: string | null
+        }
         Update: {
-          action?: string;
-          admin_id?: string;
-          created_at?: string;
-          details?: Json | null;
-          id?: string;
-          target_user?: string | null;
-        };
-        Relationships: [];
-      };
+          action?: string
+          admin_id?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_user?: string | null
+        }
+        Relationships: []
+      }
       admin_nav_config: {
         Row: {
-          icon_url: string | null;
-          in_quickbar: boolean;
-          key: string;
-          label: string | null;
-          order_idx: number;
-          updated_at: string;
-          visible: boolean;
-        };
+          icon_url: string | null
+          in_quickbar: boolean
+          key: string
+          label: string | null
+          order_idx: number
+          updated_at: string
+          visible: boolean
+        }
         Insert: {
-          icon_url?: string | null;
-          in_quickbar?: boolean;
-          key: string;
-          label?: string | null;
-          order_idx?: number;
-          updated_at?: string;
-          visible?: boolean;
-        };
+          icon_url?: string | null
+          in_quickbar?: boolean
+          key: string
+          label?: string | null
+          order_idx?: number
+          updated_at?: string
+          visible?: boolean
+        }
         Update: {
-          icon_url?: string | null;
-          in_quickbar?: boolean;
-          key?: string;
-          label?: string | null;
-          order_idx?: number;
-          updated_at?: string;
-          visible?: boolean;
-        };
-        Relationships: [];
-      };
+          icon_url?: string | null
+          in_quickbar?: boolean
+          key?: string
+          label?: string | null
+          order_idx?: number
+          updated_at?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
       admin_request_categories: {
         Row: {
-          created_at: string;
-          description: string | null;
-          id: string;
-          is_active: boolean;
-          name: string;
-          sort_order: number;
-        };
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+        }
         Insert: {
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          is_active?: boolean;
-          name: string;
-          sort_order?: number;
-        };
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+        }
         Update: {
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          is_active?: boolean;
-          name?: string;
-          sort_order?: number;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       admin_request_messages: {
         Row: {
-          content: string;
-          created_at: string;
-          id: string;
-          is_admin: boolean;
-          sender_id: string;
-          thread_id: string;
-        };
+          content: string
+          created_at: string
+          id: string
+          is_admin: boolean
+          sender_id: string
+          thread_id: string
+        }
         Insert: {
-          content: string;
-          created_at?: string;
-          id?: string;
-          is_admin?: boolean;
-          sender_id: string;
-          thread_id: string;
-        };
+          content: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          sender_id: string
+          thread_id: string
+        }
         Update: {
-          content?: string;
-          created_at?: string;
-          id?: string;
-          is_admin?: boolean;
-          sender_id?: string;
-          thread_id?: string;
-        };
+          content?: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          sender_id?: string
+          thread_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "admin_request_messages_thread_id_fkey";
-            columns: ["thread_id"];
-            isOneToOne: false;
-            referencedRelation: "admin_request_threads";
-            referencedColumns: ["id"];
+            foreignKeyName: "admin_request_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "admin_request_threads"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       admin_request_threads: {
         Row: {
-          category_id: string | null;
-          created_at: string;
-          id: string;
-          last_message_at: string;
-          status: string;
-          title: string;
-          user_id: string;
-        };
+          category_id: string | null
+          created_at: string
+          id: string
+          last_message_at: string
+          status: string
+          title: string
+          user_id: string
+        }
         Insert: {
-          category_id?: string | null;
-          created_at?: string;
-          id?: string;
-          last_message_at?: string;
-          status?: string;
-          title: string;
-          user_id: string;
-        };
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          status?: string
+          title: string
+          user_id: string
+        }
         Update: {
-          category_id?: string | null;
-          created_at?: string;
-          id?: string;
-          last_message_at?: string;
-          status?: string;
-          title?: string;
-          user_id?: string;
-        };
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          status?: string
+          title?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "admin_request_threads_category_id_fkey";
-            columns: ["category_id"];
-            isOneToOne: false;
-            referencedRelation: "admin_request_categories";
-            referencedColumns: ["id"];
+            foreignKeyName: "admin_request_threads_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "admin_request_categories"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       ai_chats: {
         Row: {
-          content: string;
-          created_at: string;
-          id: string;
-          role: string;
-          user_id: string;
-        };
+          content: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
         Insert: {
-          content: string;
-          created_at?: string;
-          id?: string;
-          role: string;
-          user_id: string;
-        };
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
         Update: {
-          content?: string;
-          created_at?: string;
-          id?: string;
-          role?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       announcements: {
         Row: {
-          body: string;
-          created_at: string;
-          created_by: string | null;
-          id: string;
-          publish_at: string;
-          show_on_login: boolean;
-          tag: string;
-          title: string;
-          updated_at: string;
-        };
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          publish_at: string
+          show_on_login: boolean
+          tag: string
+          title: string
+          updated_at: string
+        }
         Insert: {
-          body: string;
-          created_at?: string;
-          created_by?: string | null;
-          id?: string;
-          publish_at?: string;
-          show_on_login?: boolean;
-          tag?: string;
-          title: string;
-          updated_at?: string;
-        };
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          publish_at?: string
+          show_on_login?: boolean
+          tag?: string
+          title: string
+          updated_at?: string
+        }
         Update: {
-          body?: string;
-          created_at?: string;
-          created_by?: string | null;
-          id?: string;
-          publish_at?: string;
-          show_on_login?: boolean;
-          tag?: string;
-          title?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          publish_at?: string
+          show_on_login?: boolean
+          tag?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       anonymous_reflections: {
         Row: {
-          author_id: string;
-          content: string;
-          created_at: string;
-          id: string;
-          likes_count: number;
-          mood: string | null;
-        };
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          likes_count: number
+          mood: string | null
+        }
         Insert: {
-          author_id: string;
-          content: string;
-          created_at?: string;
-          id?: string;
-          likes_count?: number;
-          mood?: string | null;
-        };
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          likes_count?: number
+          mood?: string | null
+        }
         Update: {
-          author_id?: string;
-          content?: string;
-          created_at?: string;
-          id?: string;
-          likes_count?: number;
-          mood?: string | null;
-        };
-        Relationships: [];
-      };
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          likes_count?: number
+          mood?: string | null
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
-          app_version: string;
-          id: number;
-          login_overlay_enabled: boolean;
-          maintenance_message: string | null;
-          maintenance_mode: boolean;
-          maintenance_until: string | null;
-          makron_coin_per_correct: number;
-          makron_xp_per_correct: number;
-          updated_at: string;
-        };
+          app_version: string
+          id: number
+          login_overlay_enabled: boolean
+          maintenance_message: string | null
+          maintenance_mode: boolean
+          maintenance_until: string | null
+          makron_coin_per_correct: number
+          makron_xp_per_correct: number
+          updated_at: string
+        }
         Insert: {
-          app_version?: string;
-          id?: number;
-          login_overlay_enabled?: boolean;
-          maintenance_message?: string | null;
-          maintenance_mode?: boolean;
-          maintenance_until?: string | null;
-          makron_coin_per_correct?: number;
-          makron_xp_per_correct?: number;
-          updated_at?: string;
-        };
+          app_version?: string
+          id?: number
+          login_overlay_enabled?: boolean
+          maintenance_message?: string | null
+          maintenance_mode?: boolean
+          maintenance_until?: string | null
+          makron_coin_per_correct?: number
+          makron_xp_per_correct?: number
+          updated_at?: string
+        }
         Update: {
-          app_version?: string;
-          id?: number;
-          login_overlay_enabled?: boolean;
-          maintenance_message?: string | null;
-          maintenance_mode?: boolean;
-          maintenance_until?: string | null;
-          makron_coin_per_correct?: number;
-          makron_xp_per_correct?: number;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
+          app_version?: string
+          id?: number
+          login_overlay_enabled?: boolean
+          maintenance_message?: string | null
+          maintenance_mode?: boolean
+          maintenance_until?: string | null
+          makron_coin_per_correct?: number
+          makron_xp_per_correct?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       assignments: {
         Row: {
-          allowed_file_types: string[] | null;
-          attachments: Json;
-          class_id: string;
-          created_at: string;
-          created_by: string;
-          description: string | null;
-          due_at: string | null;
-          fixed_xp: number;
-          id: string;
-          kind: string;
-          max_points: number;
-          quiz_answer_key: Json | null;
-          quiz_questions: Json | null;
-          title: string;
-          updated_at: string;
-          xp_mode: string;
-        };
+          allowed_file_types: string[] | null
+          attachments: Json
+          class_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          due_at: string | null
+          fixed_xp: number
+          id: string
+          kind: string
+          max_points: number
+          quiz_answer_key: Json | null
+          quiz_questions: Json | null
+          title: string
+          updated_at: string
+          xp_mode: string
+        }
         Insert: {
-          allowed_file_types?: string[] | null;
-          attachments?: Json;
-          class_id: string;
-          created_at?: string;
-          created_by: string;
-          description?: string | null;
-          due_at?: string | null;
-          fixed_xp?: number;
-          id?: string;
-          kind?: string;
-          max_points?: number;
-          quiz_answer_key?: Json | null;
-          quiz_questions?: Json | null;
-          title: string;
-          updated_at?: string;
-          xp_mode?: string;
-        };
+          allowed_file_types?: string[] | null
+          attachments?: Json
+          class_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          due_at?: string | null
+          fixed_xp?: number
+          id?: string
+          kind?: string
+          max_points?: number
+          quiz_answer_key?: Json | null
+          quiz_questions?: Json | null
+          title: string
+          updated_at?: string
+          xp_mode?: string
+        }
         Update: {
-          allowed_file_types?: string[] | null;
-          attachments?: Json;
-          class_id?: string;
-          created_at?: string;
-          created_by?: string;
-          description?: string | null;
-          due_at?: string | null;
-          fixed_xp?: number;
-          id?: string;
-          kind?: string;
-          max_points?: number;
-          quiz_answer_key?: Json | null;
-          quiz_questions?: Json | null;
-          title?: string;
-          updated_at?: string;
-          xp_mode?: string;
-        };
+          allowed_file_types?: string[] | null
+          attachments?: Json
+          class_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          due_at?: string | null
+          fixed_xp?: number
+          id?: string
+          kind?: string
+          max_points?: number
+          quiz_answer_key?: Json | null
+          quiz_questions?: Json | null
+          title?: string
+          updated_at?: string
+          xp_mode?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "assignments_class_id_fkey";
-            columns: ["class_id"];
-            isOneToOne: false;
-            referencedRelation: "classes";
-            referencedColumns: ["id"];
+            foreignKeyName: "assignments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       badges: {
         Row: {
-          code: string;
-          created_at: string;
-          description: string | null;
-          icon: string | null;
-          id: string;
-          name: string;
-          rarity: string | null;
-        };
+          code: string
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          rarity: string | null
+        }
         Insert: {
-          code: string;
-          created_at?: string;
-          description?: string | null;
-          icon?: string | null;
-          id?: string;
-          name: string;
-          rarity?: string | null;
-        };
+          code: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          rarity?: string | null
+        }
         Update: {
-          code?: string;
-          created_at?: string;
-          description?: string | null;
-          icon?: string | null;
-          id?: string;
-          name?: string;
-          rarity?: string | null;
-        };
-        Relationships: [];
-      };
+          code?: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          rarity?: string | null
+        }
+        Relationships: []
+      }
       chat_group_members: {
         Row: {
-          group_id: string;
-          joined_at: string;
-          last_read_at: string;
-          user_id: string;
-        };
+          group_id: string
+          joined_at: string
+          last_read_at: string
+          user_id: string
+        }
         Insert: {
-          group_id: string;
-          joined_at?: string;
-          last_read_at?: string;
-          user_id: string;
-        };
+          group_id: string
+          joined_at?: string
+          last_read_at?: string
+          user_id: string
+        }
         Update: {
-          group_id?: string;
-          joined_at?: string;
-          last_read_at?: string;
-          user_id?: string;
-        };
+          group_id?: string
+          joined_at?: string
+          last_read_at?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "chat_group_members_group_id_fkey";
-            columns: ["group_id"];
-            isOneToOne: false;
-            referencedRelation: "chat_groups";
-            referencedColumns: ["id"];
+            foreignKeyName: "chat_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "chat_groups"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       chat_group_messages: {
         Row: {
-          content: string;
-          created_at: string;
-          deleted_at: string | null;
-          edited_at: string | null;
-          group_id: string;
-          id: string;
-          reply_to_id: string | null;
-          sender_id: string;
-        };
+          content: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          group_id: string
+          id: string
+          reply_to_id: string | null
+          sender_id: string
+        }
         Insert: {
-          content: string;
-          created_at?: string;
-          deleted_at?: string | null;
-          edited_at?: string | null;
-          group_id: string;
-          id?: string;
-          reply_to_id?: string | null;
-          sender_id: string;
-        };
+          content: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          group_id: string
+          id?: string
+          reply_to_id?: string | null
+          sender_id: string
+        }
         Update: {
-          content?: string;
-          created_at?: string;
-          deleted_at?: string | null;
-          edited_at?: string | null;
-          group_id?: string;
-          id?: string;
-          reply_to_id?: string | null;
-          sender_id?: string;
-        };
+          content?: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          group_id?: string
+          id?: string
+          reply_to_id?: string | null
+          sender_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "chat_group_messages_group_id_fkey";
-            columns: ["group_id"];
-            isOneToOne: false;
-            referencedRelation: "chat_groups";
-            referencedColumns: ["id"];
+            foreignKeyName: "chat_group_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "chat_groups"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "chat_group_messages_reply_to_id_fkey";
-            columns: ["reply_to_id"];
-            isOneToOne: false;
-            referencedRelation: "chat_group_messages";
-            referencedColumns: ["id"];
+            foreignKeyName: "chat_group_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "chat_group_messages"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       chat_groups: {
         Row: {
-          created_at: string;
-          created_by: string;
-          id: string;
-          name: string;
-        };
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+        }
         Insert: {
-          created_at?: string;
-          created_by: string;
-          id?: string;
-          name: string;
-        };
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+        }
         Update: {
-          created_at?: string;
-          created_by?: string;
-          id?: string;
-          name?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
-          content: string;
-          created_at: string;
-          deleted_at: string | null;
-          edited_at: string | null;
-          id: string;
-          read_at: string | null;
-          recipient_id: string;
-          reply_to_id: string | null;
-          sender_id: string;
-        };
+          content: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          id: string
+          read_at: string | null
+          recipient_id: string
+          reply_to_id: string | null
+          sender_id: string
+        }
         Insert: {
-          content: string;
-          created_at?: string;
-          deleted_at?: string | null;
-          edited_at?: string | null;
-          id?: string;
-          read_at?: string | null;
-          recipient_id: string;
-          reply_to_id?: string | null;
-          sender_id: string;
-        };
+          content: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          read_at?: string | null
+          recipient_id: string
+          reply_to_id?: string | null
+          sender_id: string
+        }
         Update: {
-          content?: string;
-          created_at?: string;
-          deleted_at?: string | null;
-          edited_at?: string | null;
-          id?: string;
-          read_at?: string | null;
-          recipient_id?: string;
-          reply_to_id?: string | null;
-          sender_id?: string;
-        };
+          content?: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          read_at?: string | null
+          recipient_id?: string
+          reply_to_id?: string | null
+          sender_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "chat_messages_reply_to_id_fkey";
-            columns: ["reply_to_id"];
-            isOneToOne: false;
-            referencedRelation: "chat_messages";
-            referencedColumns: ["id"];
+            foreignKeyName: "chat_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       chat_reactions: {
         Row: {
-          created_at: string;
-          emoji: string;
-          id: string;
-          message_id: string;
-          scope: string;
-          user_id: string;
-        };
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          scope: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          emoji: string;
-          id?: string;
-          message_id: string;
-          scope: string;
-          user_id: string;
-        };
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          scope: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          emoji?: string;
-          id?: string;
-          message_id?: string;
-          scope?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          scope?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       class_chat_messages: {
         Row: {
-          body: string;
-          class_id: string;
-          created_at: string;
-          deleted_at: string | null;
-          edited_at: string | null;
-          id: string;
-          sender_id: string;
-        };
+          body: string
+          class_id: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          id: string
+          sender_id: string
+        }
         Insert: {
-          body: string;
-          class_id: string;
-          created_at?: string;
-          deleted_at?: string | null;
-          edited_at?: string | null;
-          id?: string;
-          sender_id: string;
-        };
+          body: string
+          class_id: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          sender_id: string
+        }
         Update: {
-          body?: string;
-          class_id?: string;
-          created_at?: string;
-          deleted_at?: string | null;
-          edited_at?: string | null;
-          id?: string;
-          sender_id?: string;
-        };
-        Relationships: [];
-      };
+          body?: string
+          class_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
       class_events: {
         Row: {
-          class_id: string;
-          created_at: string;
-          created_by: string;
-          description: string | null;
-          event_date: string;
-          id: string;
-          title: string;
-        };
+          class_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          event_date: string
+          id: string
+          title: string
+        }
         Insert: {
-          class_id: string;
-          created_at?: string;
-          created_by: string;
-          description?: string | null;
-          event_date: string;
-          id?: string;
-          title: string;
-        };
+          class_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          event_date: string
+          id?: string
+          title: string
+        }
         Update: {
-          class_id?: string;
-          created_at?: string;
-          created_by?: string;
-          description?: string | null;
-          event_date?: string;
-          id?: string;
-          title?: string;
-        };
-        Relationships: [];
-      };
+          class_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          event_date?: string
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
       class_files: {
         Row: {
-          class_id: string;
-          created_at: string;
-          folder: string;
-          id: string;
-          mime: string | null;
-          name: string;
-          size: number | null;
-          uploader_id: string;
-          url: string;
-        };
+          class_id: string
+          created_at: string
+          folder: string
+          id: string
+          mime: string | null
+          name: string
+          size: number | null
+          uploader_id: string
+          url: string
+        }
         Insert: {
-          class_id: string;
-          created_at?: string;
-          folder?: string;
-          id?: string;
-          mime?: string | null;
-          name: string;
-          size?: number | null;
-          uploader_id: string;
-          url: string;
-        };
+          class_id: string
+          created_at?: string
+          folder?: string
+          id?: string
+          mime?: string | null
+          name: string
+          size?: number | null
+          uploader_id: string
+          url: string
+        }
         Update: {
-          class_id?: string;
-          created_at?: string;
-          folder?: string;
-          id?: string;
-          mime?: string | null;
-          name?: string;
-          size?: number | null;
-          uploader_id?: string;
-          url?: string;
-        };
-        Relationships: [];
-      };
+          class_id?: string
+          created_at?: string
+          folder?: string
+          id?: string
+          mime?: string | null
+          name?: string
+          size?: number | null
+          uploader_id?: string
+          url?: string
+        }
+        Relationships: []
+      }
       class_members: {
         Row: {
-          class_id: string;
-          id: string;
-          joined_at: string;
-          role: string;
-          user_id: string;
-        };
+          class_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
         Insert: {
-          class_id: string;
-          id?: string;
-          joined_at?: string;
-          role?: string;
-          user_id: string;
-        };
+          class_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
         Update: {
-          class_id?: string;
-          id?: string;
-          joined_at?: string;
-          role?: string;
-          user_id?: string;
-        };
+          class_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "class_members_class_id_fkey";
-            columns: ["class_id"];
-            isOneToOne: false;
-            referencedRelation: "classes";
-            referencedColumns: ["id"];
+            foreignKeyName: "class_members_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       class_mini_test_attempts: {
         Row: {
-          created_at: string;
-          finished_at: string | null;
-          id: string;
-          score: number | null;
-          test_id: string;
-          total: number | null;
-          user_id: string;
-        };
+          created_at: string
+          finished_at: string | null
+          id: string
+          score: number | null
+          test_id: string
+          total: number | null
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          finished_at?: string | null;
-          id?: string;
-          score?: number | null;
-          test_id: string;
-          total?: number | null;
-          user_id: string;
-        };
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          score?: number | null
+          test_id: string
+          total?: number | null
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          finished_at?: string | null;
-          id?: string;
-          score?: number | null;
-          test_id?: string;
-          total?: number | null;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          score?: number | null
+          test_id?: string
+          total?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       class_mini_tests: {
         Row: {
-          class_id: string;
-          created_at: string;
-          created_by: string;
-          id: string;
-          question_ids: string[];
-          title: string;
-          unit_id: string | null;
-        };
+          class_id: string
+          created_at: string
+          created_by: string
+          id: string
+          question_ids: string[]
+          title: string
+          unit_id: string | null
+        }
         Insert: {
-          class_id: string;
-          created_at?: string;
-          created_by: string;
-          id?: string;
-          question_ids?: string[];
-          title: string;
-          unit_id?: string | null;
-        };
+          class_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          question_ids?: string[]
+          title: string
+          unit_id?: string | null
+        }
         Update: {
-          class_id?: string;
-          created_at?: string;
-          created_by?: string;
-          id?: string;
-          question_ids?: string[];
-          title?: string;
-          unit_id?: string | null;
-        };
-        Relationships: [];
-      };
+          class_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          question_ids?: string[]
+          title?: string
+          unit_id?: string | null
+        }
+        Relationships: []
+      }
       class_post_comments: {
         Row: {
-          author_id: string;
-          body: string;
-          class_id: string;
-          created_at: string;
-          id: string;
-          post_id: string;
-          private_to: string | null;
-        };
+          author_id: string
+          body: string
+          class_id: string
+          created_at: string
+          id: string
+          post_id: string
+          private_to: string | null
+        }
         Insert: {
-          author_id: string;
-          body: string;
-          class_id: string;
-          created_at?: string;
-          id?: string;
-          post_id: string;
-          private_to?: string | null;
-        };
+          author_id: string
+          body: string
+          class_id: string
+          created_at?: string
+          id?: string
+          post_id: string
+          private_to?: string | null
+        }
         Update: {
-          author_id?: string;
-          body?: string;
-          class_id?: string;
-          created_at?: string;
-          id?: string;
-          post_id?: string;
-          private_to?: string | null;
-        };
+          author_id?: string
+          body?: string
+          class_id?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          private_to?: string | null
+        }
         Relationships: [
           {
-            foreignKeyName: "class_post_comments_post_id_fkey";
-            columns: ["post_id"];
-            isOneToOne: false;
-            referencedRelation: "class_posts";
-            referencedColumns: ["id"];
+            foreignKeyName: "class_post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "class_posts"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       class_posts: {
         Row: {
-          attachments: Json;
-          author_id: string;
-          body: string;
-          class_id: string;
-          created_at: string;
-          id: string;
-          pinned: boolean;
-          title: string | null;
-          updated_at: string;
-        };
+          attachments: Json
+          author_id: string
+          body: string
+          class_id: string
+          created_at: string
+          id: string
+          pinned: boolean
+          title: string | null
+          updated_at: string
+        }
         Insert: {
-          attachments?: Json;
-          author_id: string;
-          body: string;
-          class_id: string;
-          created_at?: string;
-          id?: string;
-          pinned?: boolean;
-          title?: string | null;
-          updated_at?: string;
-        };
+          attachments?: Json
+          author_id: string
+          body: string
+          class_id: string
+          created_at?: string
+          id?: string
+          pinned?: boolean
+          title?: string | null
+          updated_at?: string
+        }
         Update: {
-          attachments?: Json;
-          author_id?: string;
-          body?: string;
-          class_id?: string;
-          created_at?: string;
-          id?: string;
-          pinned?: boolean;
-          title?: string | null;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
+          attachments?: Json
+          author_id?: string
+          body?: string
+          class_id?: string
+          created_at?: string
+          id?: string
+          pinned?: boolean
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       class_qa_answers: {
         Row: {
-          body: string;
-          created_at: string;
-          id: string;
-          question_id: string;
-          user_id: string;
-        };
+          body: string
+          created_at: string
+          id: string
+          question_id: string
+          user_id: string
+        }
         Insert: {
-          body: string;
-          created_at?: string;
-          id?: string;
-          question_id: string;
-          user_id: string;
-        };
+          body: string
+          created_at?: string
+          id?: string
+          question_id: string
+          user_id: string
+        }
         Update: {
-          body?: string;
-          created_at?: string;
-          id?: string;
-          question_id?: string;
-          user_id?: string;
-        };
+          body?: string
+          created_at?: string
+          id?: string
+          question_id?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "class_qa_answers_question_id_fkey";
-            columns: ["question_id"];
-            isOneToOne: false;
-            referencedRelation: "class_qa_questions";
-            referencedColumns: ["id"];
+            foreignKeyName: "class_qa_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "class_qa_questions"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       class_qa_questions: {
         Row: {
-          best_answer_id: string | null;
-          body: string | null;
-          class_id: string | null;
-          created_at: string;
-          id: string;
-          title: string;
-          user_id: string;
-        };
+          best_answer_id: string | null
+          body: string | null
+          class_id: string | null
+          created_at: string
+          id: string
+          title: string
+          user_id: string
+        }
         Insert: {
-          best_answer_id?: string | null;
-          body?: string | null;
-          class_id?: string | null;
-          created_at?: string;
-          id?: string;
-          title: string;
-          user_id: string;
-        };
+          best_answer_id?: string | null
+          body?: string | null
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          title: string
+          user_id: string
+        }
         Update: {
-          best_answer_id?: string | null;
-          body?: string | null;
-          class_id?: string | null;
-          created_at?: string;
-          id?: string;
-          title?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          best_answer_id?: string | null
+          body?: string | null
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       class_student_permissions: {
         Row: {
-          can_comment: boolean;
-          can_upload_files: boolean;
-          can_view_grades: boolean;
-          class_id: string;
-          id: string;
-          student_id: string;
-          updated_at: string;
-        };
+          can_comment: boolean
+          can_upload_files: boolean
+          can_view_grades: boolean
+          class_id: string
+          id: string
+          student_id: string
+          updated_at: string
+        }
         Insert: {
-          can_comment?: boolean;
-          can_upload_files?: boolean;
-          can_view_grades?: boolean;
-          class_id: string;
-          id?: string;
-          student_id: string;
-          updated_at?: string;
-        };
+          can_comment?: boolean
+          can_upload_files?: boolean
+          can_view_grades?: boolean
+          class_id: string
+          id?: string
+          student_id: string
+          updated_at?: string
+        }
         Update: {
-          can_comment?: boolean;
-          can_upload_files?: boolean;
-          can_view_grades?: boolean;
-          class_id?: string;
-          id?: string;
-          student_id?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
+          can_comment?: boolean
+          can_upload_files?: boolean
+          can_view_grades?: boolean
+          class_id?: string
+          id?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       classes: {
         Row: {
-          created_at: string;
-          description: string | null;
-          id: string;
-          invite_code: string;
-          name: string;
-          organization_id: string | null;
-          owner_id: string;
-          updated_at: string;
-        };
+          created_at: string
+          description: string | null
+          id: string
+          invite_code: string
+          name: string
+          organization_id: string | null
+          owner_id: string
+          updated_at: string
+        }
         Insert: {
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          invite_code: string;
-          name: string;
-          organization_id?: string | null;
-          owner_id: string;
-          updated_at?: string;
-        };
+          created_at?: string
+          description?: string | null
+          id?: string
+          invite_code: string
+          name: string
+          organization_id?: string | null
+          owner_id: string
+          updated_at?: string
+        }
         Update: {
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          invite_code?: string;
-          name?: string;
-          organization_id?: string | null;
-          owner_id?: string;
-          updated_at?: string;
-        };
+          created_at?: string
+          description?: string | null
+          id?: string
+          invite_code?: string
+          name?: string
+          organization_id?: string | null
+          owner_id?: string
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "classes_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "classes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       coedit_notes: {
         Row: {
-          collaborators: string[];
-          content: string;
-          created_at: string;
-          id: string;
-          owner_id: string;
-          title: string;
-          updated_at: string;
-        };
+          collaborators: string[]
+          content: string
+          created_at: string
+          id: string
+          owner_id: string
+          title: string
+          updated_at: string
+        }
         Insert: {
-          collaborators?: string[];
-          content?: string;
-          created_at?: string;
-          id?: string;
-          owner_id: string;
-          title?: string;
-          updated_at?: string;
-        };
+          collaborators?: string[]
+          content?: string
+          created_at?: string
+          id?: string
+          owner_id: string
+          title?: string
+          updated_at?: string
+        }
         Update: {
-          collaborators?: string[];
-          content?: string;
-          created_at?: string;
-          id?: string;
-          owner_id?: string;
-          title?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
+          collaborators?: string[]
+          content?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       coin_gift_limits: {
         Row: {
-          date: string;
-          gift_count: number;
-          total_sent: number;
-          user_id: string;
-        };
+          date: string
+          gift_count: number
+          total_sent: number
+          user_id: string
+        }
         Insert: {
-          date?: string;
-          gift_count?: number;
-          total_sent?: number;
-          user_id: string;
-        };
+          date?: string
+          gift_count?: number
+          total_sent?: number
+          user_id: string
+        }
         Update: {
-          date?: string;
-          gift_count?: number;
-          total_sent?: number;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          date?: string
+          gift_count?: number
+          total_sent?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       coin_gifts: {
         Row: {
-          amount: number;
-          created_at: string;
-          from_user: string;
-          id: string;
-          message: string | null;
-          to_user: string;
-        };
+          amount: number
+          created_at: string
+          from_user: string
+          id: string
+          message: string | null
+          to_user: string
+        }
         Insert: {
-          amount: number;
-          created_at?: string;
-          from_user: string;
-          id?: string;
-          message?: string | null;
-          to_user: string;
-        };
+          amount: number
+          created_at?: string
+          from_user: string
+          id?: string
+          message?: string | null
+          to_user: string
+        }
         Update: {
-          amount?: number;
-          created_at?: string;
-          from_user?: string;
-          id?: string;
-          message?: string | null;
-          to_user?: string;
-        };
-        Relationships: [];
-      };
+          amount?: number
+          created_at?: string
+          from_user?: string
+          id?: string
+          message?: string | null
+          to_user?: string
+        }
+        Relationships: []
+      }
       coin_purchases: {
         Row: {
-          created_at: string;
-          id: string;
-          item_id: string;
-          payload: Json;
-          price_paid: number;
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          item_id: string
+          payload: Json
+          price_paid: number
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          item_id: string;
-          payload?: Json;
-          price_paid: number;
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          item_id: string
+          payload?: Json
+          price_paid: number
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          item_id?: string;
-          payload?: Json;
-          price_paid?: number;
-          user_id?: string;
-        };
+          created_at?: string
+          id?: string
+          item_id?: string
+          payload?: Json
+          price_paid?: number
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "coin_purchases_item_id_fkey";
-            columns: ["item_id"];
-            isOneToOne: false;
-            referencedRelation: "coin_shop_items";
-            referencedColumns: ["id"];
+            foreignKeyName: "coin_purchases_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "coin_shop_items"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       coin_redemption_requests: {
         Row: {
-          admin_note: string | null;
-          created_at: string;
-          fulfilled_at: string | null;
-          fulfilled_by: string | null;
-          id: string;
-          item_code: string | null;
-          item_id: string;
-          item_name: string | null;
-          payload: Json | null;
-          price_paid: number;
-          status: string;
-          user_id: string;
-        };
+          admin_note: string | null
+          created_at: string
+          fulfilled_at: string | null
+          fulfilled_by: string | null
+          id: string
+          item_code: string | null
+          item_id: string
+          item_name: string | null
+          payload: Json | null
+          price_paid: number
+          status: string
+          user_id: string
+        }
         Insert: {
-          admin_note?: string | null;
-          created_at?: string;
-          fulfilled_at?: string | null;
-          fulfilled_by?: string | null;
-          id?: string;
-          item_code?: string | null;
-          item_id: string;
-          item_name?: string | null;
-          payload?: Json | null;
-          price_paid: number;
-          status?: string;
-          user_id: string;
-        };
+          admin_note?: string | null
+          created_at?: string
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          id?: string
+          item_code?: string | null
+          item_id: string
+          item_name?: string | null
+          payload?: Json | null
+          price_paid: number
+          status?: string
+          user_id: string
+        }
         Update: {
-          admin_note?: string | null;
-          created_at?: string;
-          fulfilled_at?: string | null;
-          fulfilled_by?: string | null;
-          id?: string;
-          item_code?: string | null;
-          item_id?: string;
-          item_name?: string | null;
-          payload?: Json | null;
-          price_paid?: number;
-          status?: string;
-          user_id?: string;
-        };
+          admin_note?: string | null
+          created_at?: string
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          id?: string
+          item_code?: string | null
+          item_id?: string
+          item_name?: string | null
+          payload?: Json | null
+          price_paid?: number
+          status?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "coin_redemption_requests_item_id_fkey";
-            columns: ["item_id"];
-            isOneToOne: false;
-            referencedRelation: "coin_shop_items";
-            referencedColumns: ["id"];
+            foreignKeyName: "coin_redemption_requests_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "coin_shop_items"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       coin_shop_items: {
         Row: {
-          auto_grant: boolean;
-          category: string;
-          code: string;
-          consumable: boolean;
-          created_at: string;
-          description: string | null;
-          id: string;
-          is_active: boolean;
-          is_custom: boolean;
-          name: string;
-          payload: Json;
-          price: number;
-          sort_order: number;
-        };
+          auto_grant: boolean
+          category: string
+          code: string
+          consumable: boolean
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          is_custom: boolean
+          name: string
+          payload: Json
+          price: number
+          sort_order: number
+        }
         Insert: {
-          auto_grant?: boolean;
-          category: string;
-          code: string;
-          consumable?: boolean;
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          is_active?: boolean;
-          is_custom?: boolean;
-          name: string;
-          payload?: Json;
-          price: number;
-          sort_order?: number;
-        };
+          auto_grant?: boolean
+          category: string
+          code: string
+          consumable?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_custom?: boolean
+          name: string
+          payload?: Json
+          price: number
+          sort_order?: number
+        }
         Update: {
-          auto_grant?: boolean;
-          category?: string;
-          code?: string;
-          consumable?: boolean;
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          is_active?: boolean;
-          is_custom?: boolean;
-          name?: string;
-          payload?: Json;
-          price?: number;
-          sort_order?: number;
-        };
-        Relationships: [];
-      };
+          auto_grant?: boolean
+          category?: string
+          code?: string
+          consumable?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_custom?: boolean
+          name?: string
+          payload?: Json
+          price?: number
+          sort_order?: number
+        }
+        Relationships: []
+      }
       coin_transactions: {
         Row: {
-          amount: number;
-          created_at: string;
-          id: string;
-          meta: Json;
-          reason: string;
-          user_id: string;
-        };
+          amount: number
+          created_at: string
+          id: string
+          meta: Json
+          reason: string
+          user_id: string
+        }
         Insert: {
-          amount: number;
-          created_at?: string;
-          id?: string;
-          meta?: Json;
-          reason: string;
-          user_id: string;
-        };
+          amount: number
+          created_at?: string
+          id?: string
+          meta?: Json
+          reason: string
+          user_id: string
+        }
         Update: {
-          amount?: number;
-          created_at?: string;
-          id?: string;
-          meta?: Json;
-          reason?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          amount?: number
+          created_at?: string
+          id?: string
+          meta?: Json
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_mission_templates: {
         Row: {
-          category: string;
-          code: string;
-          description: string | null;
-          id: string;
-          is_active: boolean;
-          reward_coins: number;
-          reward_xp: number;
-          sort_order: number;
-          target: number;
-          title: string;
-        };
+          category: string
+          code: string
+          description: string | null
+          id: string
+          is_active: boolean
+          reward_coins: number
+          reward_xp: number
+          sort_order: number
+          target: number
+          title: string
+        }
         Insert: {
-          category: string;
-          code: string;
-          description?: string | null;
-          id?: string;
-          is_active?: boolean;
-          reward_coins?: number;
-          reward_xp?: number;
-          sort_order?: number;
-          target: number;
-          title: string;
-        };
+          category: string
+          code: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          reward_coins?: number
+          reward_xp?: number
+          sort_order?: number
+          target: number
+          title: string
+        }
         Update: {
-          category?: string;
-          code?: string;
-          description?: string | null;
-          id?: string;
-          is_active?: boolean;
-          reward_coins?: number;
-          reward_xp?: number;
-          sort_order?: number;
-          target?: number;
-          title?: string;
-        };
-        Relationships: [];
-      };
+          category?: string
+          code?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          reward_coins?: number
+          reward_xp?: number
+          sort_order?: number
+          target?: number
+          title?: string
+        }
+        Relationships: []
+      }
       daily_missions: {
         Row: {
-          completed: boolean;
-          created_at: string;
-          date: string;
-          id: string;
-          kind: string;
-          pinned: boolean;
-          progress: number;
-          reward_coins: number;
-          target_value: number;
-          user_id: string;
-        };
+          completed: boolean
+          created_at: string
+          date: string
+          id: string
+          kind: string
+          pinned: boolean
+          progress: number
+          reward_coins: number
+          target_value: number
+          user_id: string
+        }
         Insert: {
-          completed?: boolean;
-          created_at?: string;
-          date?: string;
-          id?: string;
-          kind: string;
-          pinned?: boolean;
-          progress?: number;
-          reward_coins?: number;
-          target_value?: number;
-          user_id: string;
-        };
+          completed?: boolean
+          created_at?: string
+          date?: string
+          id?: string
+          kind: string
+          pinned?: boolean
+          progress?: number
+          reward_coins?: number
+          target_value?: number
+          user_id: string
+        }
         Update: {
-          completed?: boolean;
-          created_at?: string;
-          date?: string;
-          id?: string;
-          kind?: string;
-          pinned?: boolean;
-          progress?: number;
-          reward_coins?: number;
-          target_value?: number;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          completed?: boolean
+          created_at?: string
+          date?: string
+          id?: string
+          kind?: string
+          pinned?: boolean
+          progress?: number
+          reward_coins?: number
+          target_value?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_mystery_box: {
         Row: {
-          date: string;
-          reward_coins: number;
-          user_id: string;
-        };
+          date: string
+          reward_coins: number
+          user_id: string
+        }
         Insert: {
-          date?: string;
-          reward_coins: number;
-          user_id: string;
-        };
+          date?: string
+          reward_coins: number
+          user_id: string
+        }
         Update: {
-          date?: string;
-          reward_coins?: number;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          date?: string
+          reward_coins?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_reflections: {
         Row: {
-          created_at: string;
-          date: string;
-          id: string;
-          summary: string;
-          user_id: string;
-        };
+          created_at: string
+          date: string
+          id: string
+          summary: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          date: string;
-          id?: string;
-          summary: string;
-          user_id: string;
-        };
+          created_at?: string
+          date: string
+          id?: string
+          summary: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          date?: string;
-          id?: string;
-          summary?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          date?: string
+          id?: string
+          summary?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_slot_plays: {
         Row: {
-          date: string;
-          reward_coins: number;
-          user_id: string;
-        };
+          date: string
+          reward_coins: number
+          user_id: string
+        }
         Insert: {
-          date?: string;
-          reward_coins: number;
-          user_id: string;
-        };
+          date?: string
+          reward_coins: number
+          user_id: string
+        }
         Update: {
-          date?: string;
-          reward_coins?: number;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          date?: string
+          reward_coins?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_summary_subscriptions: {
         Row: {
-          channel: string;
-          enabled: boolean;
-          send_hour: number;
-          updated_at: string;
-          user_id: string;
-        };
+          channel: string
+          enabled: boolean
+          send_hour: number
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          channel?: string;
-          enabled?: boolean;
-          send_hour?: number;
-          updated_at?: string;
-          user_id: string;
-        };
+          channel?: string
+          enabled?: boolean
+          send_hour?: number
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          channel?: string;
-          enabled?: boolean;
-          send_hour?: number;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          channel?: string
+          enabled?: boolean
+          send_hour?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_three: {
         Row: {
-          created_at: string;
-          for_date: string;
-          id: string;
-          question_id: string;
-          slot: number;
-        };
+          created_at: string
+          for_date: string
+          id: string
+          question_id: string
+          slot: number
+        }
         Insert: {
-          created_at?: string;
-          for_date: string;
-          id?: string;
-          question_id: string;
-          slot: number;
-        };
+          created_at?: string
+          for_date: string
+          id?: string
+          question_id: string
+          slot: number
+        }
         Update: {
-          created_at?: string;
-          for_date?: string;
-          id?: string;
-          question_id?: string;
-          slot?: number;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          for_date?: string
+          id?: string
+          question_id?: string
+          slot?: number
+        }
+        Relationships: []
+      }
       difficulty_adjustments: {
         Row: {
-          admin_id: string;
-          created_at: string;
-          difficulty_score: number;
-          id: string;
-          note: string | null;
-          question_id: string;
-        };
+          admin_id: string
+          created_at: string
+          difficulty_score: number
+          id: string
+          note: string | null
+          question_id: string
+        }
         Insert: {
-          admin_id: string;
-          created_at?: string;
-          difficulty_score: number;
-          id?: string;
-          note?: string | null;
-          question_id: string;
-        };
+          admin_id: string
+          created_at?: string
+          difficulty_score: number
+          id?: string
+          note?: string | null
+          question_id: string
+        }
         Update: {
-          admin_id?: string;
-          created_at?: string;
-          difficulty_score?: number;
-          id?: string;
-          note?: string | null;
-          question_id?: string;
-        };
-        Relationships: [];
-      };
+          admin_id?: string
+          created_at?: string
+          difficulty_score?: number
+          id?: string
+          note?: string | null
+          question_id?: string
+        }
+        Relationships: []
+      }
       dm_hidden_conversations: {
         Row: {
-          hidden_at: string;
-          other_user_id: string;
-          user_id: string;
-        };
+          hidden_at: string
+          other_user_id: string
+          user_id: string
+        }
         Insert: {
-          hidden_at?: string;
-          other_user_id: string;
-          user_id: string;
-        };
+          hidden_at?: string
+          other_user_id: string
+          user_id: string
+        }
         Update: {
-          hidden_at?: string;
-          other_user_id?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          hidden_at?: string
+          other_user_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
-          created_at: string;
-          date: string;
-          description: string | null;
-          id: string;
-          start_time: string | null;
-          title: string;
-          user_id: string;
-        };
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          start_time: string | null
+          title: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          date: string;
-          description?: string | null;
-          id?: string;
-          start_time?: string | null;
-          title: string;
-          user_id: string;
-        };
+          created_at?: string
+          date: string
+          description?: string | null
+          id?: string
+          start_time?: string | null
+          title: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          date?: string;
-          description?: string | null;
-          id?: string;
-          start_time?: string | null;
-          title?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          start_time?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       exam_series: {
         Row: {
-          created_at: string;
-          id: string;
-          name: string;
-          note: string | null;
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          name: string
+          note: string | null
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          name: string;
-          note?: string | null;
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          name: string
+          note?: string | null
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          name?: string;
-          note?: string | null;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          name?: string
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       exam_subjects: {
         Row: {
-          actual_score: number | null;
-          content_satisfaction: number | null;
-          created_at: string;
-          duration_min: number | null;
-          exam_date: string | null;
-          exam_id: string;
-          id: string;
-          max_score: number;
-          name: string;
-          order_no: number;
-          reflection: string | null;
-          study_subject_ids: string[];
-          target_score: number | null;
-          time_satisfaction: number | null;
-          user_id: string;
-        };
+          actual_score: number | null
+          content_satisfaction: number | null
+          created_at: string
+          duration_min: number | null
+          exam_date: string | null
+          exam_id: string
+          id: string
+          max_score: number
+          name: string
+          order_no: number
+          reflection: string | null
+          study_subject_ids: string[]
+          target_score: number | null
+          time_satisfaction: number | null
+          user_id: string
+        }
         Insert: {
-          actual_score?: number | null;
-          content_satisfaction?: number | null;
-          created_at?: string;
-          duration_min?: number | null;
-          exam_date?: string | null;
-          exam_id: string;
-          id?: string;
-          max_score?: number;
-          name: string;
-          order_no?: number;
-          reflection?: string | null;
-          study_subject_ids?: string[];
-          target_score?: number | null;
-          time_satisfaction?: number | null;
-          user_id: string;
-        };
+          actual_score?: number | null
+          content_satisfaction?: number | null
+          created_at?: string
+          duration_min?: number | null
+          exam_date?: string | null
+          exam_id: string
+          id?: string
+          max_score?: number
+          name: string
+          order_no?: number
+          reflection?: string | null
+          study_subject_ids?: string[]
+          target_score?: number | null
+          time_satisfaction?: number | null
+          user_id: string
+        }
         Update: {
-          actual_score?: number | null;
-          content_satisfaction?: number | null;
-          created_at?: string;
-          duration_min?: number | null;
-          exam_date?: string | null;
-          exam_id?: string;
-          id?: string;
-          max_score?: number;
-          name?: string;
-          order_no?: number;
-          reflection?: string | null;
-          study_subject_ids?: string[];
-          target_score?: number | null;
-          time_satisfaction?: number | null;
-          user_id?: string;
-        };
+          actual_score?: number | null
+          content_satisfaction?: number | null
+          created_at?: string
+          duration_min?: number | null
+          exam_date?: string | null
+          exam_id?: string
+          id?: string
+          max_score?: number
+          name?: string
+          order_no?: number
+          reflection?: string | null
+          study_subject_ids?: string[]
+          target_score?: number | null
+          time_satisfaction?: number | null
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "exam_subjects_exam_id_fkey";
-            columns: ["exam_id"];
-            isOneToOne: false;
-            referencedRelation: "exams";
-            referencedColumns: ["id"];
+            foreignKeyName: "exam_subjects_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "exams"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       exam_todos: {
         Row: {
-          coin_awarded: boolean;
-          created_at: string;
-          done: boolean;
-          done_at: string | null;
-          exam_subject_id: string;
-          id: string;
-          order_no: number;
-          text: string;
-          user_id: string;
-        };
+          coin_awarded: boolean
+          created_at: string
+          done: boolean
+          done_at: string | null
+          exam_subject_id: string
+          id: string
+          order_no: number
+          text: string
+          user_id: string
+        }
         Insert: {
-          coin_awarded?: boolean;
-          created_at?: string;
-          done?: boolean;
-          done_at?: string | null;
-          exam_subject_id: string;
-          id?: string;
-          order_no?: number;
-          text: string;
-          user_id: string;
-        };
+          coin_awarded?: boolean
+          created_at?: string
+          done?: boolean
+          done_at?: string | null
+          exam_subject_id: string
+          id?: string
+          order_no?: number
+          text: string
+          user_id: string
+        }
         Update: {
-          coin_awarded?: boolean;
-          created_at?: string;
-          done?: boolean;
-          done_at?: string | null;
-          exam_subject_id?: string;
-          id?: string;
-          order_no?: number;
-          text?: string;
-          user_id?: string;
-        };
+          coin_awarded?: boolean
+          created_at?: string
+          done?: boolean
+          done_at?: string | null
+          exam_subject_id?: string
+          id?: string
+          order_no?: number
+          text?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "exam_todos_exam_subject_id_fkey";
-            columns: ["exam_subject_id"];
-            isOneToOne: false;
-            referencedRelation: "exam_subjects";
-            referencedColumns: ["id"];
+            foreignKeyName: "exam_todos_exam_subject_id_fkey"
+            columns: ["exam_subject_id"]
+            isOneToOne: false
+            referencedRelation: "exam_subjects"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       exams: {
         Row: {
-          created_at: string;
-          end_date: string | null;
-          id: string;
-          name: string;
-          note: string | null;
-          series_id: string | null;
-          start_date: string | null;
-          user_id: string;
-        };
+          created_at: string
+          end_date: string | null
+          id: string
+          name: string
+          note: string | null
+          series_id: string | null
+          start_date: string | null
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          end_date?: string | null;
-          id?: string;
-          name: string;
-          note?: string | null;
-          series_id?: string | null;
-          start_date?: string | null;
-          user_id: string;
-        };
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          name: string
+          note?: string | null
+          series_id?: string | null
+          start_date?: string | null
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          end_date?: string | null;
-          id?: string;
-          name?: string;
-          note?: string | null;
-          series_id?: string | null;
-          start_date?: string | null;
-          user_id?: string;
-        };
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          name?: string
+          note?: string | null
+          series_id?: string | null
+          start_date?: string | null
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "exams_series_id_fkey";
-            columns: ["series_id"];
-            isOneToOne: false;
-            referencedRelation: "exam_series";
-            referencedColumns: ["id"];
+            foreignKeyName: "exams_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "exam_series"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       faq_entries: {
         Row: {
-          answer: string;
-          created_at: string;
-          created_by: string | null;
-          id: string;
-          order_index: number;
-          published: boolean;
-          question: string;
-          updated_at: string;
-        };
+          answer: string
+          created_at: string
+          created_by: string | null
+          id: string
+          order_index: number
+          published: boolean
+          question: string
+          updated_at: string
+        }
         Insert: {
-          answer: string;
-          created_at?: string;
-          created_by?: string | null;
-          id?: string;
-          order_index?: number;
-          published?: boolean;
-          question: string;
-          updated_at?: string;
-        };
+          answer: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          order_index?: number
+          published?: boolean
+          question: string
+          updated_at?: string
+        }
         Update: {
-          answer?: string;
-          created_at?: string;
-          created_by?: string | null;
-          id?: string;
-          order_index?: number;
-          published?: boolean;
-          question?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
+          answer?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          order_index?: number
+          published?: boolean
+          question?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       feedback: {
         Row: {
-          admin_reply: string | null;
-          body: string;
-          category: string;
-          created_at: string;
-          email: string | null;
-          id: string;
-          replied_at: string | null;
-          route: string | null;
-          status: string;
-          user_agent: string | null;
-          user_id: string | null;
-          user_notified_at: string | null;
-        };
+          admin_reply: string | null
+          body: string
+          category: string
+          created_at: string
+          email: string | null
+          id: string
+          replied_at: string | null
+          route: string | null
+          status: string
+          user_agent: string | null
+          user_id: string | null
+          user_notified_at: string | null
+        }
         Insert: {
-          admin_reply?: string | null;
-          body: string;
-          category?: string;
-          created_at?: string;
-          email?: string | null;
-          id?: string;
-          replied_at?: string | null;
-          route?: string | null;
-          status?: string;
-          user_agent?: string | null;
-          user_id?: string | null;
-          user_notified_at?: string | null;
-        };
+          admin_reply?: string | null
+          body: string
+          category?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          replied_at?: string | null
+          route?: string | null
+          status?: string
+          user_agent?: string | null
+          user_id?: string | null
+          user_notified_at?: string | null
+        }
         Update: {
-          admin_reply?: string | null;
-          body?: string;
-          category?: string;
-          created_at?: string;
-          email?: string | null;
-          id?: string;
-          replied_at?: string | null;
-          route?: string | null;
-          status?: string;
-          user_agent?: string | null;
-          user_id?: string | null;
-          user_notified_at?: string | null;
-        };
-        Relationships: [];
-      };
+          admin_reply?: string | null
+          body?: string
+          category?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          replied_at?: string | null
+          route?: string | null
+          status?: string
+          user_agent?: string | null
+          user_id?: string | null
+          user_notified_at?: string | null
+        }
+        Relationships: []
+      }
       feedback_messages: {
         Row: {
-          body: string;
-          created_at: string;
-          feedback_id: string;
-          id: string;
-          read_at: string | null;
-          sender_id: string | null;
-          sender_role: string;
-        };
+          body: string
+          created_at: string
+          feedback_id: string
+          id: string
+          read_at: string | null
+          sender_id: string | null
+          sender_role: string
+        }
         Insert: {
-          body: string;
-          created_at?: string;
-          feedback_id: string;
-          id?: string;
-          read_at?: string | null;
-          sender_id?: string | null;
-          sender_role: string;
-        };
+          body: string
+          created_at?: string
+          feedback_id: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string | null
+          sender_role: string
+        }
         Update: {
-          body?: string;
-          created_at?: string;
-          feedback_id?: string;
-          id?: string;
-          read_at?: string | null;
-          sender_id?: string | null;
-          sender_role?: string;
-        };
+          body?: string
+          created_at?: string
+          feedback_id?: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string | null
+          sender_role?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "feedback_messages_feedback_id_fkey";
-            columns: ["feedback_id"];
-            isOneToOne: false;
-            referencedRelation: "feedback";
-            referencedColumns: ["id"];
+            foreignKeyName: "feedback_messages_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "feedback"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       flashcard_decks: {
         Row: {
-          color: string;
-          created_at: string;
-          description: string;
-          id: string;
-          name: string;
-          subject: string;
-          updated_at: string;
-          user_id: string;
-        };
+          color: string
+          created_at: string
+          description: string
+          id: string
+          name: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          color?: string;
-          created_at?: string;
-          description?: string;
-          id?: string;
-          name: string;
-          subject?: string;
-          updated_at?: string;
-          user_id: string;
-        };
+          color?: string
+          created_at?: string
+          description?: string
+          id?: string
+          name: string
+          subject?: string
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          color?: string;
-          created_at?: string;
-          description?: string;
-          id?: string;
-          name?: string;
-          subject?: string;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          color?: string
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       flashcards: {
         Row: {
-          back: string;
-          created_at: string;
-          deck: string;
-          deck_id: string | null;
-          ease: number;
-          front: string;
-          id: string;
-          interval_days: number;
-          last_reviewed_at: string | null;
-          next_review_at: string;
-          reviews: number;
-          updated_at: string;
-          user_id: string;
-        };
+          back: string
+          created_at: string
+          deck: string
+          deck_id: string | null
+          ease: number
+          front: string
+          id: string
+          interval_days: number
+          last_reviewed_at: string | null
+          next_review_at: string
+          reviews: number
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          back: string;
-          created_at?: string;
-          deck?: string;
-          deck_id?: string | null;
-          ease?: number;
-          front: string;
-          id?: string;
-          interval_days?: number;
-          last_reviewed_at?: string | null;
-          next_review_at?: string;
-          reviews?: number;
-          updated_at?: string;
-          user_id: string;
-        };
+          back: string
+          created_at?: string
+          deck?: string
+          deck_id?: string | null
+          ease?: number
+          front: string
+          id?: string
+          interval_days?: number
+          last_reviewed_at?: string | null
+          next_review_at?: string
+          reviews?: number
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          back?: string;
-          created_at?: string;
-          deck?: string;
-          deck_id?: string | null;
-          ease?: number;
-          front?: string;
-          id?: string;
-          interval_days?: number;
-          last_reviewed_at?: string | null;
-          next_review_at?: string;
-          reviews?: number;
-          updated_at?: string;
-          user_id?: string;
-        };
+          back?: string
+          created_at?: string
+          deck?: string
+          deck_id?: string | null
+          ease?: number
+          front?: string
+          id?: string
+          interval_days?: number
+          last_reviewed_at?: string | null
+          next_review_at?: string
+          reviews?: number
+          updated_at?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "flashcards_deck_id_fkey";
-            columns: ["deck_id"];
-            isOneToOne: false;
-            referencedRelation: "flashcard_decks";
-            referencedColumns: ["id"];
+            foreignKeyName: "flashcards_deck_id_fkey"
+            columns: ["deck_id"]
+            isOneToOne: false
+            referencedRelation: "flashcard_decks"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       focus_logs: {
         Row: {
-          blur_count: number;
-          created_at: string;
-          date: string;
-          id: string;
-          minutes: number;
-          score: number;
-          user_id: string;
-        };
+          blur_count: number
+          created_at: string
+          date: string
+          id: string
+          minutes: number
+          score: number
+          user_id: string
+        }
         Insert: {
-          blur_count?: number;
-          created_at?: string;
-          date?: string;
-          id?: string;
-          minutes?: number;
-          score?: number;
-          user_id: string;
-        };
+          blur_count?: number
+          created_at?: string
+          date?: string
+          id?: string
+          minutes?: number
+          score?: number
+          user_id: string
+        }
         Update: {
-          blur_count?: number;
-          created_at?: string;
-          date?: string;
-          id?: string;
-          minutes?: number;
-          score?: number;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          blur_count?: number
+          created_at?: string
+          date?: string
+          id?: string
+          minutes?: number
+          score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
-          created_at: string;
-          follower_id: string;
-          following_id: string;
-          id: string;
-          status: string;
-        };
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+          status: string
+        }
         Insert: {
-          created_at?: string;
-          follower_id: string;
-          following_id: string;
-          id?: string;
-          status?: string;
-        };
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+          status?: string
+        }
         Update: {
-          created_at?: string;
-          follower_id?: string;
-          following_id?: string;
-          id?: string;
-          status?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       goals: {
         Row: {
-          count_from: string | null;
-          created_at: string;
-          deadline: string | null;
-          description: string | null;
-          done: boolean;
-          id: string;
-          progress_minutes: number;
-          scope: string;
-          target_minutes: number;
-          title: string;
-          user_id: string;
-        };
+          count_from: string | null
+          created_at: string
+          deadline: string | null
+          description: string | null
+          done: boolean
+          id: string
+          progress_minutes: number
+          scope: string
+          target_minutes: number
+          title: string
+          user_id: string
+        }
         Insert: {
-          count_from?: string | null;
-          created_at?: string;
-          deadline?: string | null;
-          description?: string | null;
-          done?: boolean;
-          id?: string;
-          progress_minutes?: number;
-          scope?: string;
-          target_minutes?: number;
-          title: string;
-          user_id: string;
-        };
+          count_from?: string | null
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          done?: boolean
+          id?: string
+          progress_minutes?: number
+          scope?: string
+          target_minutes?: number
+          title: string
+          user_id: string
+        }
         Update: {
-          count_from?: string | null;
-          created_at?: string;
-          deadline?: string | null;
-          description?: string | null;
-          done?: boolean;
-          id?: string;
-          progress_minutes?: number;
-          scope?: string;
-          target_minutes?: number;
-          title?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          count_from?: string | null
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          done?: boolean
+          id?: string
+          progress_minutes?: number
+          scope?: string
+          target_minutes?: number
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       grading_history: {
         Row: {
-          correct: boolean;
-          created_at: string;
-          feedback: string;
-          id: string;
-          question_id: string;
-          score: number;
-          user_answer: string;
-          user_id: string;
-        };
+          correct: boolean
+          created_at: string
+          feedback: string
+          id: string
+          question_id: string
+          score: number
+          user_answer: string
+          user_id: string
+        }
         Insert: {
-          correct: boolean;
-          created_at?: string;
-          feedback: string;
-          id?: string;
-          question_id: string;
-          score: number;
-          user_answer: string;
-          user_id: string;
-        };
+          correct: boolean
+          created_at?: string
+          feedback: string
+          id?: string
+          question_id: string
+          score: number
+          user_answer: string
+          user_id: string
+        }
         Update: {
-          correct?: boolean;
-          created_at?: string;
-          feedback?: string;
-          id?: string;
-          question_id?: string;
-          score?: number;
-          user_answer?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          correct?: boolean
+          created_at?: string
+          feedback?: string
+          id?: string
+          question_id?: string
+          score?: number
+          user_answer?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       group_challenge_members: {
         Row: {
-          challenge_id: string;
-          joined_at: string;
-          team: string;
-          user_id: string;
-        };
+          challenge_id: string
+          joined_at: string
+          team: string
+          user_id: string
+        }
         Insert: {
-          challenge_id: string;
-          joined_at?: string;
-          team?: string;
-          user_id: string;
-        };
+          challenge_id: string
+          joined_at?: string
+          team?: string
+          user_id: string
+        }
         Update: {
-          challenge_id?: string;
-          joined_at?: string;
-          team?: string;
-          user_id?: string;
-        };
+          challenge_id?: string
+          joined_at?: string
+          team?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "group_challenge_members_challenge_id_fkey";
-            columns: ["challenge_id"];
-            isOneToOne: false;
-            referencedRelation: "group_challenges";
-            referencedColumns: ["id"];
+            foreignKeyName: "group_challenge_members_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "group_challenges"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       group_challenges: {
         Row: {
-          created_at: string;
-          ends_on: string;
-          id: string;
-          name: string;
-          owner_id: string;
-          starts_on: string;
-        };
+          created_at: string
+          ends_on: string
+          id: string
+          name: string
+          owner_id: string
+          starts_on: string
+        }
         Insert: {
-          created_at?: string;
-          ends_on?: string;
-          id?: string;
-          name: string;
-          owner_id: string;
-          starts_on?: string;
-        };
+          created_at?: string
+          ends_on?: string
+          id?: string
+          name: string
+          owner_id: string
+          starts_on?: string
+        }
         Update: {
-          created_at?: string;
-          ends_on?: string;
-          id?: string;
-          name?: string;
-          owner_id?: string;
-          starts_on?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          ends_on?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          starts_on?: string
+        }
+        Relationships: []
+      }
       group_room_members: {
         Row: {
-          id: string;
-          joined_at: string;
-          room_id: string;
-          started_at: string | null;
-          status: string;
-          user_id: string;
-        };
+          id: string
+          joined_at: string
+          room_id: string
+          started_at: string | null
+          status: string
+          user_id: string
+        }
         Insert: {
-          id?: string;
-          joined_at?: string;
-          room_id: string;
-          started_at?: string | null;
-          status?: string;
-          user_id: string;
-        };
+          id?: string
+          joined_at?: string
+          room_id: string
+          started_at?: string | null
+          status?: string
+          user_id: string
+        }
         Update: {
-          id?: string;
-          joined_at?: string;
-          room_id?: string;
-          started_at?: string | null;
-          status?: string;
-          user_id?: string;
-        };
+          id?: string
+          joined_at?: string
+          room_id?: string
+          started_at?: string | null
+          status?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "group_room_members_room_id_fkey";
-            columns: ["room_id"];
-            isOneToOne: false;
-            referencedRelation: "group_rooms";
-            referencedColumns: ["id"];
+            foreignKeyName: "group_room_members_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "group_rooms"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       group_rooms: {
         Row: {
-          active: boolean;
-          code: string;
-          created_at: string;
-          id: string;
-          name: string;
-          owner_id: string;
-          status: string;
-          topic: string | null;
-        };
+          active: boolean
+          code: string
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+          status: string
+          topic: string | null
+        }
         Insert: {
-          active?: boolean;
-          code: string;
-          created_at?: string;
-          id?: string;
-          name: string;
-          owner_id: string;
-          status?: string;
-          topic?: string | null;
-        };
+          active?: boolean
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+          status?: string
+          topic?: string | null
+        }
         Update: {
-          active?: boolean;
-          code?: string;
-          created_at?: string;
-          id?: string;
-          name?: string;
-          owner_id?: string;
-          status?: string;
-          topic?: string | null;
-        };
-        Relationships: [];
-      };
+          active?: boolean
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          status?: string
+          topic?: string | null
+        }
+        Relationships: []
+      }
       habit_stamps: {
         Row: {
-          created_at: string;
-          date: string;
-          habit_key: string;
-          id: string;
-          user_id: string;
-        };
+          created_at: string
+          date: string
+          habit_key: string
+          id: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          date?: string;
-          habit_key: string;
-          id?: string;
-          user_id: string;
-        };
+          created_at?: string
+          date?: string
+          habit_key: string
+          id?: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          date?: string;
-          habit_key?: string;
-          id?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          date?: string
+          habit_key?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       lessons: {
         Row: {
-          color: string;
-          created_at: string;
-          id: string;
-          name: string;
-          user_id: string;
-        };
+          color: string
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
         Insert: {
-          color?: string;
-          created_at?: string;
-          id?: string;
-          name: string;
-          user_id: string;
-        };
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
         Update: {
-          color?: string;
-          created_at?: string;
-          id?: string;
-          name?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       login_boards: {
         Row: {
-          active: boolean;
-          audience: string;
-          body: string;
-          created_at: string;
-          created_by: string | null;
-          id: string;
-          target_user_id: string | null;
-          title: string;
-        };
+          active: boolean
+          audience: string
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          target_user_id: string | null
+          title: string
+        }
         Insert: {
-          active?: boolean;
-          audience?: string;
-          body: string;
-          created_at?: string;
-          created_by?: string | null;
-          id?: string;
-          target_user_id?: string | null;
-          title: string;
-        };
+          active?: boolean
+          audience?: string
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          target_user_id?: string | null
+          title: string
+        }
         Update: {
-          active?: boolean;
-          audience?: string;
-          body?: string;
-          created_at?: string;
-          created_by?: string | null;
-          id?: string;
-          target_user_id?: string | null;
-          title?: string;
-        };
-        Relationships: [];
-      };
+          active?: boolean
+          audience?: string
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          target_user_id?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       makron_answers: {
         Row: {
-          admin_override_note: string | null;
-          admin_override_score: number | null;
-          answer: Json | null;
-          auto_correct: boolean | null;
-          awarded_points: number | null;
-          created_at: string;
-          file_url: string | null;
-          graded_at: string | null;
-          graded_by: string | null;
-          id: string;
-          is_correct: boolean | null;
-          manual_comment: string | null;
-          manual_score: number | null;
-          question_id: string;
-          question_snapshot: Json | null;
-          review_flag: boolean;
-          session_id: string;
-          updated_at: string;
-        };
+          admin_override_note: string | null
+          admin_override_score: number | null
+          answer: Json | null
+          auto_correct: boolean | null
+          awarded_points: number | null
+          created_at: string
+          file_url: string | null
+          graded_at: string | null
+          graded_by: string | null
+          id: string
+          is_correct: boolean | null
+          manual_comment: string | null
+          manual_score: number | null
+          question_id: string
+          question_snapshot: Json | null
+          review_flag: boolean
+          session_id: string
+          updated_at: string
+        }
         Insert: {
-          admin_override_note?: string | null;
-          admin_override_score?: number | null;
-          answer?: Json | null;
-          auto_correct?: boolean | null;
-          awarded_points?: number | null;
-          created_at?: string;
-          file_url?: string | null;
-          graded_at?: string | null;
-          graded_by?: string | null;
-          id?: string;
-          is_correct?: boolean | null;
-          manual_comment?: string | null;
-          manual_score?: number | null;
-          question_id: string;
-          question_snapshot?: Json | null;
-          review_flag?: boolean;
-          session_id: string;
-          updated_at?: string;
-        };
+          admin_override_note?: string | null
+          admin_override_score?: number | null
+          answer?: Json | null
+          auto_correct?: boolean | null
+          awarded_points?: number | null
+          created_at?: string
+          file_url?: string | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          is_correct?: boolean | null
+          manual_comment?: string | null
+          manual_score?: number | null
+          question_id: string
+          question_snapshot?: Json | null
+          review_flag?: boolean
+          session_id: string
+          updated_at?: string
+        }
         Update: {
-          admin_override_note?: string | null;
-          admin_override_score?: number | null;
-          answer?: Json | null;
-          auto_correct?: boolean | null;
-          awarded_points?: number | null;
-          created_at?: string;
-          file_url?: string | null;
-          graded_at?: string | null;
-          graded_by?: string | null;
-          id?: string;
-          is_correct?: boolean | null;
-          manual_comment?: string | null;
-          manual_score?: number | null;
-          question_id?: string;
-          question_snapshot?: Json | null;
-          review_flag?: boolean;
-          session_id?: string;
-          updated_at?: string;
-        };
+          admin_override_note?: string | null
+          admin_override_score?: number | null
+          answer?: Json | null
+          auto_correct?: boolean | null
+          awarded_points?: number | null
+          created_at?: string
+          file_url?: string | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          is_correct?: boolean | null
+          manual_comment?: string | null
+          manual_score?: number | null
+          question_id?: string
+          question_snapshot?: Json | null
+          review_flag?: boolean
+          session_id?: string
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "makron_answers_question_id_fkey";
-            columns: ["question_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_questions";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "makron_questions"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "makron_answers_session_id_fkey";
-            columns: ["session_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_sessions";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_answers_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "makron_sessions"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       makron_assignments: {
         Row: {
-          assigned_by: string;
-          class_id: string;
-          created_at: string;
-          description: string | null;
-          due_at: string | null;
-          id: string;
-          title: string;
-          unit_id: string;
-        };
+          assigned_by: string
+          class_id: string
+          created_at: string
+          description: string | null
+          due_at: string | null
+          id: string
+          title: string
+          unit_id: string
+        }
         Insert: {
-          assigned_by: string;
-          class_id: string;
-          created_at?: string;
-          description?: string | null;
-          due_at?: string | null;
-          id?: string;
-          title: string;
-          unit_id: string;
-        };
+          assigned_by: string
+          class_id: string
+          created_at?: string
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          title: string
+          unit_id: string
+        }
         Update: {
-          assigned_by?: string;
-          class_id?: string;
-          created_at?: string;
-          description?: string | null;
-          due_at?: string | null;
-          id?: string;
-          title?: string;
-          unit_id?: string;
-        };
+          assigned_by?: string
+          class_id?: string
+          created_at?: string
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          title?: string
+          unit_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "makron_assignments_class_id_fkey";
-            columns: ["class_id"];
-            isOneToOne: false;
-            referencedRelation: "classes";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_assignments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "makron_assignments_unit_id_fkey";
-            columns: ["unit_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_units";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_assignments_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "makron_units"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       makron_bookmarks: {
         Row: {
-          created_at: string;
-          id: string;
-          question_id: string;
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          question_id: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          question_id: string;
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          question_id: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          question_id?: string;
-          user_id?: string;
-        };
+          created_at?: string
+          id?: string
+          question_id?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "makron_bookmarks_question_id_fkey";
-            columns: ["question_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_questions";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_bookmarks_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "makron_questions"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       makron_daily_completions: {
         Row: {
-          attempts: number;
-          best_score: number | null;
-          completed_at: string;
-          date: string;
-          score: number;
-          session_id: string | null;
-          total: number;
-          user_id: string;
-        };
+          attempts: number
+          best_score: number | null
+          completed_at: string
+          date: string
+          score: number
+          session_id: string | null
+          total: number
+          user_id: string
+        }
         Insert: {
-          attempts?: number;
-          best_score?: number | null;
-          completed_at?: string;
-          date: string;
-          score?: number;
-          session_id?: string | null;
-          total?: number;
-          user_id: string;
-        };
+          attempts?: number
+          best_score?: number | null
+          completed_at?: string
+          date: string
+          score?: number
+          session_id?: string | null
+          total?: number
+          user_id: string
+        }
         Update: {
-          attempts?: number;
-          best_score?: number | null;
-          completed_at?: string;
-          date?: string;
-          score?: number;
-          session_id?: string | null;
-          total?: number;
-          user_id?: string;
-        };
+          attempts?: number
+          best_score?: number | null
+          completed_at?: string
+          date?: string
+          score?: number
+          session_id?: string | null
+          total?: number
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "makron_daily_completions_session_id_fkey";
-            columns: ["session_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_sessions";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_daily_completions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "makron_sessions"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       makron_daily_sets: {
         Row: {
-          created_at: string;
-          date: string;
-          question_ids: string[];
-        };
+          created_at: string
+          date: string
+          question_ids: string[]
+        }
         Insert: {
-          created_at?: string;
-          date: string;
-          question_ids: string[];
-        };
+          created_at?: string
+          date: string
+          question_ids: string[]
+        }
         Update: {
-          created_at?: string;
-          date?: string;
-          question_ids?: string[];
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          date?: string
+          question_ids?: string[]
+        }
+        Relationships: []
+      }
       makron_fields: {
         Row: {
-          created_at: string;
-          created_by: string | null;
-          id: string;
-          name: string;
-          order_idx: number;
-          subject_id: string;
-          updated_at: string;
-        };
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          order_idx: number
+          subject_id: string
+          updated_at: string
+        }
         Insert: {
-          created_at?: string;
-          created_by?: string | null;
-          id?: string;
-          name: string;
-          order_idx?: number;
-          subject_id: string;
-          updated_at?: string;
-        };
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          order_idx?: number
+          subject_id: string
+          updated_at?: string
+        }
         Update: {
-          created_at?: string;
-          created_by?: string | null;
-          id?: string;
-          name?: string;
-          order_idx?: number;
-          subject_id?: string;
-          updated_at?: string;
-        };
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          order_idx?: number
+          subject_id?: string
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "makron_fields_subject_id_fkey";
-            columns: ["subject_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_subjects";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_fields_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "makron_subjects"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       makron_pack_attempts: {
         Row: {
-          attempts_count: number;
-          coins_earned_total: number;
-          created_at: string;
-          id: string;
-          last_attempt_at: string | null;
-          pack_id: string;
-          rewards_granted_count: number;
-          user_id: string;
-          xp_earned_total: number;
-        };
+          attempts_count: number
+          coins_earned_total: number
+          created_at: string
+          id: string
+          last_attempt_at: string | null
+          pack_id: string
+          rewards_granted_count: number
+          user_id: string
+          xp_earned_total: number
+        }
         Insert: {
-          attempts_count?: number;
-          coins_earned_total?: number;
-          created_at?: string;
-          id?: string;
-          last_attempt_at?: string | null;
-          pack_id: string;
-          rewards_granted_count?: number;
-          user_id: string;
-          xp_earned_total?: number;
-        };
+          attempts_count?: number
+          coins_earned_total?: number
+          created_at?: string
+          id?: string
+          last_attempt_at?: string | null
+          pack_id: string
+          rewards_granted_count?: number
+          user_id: string
+          xp_earned_total?: number
+        }
         Update: {
-          attempts_count?: number;
-          coins_earned_total?: number;
-          created_at?: string;
-          id?: string;
-          last_attempt_at?: string | null;
-          pack_id?: string;
-          rewards_granted_count?: number;
-          user_id?: string;
-          xp_earned_total?: number;
-        };
+          attempts_count?: number
+          coins_earned_total?: number
+          created_at?: string
+          id?: string
+          last_attempt_at?: string | null
+          pack_id?: string
+          rewards_granted_count?: number
+          user_id?: string
+          xp_earned_total?: number
+        }
         Relationships: [
           {
-            foreignKeyName: "makron_pack_attempts_pack_id_fkey";
-            columns: ["pack_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_packs";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_pack_attempts_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "makron_packs"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       makron_packs: {
         Row: {
-          allow_all_mode: boolean;
-          coin_cap_per_user: number | null;
-          coin_per_question: number;
-          created_at: string;
-          created_by: string | null;
-          description: string | null;
-          field_id: string | null;
-          grade: string | null;
-          id: string;
-          is_active: boolean;
-          is_official: boolean;
-          max_attempts: number | null;
-          order_idx: number;
-          organization_id: string | null;
-          pass_score: number | null;
-          per_question_grading: boolean;
-          question_limit: number | null;
-          reward_attempts_cap: number | null;
-          shuffle: boolean;
-          skip_preview: boolean;
-          status: string;
-          subject_id: string | null;
-          title: string;
-          unit_id: string | null;
-          updated_at: string;
-          xp_cap_per_user: number | null;
-          xp_per_question: number;
-        };
+          allow_all_mode: boolean
+          coin_cap_per_user: number | null
+          coin_per_question: number
+          created_at: string
+          created_by: string | null
+          description: string | null
+          field_id: string | null
+          grade: string | null
+          id: string
+          is_active: boolean
+          is_official: boolean
+          max_attempts: number | null
+          order_idx: number
+          organization_id: string | null
+          pass_score: number | null
+          per_question_grading: boolean
+          question_limit: number | null
+          reward_attempts_cap: number | null
+          shuffle: boolean
+          skip_preview: boolean
+          status: string
+          subject_id: string | null
+          title: string
+          unit_id: string | null
+          updated_at: string
+          xp_cap_per_user: number | null
+          xp_per_question: number
+        }
         Insert: {
-          allow_all_mode?: boolean;
-          coin_cap_per_user?: number | null;
-          coin_per_question?: number;
-          created_at?: string;
-          created_by?: string | null;
-          description?: string | null;
-          field_id?: string | null;
-          grade?: string | null;
-          id?: string;
-          is_active?: boolean;
-          is_official?: boolean;
-          max_attempts?: number | null;
-          order_idx?: number;
-          organization_id?: string | null;
-          pass_score?: number | null;
-          per_question_grading?: boolean;
-          question_limit?: number | null;
-          reward_attempts_cap?: number | null;
-          shuffle?: boolean;
-          skip_preview?: boolean;
-          status?: string;
-          subject_id?: string | null;
-          title: string;
-          unit_id?: string | null;
-          updated_at?: string;
-          xp_cap_per_user?: number | null;
-          xp_per_question?: number;
-        };
+          allow_all_mode?: boolean
+          coin_cap_per_user?: number | null
+          coin_per_question?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          field_id?: string | null
+          grade?: string | null
+          id?: string
+          is_active?: boolean
+          is_official?: boolean
+          max_attempts?: number | null
+          order_idx?: number
+          organization_id?: string | null
+          pass_score?: number | null
+          per_question_grading?: boolean
+          question_limit?: number | null
+          reward_attempts_cap?: number | null
+          shuffle?: boolean
+          skip_preview?: boolean
+          status?: string
+          subject_id?: string | null
+          title: string
+          unit_id?: string | null
+          updated_at?: string
+          xp_cap_per_user?: number | null
+          xp_per_question?: number
+        }
         Update: {
-          allow_all_mode?: boolean;
-          coin_cap_per_user?: number | null;
-          coin_per_question?: number;
-          created_at?: string;
-          created_by?: string | null;
-          description?: string | null;
-          field_id?: string | null;
-          grade?: string | null;
-          id?: string;
-          is_active?: boolean;
-          is_official?: boolean;
-          max_attempts?: number | null;
-          order_idx?: number;
-          organization_id?: string | null;
-          pass_score?: number | null;
-          per_question_grading?: boolean;
-          question_limit?: number | null;
-          reward_attempts_cap?: number | null;
-          shuffle?: boolean;
-          skip_preview?: boolean;
-          status?: string;
-          subject_id?: string | null;
-          title?: string;
-          unit_id?: string | null;
-          updated_at?: string;
-          xp_cap_per_user?: number | null;
-          xp_per_question?: number;
-        };
+          allow_all_mode?: boolean
+          coin_cap_per_user?: number | null
+          coin_per_question?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          field_id?: string | null
+          grade?: string | null
+          id?: string
+          is_active?: boolean
+          is_official?: boolean
+          max_attempts?: number | null
+          order_idx?: number
+          organization_id?: string | null
+          pass_score?: number | null
+          per_question_grading?: boolean
+          question_limit?: number | null
+          reward_attempts_cap?: number | null
+          shuffle?: boolean
+          skip_preview?: boolean
+          status?: string
+          subject_id?: string | null
+          title?: string
+          unit_id?: string | null
+          updated_at?: string
+          xp_cap_per_user?: number | null
+          xp_per_question?: number
+        }
         Relationships: [
           {
-            foreignKeyName: "makron_packs_field_id_fkey";
-            columns: ["field_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_fields";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_packs_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "makron_fields"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "makron_packs_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_packs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "makron_packs_subject_id_fkey";
-            columns: ["subject_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_subjects";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_packs_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "makron_subjects"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "makron_packs_unit_id_fkey";
-            columns: ["unit_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_units";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_packs_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "makron_units"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       makron_question_likes: {
         Row: {
-          created_at: string;
-          difficulty_vote: number | null;
-          id: string;
-          liked: boolean | null;
-          question_id: string;
-          user_id: string;
-        };
+          created_at: string
+          difficulty_vote: number | null
+          id: string
+          liked: boolean | null
+          question_id: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          difficulty_vote?: number | null;
-          id?: string;
-          liked?: boolean | null;
-          question_id: string;
-          user_id: string;
-        };
+          created_at?: string
+          difficulty_vote?: number | null
+          id?: string
+          liked?: boolean | null
+          question_id: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          difficulty_vote?: number | null;
-          id?: string;
-          liked?: boolean | null;
-          question_id?: string;
-          user_id?: string;
-        };
+          created_at?: string
+          difficulty_vote?: number | null
+          id?: string
+          liked?: boolean | null
+          question_id?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "makron_question_likes_question_id_fkey";
-            columns: ["question_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_questions";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_question_likes_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "makron_questions"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       makron_questions: {
         Row: {
-          accepted_answers: Json;
-          correct_options: Json;
-          created_at: string;
-          created_by: string | null;
-          explanation: string | null;
-          grading: string;
-          hint_text: string | null;
-          id: string;
-          image_url: string | null;
-          is_active: boolean;
-          model_answer: string | null;
-          options: Json;
-          order_idx: number;
-          pack_id: string | null;
-          points: number;
-          prompt: string;
-          reviewed_at: string | null;
-          reviewed_by: string | null;
-          status: string;
-          submitted_at: string | null;
-          type: string;
-          unit_id: string | null;
-          updated_at: string;
-        };
+          accepted_answers: Json
+          correct_options: Json
+          created_at: string
+          created_by: string | null
+          explanation: string | null
+          grading: string
+          hint_text: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          model_answer: string | null
+          options: Json
+          order_idx: number
+          pack_id: string | null
+          points: number
+          prompt: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_at: string | null
+          type: string
+          unit_id: string | null
+          updated_at: string
+        }
         Insert: {
-          accepted_answers?: Json;
-          correct_options?: Json;
-          created_at?: string;
-          created_by?: string | null;
-          explanation?: string | null;
-          grading?: string;
-          hint_text?: string | null;
-          id?: string;
-          image_url?: string | null;
-          is_active?: boolean;
-          model_answer?: string | null;
-          options?: Json;
-          order_idx?: number;
-          pack_id?: string | null;
-          points?: number;
-          prompt: string;
-          reviewed_at?: string | null;
-          reviewed_by?: string | null;
-          status?: string;
-          submitted_at?: string | null;
-          type: string;
-          unit_id?: string | null;
-          updated_at?: string;
-        };
+          accepted_answers?: Json
+          correct_options?: Json
+          created_at?: string
+          created_by?: string | null
+          explanation?: string | null
+          grading?: string
+          hint_text?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          model_answer?: string | null
+          options?: Json
+          order_idx?: number
+          pack_id?: string | null
+          points?: number
+          prompt: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string | null
+          type: string
+          unit_id?: string | null
+          updated_at?: string
+        }
         Update: {
-          accepted_answers?: Json;
-          correct_options?: Json;
-          created_at?: string;
-          created_by?: string | null;
-          explanation?: string | null;
-          grading?: string;
-          hint_text?: string | null;
-          id?: string;
-          image_url?: string | null;
-          is_active?: boolean;
-          model_answer?: string | null;
-          options?: Json;
-          order_idx?: number;
-          pack_id?: string | null;
-          points?: number;
-          prompt?: string;
-          reviewed_at?: string | null;
-          reviewed_by?: string | null;
-          status?: string;
-          submitted_at?: string | null;
-          type?: string;
-          unit_id?: string | null;
-          updated_at?: string;
-        };
+          accepted_answers?: Json
+          correct_options?: Json
+          created_at?: string
+          created_by?: string | null
+          explanation?: string | null
+          grading?: string
+          hint_text?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          model_answer?: string | null
+          options?: Json
+          order_idx?: number
+          pack_id?: string | null
+          points?: number
+          prompt?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string | null
+          type?: string
+          unit_id?: string | null
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "makron_questions_pack_id_fkey";
-            columns: ["pack_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_packs";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_questions_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "makron_packs"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "makron_questions_unit_id_fkey";
-            columns: ["unit_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_units";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_questions_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "makron_units"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       makron_reports: {
         Row: {
-          category: string;
-          created_at: string;
-          id: string;
-          note: string | null;
-          question_id: string | null;
-          status: string;
-          suggested_answer: string | null;
-          user_id: string;
-        };
+          category: string
+          created_at: string
+          id: string
+          note: string | null
+          question_id: string | null
+          status: string
+          suggested_answer: string | null
+          user_id: string
+        }
         Insert: {
-          category: string;
-          created_at?: string;
-          id?: string;
-          note?: string | null;
-          question_id?: string | null;
-          status?: string;
-          suggested_answer?: string | null;
-          user_id: string;
-        };
+          category: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          question_id?: string | null
+          status?: string
+          suggested_answer?: string | null
+          user_id: string
+        }
         Update: {
-          category?: string;
-          created_at?: string;
-          id?: string;
-          note?: string | null;
-          question_id?: string | null;
-          status?: string;
-          suggested_answer?: string | null;
-          user_id?: string;
-        };
+          category?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          question_id?: string | null
+          status?: string
+          suggested_answer?: string | null
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "makron_reports_question_id_fkey";
-            columns: ["question_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_questions";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_reports_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "makron_questions"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       makron_sessions: {
         Row: {
-          all_mode: boolean;
-          coins_awarded: number;
-          created_at: string;
-          daily_date: string | null;
-          finished_at: string | null;
-          id: string;
-          kind: string;
-          pack_id: string | null;
-          passed: boolean | null;
-          question_ids: string[] | null;
-          scratchpad: string | null;
-          started_at: string;
-          total_points: number | null;
-          total_score: number | null;
-          unit_id: string | null;
-          user_id: string;
-          xp_awarded: number;
-        };
+          all_mode: boolean
+          coins_awarded: number
+          created_at: string
+          daily_date: string | null
+          finished_at: string | null
+          id: string
+          kind: string
+          pack_id: string | null
+          passed: boolean | null
+          question_ids: string[] | null
+          scratchpad: string | null
+          started_at: string
+          total_points: number | null
+          total_score: number | null
+          unit_id: string | null
+          user_id: string
+          xp_awarded: number
+        }
         Insert: {
-          all_mode?: boolean;
-          coins_awarded?: number;
-          created_at?: string;
-          daily_date?: string | null;
-          finished_at?: string | null;
-          id?: string;
-          kind?: string;
-          pack_id?: string | null;
-          passed?: boolean | null;
-          question_ids?: string[] | null;
-          scratchpad?: string | null;
-          started_at?: string;
-          total_points?: number | null;
-          total_score?: number | null;
-          unit_id?: string | null;
-          user_id: string;
-          xp_awarded?: number;
-        };
+          all_mode?: boolean
+          coins_awarded?: number
+          created_at?: string
+          daily_date?: string | null
+          finished_at?: string | null
+          id?: string
+          kind?: string
+          pack_id?: string | null
+          passed?: boolean | null
+          question_ids?: string[] | null
+          scratchpad?: string | null
+          started_at?: string
+          total_points?: number | null
+          total_score?: number | null
+          unit_id?: string | null
+          user_id: string
+          xp_awarded?: number
+        }
         Update: {
-          all_mode?: boolean;
-          coins_awarded?: number;
-          created_at?: string;
-          daily_date?: string | null;
-          finished_at?: string | null;
-          id?: string;
-          kind?: string;
-          pack_id?: string | null;
-          passed?: boolean | null;
-          question_ids?: string[] | null;
-          scratchpad?: string | null;
-          started_at?: string;
-          total_points?: number | null;
-          total_score?: number | null;
-          unit_id?: string | null;
-          user_id?: string;
-          xp_awarded?: number;
-        };
+          all_mode?: boolean
+          coins_awarded?: number
+          created_at?: string
+          daily_date?: string | null
+          finished_at?: string | null
+          id?: string
+          kind?: string
+          pack_id?: string | null
+          passed?: boolean | null
+          question_ids?: string[] | null
+          scratchpad?: string | null
+          started_at?: string
+          total_points?: number | null
+          total_score?: number | null
+          unit_id?: string | null
+          user_id?: string
+          xp_awarded?: number
+        }
         Relationships: [
           {
-            foreignKeyName: "makron_sessions_pack_id_fkey";
-            columns: ["pack_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_packs";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_sessions_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "makron_packs"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "makron_sessions_unit_id_fkey";
-            columns: ["unit_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_units";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_sessions_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "makron_units"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       makron_subjects: {
         Row: {
-          color: string | null;
-          created_at: string;
-          created_by: string | null;
-          icon: string | null;
-          id: string;
-          name: string;
-          order_idx: number;
-          updated_at: string;
-        };
+          color: string | null
+          created_at: string
+          created_by: string | null
+          icon: string | null
+          id: string
+          name: string
+          order_idx: number
+          updated_at: string
+        }
         Insert: {
-          color?: string | null;
-          created_at?: string;
-          created_by?: string | null;
-          icon?: string | null;
-          id?: string;
-          name: string;
-          order_idx?: number;
-          updated_at?: string;
-        };
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          order_idx?: number
+          updated_at?: string
+        }
         Update: {
-          color?: string | null;
-          created_at?: string;
-          created_by?: string | null;
-          icon?: string | null;
-          id?: string;
-          name?: string;
-          order_idx?: number;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          order_idx?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       makron_units: {
         Row: {
-          created_at: string;
-          created_by: string | null;
-          description: string | null;
-          field: string | null;
-          field_id: string | null;
-          grade: string | null;
-          id: string;
-          order_idx: number;
-          organization_id: string | null;
-          subject: string | null;
-          subject_id: string | null;
-          title: string;
-          unit: string | null;
-          updated_at: string;
-        };
+          created_at: string
+          created_by: string | null
+          description: string | null
+          field: string | null
+          field_id: string | null
+          grade: string | null
+          id: string
+          order_idx: number
+          organization_id: string | null
+          subject: string | null
+          subject_id: string | null
+          title: string
+          unit: string | null
+          updated_at: string
+        }
         Insert: {
-          created_at?: string;
-          created_by?: string | null;
-          description?: string | null;
-          field?: string | null;
-          field_id?: string | null;
-          grade?: string | null;
-          id?: string;
-          order_idx?: number;
-          organization_id?: string | null;
-          subject?: string | null;
-          subject_id?: string | null;
-          title: string;
-          unit?: string | null;
-          updated_at?: string;
-        };
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          field?: string | null
+          field_id?: string | null
+          grade?: string | null
+          id?: string
+          order_idx?: number
+          organization_id?: string | null
+          subject?: string | null
+          subject_id?: string | null
+          title: string
+          unit?: string | null
+          updated_at?: string
+        }
         Update: {
-          created_at?: string;
-          created_by?: string | null;
-          description?: string | null;
-          field?: string | null;
-          field_id?: string | null;
-          grade?: string | null;
-          id?: string;
-          order_idx?: number;
-          organization_id?: string | null;
-          subject?: string | null;
-          subject_id?: string | null;
-          title?: string;
-          unit?: string | null;
-          updated_at?: string;
-        };
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          field?: string | null
+          field_id?: string | null
+          grade?: string | null
+          id?: string
+          order_idx?: number
+          organization_id?: string | null
+          subject?: string | null
+          subject_id?: string | null
+          title?: string
+          unit?: string | null
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "makron_units_field_id_fkey";
-            columns: ["field_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_fields";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_units_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "makron_fields"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "makron_units_subject_id_fkey";
-            columns: ["subject_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_subjects";
-            referencedColumns: ["id"];
+            foreignKeyName: "makron_units_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "makron_subjects"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       makron_xp: {
         Row: {
-          level: number;
-          updated_at: string;
-          user_id: string;
-          xp: number;
-        };
+          level: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
         Insert: {
-          level?: number;
-          updated_at?: string;
-          user_id: string;
-          xp?: number;
-        };
+          level?: number
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
         Update: {
-          level?: number;
-          updated_at?: string;
-          user_id?: string;
-          xp?: number;
-        };
-        Relationships: [];
-      };
+          level?: number
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
       material_edits: {
         Row: {
-          created_at: string;
-          id: string;
-          material_id: string;
-          note: string | null;
-          patch: Json;
-          proposer: string | null;
-          reviewed_at: string | null;
-          reviewed_by: string | null;
-          status: string;
-        };
+          created_at: string
+          id: string
+          material_id: string
+          note: string | null
+          patch: Json
+          proposer: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          material_id: string;
-          note?: string | null;
-          patch: Json;
-          proposer?: string | null;
-          reviewed_at?: string | null;
-          reviewed_by?: string | null;
-          status?: string;
-        };
+          created_at?: string
+          id?: string
+          material_id: string
+          note?: string | null
+          patch: Json
+          proposer?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          material_id?: string;
-          note?: string | null;
-          patch?: Json;
-          proposer?: string | null;
-          reviewed_at?: string | null;
-          reviewed_by?: string | null;
-          status?: string;
-        };
+          created_at?: string
+          id?: string
+          material_id?: string
+          note?: string | null
+          patch?: Json
+          proposer?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "material_edits_material_id_fkey";
-            columns: ["material_id"];
-            isOneToOne: false;
-            referencedRelation: "materials";
-            referencedColumns: ["id"];
+            foreignKeyName: "material_edits_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       material_favorites: {
         Row: {
-          created_at: string;
-          material_id: string;
-          user_id: string;
-        };
+          created_at: string
+          material_id: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          material_id: string;
-          user_id: string;
-        };
+          created_at?: string
+          material_id: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          material_id?: string;
-          user_id?: string;
-        };
+          created_at?: string
+          material_id?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "material_favorites_material_id_fkey";
-            columns: ["material_id"];
-            isOneToOne: false;
-            referencedRelation: "materials";
-            referencedColumns: ["id"];
+            foreignKeyName: "material_favorites_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       material_reports: {
         Row: {
-          created_at: string;
-          detail: string | null;
-          id: string;
-          material_id: string;
-          reason: string;
-          reporter: string | null;
-          status: string;
-        };
+          created_at: string
+          detail: string | null
+          id: string
+          material_id: string
+          reason: string
+          reporter: string | null
+          status: string
+        }
         Insert: {
-          created_at?: string;
-          detail?: string | null;
-          id?: string;
-          material_id: string;
-          reason: string;
-          reporter?: string | null;
-          status?: string;
-        };
+          created_at?: string
+          detail?: string | null
+          id?: string
+          material_id: string
+          reason: string
+          reporter?: string | null
+          status?: string
+        }
         Update: {
-          created_at?: string;
-          detail?: string | null;
-          id?: string;
-          material_id?: string;
-          reason?: string;
-          reporter?: string | null;
-          status?: string;
-        };
+          created_at?: string
+          detail?: string | null
+          id?: string
+          material_id?: string
+          reason?: string
+          reporter?: string | null
+          status?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "material_reports_material_id_fkey";
-            columns: ["material_id"];
-            isOneToOne: false;
-            referencedRelation: "materials";
-            referencedColumns: ["id"];
+            foreignKeyName: "material_reports_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       materials: {
         Row: {
-          approved_at: string | null;
-          approved_by: string | null;
-          author: string | null;
-          barcode: string | null;
-          category: string | null;
-          cover_url: string | null;
-          created_at: string;
-          created_by: string | null;
-          description: string | null;
-          difficulty: number | null;
-          edition: string | null;
-          favorite: boolean;
-          format: string | null;
-          id: string;
-          isbn: string | null;
-          language: string | null;
-          level: string | null;
-          pages: number | null;
-          price: number | null;
-          publisher: string | null;
-          recommend_for: string | null;
-          series: string | null;
-          status: string;
-          sub_subject: string | null;
-          subject: string | null;
-          subtitle: string | null;
-          table_of_contents: string | null;
-          tags: string[] | null;
-          target_exam: string | null;
-          target_grade: string | null;
-          title: string;
-          updated_at: string;
-          url: string | null;
-          volume: string | null;
-          year: number | null;
-        };
+          approved_at: string | null
+          approved_by: string | null
+          author: string | null
+          barcode: string | null
+          category: string | null
+          cover_url: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          difficulty: number | null
+          edition: string | null
+          favorite: boolean
+          format: string | null
+          id: string
+          isbn: string | null
+          language: string | null
+          level: string | null
+          pages: number | null
+          price: number | null
+          publisher: string | null
+          recommend_for: string | null
+          series: string | null
+          status: string
+          sub_subject: string | null
+          subject: string | null
+          subtitle: string | null
+          table_of_contents: string | null
+          tags: string[] | null
+          target_exam: string | null
+          target_grade: string | null
+          title: string
+          updated_at: string
+          url: string | null
+          volume: string | null
+          year: number | null
+        }
         Insert: {
-          approved_at?: string | null;
-          approved_by?: string | null;
-          author?: string | null;
-          barcode?: string | null;
-          category?: string | null;
-          cover_url?: string | null;
-          created_at?: string;
-          created_by?: string | null;
-          description?: string | null;
-          difficulty?: number | null;
-          edition?: string | null;
-          favorite?: boolean;
-          format?: string | null;
-          id?: string;
-          isbn?: string | null;
-          language?: string | null;
-          level?: string | null;
-          pages?: number | null;
-          price?: number | null;
-          publisher?: string | null;
-          recommend_for?: string | null;
-          series?: string | null;
-          status?: string;
-          sub_subject?: string | null;
-          subject?: string | null;
-          subtitle?: string | null;
-          table_of_contents?: string | null;
-          tags?: string[] | null;
-          target_exam?: string | null;
-          target_grade?: string | null;
-          title: string;
-          updated_at?: string;
-          url?: string | null;
-          volume?: string | null;
-          year?: number | null;
-        };
+          approved_at?: string | null
+          approved_by?: string | null
+          author?: string | null
+          barcode?: string | null
+          category?: string | null
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          difficulty?: number | null
+          edition?: string | null
+          favorite?: boolean
+          format?: string | null
+          id?: string
+          isbn?: string | null
+          language?: string | null
+          level?: string | null
+          pages?: number | null
+          price?: number | null
+          publisher?: string | null
+          recommend_for?: string | null
+          series?: string | null
+          status?: string
+          sub_subject?: string | null
+          subject?: string | null
+          subtitle?: string | null
+          table_of_contents?: string | null
+          tags?: string[] | null
+          target_exam?: string | null
+          target_grade?: string | null
+          title: string
+          updated_at?: string
+          url?: string | null
+          volume?: string | null
+          year?: number | null
+        }
         Update: {
-          approved_at?: string | null;
-          approved_by?: string | null;
-          author?: string | null;
-          barcode?: string | null;
-          category?: string | null;
-          cover_url?: string | null;
-          created_at?: string;
-          created_by?: string | null;
-          description?: string | null;
-          difficulty?: number | null;
-          edition?: string | null;
-          favorite?: boolean;
-          format?: string | null;
-          id?: string;
-          isbn?: string | null;
-          language?: string | null;
-          level?: string | null;
-          pages?: number | null;
-          price?: number | null;
-          publisher?: string | null;
-          recommend_for?: string | null;
-          series?: string | null;
-          status?: string;
-          sub_subject?: string | null;
-          subject?: string | null;
-          subtitle?: string | null;
-          table_of_contents?: string | null;
-          tags?: string[] | null;
-          target_exam?: string | null;
-          target_grade?: string | null;
-          title?: string;
-          updated_at?: string;
-          url?: string | null;
-          volume?: string | null;
-          year?: number | null;
-        };
-        Relationships: [];
-      };
+          approved_at?: string | null
+          approved_by?: string | null
+          author?: string | null
+          barcode?: string | null
+          category?: string | null
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          difficulty?: number | null
+          edition?: string | null
+          favorite?: boolean
+          format?: string | null
+          id?: string
+          isbn?: string | null
+          language?: string | null
+          level?: string | null
+          pages?: number | null
+          price?: number | null
+          publisher?: string | null
+          recommend_for?: string | null
+          series?: string | null
+          status?: string
+          sub_subject?: string | null
+          subject?: string | null
+          subtitle?: string | null
+          table_of_contents?: string | null
+          tags?: string[] | null
+          target_exam?: string | null
+          target_grade?: string | null
+          title?: string
+          updated_at?: string
+          url?: string | null
+          volume?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
       mentor_sessions: {
         Row: {
-          answer: string | null;
-          created_at: string;
-          id: string;
-          mentor_id: string;
-          question: string;
-          reward_coins: number;
-          student_id: string;
-        };
+          answer: string | null
+          created_at: string
+          id: string
+          mentor_id: string
+          question: string
+          reward_coins: number
+          student_id: string
+        }
         Insert: {
-          answer?: string | null;
-          created_at?: string;
-          id?: string;
-          mentor_id: string;
-          question: string;
-          reward_coins?: number;
-          student_id: string;
-        };
+          answer?: string | null
+          created_at?: string
+          id?: string
+          mentor_id: string
+          question: string
+          reward_coins?: number
+          student_id: string
+        }
         Update: {
-          answer?: string | null;
-          created_at?: string;
-          id?: string;
-          mentor_id?: string;
-          question?: string;
-          reward_coins?: number;
-          student_id?: string;
-        };
-        Relationships: [];
-      };
+          answer?: string | null
+          created_at?: string
+          id?: string
+          mentor_id?: string
+          question?: string
+          reward_coins?: number
+          student_id?: string
+        }
+        Relationships: []
+      }
       notebook_pages: {
         Row: {
-          id: string;
-          notebook_id: string;
-          page_index: number;
-          strokes: Json;
-          texts: Json;
-          updated_at: string;
-          updated_by: string | null;
-        };
+          id: string
+          notebook_id: string
+          page_index: number
+          strokes: Json
+          texts: Json
+          updated_at: string
+          updated_by: string | null
+        }
         Insert: {
-          id?: string;
-          notebook_id: string;
-          page_index?: number;
-          strokes?: Json;
-          texts?: Json;
-          updated_at?: string;
-          updated_by?: string | null;
-        };
+          id?: string
+          notebook_id: string
+          page_index?: number
+          strokes?: Json
+          texts?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
         Update: {
-          id?: string;
-          notebook_id?: string;
-          page_index?: number;
-          strokes?: Json;
-          texts?: Json;
-          updated_at?: string;
-          updated_by?: string | null;
-        };
+          id?: string
+          notebook_id?: string
+          page_index?: number
+          strokes?: Json
+          texts?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
         Relationships: [
           {
-            foreignKeyName: "notebook_pages_notebook_id_fkey";
-            columns: ["notebook_id"];
-            isOneToOne: false;
-            referencedRelation: "notebooks";
-            referencedColumns: ["id"];
+            foreignKeyName: "notebook_pages_notebook_id_fkey"
+            columns: ["notebook_id"]
+            isOneToOne: false
+            referencedRelation: "notebooks"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       notebook_photos: {
         Row: {
-          created_at: string;
-          id: string;
-          image_url: string;
-          subject_id: string | null;
-          taken_on: string | null;
-          title: string | null;
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          image_url: string
+          subject_id: string | null
+          taken_on: string | null
+          title: string | null
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          image_url: string;
-          subject_id?: string | null;
-          taken_on?: string | null;
-          title?: string | null;
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          image_url: string
+          subject_id?: string | null
+          taken_on?: string | null
+          title?: string | null
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          image_url?: string;
-          subject_id?: string | null;
-          taken_on?: string | null;
-          title?: string | null;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          image_url?: string
+          subject_id?: string | null
+          taken_on?: string | null
+          title?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       notebook_shares: {
         Row: {
-          can_edit: boolean;
-          created_at: string;
-          id: string;
-          notebook_id: string;
-          owner_id: string;
-          status: string;
-          user_id: string;
-        };
+          can_edit: boolean
+          created_at: string
+          id: string
+          notebook_id: string
+          owner_id: string
+          status: string
+          user_id: string
+        }
         Insert: {
-          can_edit?: boolean;
-          created_at?: string;
-          id?: string;
-          notebook_id: string;
-          owner_id: string;
-          status?: string;
-          user_id: string;
-        };
+          can_edit?: boolean
+          created_at?: string
+          id?: string
+          notebook_id: string
+          owner_id: string
+          status?: string
+          user_id: string
+        }
         Update: {
-          can_edit?: boolean;
-          created_at?: string;
-          id?: string;
-          notebook_id?: string;
-          owner_id?: string;
-          status?: string;
-          user_id?: string;
-        };
+          can_edit?: boolean
+          created_at?: string
+          id?: string
+          notebook_id?: string
+          owner_id?: string
+          status?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "notebook_shares_notebook_id_fkey";
-            columns: ["notebook_id"];
-            isOneToOne: false;
-            referencedRelation: "notebooks";
-            referencedColumns: ["id"];
+            foreignKeyName: "notebook_shares_notebook_id_fkey"
+            columns: ["notebook_id"]
+            isOneToOne: false
+            referencedRelation: "notebooks"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       notebook_subjects: {
         Row: {
-          created_at: string;
-          id: string;
-          name: string;
-          sort_order: number;
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          name: string;
-          sort_order?: number;
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          name?: string;
-          sort_order?: number;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       notebooks: {
         Row: {
-          archived: boolean;
-          cover_color: string;
-          created_at: string;
-          id: string;
-          owner_id: string;
-          paper_color: string;
-          paper_type: string;
-          subject_id: string | null;
-          title: string;
-          updated_at: string;
-        };
+          archived: boolean
+          cover_color: string
+          created_at: string
+          id: string
+          owner_id: string
+          paper_color: string
+          paper_type: string
+          subject_id: string | null
+          title: string
+          updated_at: string
+        }
         Insert: {
-          archived?: boolean;
-          cover_color?: string;
-          created_at?: string;
-          id?: string;
-          owner_id: string;
-          paper_color?: string;
-          paper_type?: string;
-          subject_id?: string | null;
-          title?: string;
-          updated_at?: string;
-        };
+          archived?: boolean
+          cover_color?: string
+          created_at?: string
+          id?: string
+          owner_id: string
+          paper_color?: string
+          paper_type?: string
+          subject_id?: string | null
+          title?: string
+          updated_at?: string
+        }
         Update: {
-          archived?: boolean;
-          cover_color?: string;
-          created_at?: string;
-          id?: string;
-          owner_id?: string;
-          paper_color?: string;
-          paper_type?: string;
-          subject_id?: string | null;
-          title?: string;
-          updated_at?: string;
-        };
+          archived?: boolean
+          cover_color?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          paper_color?: string
+          paper_type?: string
+          subject_id?: string | null
+          title?: string
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "notebooks_subject_id_fkey";
-            columns: ["subject_id"];
-            isOneToOne: false;
-            referencedRelation: "notebook_subjects";
-            referencedColumns: ["id"];
+            foreignKeyName: "notebooks_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "notebook_subjects"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       notification_categories: {
         Row: {
-          prefs: Json;
-          updated_at: string;
-          user_id: string;
-        };
+          prefs: Json
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          prefs?: Json;
-          updated_at?: string;
-          user_id: string;
-        };
+          prefs?: Json
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          prefs?: Json;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          prefs?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
-          body: string | null;
-          created_at: string;
-          id: string;
-          link: string | null;
-          meta: Json;
-          read_at: string | null;
-          title: string;
-          type: string;
-          user_id: string;
-        };
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          meta: Json
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
         Insert: {
-          body?: string | null;
-          created_at?: string;
-          id?: string;
-          link?: string | null;
-          meta?: Json;
-          read_at?: string | null;
-          title: string;
-          type?: string;
-          user_id: string;
-        };
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          meta?: Json
+          read_at?: string | null
+          title: string
+          type?: string
+          user_id: string
+        }
         Update: {
-          body?: string | null;
-          created_at?: string;
-          id?: string;
-          link?: string | null;
-          meta?: Json;
-          read_at?: string | null;
-          title?: string;
-          type?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          meta?: Json
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ocr_notes: {
         Row: {
-          created_at: string;
-          id: string;
-          text: string;
-          title: string | null;
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          text: string
+          title: string | null
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          text: string;
-          title?: string | null;
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          text: string
+          title?: string | null
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          text?: string;
-          title?: string | null;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          text?: string
+          title?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       org_app_settings: {
         Row: {
-          app_key: string;
-          created_at: string;
-          enabled: boolean;
-          id: string;
-          label: string | null;
-          organization_id: string;
-          sort_order: number;
-          updated_at: string;
-        };
+          app_key: string
+          created_at: string
+          enabled: boolean
+          id: string
+          label: string | null
+          organization_id: string
+          sort_order: number
+          updated_at: string
+        }
         Insert: {
-          app_key: string;
-          created_at?: string;
-          enabled?: boolean;
-          id?: string;
-          label?: string | null;
-          organization_id: string;
-          sort_order?: number;
-          updated_at?: string;
-        };
+          app_key: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          label?: string | null
+          organization_id: string
+          sort_order?: number
+          updated_at?: string
+        }
         Update: {
-          app_key?: string;
-          created_at?: string;
-          enabled?: boolean;
-          id?: string;
-          label?: string | null;
-          organization_id?: string;
-          sort_order?: number;
-          updated_at?: string;
-        };
+          app_key?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          label?: string | null
+          organization_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_app_settings_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_app_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_assignment_targets: {
         Row: {
-          assignment_id: string;
-          created_at: string;
-          id: string;
-          user_id: string;
-        };
+          assignment_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
         Insert: {
-          assignment_id: string;
-          created_at?: string;
-          id?: string;
-          user_id: string;
-        };
+          assignment_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
         Update: {
-          assignment_id?: string;
-          created_at?: string;
-          id?: string;
-          user_id?: string;
-        };
+          assignment_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_assignment_targets_assignment_id_fkey";
-            columns: ["assignment_id"];
-            isOneToOne: false;
-            referencedRelation: "org_pack_assignments";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_assignment_targets_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "org_pack_assignments"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_calendar_events: {
         Row: {
-          all_day: boolean;
-          color: string;
-          created_at: string;
-          created_by: string;
-          description: string | null;
-          ends_at: string | null;
-          group_id: string | null;
-          id: string;
-          location: string | null;
-          organization_id: string;
-          starts_at: string;
-          title: string;
-          updated_at: string;
-        };
+          all_day: boolean
+          color: string
+          created_at: string
+          created_by: string
+          description: string | null
+          ends_at: string | null
+          group_id: string | null
+          id: string
+          location: string | null
+          organization_id: string
+          starts_at: string
+          title: string
+          updated_at: string
+        }
         Insert: {
-          all_day?: boolean;
-          color?: string;
-          created_at?: string;
-          created_by: string;
-          description?: string | null;
-          ends_at?: string | null;
-          group_id?: string | null;
-          id?: string;
-          location?: string | null;
-          organization_id: string;
-          starts_at: string;
-          title: string;
-          updated_at?: string;
-        };
+          all_day?: boolean
+          color?: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          ends_at?: string | null
+          group_id?: string | null
+          id?: string
+          location?: string | null
+          organization_id: string
+          starts_at: string
+          title: string
+          updated_at?: string
+        }
         Update: {
-          all_day?: boolean;
-          color?: string;
-          created_at?: string;
-          created_by?: string;
-          description?: string | null;
-          ends_at?: string | null;
-          group_id?: string | null;
-          id?: string;
-          location?: string | null;
-          organization_id?: string;
-          starts_at?: string;
-          title?: string;
-          updated_at?: string;
-        };
+          all_day?: boolean
+          color?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          ends_at?: string | null
+          group_id?: string | null
+          id?: string
+          location?: string | null
+          organization_id?: string
+          starts_at?: string
+          title?: string
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_calendar_events_group_id_fkey";
-            columns: ["group_id"];
-            isOneToOne: false;
-            referencedRelation: "org_groups";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_calendar_events_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "org_groups"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "org_calendar_events_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_calendar_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_chat_blocks: {
         Row: {
-          blocked_id: string;
-          blocker_id: string;
-          created_at: string;
-          id: string;
-          organization_id: string;
-        };
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+          organization_id: string
+        }
         Insert: {
-          blocked_id: string;
-          blocker_id: string;
-          created_at?: string;
-          id?: string;
-          organization_id: string;
-        };
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+          organization_id: string
+        }
         Update: {
-          blocked_id?: string;
-          blocker_id?: string;
-          created_at?: string;
-          id?: string;
-          organization_id?: string;
-        };
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_chat_blocks_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_chat_blocks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_chat_messages: {
         Row: {
-          body: string;
-          created_at: string;
-          deleted_at: string | null;
-          edited_at: string | null;
-          id: string;
-          sender_id: string;
-          thread_id: string;
-        };
+          body: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          id: string
+          sender_id: string
+          thread_id: string
+        }
         Insert: {
-          body: string;
-          created_at?: string;
-          deleted_at?: string | null;
-          edited_at?: string | null;
-          id?: string;
-          sender_id: string;
-          thread_id: string;
-        };
+          body: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          sender_id: string
+          thread_id: string
+        }
         Update: {
-          body?: string;
-          created_at?: string;
-          deleted_at?: string | null;
-          edited_at?: string | null;
-          id?: string;
-          sender_id?: string;
-          thread_id?: string;
-        };
+          body?: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          sender_id?: string
+          thread_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_chat_messages_thread_id_fkey";
-            columns: ["thread_id"];
-            isOneToOne: false;
-            referencedRelation: "org_chat_threads";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_chat_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "org_chat_threads"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_chat_participants: {
         Row: {
-          created_at: string;
-          id: string;
-          last_read_at: string | null;
-          status: string;
-          thread_id: string;
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          last_read_at: string | null
+          status: string
+          thread_id: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          last_read_at?: string | null;
-          status?: string;
-          thread_id: string;
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          last_read_at?: string | null
+          status?: string
+          thread_id: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          last_read_at?: string | null;
-          status?: string;
-          thread_id?: string;
-          user_id?: string;
-        };
+          created_at?: string
+          id?: string
+          last_read_at?: string | null
+          status?: string
+          thread_id?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_chat_participants_thread_id_fkey";
-            columns: ["thread_id"];
-            isOneToOne: false;
-            referencedRelation: "org_chat_threads";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_chat_participants_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "org_chat_threads"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_chat_threads: {
         Row: {
-          created_at: string;
-          created_by: string;
-          group_id: string | null;
-          id: string;
-          kind: string;
-          organization_id: string;
-          title: string | null;
-          updated_at: string;
-        };
+          created_at: string
+          created_by: string
+          group_id: string | null
+          id: string
+          kind: string
+          organization_id: string
+          title: string | null
+          updated_at: string
+        }
         Insert: {
-          created_at?: string;
-          created_by: string;
-          group_id?: string | null;
-          id?: string;
-          kind?: string;
-          organization_id: string;
-          title?: string | null;
-          updated_at?: string;
-        };
+          created_at?: string
+          created_by: string
+          group_id?: string | null
+          id?: string
+          kind?: string
+          organization_id: string
+          title?: string | null
+          updated_at?: string
+        }
         Update: {
-          created_at?: string;
-          created_by?: string;
-          group_id?: string | null;
-          id?: string;
-          kind?: string;
-          organization_id?: string;
-          title?: string | null;
-          updated_at?: string;
-        };
+          created_at?: string
+          created_by?: string
+          group_id?: string | null
+          id?: string
+          kind?: string
+          organization_id?: string
+          title?: string | null
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_chat_threads_group_id_fkey";
-            columns: ["group_id"];
-            isOneToOne: false;
-            referencedRelation: "org_groups";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_chat_threads_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "org_groups"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "org_chat_threads_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_chat_threads_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_digital_ids: {
         Row: {
-          affiliation: string | null;
-          barcode_value: string | null;
-          created_at: string;
-          full_name: string | null;
-          id: string;
-          id_number: string | null;
-          issued_by: string | null;
-          notes: string | null;
-          organization_id: string;
-          photo_url: string | null;
-          updated_at: string;
-          user_id: string;
-          valid_until: string | null;
-        };
+          affiliation: string | null
+          barcode_value: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          id_number: string | null
+          issued_by: string | null
+          notes: string | null
+          organization_id: string
+          photo_url: string | null
+          updated_at: string
+          user_id: string
+          valid_until: string | null
+        }
         Insert: {
-          affiliation?: string | null;
-          barcode_value?: string | null;
-          created_at?: string;
-          full_name?: string | null;
-          id?: string;
-          id_number?: string | null;
-          issued_by?: string | null;
-          notes?: string | null;
-          organization_id: string;
-          photo_url?: string | null;
-          updated_at?: string;
-          user_id: string;
-          valid_until?: string | null;
-        };
+          affiliation?: string | null
+          barcode_value?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          id_number?: string | null
+          issued_by?: string | null
+          notes?: string | null
+          organization_id: string
+          photo_url?: string | null
+          updated_at?: string
+          user_id: string
+          valid_until?: string | null
+        }
         Update: {
-          affiliation?: string | null;
-          barcode_value?: string | null;
-          created_at?: string;
-          full_name?: string | null;
-          id?: string;
-          id_number?: string | null;
-          issued_by?: string | null;
-          notes?: string | null;
-          organization_id?: string;
-          photo_url?: string | null;
-          updated_at?: string;
-          user_id?: string;
-          valid_until?: string | null;
-        };
+          affiliation?: string | null
+          barcode_value?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          id_number?: string | null
+          issued_by?: string | null
+          notes?: string | null
+          organization_id?: string
+          photo_url?: string | null
+          updated_at?: string
+          user_id?: string
+          valid_until?: string | null
+        }
         Relationships: [
           {
-            foreignKeyName: "org_digital_ids_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_digital_ids_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_edu_attempts: {
         Row: {
-          ai_review: string | null;
-          correct: boolean;
-          created_at: string;
-          id: string;
-          organization_id: string;
-          question_id: string;
-          resolved_at: string | null;
-          unit_id: string;
-          user_answer: string | null;
-          user_id: string;
-        };
+          ai_review: string | null
+          correct: boolean
+          created_at: string
+          id: string
+          organization_id: string
+          question_id: string
+          resolved_at: string | null
+          unit_id: string
+          user_answer: string | null
+          user_id: string
+        }
         Insert: {
-          ai_review?: string | null;
-          correct?: boolean;
-          created_at?: string;
-          id?: string;
-          organization_id: string;
-          question_id: string;
-          resolved_at?: string | null;
-          unit_id: string;
-          user_answer?: string | null;
-          user_id: string;
-        };
+          ai_review?: string | null
+          correct?: boolean
+          created_at?: string
+          id?: string
+          organization_id: string
+          question_id: string
+          resolved_at?: string | null
+          unit_id: string
+          user_answer?: string | null
+          user_id: string
+        }
         Update: {
-          ai_review?: string | null;
-          correct?: boolean;
-          created_at?: string;
-          id?: string;
-          organization_id?: string;
-          question_id?: string;
-          resolved_at?: string | null;
-          unit_id?: string;
-          user_answer?: string | null;
-          user_id?: string;
-        };
+          ai_review?: string | null
+          correct?: boolean
+          created_at?: string
+          id?: string
+          organization_id?: string
+          question_id?: string
+          resolved_at?: string | null
+          unit_id?: string
+          user_answer?: string | null
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_edu_attempts_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_edu_attempts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "org_edu_attempts_question_id_fkey";
-            columns: ["question_id"];
-            isOneToOne: false;
-            referencedRelation: "org_edu_questions";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_edu_attempts_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "org_edu_questions"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "org_edu_attempts_unit_id_fkey";
-            columns: ["unit_id"];
-            isOneToOne: false;
-            referencedRelation: "org_edu_units";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_edu_attempts_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "org_edu_units"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_edu_questions: {
         Row: {
-          answer: string;
-          audience: Json;
-          body: string;
-          choices: Json;
-          created_at: string;
-          created_by: string | null;
-          explanation: string | null;
-          hint_text: string | null;
-          id: string;
-          kind: string;
-          level: number;
-          organization_id: string;
-          sort_order: number;
-          unit_id: string;
-          updated_at: string;
-        };
+          answer: string
+          audience: Json
+          body: string
+          choices: Json
+          created_at: string
+          created_by: string | null
+          explanation: string | null
+          hint_text: string | null
+          id: string
+          kind: string
+          level: number
+          organization_id: string
+          sort_order: number
+          unit_id: string
+          updated_at: string
+        }
         Insert: {
-          answer?: string;
-          audience?: Json;
-          body: string;
-          choices?: Json;
-          created_at?: string;
-          created_by?: string | null;
-          explanation?: string | null;
-          hint_text?: string | null;
-          id?: string;
-          kind?: string;
-          level?: number;
-          organization_id: string;
-          sort_order?: number;
-          unit_id: string;
-          updated_at?: string;
-        };
+          answer?: string
+          audience?: Json
+          body: string
+          choices?: Json
+          created_at?: string
+          created_by?: string | null
+          explanation?: string | null
+          hint_text?: string | null
+          id?: string
+          kind?: string
+          level?: number
+          organization_id: string
+          sort_order?: number
+          unit_id: string
+          updated_at?: string
+        }
         Update: {
-          answer?: string;
-          audience?: Json;
-          body?: string;
-          choices?: Json;
-          created_at?: string;
-          created_by?: string | null;
-          explanation?: string | null;
-          hint_text?: string | null;
-          id?: string;
-          kind?: string;
-          level?: number;
-          organization_id?: string;
-          sort_order?: number;
-          unit_id?: string;
-          updated_at?: string;
-        };
+          answer?: string
+          audience?: Json
+          body?: string
+          choices?: Json
+          created_at?: string
+          created_by?: string | null
+          explanation?: string | null
+          hint_text?: string | null
+          id?: string
+          kind?: string
+          level?: number
+          organization_id?: string
+          sort_order?: number
+          unit_id?: string
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_edu_questions_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_edu_questions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "org_edu_questions_unit_id_fkey";
-            columns: ["unit_id"];
-            isOneToOne: false;
-            referencedRelation: "org_edu_units";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_edu_questions_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "org_edu_units"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_edu_streaks: {
         Row: {
-          best_streak: number;
-          current_streak: number;
-          id: string;
-          last_date: string | null;
-          organization_id: string;
-          total_correct: number;
-          updated_at: string;
-          user_id: string;
-          xp: number;
-        };
+          best_streak: number
+          current_streak: number
+          id: string
+          last_date: string | null
+          organization_id: string
+          total_correct: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
         Insert: {
-          best_streak?: number;
-          current_streak?: number;
-          id?: string;
-          last_date?: string | null;
-          organization_id: string;
-          total_correct?: number;
-          updated_at?: string;
-          user_id: string;
-          xp?: number;
-        };
+          best_streak?: number
+          current_streak?: number
+          id?: string
+          last_date?: string | null
+          organization_id: string
+          total_correct?: number
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
         Update: {
-          best_streak?: number;
-          current_streak?: number;
-          id?: string;
-          last_date?: string | null;
-          organization_id?: string;
-          total_correct?: number;
-          updated_at?: string;
-          user_id?: string;
-          xp?: number;
-        };
+          best_streak?: number
+          current_streak?: number
+          id?: string
+          last_date?: string | null
+          organization_id?: string
+          total_correct?: number
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
         Relationships: [
           {
-            foreignKeyName: "org_edu_streaks_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_edu_streaks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_edu_subjects: {
         Row: {
-          color: string;
-          created_at: string;
-          id: string;
-          name: string;
-          organization_id: string;
-          sort_order: number;
-          updated_at: string;
-        };
+          color: string
+          created_at: string
+          id: string
+          name: string
+          organization_id: string
+          sort_order: number
+          updated_at: string
+        }
         Insert: {
-          color?: string;
-          created_at?: string;
-          id?: string;
-          name: string;
-          organization_id: string;
-          sort_order?: number;
-          updated_at?: string;
-        };
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          organization_id: string
+          sort_order?: number
+          updated_at?: string
+        }
         Update: {
-          color?: string;
-          created_at?: string;
-          id?: string;
-          name?: string;
-          organization_id?: string;
-          sort_order?: number;
-          updated_at?: string;
-        };
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          organization_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_edu_subjects_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_edu_subjects_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_edu_units: {
         Row: {
-          audience: Json;
-          created_at: string;
-          description: string | null;
-          id: string;
-          level: number;
-          organization_id: string;
-          sort_order: number;
-          subject_id: string;
-          title: string;
-          updated_at: string;
-        };
+          audience: Json
+          created_at: string
+          description: string | null
+          id: string
+          level: number
+          organization_id: string
+          sort_order: number
+          subject_id: string
+          title: string
+          updated_at: string
+        }
         Insert: {
-          audience?: Json;
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          level?: number;
-          organization_id: string;
-          sort_order?: number;
-          subject_id: string;
-          title: string;
-          updated_at?: string;
-        };
+          audience?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          level?: number
+          organization_id: string
+          sort_order?: number
+          subject_id: string
+          title: string
+          updated_at?: string
+        }
         Update: {
-          audience?: Json;
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          level?: number;
-          organization_id?: string;
-          sort_order?: number;
-          subject_id?: string;
-          title?: string;
-          updated_at?: string;
-        };
+          audience?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          level?: number
+          organization_id?: string
+          sort_order?: number
+          subject_id?: string
+          title?: string
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_edu_units_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_edu_units_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "org_edu_units_subject_id_fkey";
-            columns: ["subject_id"];
-            isOneToOne: false;
-            referencedRelation: "org_edu_subjects";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_edu_units_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "org_edu_subjects"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_group_members: {
         Row: {
-          created_at: string;
-          group_id: string;
-          id: string;
-          role: string;
-          user_id: string;
-        };
+          created_at: string
+          group_id: string
+          id: string
+          role: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          group_id: string;
-          id?: string;
-          role?: string;
-          user_id: string;
-        };
+          created_at?: string
+          group_id: string
+          id?: string
+          role?: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          group_id?: string;
-          id?: string;
-          role?: string;
-          user_id?: string;
-        };
+          created_at?: string
+          group_id?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_group_members_group_id_fkey";
-            columns: ["group_id"];
-            isOneToOne: false;
-            referencedRelation: "org_groups";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "org_groups"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_groups: {
         Row: {
-          color: string;
-          created_at: string;
-          created_by: string;
-          description: string | null;
-          id: string;
-          leader_id: string;
-          name: string;
-          organization_id: string;
-          perms: Json;
-          updated_at: string;
-        };
+          color: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          leader_id: string
+          name: string
+          organization_id: string
+          perms: Json
+          updated_at: string
+        }
         Insert: {
-          color?: string;
-          created_at?: string;
-          created_by: string;
-          description?: string | null;
-          id?: string;
-          leader_id: string;
-          name: string;
-          organization_id: string;
-          perms?: Json;
-          updated_at?: string;
-        };
+          color?: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          leader_id: string
+          name: string
+          organization_id: string
+          perms?: Json
+          updated_at?: string
+        }
         Update: {
-          color?: string;
-          created_at?: string;
-          created_by?: string;
-          description?: string | null;
-          id?: string;
-          leader_id?: string;
-          name?: string;
-          organization_id?: string;
-          perms?: Json;
-          updated_at?: string;
-        };
+          color?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          leader_id?: string
+          name?: string
+          organization_id?: string
+          perms?: Json
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_groups_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_groups_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_notifications: {
         Row: {
-          app_key: string;
-          body: string | null;
-          created_at: string;
-          id: string;
-          link: string | null;
-          organization_id: string;
-          read_at: string | null;
-          title: string;
-          user_id: string;
-        };
+          app_key: string
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          organization_id: string
+          read_at: string | null
+          title: string
+          user_id: string
+        }
         Insert: {
-          app_key?: string;
-          body?: string | null;
-          created_at?: string;
-          id?: string;
-          link?: string | null;
-          organization_id: string;
-          read_at?: string | null;
-          title: string;
-          user_id: string;
-        };
+          app_key?: string
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          organization_id: string
+          read_at?: string | null
+          title: string
+          user_id: string
+        }
         Update: {
-          app_key?: string;
-          body?: string | null;
-          created_at?: string;
-          id?: string;
-          link?: string | null;
-          organization_id?: string;
-          read_at?: string | null;
-          title?: string;
-          user_id?: string;
-        };
+          app_key?: string
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          organization_id?: string
+          read_at?: string | null
+          title?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_notifications_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_notifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_pack_assignments: {
         Row: {
-          assign_all: boolean;
-          created_at: string;
-          created_by: string;
-          due_at: string | null;
-          id: string;
-          instructions: string | null;
-          organization_id: string;
-          pack_id: string;
-          required: boolean;
-          title: string;
-          updated_at: string;
-        };
+          assign_all: boolean
+          created_at: string
+          created_by: string
+          due_at: string | null
+          id: string
+          instructions: string | null
+          organization_id: string
+          pack_id: string
+          required: boolean
+          title: string
+          updated_at: string
+        }
         Insert: {
-          assign_all?: boolean;
-          created_at?: string;
-          created_by?: string;
-          due_at?: string | null;
-          id?: string;
-          instructions?: string | null;
-          organization_id: string;
-          pack_id: string;
-          required?: boolean;
-          title: string;
-          updated_at?: string;
-        };
+          assign_all?: boolean
+          created_at?: string
+          created_by?: string
+          due_at?: string | null
+          id?: string
+          instructions?: string | null
+          organization_id: string
+          pack_id: string
+          required?: boolean
+          title: string
+          updated_at?: string
+        }
         Update: {
-          assign_all?: boolean;
-          created_at?: string;
-          created_by?: string;
-          due_at?: string | null;
-          id?: string;
-          instructions?: string | null;
-          organization_id?: string;
-          pack_id?: string;
-          required?: boolean;
-          title?: string;
-          updated_at?: string;
-        };
+          assign_all?: boolean
+          created_at?: string
+          created_by?: string
+          due_at?: string | null
+          id?: string
+          instructions?: string | null
+          organization_id?: string
+          pack_id?: string
+          required?: boolean
+          title?: string
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_pack_assignments_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_pack_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "org_pack_assignments_pack_id_fkey";
-            columns: ["pack_id"];
-            isOneToOne: false;
-            referencedRelation: "makron_packs";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_pack_assignments_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "makron_packs"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_post_comments: {
         Row: {
-          body: string;
-          created_at: string;
-          id: string;
-          post_id: string;
-          updated_at: string;
-          user_id: string;
-        };
+          body: string
+          created_at: string
+          id: string
+          post_id: string
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          body: string;
-          created_at?: string;
-          id?: string;
-          post_id: string;
-          updated_at?: string;
-          user_id: string;
-        };
+          body: string
+          created_at?: string
+          id?: string
+          post_id: string
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          body?: string;
-          created_at?: string;
-          id?: string;
-          post_id?: string;
-          updated_at?: string;
-          user_id?: string;
-        };
+          body?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          updated_at?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_post_comments_post_id_fkey";
-            columns: ["post_id"];
-            isOneToOne: false;
-            referencedRelation: "org_posts";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "org_posts"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_post_likes: {
         Row: {
-          created_at: string;
-          id: string;
-          post_id: string;
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          post_id: string;
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          post_id?: string;
-          user_id?: string;
-        };
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_post_likes_post_id_fkey";
-            columns: ["post_id"];
-            isOneToOne: false;
-            referencedRelation: "org_posts";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "org_posts"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_posts: {
         Row: {
-          author_id: string;
-          body: string;
-          created_at: string;
-          group_id: string | null;
-          id: string;
-          images: string[];
-          organization_id: string;
-          pinned: boolean;
-          title: string;
-          updated_at: string;
-        };
+          author_id: string
+          body: string
+          created_at: string
+          group_id: string | null
+          id: string
+          images: string[]
+          organization_id: string
+          pinned: boolean
+          title: string
+          updated_at: string
+        }
         Insert: {
-          author_id: string;
-          body?: string;
-          created_at?: string;
-          group_id?: string | null;
-          id?: string;
-          images?: string[];
-          organization_id: string;
-          pinned?: boolean;
-          title: string;
-          updated_at?: string;
-        };
+          author_id: string
+          body?: string
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          images?: string[]
+          organization_id: string
+          pinned?: boolean
+          title: string
+          updated_at?: string
+        }
         Update: {
-          author_id?: string;
-          body?: string;
-          created_at?: string;
-          group_id?: string | null;
-          id?: string;
-          images?: string[];
-          organization_id?: string;
-          pinned?: boolean;
-          title?: string;
-          updated_at?: string;
-        };
+          author_id?: string
+          body?: string
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          images?: string[]
+          organization_id?: string
+          pinned?: boolean
+          title?: string
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_posts_group_id_fkey";
-            columns: ["group_id"];
-            isOneToOne: false;
-            referencedRelation: "org_groups";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_posts_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "org_groups"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "org_posts_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_posts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_profile_fields: {
         Row: {
-          created_at: string;
-          id: string;
-          key: string;
-          label: string;
-          options: Json;
-          organization_id: string;
-          required: boolean;
-          sort_order: number;
-          staff_only: boolean;
-          type: string;
-          updated_at: string;
-          yearly: boolean;
-        };
+          created_at: string
+          id: string
+          key: string
+          label: string
+          options: Json
+          organization_id: string
+          required: boolean
+          sort_order: number
+          staff_only: boolean
+          type: string
+          updated_at: string
+          yearly: boolean
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          key: string;
-          label: string;
-          options?: Json;
-          organization_id: string;
-          required?: boolean;
-          sort_order?: number;
-          staff_only?: boolean;
-          type?: string;
-          updated_at?: string;
-          yearly?: boolean;
-        };
+          created_at?: string
+          id?: string
+          key: string
+          label: string
+          options?: Json
+          organization_id: string
+          required?: boolean
+          sort_order?: number
+          staff_only?: boolean
+          type?: string
+          updated_at?: string
+          yearly?: boolean
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          key?: string;
-          label?: string;
-          options?: Json;
-          organization_id?: string;
-          required?: boolean;
-          sort_order?: number;
-          staff_only?: boolean;
-          type?: string;
-          updated_at?: string;
-          yearly?: boolean;
-        };
+          created_at?: string
+          id?: string
+          key?: string
+          label?: string
+          options?: Json
+          organization_id?: string
+          required?: boolean
+          sort_order?: number
+          staff_only?: boolean
+          type?: string
+          updated_at?: string
+          yearly?: boolean
+        }
         Relationships: [
           {
-            foreignKeyName: "org_profile_fields_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_profile_fields_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_profile_years: {
         Row: {
-          created_at: string;
-          id: string;
-          organization_id: string;
-          updated_at: string;
-          user_id: string;
-          values: Json;
-          year: string;
-        };
+          created_at: string
+          id: string
+          organization_id: string
+          updated_at: string
+          user_id: string
+          values: Json
+          year: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          organization_id: string;
-          updated_at?: string;
-          user_id: string;
-          values?: Json;
-          year: string;
-        };
+          created_at?: string
+          id?: string
+          organization_id: string
+          updated_at?: string
+          user_id: string
+          values?: Json
+          year: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          organization_id?: string;
-          updated_at?: string;
-          user_id?: string;
-          values?: Json;
-          year?: string;
-        };
+          created_at?: string
+          id?: string
+          organization_id?: string
+          updated_at?: string
+          user_id?: string
+          values?: Json
+          year?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_profile_years_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_profile_years_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_profiles: {
         Row: {
-          avatar_url: string | null;
-          bio: string | null;
-          class_name: string | null;
-          created_at: string;
-          display_name: string | null;
-          grade: string | null;
-          id: string;
-          organization_id: string;
-          student_number: string | null;
-          updated_at: string;
-          user_id: string;
-        };
+          avatar_url: string | null
+          bio: string | null
+          class_name: string | null
+          created_at: string
+          display_name: string | null
+          grade: string | null
+          id: string
+          organization_id: string
+          student_number: string | null
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          avatar_url?: string | null;
-          bio?: string | null;
-          class_name?: string | null;
-          created_at?: string;
-          display_name?: string | null;
-          grade?: string | null;
-          id?: string;
-          organization_id: string;
-          student_number?: string | null;
-          updated_at?: string;
-          user_id: string;
-        };
+          avatar_url?: string | null
+          bio?: string | null
+          class_name?: string | null
+          created_at?: string
+          display_name?: string | null
+          grade?: string | null
+          id?: string
+          organization_id: string
+          student_number?: string | null
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          avatar_url?: string | null;
-          bio?: string | null;
-          class_name?: string | null;
-          created_at?: string;
-          display_name?: string | null;
-          grade?: string | null;
-          id?: string;
-          organization_id?: string;
-          student_number?: string | null;
-          updated_at?: string;
-          user_id?: string;
-        };
+          avatar_url?: string | null
+          bio?: string | null
+          class_name?: string | null
+          created_at?: string
+          display_name?: string | null
+          grade?: string | null
+          id?: string
+          organization_id?: string
+          student_number?: string | null
+          updated_at?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_profiles_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_survey_responses: {
         Row: {
-          answers: Json;
-          created_at: string;
-          id: string;
-          survey_id: string;
-          updated_at: string;
-          user_id: string;
-        };
+          answers: Json
+          created_at: string
+          id: string
+          survey_id: string
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          answers?: Json;
-          created_at?: string;
-          id?: string;
-          survey_id: string;
-          updated_at?: string;
-          user_id: string;
-        };
+          answers?: Json
+          created_at?: string
+          id?: string
+          survey_id: string
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          answers?: Json;
-          created_at?: string;
-          id?: string;
-          survey_id?: string;
-          updated_at?: string;
-          user_id?: string;
-        };
+          answers?: Json
+          created_at?: string
+          id?: string
+          survey_id?: string
+          updated_at?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_survey_responses_survey_id_fkey";
-            columns: ["survey_id"];
-            isOneToOne: false;
-            referencedRelation: "org_surveys";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_survey_responses_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "org_surveys"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       org_surveys: {
         Row: {
-          anonymous: boolean;
-          closed: boolean;
-          closes_at: string | null;
-          created_at: string;
-          created_by: string;
-          description: string | null;
-          group_id: string | null;
-          id: string;
-          organization_id: string;
-          questions: Json;
-          title: string;
-          updated_at: string;
-        };
+          anonymous: boolean
+          closed: boolean
+          closes_at: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          group_id: string | null
+          id: string
+          organization_id: string
+          questions: Json
+          title: string
+          updated_at: string
+        }
         Insert: {
-          anonymous?: boolean;
-          closed?: boolean;
-          closes_at?: string | null;
-          created_at?: string;
-          created_by: string;
-          description?: string | null;
-          group_id?: string | null;
-          id?: string;
-          organization_id: string;
-          questions?: Json;
-          title: string;
-          updated_at?: string;
-        };
+          anonymous?: boolean
+          closed?: boolean
+          closes_at?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          group_id?: string | null
+          id?: string
+          organization_id: string
+          questions?: Json
+          title: string
+          updated_at?: string
+        }
         Update: {
-          anonymous?: boolean;
-          closed?: boolean;
-          closes_at?: string | null;
-          created_at?: string;
-          created_by?: string;
-          description?: string | null;
-          group_id?: string | null;
-          id?: string;
-          organization_id?: string;
-          questions?: Json;
-          title?: string;
-          updated_at?: string;
-        };
+          anonymous?: boolean
+          closed?: boolean
+          closes_at?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          group_id?: string | null
+          id?: string
+          organization_id?: string
+          questions?: Json
+          title?: string
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "org_surveys_group_id_fkey";
-            columns: ["group_id"];
-            isOneToOne: false;
-            referencedRelation: "org_groups";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_surveys_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "org_groups"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "org_surveys_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "org_surveys_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       organization_application_messages: {
         Row: {
-          application_id: string;
-          body: string;
-          created_at: string;
-          id: string;
-          is_admin: boolean;
-          sender_id: string;
-        };
+          application_id: string
+          body: string
+          created_at: string
+          id: string
+          is_admin: boolean
+          sender_id: string
+        }
         Insert: {
-          application_id: string;
-          body: string;
-          created_at?: string;
-          id?: string;
-          is_admin?: boolean;
-          sender_id: string;
-        };
+          application_id: string
+          body: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          sender_id: string
+        }
         Update: {
-          application_id?: string;
-          body?: string;
-          created_at?: string;
-          id?: string;
-          is_admin?: boolean;
-          sender_id?: string;
-        };
+          application_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          sender_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "organization_application_messages_application_id_fkey";
-            columns: ["application_id"];
-            isOneToOne: false;
-            referencedRelation: "organization_applications";
-            referencedColumns: ["id"];
+            foreignKeyName: "organization_application_messages_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "organization_applications"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       organization_applications: {
         Row: {
-          address: string | null;
-          admin_note: string | null;
-          applicant_id: string;
-          contact_email: string;
-          contact_phone: string | null;
-          country: string;
-          created_at: string;
-          department: string | null;
-          expected_users: number | null;
-          id: string;
-          note: string | null;
-          org_name: string;
-          org_type: string;
-          org_type_other: string | null;
-          organization_id: string | null;
-          prefecture: string | null;
-          rep_first_kana: string | null;
-          rep_first_name: string;
-          rep_last_kana: string | null;
-          rep_last_name: string;
-          reviewed_at: string | null;
-          reviewed_by: string | null;
-          status: Database["public"]["Enums"]["org_status"];
-          updated_at: string;
-          website: string | null;
-        };
+          address: string | null
+          admin_note: string | null
+          applicant_id: string
+          contact_email: string
+          contact_phone: string | null
+          country: string
+          created_at: string
+          department: string | null
+          expected_users: number | null
+          id: string
+          note: string | null
+          org_name: string
+          org_type: string
+          org_type_other: string | null
+          organization_id: string | null
+          prefecture: string | null
+          rep_first_kana: string | null
+          rep_first_name: string
+          rep_last_kana: string | null
+          rep_last_name: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["org_status"]
+          updated_at: string
+          website: string | null
+        }
         Insert: {
-          address?: string | null;
-          admin_note?: string | null;
-          applicant_id: string;
-          contact_email: string;
-          contact_phone?: string | null;
-          country?: string;
-          created_at?: string;
-          department?: string | null;
-          expected_users?: number | null;
-          id?: string;
-          note?: string | null;
-          org_name: string;
-          org_type: string;
-          org_type_other?: string | null;
-          organization_id?: string | null;
-          prefecture?: string | null;
-          rep_first_kana?: string | null;
-          rep_first_name: string;
-          rep_last_kana?: string | null;
-          rep_last_name: string;
-          reviewed_at?: string | null;
-          reviewed_by?: string | null;
-          status?: Database["public"]["Enums"]["org_status"];
-          updated_at?: string;
-          website?: string | null;
-        };
+          address?: string | null
+          admin_note?: string | null
+          applicant_id: string
+          contact_email: string
+          contact_phone?: string | null
+          country?: string
+          created_at?: string
+          department?: string | null
+          expected_users?: number | null
+          id?: string
+          note?: string | null
+          org_name: string
+          org_type: string
+          org_type_other?: string | null
+          organization_id?: string | null
+          prefecture?: string | null
+          rep_first_kana?: string | null
+          rep_first_name: string
+          rep_last_kana?: string | null
+          rep_last_name: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["org_status"]
+          updated_at?: string
+          website?: string | null
+        }
         Update: {
-          address?: string | null;
-          admin_note?: string | null;
-          applicant_id?: string;
-          contact_email?: string;
-          contact_phone?: string | null;
-          country?: string;
-          created_at?: string;
-          department?: string | null;
-          expected_users?: number | null;
-          id?: string;
-          note?: string | null;
-          org_name?: string;
-          org_type?: string;
-          org_type_other?: string | null;
-          organization_id?: string | null;
-          prefecture?: string | null;
-          rep_first_kana?: string | null;
-          rep_first_name?: string;
-          rep_last_kana?: string | null;
-          rep_last_name?: string;
-          reviewed_at?: string | null;
-          reviewed_by?: string | null;
-          status?: Database["public"]["Enums"]["org_status"];
-          updated_at?: string;
-          website?: string | null;
-        };
+          address?: string | null
+          admin_note?: string | null
+          applicant_id?: string
+          contact_email?: string
+          contact_phone?: string | null
+          country?: string
+          created_at?: string
+          department?: string | null
+          expected_users?: number | null
+          id?: string
+          note?: string | null
+          org_name?: string
+          org_type?: string
+          org_type_other?: string | null
+          organization_id?: string | null
+          prefecture?: string | null
+          rep_first_kana?: string | null
+          rep_first_name?: string
+          rep_last_kana?: string | null
+          rep_last_name?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["org_status"]
+          updated_at?: string
+          website?: string | null
+        }
         Relationships: [
           {
-            foreignKeyName: "organization_applications_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "organization_applications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       organization_invitations: {
         Row: {
-          created_at: string;
-          id: string;
-          invited_by: string;
-          invitee_id: string;
-          message: string | null;
-          organization_id: string;
-          responded_at: string | null;
-          role: string;
-          status: string;
-        };
+          created_at: string
+          id: string
+          invited_by: string
+          invitee_id: string
+          message: string | null
+          organization_id: string
+          responded_at: string | null
+          role: string
+          status: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          invited_by: string;
-          invitee_id: string;
-          message?: string | null;
-          organization_id: string;
-          responded_at?: string | null;
-          role?: string;
-          status?: string;
-        };
+          created_at?: string
+          id?: string
+          invited_by: string
+          invitee_id: string
+          message?: string | null
+          organization_id: string
+          responded_at?: string | null
+          role?: string
+          status?: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          invited_by?: string;
-          invitee_id?: string;
-          message?: string | null;
-          organization_id?: string;
-          responded_at?: string | null;
-          role?: string;
-          status?: string;
-        };
+          created_at?: string
+          id?: string
+          invited_by?: string
+          invitee_id?: string
+          message?: string | null
+          organization_id?: string
+          responded_at?: string | null
+          role?: string
+          status?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "organization_invitations_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "organization_invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       organization_join_requests: {
         Row: {
-          created_at: string;
-          id: string;
-          message: string | null;
-          organization_id: string;
-          reviewed_at: string | null;
-          reviewed_by: string | null;
-          status: Database["public"]["Enums"]["org_status"];
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          message: string | null
+          organization_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["org_status"]
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          message?: string | null;
-          organization_id: string;
-          reviewed_at?: string | null;
-          reviewed_by?: string | null;
-          status?: Database["public"]["Enums"]["org_status"];
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          message?: string | null
+          organization_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["org_status"]
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          message?: string | null;
-          organization_id?: string;
-          reviewed_at?: string | null;
-          reviewed_by?: string | null;
-          status?: Database["public"]["Enums"]["org_status"];
-          user_id?: string;
-        };
+          created_at?: string
+          id?: string
+          message?: string | null
+          organization_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["org_status"]
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "organization_join_requests_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "organization_join_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       organization_members: {
         Row: {
-          id: string;
-          joined_at: string;
-          organization_id: string;
-          role: Database["public"]["Enums"]["org_role"];
-          suspended: boolean;
-          user_id: string;
-        };
+          id: string
+          joined_at: string
+          organization_id: string
+          role: Database["public"]["Enums"]["org_role"]
+          suspended: boolean
+          user_id: string
+        }
         Insert: {
-          id?: string;
-          joined_at?: string;
-          organization_id: string;
-          role?: Database["public"]["Enums"]["org_role"];
-          suspended?: boolean;
-          user_id: string;
-        };
+          id?: string
+          joined_at?: string
+          organization_id: string
+          role?: Database["public"]["Enums"]["org_role"]
+          suspended?: boolean
+          user_id: string
+        }
         Update: {
-          id?: string;
-          joined_at?: string;
-          organization_id?: string;
-          role?: Database["public"]["Enums"]["org_role"];
-          suspended?: boolean;
-          user_id?: string;
-        };
+          id?: string
+          joined_at?: string
+          organization_id?: string
+          role?: Database["public"]["Enums"]["org_role"]
+          suspended?: boolean
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "organization_members_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       organization_service_restrictions: {
         Row: {
-          created_at: string;
-          id: string;
-          message: string | null;
-          organization_id: string;
-          service_key: string;
-          until: string | null;
-          variant: string;
-        };
+          created_at: string
+          id: string
+          message: string | null
+          organization_id: string
+          service_key: string
+          until: string | null
+          variant: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          message?: string | null;
-          organization_id: string;
-          service_key: string;
-          until?: string | null;
-          variant?: string;
-        };
+          created_at?: string
+          id?: string
+          message?: string | null
+          organization_id: string
+          service_key: string
+          until?: string | null
+          variant?: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          message?: string | null;
-          organization_id?: string;
-          service_key?: string;
-          until?: string | null;
-          variant?: string;
-        };
+          created_at?: string
+          id?: string
+          message?: string | null
+          organization_id?: string
+          service_key?: string
+          until?: string | null
+          variant?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "organization_service_restrictions_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "organization_service_restrictions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       organizations: {
         Row: {
-          created_at: string;
-          created_by: string | null;
-          current_year: string | null;
-          description: string | null;
-          id: string;
-          join_code: string | null;
-          name: string;
-          owner_id: string | null;
-          reviewed_at: string | null;
-          reviewed_by: string | null;
-          settings: Json;
-          share_study_time: boolean;
-          slug: string | null;
-          status: Database["public"]["Enums"]["org_status"];
-          updated_at: string;
-        };
+          created_at: string
+          created_by: string | null
+          current_year: string | null
+          description: string | null
+          id: string
+          join_code: string | null
+          name: string
+          owner_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          settings: Json
+          share_study_time: boolean
+          slug: string | null
+          status: Database["public"]["Enums"]["org_status"]
+          updated_at: string
+        }
         Insert: {
-          created_at?: string;
-          created_by?: string | null;
-          current_year?: string | null;
-          description?: string | null;
-          id?: string;
-          join_code?: string | null;
-          name: string;
-          owner_id?: string | null;
-          reviewed_at?: string | null;
-          reviewed_by?: string | null;
-          settings?: Json;
-          share_study_time?: boolean;
-          slug?: string | null;
-          status?: Database["public"]["Enums"]["org_status"];
-          updated_at?: string;
-        };
+          created_at?: string
+          created_by?: string | null
+          current_year?: string | null
+          description?: string | null
+          id?: string
+          join_code?: string | null
+          name: string
+          owner_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          settings?: Json
+          share_study_time?: boolean
+          slug?: string | null
+          status?: Database["public"]["Enums"]["org_status"]
+          updated_at?: string
+        }
         Update: {
-          created_at?: string;
-          created_by?: string | null;
-          current_year?: string | null;
-          description?: string | null;
-          id?: string;
-          join_code?: string | null;
-          name?: string;
-          owner_id?: string | null;
-          reviewed_at?: string | null;
-          reviewed_by?: string | null;
-          settings?: Json;
-          share_study_time?: boolean;
-          slug?: string | null;
-          status?: Database["public"]["Enums"]["org_status"];
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          created_by?: string | null
+          current_year?: string | null
+          description?: string | null
+          id?: string
+          join_code?: string | null
+          name?: string
+          owner_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          settings?: Json
+          share_study_time?: boolean
+          slug?: string | null
+          status?: Database["public"]["Enums"]["org_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       parent_child_links: {
         Row: {
-          child_id: string;
-          created_at: string;
-          id: string;
-          parent_id: string;
-        };
+          child_id: string
+          created_at: string
+          id: string
+          parent_id: string
+        }
         Insert: {
-          child_id: string;
-          created_at?: string;
-          id?: string;
-          parent_id: string;
-        };
+          child_id: string
+          created_at?: string
+          id?: string
+          parent_id: string
+        }
         Update: {
-          child_id?: string;
-          created_at?: string;
-          id?: string;
-          parent_id?: string;
-        };
-        Relationships: [];
-      };
+          child_id?: string
+          created_at?: string
+          id?: string
+          parent_id?: string
+        }
+        Relationships: []
+      }
       parent_invite_codes: {
         Row: {
-          child_id: string;
-          code: string;
-          created_at: string;
-          expires_at: string;
-          id: string;
-          used_at: string | null;
-          used_by: string | null;
-        };
+          child_id: string
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          used_at: string | null
+          used_by: string | null
+        }
         Insert: {
-          child_id: string;
-          code?: string;
-          created_at?: string;
-          expires_at?: string;
-          id?: string;
-          used_at?: string | null;
-          used_by?: string | null;
-        };
+          child_id: string
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
         Update: {
-          child_id?: string;
-          code?: string;
-          created_at?: string;
-          expires_at?: string;
-          id?: string;
-          used_at?: string | null;
-          used_by?: string | null;
-        };
-        Relationships: [];
-      };
+          child_id?: string
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
       photo_study_logs: {
         Row: {
-          caption: string | null;
-          created_at: string;
-          id: string;
-          image_url: string;
-          likes: number;
-          user_id: string;
-        };
+          caption: string | null
+          created_at: string
+          id: string
+          image_url: string
+          likes: number
+          user_id: string
+        }
         Insert: {
-          caption?: string | null;
-          created_at?: string;
-          id?: string;
-          image_url: string;
-          likes?: number;
-          user_id: string;
-        };
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          likes?: number
+          user_id: string
+        }
         Update: {
-          caption?: string | null;
-          created_at?: string;
-          id?: string;
-          image_url?: string;
-          likes?: number;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          likes?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       plan_template_marketplace: {
         Row: {
-          author_id: string;
-          created_at: string;
-          description: string | null;
-          downloads: number;
-          id: string;
-          payload: Json;
-          title: string;
-        };
+          author_id: string
+          created_at: string
+          description: string | null
+          downloads: number
+          id: string
+          payload: Json
+          title: string
+        }
         Insert: {
-          author_id: string;
-          created_at?: string;
-          description?: string | null;
-          downloads?: number;
-          id?: string;
-          payload?: Json;
-          title: string;
-        };
+          author_id: string
+          created_at?: string
+          description?: string | null
+          downloads?: number
+          id?: string
+          payload?: Json
+          title: string
+        }
         Update: {
-          author_id?: string;
-          created_at?: string;
-          description?: string | null;
-          downloads?: number;
-          id?: string;
-          payload?: Json;
-          title?: string;
-        };
-        Relationships: [];
-      };
+          author_id?: string
+          created_at?: string
+          description?: string | null
+          downloads?: number
+          id?: string
+          payload?: Json
+          title?: string
+        }
+        Relationships: []
+      }
       poll_votes: {
         Row: {
-          created_at: string;
-          id: string;
-          option_index: number;
-          poll_id: string;
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          option_index: number;
-          poll_id: string;
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          option_index?: number;
-          poll_id?: string;
-          user_id?: string;
-        };
+          created_at?: string
+          id?: string
+          option_index?: number
+          poll_id?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "poll_votes_poll_id_fkey";
-            columns: ["poll_id"];
-            isOneToOne: false;
-            referencedRelation: "polls";
-            referencedColumns: ["id"];
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       polls: {
         Row: {
-          class_id: string | null;
-          created_at: string;
-          created_by: string;
-          ends_at: string | null;
-          id: string;
-          options: Json;
-          question: string;
-        };
+          class_id: string | null
+          created_at: string
+          created_by: string
+          ends_at: string | null
+          id: string
+          options: Json
+          question: string
+        }
         Insert: {
-          class_id?: string | null;
-          created_at?: string;
-          created_by: string;
-          ends_at?: string | null;
-          id?: string;
-          options: Json;
-          question: string;
-        };
+          class_id?: string | null
+          created_at?: string
+          created_by: string
+          ends_at?: string | null
+          id?: string
+          options: Json
+          question: string
+        }
         Update: {
-          class_id?: string | null;
-          created_at?: string;
-          created_by?: string;
-          ends_at?: string | null;
-          id?: string;
-          options?: Json;
-          question?: string;
-        };
+          class_id?: string | null
+          created_at?: string
+          created_by?: string
+          ends_at?: string | null
+          id?: string
+          options?: Json
+          question?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "polls_class_id_fkey";
-            columns: ["class_id"];
-            isOneToOne: false;
-            referencedRelation: "classes";
-            referencedColumns: ["id"];
+            foreignKeyName: "polls_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       profiles: {
         Row: {
-          account_kind: string;
-          active_frame: string | null;
-          active_theme: string | null;
-          active_title: string | null;
-          avatar_url: string | null;
-          created_at: string;
-          current_plan: string;
-          deletion_code: string | null;
-          deletion_code_expires_at: string | null;
-          deletion_scheduled_at: string | null;
-          display_name: string | null;
-          email: string | null;
-          id: string;
-          notify_announcements: boolean;
-          notify_chat: boolean;
-          notify_daily_reminder: boolean;
-          notify_email: boolean;
-          notify_streak_break: boolean;
-          onboarded_at: string | null;
-          referral_code: string | null;
-          reminder_time: string;
-          theme: string;
-          tutorial_done: boolean;
-          updated_at: string;
-          username: string | null;
-        };
+          account_kind: string
+          active_frame: string | null
+          active_theme: string | null
+          active_title: string | null
+          avatar_url: string | null
+          created_at: string
+          current_plan: string
+          deletion_code: string | null
+          deletion_code_expires_at: string | null
+          deletion_scheduled_at: string | null
+          display_name: string | null
+          email: string | null
+          id: string
+          notify_announcements: boolean
+          notify_chat: boolean
+          notify_daily_reminder: boolean
+          notify_email: boolean
+          notify_streak_break: boolean
+          onboarded_at: string | null
+          referral_code: string | null
+          reminder_time: string
+          theme: string
+          tutorial_done: boolean
+          updated_at: string
+          username: string | null
+        }
         Insert: {
-          account_kind?: string;
-          active_frame?: string | null;
-          active_theme?: string | null;
-          active_title?: string | null;
-          avatar_url?: string | null;
-          created_at?: string;
-          current_plan?: string;
-          deletion_code?: string | null;
-          deletion_code_expires_at?: string | null;
-          deletion_scheduled_at?: string | null;
-          display_name?: string | null;
-          email?: string | null;
-          id: string;
-          notify_announcements?: boolean;
-          notify_chat?: boolean;
-          notify_daily_reminder?: boolean;
-          notify_email?: boolean;
-          notify_streak_break?: boolean;
-          onboarded_at?: string | null;
-          referral_code?: string | null;
-          reminder_time?: string;
-          theme?: string;
-          tutorial_done?: boolean;
-          updated_at?: string;
-          username?: string | null;
-        };
+          account_kind?: string
+          active_frame?: string | null
+          active_theme?: string | null
+          active_title?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          current_plan?: string
+          deletion_code?: string | null
+          deletion_code_expires_at?: string | null
+          deletion_scheduled_at?: string | null
+          display_name?: string | null
+          email?: string | null
+          id: string
+          notify_announcements?: boolean
+          notify_chat?: boolean
+          notify_daily_reminder?: boolean
+          notify_email?: boolean
+          notify_streak_break?: boolean
+          onboarded_at?: string | null
+          referral_code?: string | null
+          reminder_time?: string
+          theme?: string
+          tutorial_done?: boolean
+          updated_at?: string
+          username?: string | null
+        }
         Update: {
-          account_kind?: string;
-          active_frame?: string | null;
-          active_theme?: string | null;
-          active_title?: string | null;
-          avatar_url?: string | null;
-          created_at?: string;
-          current_plan?: string;
-          deletion_code?: string | null;
-          deletion_code_expires_at?: string | null;
-          deletion_scheduled_at?: string | null;
-          display_name?: string | null;
-          email?: string | null;
-          id?: string;
-          notify_announcements?: boolean;
-          notify_chat?: boolean;
-          notify_daily_reminder?: boolean;
-          notify_email?: boolean;
-          notify_streak_break?: boolean;
-          onboarded_at?: string | null;
-          referral_code?: string | null;
-          reminder_time?: string;
-          theme?: string;
-          tutorial_done?: boolean;
-          updated_at?: string;
-          username?: string | null;
-        };
-        Relationships: [];
-      };
+          account_kind?: string
+          active_frame?: string | null
+          active_theme?: string | null
+          active_title?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          current_plan?: string
+          deletion_code?: string | null
+          deletion_code_expires_at?: string | null
+          deletion_scheduled_at?: string | null
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          notify_announcements?: boolean
+          notify_chat?: boolean
+          notify_daily_reminder?: boolean
+          notify_email?: boolean
+          notify_streak_break?: boolean
+          onboarded_at?: string | null
+          referral_code?: string | null
+          reminder_time?: string
+          theme?: string
+          tutorial_done?: boolean
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
       question_creator_applications: {
         Row: {
-          created_at: string;
-          duration_days: number;
-          id: string;
-          reason: string;
-          reviewed_at: string | null;
-          reviewed_by: string | null;
-          status: string;
-          user_id: string;
-        };
+          created_at: string
+          duration_days: number
+          id: string
+          reason: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          duration_days?: number;
-          id?: string;
-          reason: string;
-          reviewed_at?: string | null;
-          reviewed_by?: string | null;
-          status?: string;
-          user_id: string;
-        };
+          created_at?: string
+          duration_days?: number
+          id?: string
+          reason: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          duration_days?: number;
-          id?: string;
-          reason?: string;
-          reviewed_at?: string | null;
-          reviewed_by?: string | null;
-          status?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          duration_days?: number
+          id?: string
+          reason?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       questions: {
         Row: {
-          answer: string;
-          attempts: number | null;
-          created_at: string;
-          explanation: string | null;
-          format: string;
-          id: string;
-          options: Json | null;
-          question: string;
-          topic: string;
-          user_id: string;
-          was_wrong: boolean | null;
-        };
+          answer: string
+          attempts: number | null
+          created_at: string
+          explanation: string | null
+          format: string
+          id: string
+          options: Json | null
+          question: string
+          topic: string
+          user_id: string
+          was_wrong: boolean | null
+        }
         Insert: {
-          answer: string;
-          attempts?: number | null;
-          created_at?: string;
-          explanation?: string | null;
-          format: string;
-          id?: string;
-          options?: Json | null;
-          question: string;
-          topic: string;
-          user_id: string;
-          was_wrong?: boolean | null;
-        };
+          answer: string
+          attempts?: number | null
+          created_at?: string
+          explanation?: string | null
+          format: string
+          id?: string
+          options?: Json | null
+          question: string
+          topic: string
+          user_id: string
+          was_wrong?: boolean | null
+        }
         Update: {
-          answer?: string;
-          attempts?: number | null;
-          created_at?: string;
-          explanation?: string | null;
-          format?: string;
-          id?: string;
-          options?: Json | null;
-          question?: string;
-          topic?: string;
-          user_id?: string;
-          was_wrong?: boolean | null;
-        };
-        Relationships: [];
-      };
+          answer?: string
+          attempts?: number | null
+          created_at?: string
+          explanation?: string | null
+          format?: string
+          id?: string
+          options?: Json | null
+          question?: string
+          topic?: string
+          user_id?: string
+          was_wrong?: boolean | null
+        }
+        Relationships: []
+      }
       quiz_battles: {
         Row: {
-          challenger_id: string;
-          challenger_score: number;
-          created_at: string;
-          genre: string | null;
-          id: string;
-          num_questions: number;
-          opponent_id: string;
-          opponent_score: number;
-          status: string;
-          time_taken: number | null;
-          updated_at: string;
-          winner_id: string | null;
-        };
+          challenger_id: string
+          challenger_score: number
+          created_at: string
+          genre: string | null
+          id: string
+          num_questions: number
+          opponent_id: string
+          opponent_score: number
+          status: string
+          time_taken: number | null
+          updated_at: string
+          winner_id: string | null
+        }
         Insert: {
-          challenger_id: string;
-          challenger_score?: number;
-          created_at?: string;
-          genre?: string | null;
-          id?: string;
-          num_questions?: number;
-          opponent_id: string;
-          opponent_score?: number;
-          status?: string;
-          time_taken?: number | null;
-          updated_at?: string;
-          winner_id?: string | null;
-        };
+          challenger_id: string
+          challenger_score?: number
+          created_at?: string
+          genre?: string | null
+          id?: string
+          num_questions?: number
+          opponent_id: string
+          opponent_score?: number
+          status?: string
+          time_taken?: number | null
+          updated_at?: string
+          winner_id?: string | null
+        }
         Update: {
-          challenger_id?: string;
-          challenger_score?: number;
-          created_at?: string;
-          genre?: string | null;
-          id?: string;
-          num_questions?: number;
-          opponent_id?: string;
-          opponent_score?: number;
-          status?: string;
-          time_taken?: number | null;
-          updated_at?: string;
-          winner_id?: string | null;
-        };
-        Relationships: [];
-      };
+          challenger_id?: string
+          challenger_score?: number
+          created_at?: string
+          genre?: string | null
+          id?: string
+          num_questions?: number
+          opponent_id?: string
+          opponent_score?: number
+          status?: string
+          time_taken?: number | null
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Relationships: []
+      }
       rival_matches: {
         Row: {
-          a_id: string;
-          a_minutes: number;
-          b_id: string;
-          b_minutes: number;
-          created_at: string;
-          id: string;
-          week_start: string;
-          winner: string | null;
-        };
+          a_id: string
+          a_minutes: number
+          b_id: string
+          b_minutes: number
+          created_at: string
+          id: string
+          week_start: string
+          winner: string | null
+        }
         Insert: {
-          a_id: string;
-          a_minutes?: number;
-          b_id: string;
-          b_minutes?: number;
-          created_at?: string;
-          id?: string;
-          week_start: string;
-          winner?: string | null;
-        };
+          a_id: string
+          a_minutes?: number
+          b_id: string
+          b_minutes?: number
+          created_at?: string
+          id?: string
+          week_start: string
+          winner?: string | null
+        }
         Update: {
-          a_id?: string;
-          a_minutes?: number;
-          b_id?: string;
-          b_minutes?: number;
-          created_at?: string;
-          id?: string;
-          week_start?: string;
-          winner?: string | null;
-        };
-        Relationships: [];
-      };
+          a_id?: string
+          a_minutes?: number
+          b_id?: string
+          b_minutes?: number
+          created_at?: string
+          id?: string
+          week_start?: string
+          winner?: string | null
+        }
+        Relationships: []
+      }
       rivals: {
         Row: {
-          created_at: string;
-          id: string;
-          rival_id: string;
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          rival_id: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          rival_id: string;
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          rival_id: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          rival_id?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          rival_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       school_timetable: {
         Row: {
-          created_at: string;
-          end_time: string;
-          id: string;
-          label: string | null;
-          period: number;
-          start_time: string;
-          subject_id: string | null;
-          user_id: string;
-          weekday: number;
-        };
+          created_at: string
+          end_time: string
+          id: string
+          label: string | null
+          period: number
+          start_time: string
+          subject_id: string | null
+          user_id: string
+          weekday: number
+        }
         Insert: {
-          created_at?: string;
-          end_time: string;
-          id?: string;
-          label?: string | null;
-          period: number;
-          start_time: string;
-          subject_id?: string | null;
-          user_id: string;
-          weekday: number;
-        };
+          created_at?: string
+          end_time: string
+          id?: string
+          label?: string | null
+          period: number
+          start_time: string
+          subject_id?: string | null
+          user_id: string
+          weekday: number
+        }
         Update: {
-          created_at?: string;
-          end_time?: string;
-          id?: string;
-          label?: string | null;
-          period?: number;
-          start_time?: string;
-          subject_id?: string | null;
-          user_id?: string;
-          weekday?: number;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          end_time?: string
+          id?: string
+          label?: string | null
+          period?: number
+          start_time?: string
+          subject_id?: string | null
+          user_id?: string
+          weekday?: number
+        }
+        Relationships: []
+      }
       school_timetable_templates: {
         Row: {
-          created_at: string;
-          created_by: string | null;
-          description: string | null;
-          id: string;
-          is_public: boolean;
-          name: string;
-          payload: Json;
-        };
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_public: boolean
+          name: string
+          payload: Json
+        }
         Insert: {
-          created_at?: string;
-          created_by?: string | null;
-          description?: string | null;
-          id?: string;
-          is_public?: boolean;
-          name: string;
-          payload?: Json;
-        };
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          name: string
+          payload?: Json
+        }
         Update: {
-          created_at?: string;
-          created_by?: string | null;
-          description?: string | null;
-          id?: string;
-          is_public?: boolean;
-          name?: string;
-          payload?: Json;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          name?: string
+          payload?: Json
+        }
+        Relationships: []
+      }
       season_xp: {
         Row: {
-          id: string;
-          season_key: string;
-          updated_at: string;
-          user_id: string;
-          xp: number;
-        };
+          id: string
+          season_key: string
+          updated_at: string
+          user_id: string
+          xp: number
+        }
         Insert: {
-          id?: string;
-          season_key: string;
-          updated_at?: string;
-          user_id: string;
-          xp?: number;
-        };
+          id?: string
+          season_key: string
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
         Update: {
-          id?: string;
-          season_key?: string;
-          updated_at?: string;
-          user_id?: string;
-          xp?: number;
-        };
-        Relationships: [];
-      };
+          id?: string
+          season_key?: string
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
       service_restrictions: {
         Row: {
-          message: string | null;
-          restricted: boolean;
-          restricted_until: string | null;
-          service_key: string;
-          updated_at: string;
-        };
+          message: string | null
+          restricted: boolean
+          restricted_until: string | null
+          service_key: string
+          updated_at: string
+        }
         Insert: {
-          message?: string | null;
-          restricted?: boolean;
-          restricted_until?: string | null;
-          service_key: string;
-          updated_at?: string;
-        };
+          message?: string | null
+          restricted?: boolean
+          restricted_until?: string | null
+          service_key: string
+          updated_at?: string
+        }
         Update: {
-          message?: string | null;
-          restricted?: boolean;
-          restricted_until?: string | null;
-          service_key?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
+          message?: string | null
+          restricted?: boolean
+          restricted_until?: string | null
+          service_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       share_tokens: {
         Row: {
-          created_at: string;
-          expires_at: string | null;
-          label: string | null;
-          token: string;
-          user_id: string;
-        };
+          created_at: string
+          expires_at: string | null
+          label: string | null
+          token: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          expires_at?: string | null;
-          label?: string | null;
-          token: string;
-          user_id: string;
-        };
+          created_at?: string
+          expires_at?: string | null
+          label?: string | null
+          token: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          expires_at?: string | null;
-          label?: string | null;
-          token?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          expires_at?: string | null
+          label?: string | null
+          token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       social_comments: {
         Row: {
-          body: string;
-          created_at: string;
-          id: string;
-          post_id: string;
-          user_id: string;
-        };
+          body: string
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
         Insert: {
-          body: string;
-          created_at?: string;
-          id?: string;
-          post_id: string;
-          user_id: string;
-        };
+          body: string
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
         Update: {
-          body?: string;
-          created_at?: string;
-          id?: string;
-          post_id?: string;
-          user_id?: string;
-        };
+          body?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "social_comments_post_id_fkey";
-            columns: ["post_id"];
-            isOneToOne: false;
-            referencedRelation: "social_posts";
-            referencedColumns: ["id"];
+            foreignKeyName: "social_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "social_posts"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       social_likes: {
         Row: {
-          created_at: string;
-          id: string;
-          post_id: string;
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          post_id: string;
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          post_id?: string;
-          user_id?: string;
-        };
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "social_likes_post_id_fkey";
-            columns: ["post_id"];
-            isOneToOne: false;
-            referencedRelation: "social_posts";
-            referencedColumns: ["id"];
+            foreignKeyName: "social_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "social_posts"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       social_posts: {
         Row: {
-          body: string;
-          created_at: string;
-          id: string;
-          minutes: number | null;
-          organization_id: string | null;
-          subject: string | null;
-          updated_at: string;
-          user_id: string;
-          visibility: string;
-        };
+          body: string
+          created_at: string
+          id: string
+          minutes: number | null
+          organization_id: string | null
+          subject: string | null
+          updated_at: string
+          user_id: string
+          visibility: string
+        }
         Insert: {
-          body: string;
-          created_at?: string;
-          id?: string;
-          minutes?: number | null;
-          organization_id?: string | null;
-          subject?: string | null;
-          updated_at?: string;
-          user_id: string;
-          visibility?: string;
-        };
+          body: string
+          created_at?: string
+          id?: string
+          minutes?: number | null
+          organization_id?: string | null
+          subject?: string | null
+          updated_at?: string
+          user_id: string
+          visibility?: string
+        }
         Update: {
-          body?: string;
-          created_at?: string;
-          id?: string;
-          minutes?: number | null;
-          organization_id?: string | null;
-          subject?: string | null;
-          updated_at?: string;
-          user_id?: string;
-          visibility?: string;
-        };
+          body?: string
+          created_at?: string
+          id?: string
+          minutes?: number | null
+          organization_id?: string | null
+          subject?: string | null
+          updated_at?: string
+          user_id?: string
+          visibility?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "social_posts_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
+            foreignKeyName: "social_posts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       srs_reviews: {
         Row: {
-          created_at: string;
-          ease: number;
-          flashcard_id: string;
-          id: string;
-          interval_days: number;
-          last_rating: number | null;
-          next_review_at: string;
-          updated_at: string;
-          user_id: string;
-        };
+          created_at: string
+          ease: number
+          flashcard_id: string
+          id: string
+          interval_days: number
+          last_rating: number | null
+          next_review_at: string
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          ease?: number;
-          flashcard_id: string;
-          id?: string;
-          interval_days?: number;
-          last_rating?: number | null;
-          next_review_at?: string;
-          updated_at?: string;
-          user_id: string;
-        };
+          created_at?: string
+          ease?: number
+          flashcard_id: string
+          id?: string
+          interval_days?: number
+          last_rating?: number | null
+          next_review_at?: string
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          ease?: number;
-          flashcard_id?: string;
-          id?: string;
-          interval_days?: number;
-          last_rating?: number | null;
-          next_review_at?: string;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          ease?: number
+          flashcard_id?: string
+          id?: string
+          interval_days?: number
+          last_rating?: number | null
+          next_review_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       sticky_notes: {
         Row: {
-          color: string;
-          content: string;
-          created_at: string;
-          id: string;
-          updated_at: string;
-          user_id: string;
-          x: number;
-          y: number;
-          z_index: number;
-        };
+          color: string
+          content: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+          x: number
+          y: number
+          z_index: number
+        }
         Insert: {
-          color?: string;
-          content?: string;
-          created_at?: string;
-          id?: string;
-          updated_at?: string;
-          user_id: string;
-          x?: number;
-          y?: number;
-          z_index?: number;
-        };
+          color?: string
+          content?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          x?: number
+          y?: number
+          z_index?: number
+        }
         Update: {
-          color?: string;
-          content?: string;
-          created_at?: string;
-          id?: string;
-          updated_at?: string;
-          user_id?: string;
-          x?: number;
-          y?: number;
-          z_index?: number;
-        };
-        Relationships: [];
-      };
+          color?: string
+          content?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          x?: number
+          y?: number
+          z_index?: number
+        }
+        Relationships: []
+      }
       streak_freezes: {
         Row: {
-          date: string;
-          id: string;
-          used_at: string;
-          user_id: string;
-        };
+          date: string
+          id: string
+          used_at: string
+          user_id: string
+        }
         Insert: {
-          date: string;
-          id?: string;
-          used_at?: string;
-          user_id: string;
-        };
+          date: string
+          id?: string
+          used_at?: string
+          user_id: string
+        }
         Update: {
-          date?: string;
-          id?: string;
-          used_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          date?: string
+          id?: string
+          used_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       streak_insurance_uses: {
         Row: {
-          created_at: string;
-          id: string;
-          used_for_date: string;
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          used_for_date: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          used_for_date: string;
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          used_for_date: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          used_for_date?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          used_for_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       study_logs: {
         Row: {
-          content: string | null;
-          created_at: string;
-          date: string;
-          duration_minutes: number;
-          id: string;
-          material_id: string | null;
-          material_ids: string[];
-          start_time: string | null;
-          subject_id: string | null;
-          tag: string | null;
-          user_id: string;
-        };
+          content: string | null
+          created_at: string
+          date: string
+          duration_minutes: number
+          id: string
+          material_id: string | null
+          material_ids: string[]
+          start_time: string | null
+          subject_id: string | null
+          tag: string | null
+          user_id: string
+        }
         Insert: {
-          content?: string | null;
-          created_at?: string;
-          date?: string;
-          duration_minutes?: number;
-          id?: string;
-          material_id?: string | null;
-          material_ids?: string[];
-          start_time?: string | null;
-          subject_id?: string | null;
-          tag?: string | null;
-          user_id: string;
-        };
+          content?: string | null
+          created_at?: string
+          date?: string
+          duration_minutes?: number
+          id?: string
+          material_id?: string | null
+          material_ids?: string[]
+          start_time?: string | null
+          subject_id?: string | null
+          tag?: string | null
+          user_id: string
+        }
         Update: {
-          content?: string | null;
-          created_at?: string;
-          date?: string;
-          duration_minutes?: number;
-          id?: string;
-          material_id?: string | null;
-          material_ids?: string[];
-          start_time?: string | null;
-          subject_id?: string | null;
-          tag?: string | null;
-          user_id?: string;
-        };
+          content?: string | null
+          created_at?: string
+          date?: string
+          duration_minutes?: number
+          id?: string
+          material_id?: string | null
+          material_ids?: string[]
+          start_time?: string | null
+          subject_id?: string | null
+          tag?: string | null
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "study_logs_material_id_fkey";
-            columns: ["material_id"];
-            isOneToOne: false;
-            referencedRelation: "materials";
-            referencedColumns: ["id"];
+            foreignKeyName: "study_logs_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "study_logs_subject_id_fkey";
-            columns: ["subject_id"];
-            isOneToOne: false;
-            referencedRelation: "subjects";
-            referencedColumns: ["id"];
+            foreignKeyName: "study_logs_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       study_plans: {
         Row: {
-          content: string | null;
-          created_at: string;
-          date: string;
-          done: boolean;
-          id: string;
-          planned_minutes: number;
-          start_time: string | null;
-          subject_id: string | null;
-          user_id: string;
-        };
+          content: string | null
+          created_at: string
+          date: string
+          done: boolean
+          id: string
+          planned_minutes: number
+          start_time: string | null
+          subject_id: string | null
+          user_id: string
+        }
         Insert: {
-          content?: string | null;
-          created_at?: string;
-          date: string;
-          done?: boolean;
-          id?: string;
-          planned_minutes?: number;
-          start_time?: string | null;
-          subject_id?: string | null;
-          user_id: string;
-        };
+          content?: string | null
+          created_at?: string
+          date: string
+          done?: boolean
+          id?: string
+          planned_minutes?: number
+          start_time?: string | null
+          subject_id?: string | null
+          user_id: string
+        }
         Update: {
-          content?: string | null;
-          created_at?: string;
-          date?: string;
-          done?: boolean;
-          id?: string;
-          planned_minutes?: number;
-          start_time?: string | null;
-          subject_id?: string | null;
-          user_id?: string;
-        };
+          content?: string | null
+          created_at?: string
+          date?: string
+          done?: boolean
+          id?: string
+          planned_minutes?: number
+          start_time?: string | null
+          subject_id?: string | null
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "study_plans_subject_id_fkey";
-            columns: ["subject_id"];
-            isOneToOne: false;
-            referencedRelation: "subjects";
-            referencedColumns: ["id"];
+            foreignKeyName: "study_plans_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       study_room_sessions: {
         Row: {
-          duration_minutes: number | null;
-          ended_at: string | null;
-          id: string;
-          room_id: string;
-          started_at: string;
-          user_id: string;
-        };
+          duration_minutes: number | null
+          ended_at: string | null
+          id: string
+          room_id: string
+          started_at: string
+          user_id: string
+        }
         Insert: {
-          duration_minutes?: number | null;
-          ended_at?: string | null;
-          id?: string;
-          room_id: string;
-          started_at?: string;
-          user_id: string;
-        };
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          room_id: string
+          started_at?: string
+          user_id: string
+        }
         Update: {
-          duration_minutes?: number | null;
-          ended_at?: string | null;
-          id?: string;
-          room_id?: string;
-          started_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          room_id?: string
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       style_diagnosis: {
         Row: {
-          creativity: number;
-          focus: number;
-          logic: number;
-          memory: number;
-          stamina: number;
-          updated_at: string;
-          user_id: string;
-        };
+          creativity: number
+          focus: number
+          logic: number
+          memory: number
+          stamina: number
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          creativity?: number;
-          focus?: number;
-          logic?: number;
-          memory?: number;
-          stamina?: number;
-          updated_at?: string;
-          user_id: string;
-        };
+          creativity?: number
+          focus?: number
+          logic?: number
+          memory?: number
+          stamina?: number
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          creativity?: number;
-          focus?: number;
-          logic?: number;
-          memory?: number;
-          stamina?: number;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          creativity?: number
+          focus?: number
+          logic?: number
+          memory?: number
+          stamina?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subjects: {
         Row: {
-          color: string;
-          created_at: string;
-          id: string;
-          name: string;
-          sort_order: number;
-          user_id: string;
-        };
+          color: string
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          user_id: string
+        }
         Insert: {
-          color?: string;
-          created_at?: string;
-          id?: string;
-          name: string;
-          sort_order?: number;
-          user_id: string;
-        };
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          user_id: string
+        }
         Update: {
-          color?: string;
-          created_at?: string;
-          id?: string;
-          name?: string;
-          sort_order?: number;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       submissions: {
         Row: {
-          assignment_id: string;
-          attachments: Json;
-          content: string | null;
-          feedback: string | null;
-          graded_at: string | null;
-          graded_by: string | null;
-          id: string;
-          quiz_answers: Json | null;
-          score: number | null;
-          submitted_at: string;
-          user_id: string;
-          xp_awarded: number;
-        };
+          assignment_id: string
+          attachments: Json
+          content: string | null
+          feedback: string | null
+          graded_at: string | null
+          graded_by: string | null
+          id: string
+          quiz_answers: Json | null
+          score: number | null
+          submitted_at: string
+          user_id: string
+          xp_awarded: number
+        }
         Insert: {
-          assignment_id: string;
-          attachments?: Json;
-          content?: string | null;
-          feedback?: string | null;
-          graded_at?: string | null;
-          graded_by?: string | null;
-          id?: string;
-          quiz_answers?: Json | null;
-          score?: number | null;
-          submitted_at?: string;
-          user_id: string;
-          xp_awarded?: number;
-        };
+          assignment_id: string
+          attachments?: Json
+          content?: string | null
+          feedback?: string | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          quiz_answers?: Json | null
+          score?: number | null
+          submitted_at?: string
+          user_id: string
+          xp_awarded?: number
+        }
         Update: {
-          assignment_id?: string;
-          attachments?: Json;
-          content?: string | null;
-          feedback?: string | null;
-          graded_at?: string | null;
-          graded_by?: string | null;
-          id?: string;
-          quiz_answers?: Json | null;
-          score?: number | null;
-          submitted_at?: string;
-          user_id?: string;
-          xp_awarded?: number;
-        };
+          assignment_id?: string
+          attachments?: Json
+          content?: string | null
+          feedback?: string | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          quiz_answers?: Json | null
+          score?: number | null
+          submitted_at?: string
+          user_id?: string
+          xp_awarded?: number
+        }
         Relationships: [
           {
-            foreignKeyName: "submissions_assignment_id_fkey";
-            columns: ["assignment_id"];
-            isOneToOne: false;
-            referencedRelation: "assignments";
-            referencedColumns: ["id"];
+            foreignKeyName: "submissions_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       temp_question_creators: {
         Row: {
-          created_at: string;
-          expires_at: string;
-          granted_by: string | null;
-          id: string;
-          user_id: string;
-        };
+          created_at: string
+          expires_at: string
+          granted_by: string | null
+          id: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          expires_at: string;
-          granted_by?: string | null;
-          id?: string;
-          user_id: string;
-        };
+          created_at?: string
+          expires_at: string
+          granted_by?: string | null
+          id?: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          expires_at?: string;
-          granted_by?: string | null;
-          id?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          expires_at?: string
+          granted_by?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       test_countdowns: {
         Row: {
-          created_at: string;
-          id: string;
-          plan_text: string | null;
-          subject: string | null;
-          test_date: string;
-          title: string;
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          plan_text: string | null
+          subject: string | null
+          test_date: string
+          title: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          plan_text?: string | null;
-          subject?: string | null;
-          test_date: string;
-          title: string;
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          plan_text?: string | null
+          subject?: string | null
+          test_date: string
+          title: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          plan_text?: string | null;
-          subject?: string | null;
-          test_date?: string;
-          title?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          plan_text?: string | null
+          subject?: string | null
+          test_date?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       time_category_settings: {
         Row: {
-          category: string;
-          color: string;
-          created_at: string;
-          id: string;
-          label: string | null;
-          updated_at: string;
-          user_id: string;
-        };
+          category: string
+          color: string
+          created_at: string
+          id: string
+          label: string | null
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          category: string;
-          color: string;
-          created_at?: string;
-          id?: string;
-          label?: string | null;
-          updated_at?: string;
-          user_id: string;
-        };
+          category: string
+          color: string
+          created_at?: string
+          id?: string
+          label?: string | null
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          category?: string;
-          color?: string;
-          created_at?: string;
-          id?: string;
-          label?: string | null;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          category?: string
+          color?: string
+          created_at?: string
+          id?: string
+          label?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       time_entries: {
         Row: {
-          category: string;
-          color: string | null;
-          created_at: string;
-          date: string;
-          end_time: string;
-          id: string;
-          label: string | null;
-          material_ids: string[];
-          note: string | null;
-          start_time: string;
-          subject_id: string | null;
-          updated_at: string;
-          user_id: string;
-        };
+          category: string
+          color: string | null
+          created_at: string
+          date: string
+          end_time: string
+          id: string
+          label: string | null
+          material_ids: string[]
+          note: string | null
+          start_time: string
+          subject_id: string | null
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          category: string;
-          color?: string | null;
-          created_at?: string;
-          date?: string;
-          end_time: string;
-          id?: string;
-          label?: string | null;
-          material_ids?: string[];
-          note?: string | null;
-          start_time: string;
-          subject_id?: string | null;
-          updated_at?: string;
-          user_id: string;
-        };
+          category: string
+          color?: string | null
+          created_at?: string
+          date?: string
+          end_time: string
+          id?: string
+          label?: string | null
+          material_ids?: string[]
+          note?: string | null
+          start_time: string
+          subject_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          category?: string;
-          color?: string | null;
-          created_at?: string;
-          date?: string;
-          end_time?: string;
-          id?: string;
-          label?: string | null;
-          material_ids?: string[];
-          note?: string | null;
-          start_time?: string;
-          subject_id?: string | null;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          category?: string
+          color?: string | null
+          created_at?: string
+          date?: string
+          end_time?: string
+          id?: string
+          label?: string | null
+          material_ids?: string[]
+          note?: string | null
+          start_time?: string
+          subject_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       today_activities: {
         Row: {
-          category: string;
-          color: string;
-          created_at: string;
-          default_duration_min: number;
-          id: string;
-          location: string | null;
-          name: string;
-          updated_at: string;
-          user_id: string;
-        };
+          category: string
+          color: string
+          created_at: string
+          default_duration_min: number
+          id: string
+          location: string | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          category?: string;
-          color?: string;
-          created_at?: string;
-          default_duration_min?: number;
-          id?: string;
-          location?: string | null;
-          name: string;
-          updated_at?: string;
-          user_id: string;
-        };
+          category?: string
+          color?: string
+          created_at?: string
+          default_duration_min?: number
+          id?: string
+          location?: string | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          category?: string;
-          color?: string;
-          created_at?: string;
-          default_duration_min?: number;
-          id?: string;
-          location?: string | null;
-          name?: string;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          category?: string
+          color?: string
+          created_at?: string
+          default_duration_min?: number
+          id?: string
+          location?: string | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       today_entries: {
         Row: {
-          activity_id: string | null;
-          category: string;
-          color: string;
-          created_at: string;
-          date: string;
-          end_time: string;
-          id: string;
-          label: string | null;
-          notes: string | null;
-          start_time: string;
-          subject_id: string | null;
-          travel_after_min: number;
-          travel_before_min: number;
-          updated_at: string;
-          user_id: string;
-        };
+          activity_id: string | null
+          category: string
+          color: string
+          created_at: string
+          date: string
+          end_time: string
+          id: string
+          label: string | null
+          notes: string | null
+          start_time: string
+          subject_id: string | null
+          travel_after_min: number
+          travel_before_min: number
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          activity_id?: string | null;
-          category: string;
-          color?: string;
-          created_at?: string;
-          date?: string;
-          end_time: string;
-          id?: string;
-          label?: string | null;
-          notes?: string | null;
-          start_time: string;
-          subject_id?: string | null;
-          travel_after_min?: number;
-          travel_before_min?: number;
-          updated_at?: string;
-          user_id: string;
-        };
+          activity_id?: string | null
+          category: string
+          color?: string
+          created_at?: string
+          date?: string
+          end_time: string
+          id?: string
+          label?: string | null
+          notes?: string | null
+          start_time: string
+          subject_id?: string | null
+          travel_after_min?: number
+          travel_before_min?: number
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          activity_id?: string | null;
-          category?: string;
-          color?: string;
-          created_at?: string;
-          date?: string;
-          end_time?: string;
-          id?: string;
-          label?: string | null;
-          notes?: string | null;
-          start_time?: string;
-          subject_id?: string | null;
-          travel_after_min?: number;
-          travel_before_min?: number;
-          updated_at?: string;
-          user_id?: string;
-        };
+          activity_id?: string | null
+          category?: string
+          color?: string
+          created_at?: string
+          date?: string
+          end_time?: string
+          id?: string
+          label?: string | null
+          notes?: string | null
+          start_time?: string
+          subject_id?: string | null
+          travel_after_min?: number
+          travel_before_min?: number
+          updated_at?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "today_entries_activity_id_fkey";
-            columns: ["activity_id"];
-            isOneToOne: false;
-            referencedRelation: "today_activities";
-            referencedColumns: ["id"];
+            foreignKeyName: "today_entries_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "today_activities"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       today_templates: {
         Row: {
-          auto_weekdays: number[];
-          created_at: string;
-          id: string;
-          kind: string;
-          name: string;
-          payload: Json;
-          shared: boolean;
-          updated_at: string;
-          user_id: string;
-        };
+          auto_weekdays: number[]
+          created_at: string
+          id: string
+          kind: string
+          name: string
+          payload: Json
+          shared: boolean
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          auto_weekdays?: number[];
-          created_at?: string;
-          id?: string;
-          kind?: string;
-          name: string;
-          payload?: Json;
-          shared?: boolean;
-          updated_at?: string;
-          user_id: string;
-        };
+          auto_weekdays?: number[]
+          created_at?: string
+          id?: string
+          kind?: string
+          name: string
+          payload?: Json
+          shared?: boolean
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          auto_weekdays?: number[];
-          created_at?: string;
-          id?: string;
-          kind?: string;
-          name?: string;
-          payload?: Json;
-          shared?: boolean;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          auto_weekdays?: number[]
+          created_at?: string
+          id?: string
+          kind?: string
+          name?: string
+          payload?: Json
+          shared?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       town_buildings: {
         Row: {
-          created_at: string;
-          gx: number;
-          gz: number;
-          id: string;
-          kind: string;
-          level: number;
-          town_id: string;
-          user_id: string;
-        };
+          created_at: string
+          gx: number
+          gz: number
+          id: string
+          kind: string
+          level: number
+          town_id: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          gx: number;
-          gz: number;
-          id?: string;
-          kind: string;
-          level?: number;
-          town_id: string;
-          user_id: string;
-        };
+          created_at?: string
+          gx: number
+          gz: number
+          id?: string
+          kind: string
+          level?: number
+          town_id: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          gx?: number;
-          gz?: number;
-          id?: string;
-          kind?: string;
-          level?: number;
-          town_id?: string;
-          user_id?: string;
-        };
+          created_at?: string
+          gx?: number
+          gz?: number
+          id?: string
+          kind?: string
+          level?: number
+          town_id?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "town_buildings_town_id_fkey";
-            columns: ["town_id"];
-            isOneToOne: false;
-            referencedRelation: "towns";
-            referencedColumns: ["id"];
+            foreignKeyName: "town_buildings_town_id_fkey"
+            columns: ["town_id"]
+            isOneToOne: false
+            referencedRelation: "towns"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       town_events: {
         Row: {
-          created_at: string;
-          event_type: string;
-          id: string;
-          message: string;
-          user_id: string;
-        };
+          created_at: string
+          event_type: string
+          id: string
+          message: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          event_type: string;
-          id?: string;
-          message: string;
-          user_id: string;
-        };
+          created_at?: string
+          event_type: string
+          id?: string
+          message: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          event_type?: string;
-          id?: string;
-          message?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          event_type?: string
+          id?: string
+          message?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       town_history: {
         Row: {
-          ai_response: Json | null;
-          created_at: string;
-          delta: number;
-          id: string;
-          narrative: string | null;
-          reason: string | null;
-          stage_after: number;
-          stage_before: number;
-          town_id: string;
-          user_id: string;
-        };
+          ai_response: Json | null
+          created_at: string
+          delta: number
+          id: string
+          narrative: string | null
+          reason: string | null
+          stage_after: number
+          stage_before: number
+          town_id: string
+          user_id: string
+        }
         Insert: {
-          ai_response?: Json | null;
-          created_at?: string;
-          delta: number;
-          id?: string;
-          narrative?: string | null;
-          reason?: string | null;
-          stage_after: number;
-          stage_before: number;
-          town_id: string;
-          user_id: string;
-        };
+          ai_response?: Json | null
+          created_at?: string
+          delta: number
+          id?: string
+          narrative?: string | null
+          reason?: string | null
+          stage_after: number
+          stage_before: number
+          town_id: string
+          user_id: string
+        }
         Update: {
-          ai_response?: Json | null;
-          created_at?: string;
-          delta?: number;
-          id?: string;
-          narrative?: string | null;
-          reason?: string | null;
-          stage_after?: number;
-          stage_before?: number;
-          town_id?: string;
-          user_id?: string;
-        };
+          ai_response?: Json | null
+          created_at?: string
+          delta?: number
+          id?: string
+          narrative?: string | null
+          reason?: string | null
+          stage_after?: number
+          stage_before?: number
+          town_id?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "town_history_town_id_fkey";
-            columns: ["town_id"];
-            isOneToOne: false;
-            referencedRelation: "towns";
-            referencedColumns: ["id"];
+            foreignKeyName: "town_history_town_id_fkey"
+            columns: ["town_id"]
+            isOneToOne: false
+            referencedRelation: "towns"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       town_items: {
         Row: {
-          created_at: string;
-          id: string;
-          item_key: string;
-          user_id: string;
-          x: number;
-          y: number;
-        };
+          created_at: string
+          id: string
+          item_key: string
+          user_id: string
+          x: number
+          y: number
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          item_key: string;
-          user_id: string;
-          x?: number;
-          y?: number;
-        };
+          created_at?: string
+          id?: string
+          item_key: string
+          user_id: string
+          x?: number
+          y?: number
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          item_key?: string;
-          user_id?: string;
-          x?: number;
-          y?: number;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          item_key?: string
+          user_id?: string
+          x?: number
+          y?: number
+        }
+        Relationships: []
+      }
       town_policies: {
         Row: {
-          created_at: string;
-          enabled: boolean;
-          id: string;
-          key: string;
-          town_id: string;
-          user_id: string;
-        };
+          created_at: string
+          enabled: boolean
+          id: string
+          key: string
+          town_id: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          enabled?: boolean;
-          id?: string;
-          key: string;
-          town_id: string;
-          user_id: string;
-        };
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          key: string
+          town_id: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          enabled?: boolean;
-          id?: string;
-          key?: string;
-          town_id?: string;
-          user_id?: string;
-        };
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          key?: string
+          town_id?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "town_policies_town_id_fkey";
-            columns: ["town_id"];
-            isOneToOne: false;
-            referencedRelation: "towns";
-            referencedColumns: ["id"];
+            foreignKeyName: "town_policies_town_id_fkey"
+            columns: ["town_id"]
+            isOneToOne: false
+            referencedRelation: "towns"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       towns: {
         Row: {
-          archived: boolean;
-          created_at: string;
-          id: string;
-          last_judged_at: string | null;
-          max_stage_reached: number;
-          name: string;
-          stage: number;
-          town_goal: string;
-          updated_at: string;
-          user_id: string;
-        };
+          archived: boolean
+          created_at: string
+          id: string
+          last_judged_at: string | null
+          max_stage_reached: number
+          name: string
+          stage: number
+          town_goal: string
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          archived?: boolean;
-          created_at?: string;
-          id?: string;
-          last_judged_at?: string | null;
-          max_stage_reached?: number;
-          name?: string;
-          stage?: number;
-          town_goal?: string;
-          updated_at?: string;
-          user_id: string;
-        };
+          archived?: boolean
+          created_at?: string
+          id?: string
+          last_judged_at?: string | null
+          max_stage_reached?: number
+          name?: string
+          stage?: number
+          town_goal?: string
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          archived?: boolean;
-          created_at?: string;
-          id?: string;
-          last_judged_at?: string | null;
-          max_stage_reached?: number;
-          name?: string;
-          stage?: number;
-          town_goal?: string;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          archived?: boolean
+          created_at?: string
+          id?: string
+          last_judged_at?: string | null
+          max_stage_reached?: number
+          name?: string
+          stage?: number
+          town_goal?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tutor_messages: {
         Row: {
-          attachments: Json;
-          content: string;
-          created_at: string;
-          id: string;
-          role: string;
-          thinking: Json;
-          thread_id: string | null;
-          user_id: string;
-        };
+          attachments: Json
+          content: string
+          created_at: string
+          id: string
+          role: string
+          thinking: Json
+          thread_id: string | null
+          user_id: string
+        }
         Insert: {
-          attachments?: Json;
-          content: string;
-          created_at?: string;
-          id?: string;
-          role: string;
-          thinking?: Json;
-          thread_id?: string | null;
-          user_id: string;
-        };
+          attachments?: Json
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          thinking?: Json
+          thread_id?: string | null
+          user_id: string
+        }
         Update: {
-          attachments?: Json;
-          content?: string;
-          created_at?: string;
-          id?: string;
-          role?: string;
-          thinking?: Json;
-          thread_id?: string | null;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          attachments?: Json
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          thinking?: Json
+          thread_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       tutor_threads: {
         Row: {
-          created_at: string;
-          id: string;
-          title: string;
-          updated_at: string;
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          title?: string;
-          updated_at?: string;
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          title?: string;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       unit_roadmap: {
         Row: {
-          created_at: string;
-          id: string;
-          parent_unit_id: string | null;
-          sort_order: number;
-          unit_id: string;
-        };
+          created_at: string
+          id: string
+          parent_unit_id: string | null
+          sort_order: number
+          unit_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          parent_unit_id?: string | null;
-          sort_order?: number;
-          unit_id: string;
-        };
+          created_at?: string
+          id?: string
+          parent_unit_id?: string | null
+          sort_order?: number
+          unit_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          parent_unit_id?: string | null;
-          sort_order?: number;
-          unit_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          parent_unit_id?: string | null
+          sort_order?: number
+          unit_id?: string
+        }
+        Relationships: []
+      }
       user_badge_progress: {
         Row: {
-          badge_code: string;
-          id: string;
-          progress: number;
-          unlocked_at: string | null;
-          user_id: string;
-        };
+          badge_code: string
+          id: string
+          progress: number
+          unlocked_at: string | null
+          user_id: string
+        }
         Insert: {
-          badge_code: string;
-          id?: string;
-          progress?: number;
-          unlocked_at?: string | null;
-          user_id: string;
-        };
+          badge_code: string
+          id?: string
+          progress?: number
+          unlocked_at?: string | null
+          user_id: string
+        }
         Update: {
-          badge_code?: string;
-          id?: string;
-          progress?: number;
-          unlocked_at?: string | null;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          badge_code?: string
+          id?: string
+          progress?: number
+          unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
-          badge_code: string;
-          earned_at: string;
-          id: string;
-          user_id: string;
-        };
+          badge_code: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
         Insert: {
-          badge_code: string;
-          earned_at?: string;
-          id?: string;
-          user_id: string;
-        };
+          badge_code: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
         Update: {
-          badge_code?: string;
-          earned_at?: string;
-          id?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          badge_code?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_board_seen: {
         Row: {
-          board_id: string;
-          id: string;
-          seen_at: string;
-          user_id: string;
-        };
+          board_id: string
+          id: string
+          seen_at: string
+          user_id: string
+        }
         Insert: {
-          board_id: string;
-          id?: string;
-          seen_at?: string;
-          user_id: string;
-        };
+          board_id: string
+          id?: string
+          seen_at?: string
+          user_id: string
+        }
         Update: {
-          board_id?: string;
-          id?: string;
-          seen_at?: string;
-          user_id?: string;
-        };
+          board_id?: string
+          id?: string
+          seen_at?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "user_board_seen_board_id_fkey";
-            columns: ["board_id"];
-            isOneToOne: false;
-            referencedRelation: "login_boards";
-            referencedColumns: ["id"];
+            foreignKeyName: "user_board_seen_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "login_boards"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       user_coins: {
         Row: {
-          balance: number;
-          daily_earned: number;
-          daily_earned_date: string | null;
-          total_earned: number;
-          updated_at: string;
-          user_id: string;
-        };
+          balance: number
+          daily_earned: number
+          daily_earned_date: string | null
+          total_earned: number
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          balance?: number;
-          daily_earned?: number;
-          daily_earned_date?: string | null;
-          total_earned?: number;
-          updated_at?: string;
-          user_id: string;
-        };
+          balance?: number
+          daily_earned?: number
+          daily_earned_date?: string | null
+          total_earned?: number
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          balance?: number;
-          daily_earned?: number;
-          daily_earned_date?: string | null;
-          total_earned?: number;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          balance?: number
+          daily_earned?: number
+          daily_earned_date?: string | null
+          total_earned?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_inventory: {
         Row: {
-          category: string;
-          created_at: string;
-          id: string;
-          item_code: string;
-          payload: Json;
-          quantity: number;
-          updated_at: string;
-          user_id: string;
-        };
+          category: string
+          created_at: string
+          id: string
+          item_code: string
+          payload: Json
+          quantity: number
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          category: string;
-          created_at?: string;
-          id?: string;
-          item_code: string;
-          payload?: Json;
-          quantity?: number;
-          updated_at?: string;
-          user_id: string;
-        };
+          category: string
+          created_at?: string
+          id?: string
+          item_code: string
+          payload?: Json
+          quantity?: number
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          category?: string;
-          created_at?: string;
-          id?: string;
-          item_code?: string;
-          payload?: Json;
-          quantity?: number;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          category?: string
+          created_at?: string
+          id?: string
+          item_code?: string
+          payload?: Json
+          quantity?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_prefs: {
         Row: {
-          act_as_admin: boolean;
-          font_family: string | null;
-          font_scale: number;
-          high_contrast: boolean;
-          notif_settings: Json | null;
-          right_dock: Json | null;
-          sidebar_hidden: Json | null;
-          theme_color: string | null;
-          updated_at: string;
-          user_id: string;
-          widgets: Json;
-        };
+          act_as_admin: boolean
+          font_family: string | null
+          font_scale: number
+          high_contrast: boolean
+          notif_settings: Json | null
+          right_dock: Json | null
+          sidebar_hidden: Json | null
+          theme_color: string | null
+          updated_at: string
+          user_id: string
+          widgets: Json
+        }
         Insert: {
-          act_as_admin?: boolean;
-          font_family?: string | null;
-          font_scale?: number;
-          high_contrast?: boolean;
-          notif_settings?: Json | null;
-          right_dock?: Json | null;
-          sidebar_hidden?: Json | null;
-          theme_color?: string | null;
-          updated_at?: string;
-          user_id: string;
-          widgets?: Json;
-        };
+          act_as_admin?: boolean
+          font_family?: string | null
+          font_scale?: number
+          high_contrast?: boolean
+          notif_settings?: Json | null
+          right_dock?: Json | null
+          sidebar_hidden?: Json | null
+          theme_color?: string | null
+          updated_at?: string
+          user_id: string
+          widgets?: Json
+        }
         Update: {
-          act_as_admin?: boolean;
-          font_family?: string | null;
-          font_scale?: number;
-          high_contrast?: boolean;
-          notif_settings?: Json | null;
-          right_dock?: Json | null;
-          sidebar_hidden?: Json | null;
-          theme_color?: string | null;
-          updated_at?: string;
-          user_id?: string;
-          widgets?: Json;
-        };
-        Relationships: [];
-      };
+          act_as_admin?: boolean
+          font_family?: string | null
+          font_scale?: number
+          high_contrast?: boolean
+          notif_settings?: Json | null
+          right_dock?: Json | null
+          sidebar_hidden?: Json | null
+          theme_color?: string | null
+          updated_at?: string
+          user_id?: string
+          widgets?: Json
+        }
+        Relationships: []
+      }
       user_referrals: {
         Row: {
-          created_at: string;
-          id: string;
-          referred_id: string;
-          referrer_id: string;
-          reward_granted: boolean;
-        };
+          created_at: string
+          id: string
+          referred_id: string
+          referrer_id: string
+          reward_granted: boolean
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          referred_id: string;
-          referrer_id: string;
-          reward_granted?: boolean;
-        };
+          created_at?: string
+          id?: string
+          referred_id: string
+          referrer_id: string
+          reward_granted?: boolean
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          referred_id?: string;
-          referrer_id?: string;
-          reward_granted?: boolean;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          referred_id?: string
+          referrer_id?: string
+          reward_granted?: boolean
+        }
+        Relationships: []
+      }
       user_restrictions: {
         Row: {
-          created_at: string;
-          message: string | null;
-          restricted: boolean;
-          restricted_until: string | null;
-          updated_at: string;
-          user_id: string;
-        };
+          created_at: string
+          message: string | null
+          restricted: boolean
+          restricted_until: string | null
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          message?: string | null;
-          restricted?: boolean;
-          restricted_until?: string | null;
-          updated_at?: string;
-          user_id: string;
-        };
+          created_at?: string
+          message?: string | null
+          restricted?: boolean
+          restricted_until?: string | null
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          message?: string | null;
-          restricted?: boolean;
-          restricted_until?: string | null;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          message?: string | null
+          restricted?: boolean
+          restricted_until?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
-          created_at: string;
-          id: string;
-          role: Database["public"]["Enums"]["app_role"];
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          role?: Database["public"]["Enums"]["app_role"];
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          role?: Database["public"]["Enums"]["app_role"];
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_service_restrictions: {
         Row: {
-          created_at: string;
-          id: string;
-          message: string | null;
-          restricted: boolean;
-          restricted_until: string | null;
-          service_key: string;
-          updated_at: string;
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          message: string | null
+          restricted: boolean
+          restricted_until: string | null
+          service_key: string
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          message?: string | null;
-          restricted?: boolean;
-          restricted_until?: string | null;
-          service_key: string;
-          updated_at?: string;
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          message?: string | null
+          restricted?: boolean
+          restricted_until?: string | null
+          service_key: string
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          message?: string | null;
-          restricted?: boolean;
-          restricted_until?: string | null;
-          service_key?: string;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          message?: string | null
+          restricted?: boolean
+          restricted_until?: string | null
+          service_key?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_titles: {
         Row: {
-          earned_at: string;
-          id: string;
-          title: string;
-          user_id: string;
-        };
+          earned_at: string
+          id: string
+          title: string
+          user_id: string
+        }
         Insert: {
-          earned_at?: string;
-          id?: string;
-          title: string;
-          user_id: string;
-        };
+          earned_at?: string
+          id?: string
+          title: string
+          user_id: string
+        }
         Update: {
-          earned_at?: string;
-          id?: string;
-          title?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          earned_at?: string
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       voice_diaries: {
         Row: {
-          created_at: string;
-          id: string;
-          summary: string | null;
-          transcript: string;
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          summary: string | null
+          transcript: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          summary?: string | null;
-          transcript: string;
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          summary?: string | null
+          transcript: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          summary?: string | null;
-          transcript?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          summary?: string | null
+          transcript?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       weekly_parent_reports: {
         Row: {
-          child_id: string;
-          created_at: string;
-          id: string;
-          summary: Json;
-          week_start: string;
-        };
+          child_id: string
+          created_at: string
+          id: string
+          summary: Json
+          week_start: string
+        }
         Insert: {
-          child_id: string;
-          created_at?: string;
-          id?: string;
-          summary?: Json;
-          week_start: string;
-        };
+          child_id: string
+          created_at?: string
+          id?: string
+          summary?: Json
+          week_start: string
+        }
         Update: {
-          child_id?: string;
-          created_at?: string;
-          id?: string;
-          summary?: Json;
-          week_start?: string;
-        };
-        Relationships: [];
-      };
-    };
+          child_id?: string
+          created_at?: string
+          id?: string
+          summary?: Json
+          week_start?: string
+        }
+        Relationships: []
+      }
+    }
     Views: {
       weekly_coin_leaderboard: {
         Row: {
-          avatar_url: string | null;
-          coins_earned: number | null;
-          display_name: string | null;
-          user_id: string | null;
-          week_start: string | null;
-        };
-        Relationships: [];
-      };
-    };
+          avatar_url: string | null
+          coins_earned: number | null
+          display_name: string | null
+          user_id: string | null
+          week_start: string | null
+        }
+        Relationships: []
+      }
+    }
     Functions: {
       admin_fulfill_redemption: {
-        Args: { _approve: boolean; _note: string; _req_id: string };
-        Returns: undefined;
-      };
+        Args: { _approve: boolean; _note: string; _req_id: string }
+        Returns: undefined
+      }
       admin_grant_coins: {
-        Args: { _amount: number; _message: string; _user_id: string };
-        Returns: undefined;
-      };
+        Args: { _amount: number; _message: string; _user_id: string }
+        Returns: undefined
+      }
       admin_grant_coins_to_all: {
-        Args: { _amount: number; _reason: string };
-        Returns: number;
-      };
+        Args: { _amount: number; _reason: string }
+        Returns: number
+      }
       admin_list_daily_sets: {
-        Args: { _limit?: number };
+        Args: { _limit?: number }
         Returns: {
-          date: string;
-          num_questions: number;
-          question_ids: string[];
-        }[];
-      };
+          date: string
+          num_questions: number
+          question_ids: string[]
+        }[]
+      }
       admin_makron_analytics: {
-        Args: never;
+        Args: never
         Returns: {
-          accuracy: number;
-          attempts: number;
-          avg_difficulty: number;
-          correct: number;
-          likes: number;
-          prompt: string;
-          question_id: string;
-        }[];
-      };
+          accuracy: number
+          attempts: number
+          avg_difficulty: number
+          correct: number
+          likes: number
+          prompt: string
+          question_id: string
+        }[]
+      }
       admin_override_answer_score: {
-        Args: { _answer_id: string; _note: string; _score: number };
-        Returns: undefined;
-      };
+        Args: { _answer_id: string; _note: string; _score: number }
+        Returns: undefined
+      }
       admin_review_creator_application: {
-        Args: { _app_id: string; _approve: boolean; _days?: number };
-        Returns: undefined;
-      };
+        Args: { _app_id: string; _approve: boolean; _days?: number }
+        Returns: undefined
+      }
       admin_review_material: {
-        Args: { _approve: boolean; _id: string };
-        Returns: undefined;
-      };
+        Args: { _approve: boolean; _id: string }
+        Returns: undefined
+      }
       admin_review_material_edit: {
-        Args: { _approve: boolean; _id: string; _note?: string };
-        Returns: undefined;
-      };
+        Args: { _approve: boolean; _id: string; _note?: string }
+        Returns: undefined
+      }
       admin_review_organization: {
-        Args: { _approve: boolean; _org_id: string };
-        Returns: undefined;
-      };
+        Args: { _approve: boolean; _org_id: string }
+        Returns: undefined
+      }
       admin_review_organization_application: {
-        Args: { _app_id: string; _approve: boolean; _note?: string };
-        Returns: string;
-      };
+        Args: { _app_id: string; _approve: boolean; _note?: string }
+        Returns: string
+      }
       admin_review_pack: {
-        Args: { _approve: boolean; _pack_id: string };
-        Returns: undefined;
-      };
+        Args: { _approve: boolean; _pack_id: string }
+        Returns: undefined
+      }
       admin_review_question: {
-        Args: { _approve: boolean; _question_id: string };
-        Returns: undefined;
-      };
+        Args: { _approve: boolean; _question_id: string }
+        Returns: undefined
+      }
       admin_set_daily_set: {
-        Args: { _date: string; _question_ids: string[] };
-        Returns: undefined;
-      };
+        Args: { _date: string; _question_ids: string[] }
+        Returns: undefined
+      }
       admin_set_user_coins: {
-        Args: { _balance: number; _user_id: string };
-        Returns: undefined;
-      };
+        Args: { _balance: number; _user_id: string }
+        Returns: undefined
+      }
       admin_set_user_xp: {
-        Args: { _user_id: string; _xp: number };
-        Returns: undefined;
-      };
+        Args: { _user_id: string; _xp: number }
+        Returns: undefined
+      }
       admin_upsert_shop_item: {
         Args: {
-          _auto_grant: boolean;
-          _category: string;
-          _code: string;
-          _consumable: boolean;
-          _description: string;
-          _id: string;
-          _is_active: boolean;
-          _name: string;
-          _payload: Json;
-          _price: number;
-          _sort_order: number;
-        };
-        Returns: string;
-      };
+          _auto_grant: boolean
+          _category: string
+          _code: string
+          _consumable: boolean
+          _description: string
+          _id: string
+          _is_active: boolean
+          _name: string
+          _payload: Json
+          _price: number
+          _sort_order: number
+        }
+        Returns: string
+      }
       answer_mentor_session: {
-        Args: { _answer: string; _id: string };
-        Returns: Json;
-      };
-      are_mutual_friends: { Args: { _a: string; _b: string }; Returns: boolean };
-      assignment_quiz_key: { Args: { _assignment: string }; Returns: Json };
-      can_create_questions: { Args: { _user_id: string }; Returns: boolean };
+        Args: { _answer: string; _id: string }
+        Returns: Json
+      }
+      are_mutual_friends: { Args: { _a: string; _b: string }; Returns: boolean }
+      assignment_quiz_key: { Args: { _assignment: string }; Returns: Json }
+      can_create_questions: { Args: { _user_id: string }; Returns: boolean }
       can_moderate_chat: {
-        Args: { _thread: string; _user: string };
-        Returns: boolean;
-      };
+        Args: { _thread: string; _user: string }
+        Returns: boolean
+      }
       can_see_chat_message: {
-        Args: { _message_id: string; _scope: string };
-        Returns: boolean;
-      };
+        Args: { _message_id: string; _scope: string }
+        Returns: boolean
+      }
       can_see_org_post: {
-        Args: { _post: string; _user: string };
-        Returns: boolean;
-      };
+        Args: { _post: string; _user: string }
+        Returns: boolean
+      }
       can_view_social_post: {
-        Args: { _post_id: string; _uid: string };
-        Returns: boolean;
-      };
+        Args: { _post_id: string; _uid: string }
+        Returns: boolean
+      }
       can_view_submission: {
-        Args: { _assignment_id: string; _user_id: string };
-        Returns: boolean;
-      };
-      claim_daily_mission: { Args: { _kind: string }; Returns: Json };
-      claim_referral: { Args: { _code: string }; Returns: Json };
-      complete_exam_todo: { Args: { _id: string }; Returns: Json };
+        Args: { _assignment_id: string; _user_id: string }
+        Returns: boolean
+      }
+      claim_daily_mission: { Args: { _kind: string }; Returns: Json }
+      claim_referral: { Args: { _code: string }; Returns: Json }
+      complete_exam_todo: { Args: { _id: string }; Returns: Json }
       consume_inventory: {
-        Args: { _item_code: string; _qty?: number };
-        Returns: number;
-      };
+        Args: { _item_code: string; _qty?: number }
+        Returns: number
+      }
       create_chat_group: {
-        Args: { _member_ids: string[]; _name: string };
-        Returns: string;
-      };
-      current_jst_date: { Args: never; Returns: string };
-      delete_makron_pack: { Args: { _pack_id: string }; Returns: undefined };
+        Args: { _member_ids: string[]; _name: string }
+        Returns: string
+      }
+      current_jst_date: { Args: never; Returns: string }
+      delete_makron_pack: { Args: { _pack_id: string }; Returns: undefined }
       finalize_makron_session: {
-        Args: { _session_id: string };
+        Args: { _session_id: string }
         Returns: {
-          coins_awarded: number;
-          total_points: number;
-          total_score: number;
-          xp_awarded: number;
-        }[];
-      };
-      gen_org_join_code: { Args: never; Returns: string };
+          coins_awarded: number
+          total_points: number
+          total_score: number
+          xp_awarded: number
+        }[]
+      }
+      gen_org_join_code: { Args: never; Returns: string }
       get_leaderboard: {
-        Args: { _limit?: number };
+        Args: { _limit?: number }
         Returns: {
-          avatar_url: string;
-          display_name: string;
-          streak_days: number;
-          total_minutes: number;
-          user_id: string;
-        }[];
-      };
+          avatar_url: string
+          display_name: string
+          streak_days: number
+          total_minutes: number
+          user_id: string
+        }[]
+      }
       get_makron_leaderboard: {
-        Args: { _limit?: number };
+        Args: { _limit?: number }
         Returns: {
-          avatar_url: string;
-          display_name: string;
-          level: number;
-          rank: number;
-          user_id: string;
-          xp: number;
-        }[];
-      };
+          avatar_url: string
+          display_name: string
+          level: number
+          rank: number
+          user_id: string
+          xp: number
+        }[]
+      }
       get_my_makron_rank: {
-        Args: never;
+        Args: never
         Returns: {
-          level: number;
-          rank: number;
-          total_users: number;
-          xp: number;
-        }[];
-      };
+          level: number
+          rank: number
+          total_users: number
+          xp: number
+        }[]
+      }
       get_referral_leaderboard: {
-        Args: { _limit?: number };
+        Args: { _limit?: number }
         Returns: {
-          avatar_url: string;
-          display_name: string;
-          invite_count: number;
-          rank: number;
-          user_id: string;
-        }[];
-      };
+          avatar_url: string
+          display_name: string
+          invite_count: number
+          rank: number
+          user_id: string
+        }[]
+      }
       get_user_study_stats: {
-        Args: { _user_ids: string[] };
+        Args: { _user_ids: string[] }
         Returns: {
-          last_date: string;
-          total_minutes: number;
-          user_id: string;
-        }[];
-      };
+          last_date: string
+          total_minutes: number
+          user_id: string
+        }[]
+      }
       gift_inventory_item: {
         Args: {
-          _item_code: string;
-          _message?: string;
-          _qty?: number;
-          _to: string;
-        };
-        Returns: undefined;
-      };
-      group_org: { Args: { _group: string }; Returns: string };
+          _item_code: string
+          _message?: string
+          _qty?: number
+          _to: string
+        }
+        Returns: undefined
+      }
+      group_org: { Args: { _group: string }; Returns: string }
       group_perm: {
-        Args: { _group: string; _key: string; _user: string };
-        Returns: boolean;
-      };
+        Args: { _group: string; _key: string; _user: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
-          _role: Database["public"]["Enums"]["app_role"];
-          _user_id: string;
-        };
-        Returns: boolean;
-      };
-      hide_dm_conversation: { Args: { _other: string }; Returns: undefined };
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      hide_dm_conversation: { Args: { _other: string }; Returns: undefined }
       invite_to_chat_group: {
-        Args: { _group: string; _user_id: string };
-        Returns: undefined;
-      };
+        Args: { _group: string; _user_id: string }
+        Returns: undefined
+      }
       is_chat_group_member: {
-        Args: { _group: string; _user: string };
-        Returns: boolean;
-      };
+        Args: { _group: string; _user: string }
+        Returns: boolean
+      }
       is_chat_group_owner: {
-        Args: { _group: string; _user: string };
-        Returns: boolean;
-      };
+        Args: { _group: string; _user: string }
+        Returns: boolean
+      }
       is_chat_participant: {
-        Args: { _thread: string; _user: string };
-        Returns: boolean;
-      };
+        Args: { _thread: string; _user: string }
+        Returns: boolean
+      }
       is_class_member: {
-        Args: { _class_id: string; _user_id: string };
-        Returns: boolean;
-      };
+        Args: { _class_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_class_teacher: {
-        Args: { _class_id: string; _user_id: string };
-        Returns: boolean;
-      };
+        Args: { _class_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_group_leader: {
-        Args: { _group: string; _user: string };
-        Returns: boolean;
-      };
+        Args: { _group: string; _user: string }
+        Returns: boolean
+      }
       is_group_member: {
-        Args: { _group: string; _user: string };
-        Returns: boolean;
-      };
-      is_org_admin: { Args: { _org: string; _user: string }; Returns: boolean };
-      is_org_member: { Args: { _org: string; _user: string }; Returns: boolean };
-      is_org_staff: { Args: { _org: string; _user: string }; Returns: boolean };
+        Args: { _group: string; _user: string }
+        Returns: boolean
+      }
+      is_org_admin: { Args: { _org: string; _user: string }; Returns: boolean }
+      is_org_member: { Args: { _org: string; _user: string }; Returns: boolean }
+      is_org_staff: { Args: { _org: string; _user: string }; Returns: boolean }
       is_parent_of: {
-        Args: { _child: string; _parent: string };
-        Returns: boolean;
-      };
+        Args: { _child: string; _parent: string }
+        Returns: boolean
+      }
       is_study_room_member: {
-        Args: { _room: string; _user: string };
-        Returns: boolean;
-      };
-      join_class_by_code: { Args: { _code: string }; Returns: string };
-      join_group_room_by_code: { Args: { _code: string }; Returns: string };
-      jst_today: { Args: never; Returns: string };
-      leave_chat_group: { Args: { _group: string }; Returns: undefined };
+        Args: { _room: string; _user: string }
+        Returns: boolean
+      }
+      join_class_by_code: { Args: { _code: string }; Returns: string }
+      join_group_room_by_code: { Args: { _code: string }; Returns: string }
+      jst_today: { Args: never; Returns: string }
+      leave_chat_group: { Args: { _group: string }; Returns: undefined }
       list_chat_conversations: {
-        Args: never;
+        Args: never
         Returns: {
-          conv_id: string;
-          conv_type: string;
-          display_name: string;
-          last_message: string;
-          last_message_at: string;
-          member_count: number;
-          unread_count: number;
-        }[];
-      };
+          conv_id: string
+          conv_type: string
+          display_name: string
+          last_message: string
+          last_message_at: string
+          member_count: number
+          unread_count: number
+        }[]
+      }
       makron_correct_answer_text: {
-        Args: { _q: Database["public"]["Tables"]["makron_questions"]["Row"] };
-        Returns: string;
-      };
+        Args: { _q: Database["public"]["Tables"]["makron_questions"]["Row"] }
+        Returns: string
+      }
       makron_daily_status: {
-        Args: never;
+        Args: never
         Returns: {
-          attempts: number;
-          best_score: number;
-          can_retry: boolean;
-          completed: boolean;
-          date: string;
-          streak: number;
-          total_questions: number;
-        }[];
-      };
-      makron_delete_answer: { Args: { _answer_id: string }; Returns: undefined };
+          attempts: number
+          best_score: number
+          can_retry: boolean
+          completed: boolean
+          date: string
+          streak: number
+          total_questions: number
+        }[]
+      }
+      makron_delete_answer: { Args: { _answer_id: string }; Returns: undefined }
       makron_eval: {
         Args: {
-          _answer: Json;
-          _q: Database["public"]["Tables"]["makron_questions"]["Row"];
-        };
-        Returns: boolean;
-      };
+          _answer: Json
+          _q: Database["public"]["Tables"]["makron_questions"]["Row"]
+        }
+        Returns: boolean
+      }
       makron_finalize_daily: {
-        Args: { _session_id: string };
+        Args: { _session_id: string }
         Returns: {
-          bonus_coins: number;
-          bonus_xp: number;
-          coins_awarded: number;
-          streak: number;
-          total_points: number;
-          total_score: number;
-          xp_awarded: number;
-        }[];
-      };
+          bonus_coins: number
+          bonus_xp: number
+          coins_awarded: number
+          streak: number
+          total_points: number
+          total_score: number
+          xp_awarded: number
+        }[]
+      }
       makron_get_or_create_daily_set: {
-        Args: never;
+        Args: never
         Returns: {
-          date: string;
-          question_ids: string[];
-        }[];
-      };
+          date: string
+          question_ids: string[]
+        }[]
+      }
       makron_grade_one: {
-        Args: { _answer: Json; _question_id: string; _session_id: string };
-        Returns: Json;
-      };
+        Args: { _answer: Json; _question_id: string; _session_id: string }
+        Returns: Json
+      }
       makron_match_choices: {
-        Args: { _question_id: string };
-        Returns: string[];
-      };
+        Args: { _question_id: string }
+        Returns: string[]
+      }
       makron_model_answers: {
-        Args: { _session_id: string };
+        Args: { _session_id: string }
         Returns: {
-          model_answer: string;
-          question_id: string;
-        }[];
-      };
+          model_answer: string
+          question_id: string
+        }[]
+      }
       makron_my_answer_keys: {
-        Args: never;
+        Args: never
         Returns: {
-          correct_answer: string;
-          question_id: string;
-        }[];
-      };
+          correct_answer: string
+          question_id: string
+        }[]
+      }
       makron_pack_attempters: {
-        Args: { _pack_id: string };
+        Args: { _pack_id: string }
         Returns: {
-          attempts_count: number;
-          best_score: number;
-          display_name: string;
-          last_attempt_at: string;
-          user_id: string;
-        }[];
-      };
+          attempts_count: number
+          best_score: number
+          display_name: string
+          last_attempt_at: string
+          user_id: string
+        }[]
+      }
       makron_pack_reset_attempts: {
-        Args: { _pack_id: string; _user_id?: string };
-        Returns: undefined;
-      };
-      makron_pack_stats: { Args: { _pack_id: string }; Returns: Json };
+        Args: { _pack_id: string; _user_id?: string }
+        Returns: undefined
+      }
+      makron_pack_stats: { Args: { _pack_id: string }; Returns: Json }
       makron_question_keys: {
-        Args: { _ids: string[] };
+        Args: { _ids: string[] }
         Returns: {
-          accepted_answers: Json;
-          correct_options: Json;
-          id: string;
-          model_answer: string;
-        }[];
-      };
+          accepted_answers: Json
+          correct_options: Json
+          id: string
+          model_answer: string
+        }[]
+      }
       makron_reveal: {
-        Args: { _session_id: string };
+        Args: { _session_id: string }
         Returns: {
-          accepted_answers: Json;
-          correct_answer: string;
-          correct_options: Json;
-          model_answer: string;
-          question_id: string;
-        }[];
-      };
+          accepted_answers: Json
+          correct_answer: string
+          correct_options: Json
+          model_answer: string
+          question_id: string
+        }[]
+      }
       makron_session_set_all_mode: {
-        Args: { _session_id: string };
-        Returns: undefined;
-      };
+        Args: { _session_id: string }
+        Returns: undefined
+      }
       makron_session_set_scratchpad: {
-        Args: { _data: string; _session_id: string };
-        Returns: undefined;
-      };
-      makron_start_daily_session: { Args: never; Returns: string };
-      makron_start_pack_session: { Args: { _pack_id: string }; Returns: string };
+        Args: { _data: string; _session_id: string }
+        Returns: undefined
+      }
+      makron_start_daily_session: { Args: never; Returns: string }
+      makron_start_pack_session: { Args: { _pack_id: string }; Returns: string }
       makron_start_weakness_session: {
-        Args: { _limit?: number; _unit_id: string };
-        Returns: string;
-      };
+        Args: { _limit?: number; _unit_id: string }
+        Returns: string
+      }
       makron_submit_session: {
-        Args: { _answers: Json; _session_id: string };
-        Returns: undefined;
-      };
+        Args: { _answers: Json; _session_id: string }
+        Returns: undefined
+      }
       makron_update_answer_score: {
         Args: {
-          _answer_id: string;
-          _comment?: string;
-          _is_correct: boolean;
-          _score: number;
-        };
-        Returns: undefined;
-      };
+          _answer_id: string
+          _comment?: string
+          _is_correct: boolean
+          _score: number
+        }
+        Returns: undefined
+      }
       makron_update_session: {
-        Args: { _passed: boolean; _score: number; _session_id: string };
-        Returns: undefined;
-      };
+        Args: { _passed: boolean; _score: number; _session_id: string }
+        Returns: undefined
+      }
       makron_weakness_questions: {
-        Args: { _limit?: number; _unit_id: string };
+        Args: { _limit?: number; _unit_id: string }
         Returns: {
-          explanation: string;
-          grading: string;
-          hint_text: string;
-          id: string;
-          image_url: string;
-          is_active: boolean;
-          options: Json;
-          order_idx: number;
-          pack_id: string;
-          points: number;
-          prompt: string;
-          type: string;
-          unit_id: string;
-        }[];
-      };
-      mark_group_read: { Args: { _group: string }; Returns: undefined };
+          explanation: string
+          grading: string
+          hint_text: string
+          id: string
+          image_url: string
+          is_active: boolean
+          options: Json
+          order_idx: number
+          pack_id: string
+          points: number
+          prompt: string
+          type: string
+          unit_id: string
+        }[]
+      }
+      mark_group_read: { Args: { _group: string }; Returns: undefined }
       material_global_usage: {
-        Args: { _material_id: string };
+        Args: { _material_id: string }
         Returns: {
-          last_used: string;
-          sessions_count: number;
-          total_minutes: number;
-          users_count: number;
-        }[];
-      };
+          last_used: string
+          sessions_count: number
+          total_minutes: number
+          users_count: number
+        }[]
+      }
       my_material_usage: {
-        Args: never;
+        Args: never
         Returns: {
-          daily_avg: number;
-          days_used: number;
-          first_used: string;
-          last_used: string;
-          material_id: string;
-          sessions_count: number;
-          total_minutes: number;
-        }[];
-      };
-      my_org_ids: { Args: never; Returns: string[] };
-      my_profile_private: { Args: never; Returns: Json };
-      notebook_can_edit: { Args: { _nb: string }; Returns: boolean };
-      notebook_can_view: { Args: { _nb: string }; Returns: boolean };
-      org_application_submit: { Args: { _payload: Json }; Returns: string };
+          daily_avg: number
+          days_used: number
+          first_used: string
+          last_used: string
+          material_id: string
+          sessions_count: number
+          total_minutes: number
+        }[]
+      }
+      my_org_ids: { Args: never; Returns: string[] }
+      my_profile_private: { Args: never; Returns: Json }
+      notebook_can_edit: { Args: { _nb: string }; Returns: boolean }
+      notebook_can_view: { Args: { _nb: string }; Returns: boolean }
+      org_application_submit: { Args: { _payload: Json }; Returns: string }
       org_assignment_progress: {
-        Args: { _assignment: string };
+        Args: { _assignment: string }
         Returns: {
-          attempts: number;
-          best_points: number;
-          best_score: number;
-          display_name: string;
-          done: boolean;
-          last_at: string;
-          passed: boolean;
-          role: string;
-          user_id: string;
-          username: string;
-        }[];
-      };
+          attempts: number
+          best_points: number
+          best_score: number
+          display_name: string
+          done: boolean
+          last_at: string
+          passed: boolean
+          role: string
+          user_id: string
+          username: string
+        }[]
+      }
       org_create: {
-        Args: { _description?: string; _name: string };
-        Returns: string;
-      };
+        Args: { _description?: string; _name: string }
+        Returns: string
+      }
       org_create_group: {
         Args: {
-          _color?: string;
-          _description?: string;
-          _members?: Json;
-          _name: string;
-          _org: string;
-          _perms?: Json;
-        };
-        Returns: string;
-      };
+          _color?: string
+          _description?: string
+          _members?: Json
+          _name: string
+          _org: string
+          _perms?: Json
+        }
+        Returns: string
+      }
       org_edu_check_answer: {
-        Args: { _answer: string; _question: string };
-        Returns: Json;
-      };
+        Args: { _answer: string; _question: string }
+        Returns: Json
+      }
       org_edu_question_keys: {
-        Args: { _org: string };
+        Args: { _org: string }
         Returns: {
-          answer: string;
-          explanation: string;
-          id: string;
-        }[];
-      };
+          answer: string
+          explanation: string
+          id: string
+        }[]
+      }
       org_edu_record_result: {
-        Args: { _correct: number; _org: string; _xp: number };
+        Args: { _correct: number; _org: string; _xp: number }
         Returns: {
-          best_streak: number;
-          current_streak: number;
-          id: string;
-          last_date: string | null;
-          organization_id: string;
-          total_correct: number;
-          updated_at: string;
-          user_id: string;
-          xp: number;
-        };
+          best_streak: number
+          current_streak: number
+          id: string
+          last_date: string | null
+          organization_id: string
+          total_correct: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
         SetofOptions: {
-          from: "*";
-          to: "org_edu_streaks";
-          isOneToOne: true;
-          isSetofReturn: false;
-        };
-      };
+          from: "*"
+          to: "org_edu_streaks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       org_edu_review_rows: {
-        Args: { _include_done?: boolean; _org: string };
+        Args: { _include_done?: boolean; _org: string }
         Returns: {
-          ai_review: string;
-          answer: string;
-          body: string;
-          created_at: string;
-          explanation: string;
-          id: string;
-          resolved_at: string;
-          unit_title: string;
-          user_answer: string;
-        }[];
-      };
+          ai_review: string
+          answer: string
+          body: string
+          created_at: string
+          explanation: string
+          id: string
+          resolved_at: string
+          unit_title: string
+          user_answer: string
+        }[]
+      }
       org_enroll_all: {
-        Args: { _class: string; _org: string };
-        Returns: number;
-      };
+        Args: { _class: string; _org: string }
+        Returns: number
+      }
       org_invite_member: {
-        Args: { _message?: string; _org: string; _role?: string; _user: string };
-        Returns: string;
-      };
-      org_join_by_code: { Args: { _code: string }; Returns: string };
+        Args: { _message?: string; _org: string; _role?: string; _user: string }
+        Returns: string
+      }
+      org_join_by_code: { Args: { _code: string }; Returns: string }
       org_member_stats: {
-        Args: { _org: string };
+        Args: { _org: string }
         Returns: {
-          display_name: string;
-          last_studied: string;
-          minutes_30d: number;
-          minutes_7d: number;
-          role: Database["public"]["Enums"]["org_role"];
-          sessions_30d: number;
-          user_id: string;
-          username: string;
-        }[];
-      };
+          display_name: string
+          last_studied: string
+          minutes_30d: number
+          minutes_7d: number
+          role: Database["public"]["Enums"]["org_role"]
+          sessions_30d: number
+          user_id: string
+          username: string
+        }[]
+      }
       org_notify_members: {
         Args: {
-          _app: string;
-          _body: string;
-          _group: string;
-          _org: string;
-          _title: string;
-        };
-        Returns: number;
-      };
+          _app: string
+          _body: string
+          _group: string
+          _org: string
+          _title: string
+        }
+        Returns: number
+      }
       org_post_perm: {
-        Args: { _key: string; _post: string; _user: string };
-        Returns: boolean;
-      };
+        Args: { _key: string; _post: string; _user: string }
+        Returns: boolean
+      }
       org_respond_invitation: {
-        Args: { _accept: boolean; _invite_id: string };
-        Returns: undefined;
-      };
+        Args: { _accept: boolean; _invite_id: string }
+        Returns: undefined
+      }
       org_review_join_request: {
         Args: {
-          _approve: boolean;
-          _req_id: string;
-          _role?: Database["public"]["Enums"]["org_role"];
-        };
-        Returns: undefined;
-      };
-      org_start_dm: { Args: { _org: string; _other: string }; Returns: string };
+          _approve: boolean
+          _req_id: string
+          _role?: Database["public"]["Enums"]["org_role"]
+        }
+        Returns: undefined
+      }
+      org_start_dm: { Args: { _org: string; _other: string }; Returns: string }
       org_transfer_ownership: {
-        Args: { _org: string; _user: string };
-        Returns: undefined;
-      };
+        Args: { _org: string; _user: string }
+        Returns: undefined
+      }
       poll_results: {
-        Args: { _poll_id: string };
+        Args: { _poll_id: string }
         Returns: {
-          option_index: number;
-          votes: number;
-        }[];
-      };
+          option_index: number
+          votes: number
+        }[]
+      }
       public_profiles_by_ids: {
-        Args: { _ids: string[] };
+        Args: { _ids: string[] }
         Returns: {
-          avatar_url: string;
-          display_name: string;
-          id: string;
-          username: string;
-        }[];
-      };
-      purchase_shop_item: { Args: { _item_id: string }; Returns: Json };
+          avatar_url: string
+          display_name: string
+          id: string
+          username: string
+        }[]
+      }
+      purchase_shop_item: { Args: { _item_id: string }; Returns: Json }
       remove_from_chat_group: {
-        Args: { _group: string; _user_id: string };
-        Returns: undefined;
-      };
+        Args: { _group: string; _user_id: string }
+        Returns: undefined
+      }
       review_material_edit: {
-        Args: { _approve: boolean; _edit_id: string; _note?: string };
-        Returns: Json;
-      };
+        Args: { _approve: boolean; _edit_id: string; _note?: string }
+        Returns: Json
+      }
       search_public_profiles: {
-        Args: { _q: string };
+        Args: { _q: string }
         Returns: {
-          avatar_url: string;
-          display_name: string;
-          id: string;
-          username: string;
-        }[];
-      };
+          avatar_url: string
+          display_name: string
+          id: string
+          username: string
+        }[]
+      }
       sell_inventory_item: {
-        Args: { _item_code: string; _qty?: number };
-        Returns: Json;
-      };
+        Args: { _item_code: string; _qty?: number }
+        Returns: Json
+      }
       send_coin_gift: {
-        Args: { _amount: number; _message: string; _to: string };
-        Returns: Json;
-      };
-      send_dm: { Args: { _content: string; _to: string }; Returns: string };
+        Args: { _amount: number; _message: string; _to: string }
+        Returns: Json
+      }
+      send_dm: { Args: { _content: string; _to: string }; Returns: string }
       send_group_message: {
-        Args: { _content: string; _group: string };
-        Returns: string;
-      };
+        Args: { _content: string; _group: string }
+        Returns: string
+      }
       share_study_summary: {
-        Args: { _token: string };
+        Args: { _token: string }
         Returns: {
-          color: string;
-          date: string;
-          minutes: number;
-          subject_name: string;
-        }[];
-      };
-      show_limit: { Args: never; Returns: number };
-      show_trgm: { Args: { "": string }; Returns: string[] };
+          color: string
+          date: string
+          minutes: number
+          subject_name: string
+        }[]
+      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       spend_coins: {
-        Args: { _amount: number; _meta?: Json; _reason: string };
-        Returns: number;
-      };
+        Args: { _amount: number; _meta?: Json; _reason: string }
+        Returns: number
+      }
       submit_official_request: {
-        Args: { _note?: string; _pack_id: string };
-        Returns: undefined;
-      };
+        Args: { _note?: string; _pack_id: string }
+        Returns: undefined
+      }
       town_build: {
         Args: {
-          _cost: number;
-          _gx: number;
-          _gz: number;
-          _kind: string;
-          _town_id: string;
-        };
-        Returns: Json;
-      };
+          _cost: number
+          _gx: number
+          _gz: number
+          _kind: string
+          _town_id: string
+        }
+        Returns: Json
+      }
       town_demolish: {
-        Args: { _building_id: string; _refund: number };
-        Returns: Json;
-      };
-      use_inventory_item: { Args: { _item_code: string }; Returns: Json };
-    };
+        Args: { _building_id: string; _refund: number }
+        Returns: Json
+      }
+      use_inventory_item: { Args: { _item_code: string }; Returns: Json }
+    }
     Enums: {
-      app_role: "admin" | "user";
-      org_role: "owner" | "admin" | "teacher" | "member";
-      org_status: "pending" | "approved" | "rejected" | "suspended";
-    };
+      app_role: "admin" | "user"
+      org_role: "owner" | "admin" | "teacher" | "member"
+      org_status: "pending" | "approved" | "rejected" | "suspended"
+    }
     CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
-};
+      [_ in never]: never
+    }
+  }
+}
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R;
+      Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R;
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
       }
       ? R
       : never
-    : never;
+    : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I;
+      Insert: infer I
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I;
+        Insert: infer I
       }
       ? I
       : never
-    : never;
+    : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U;
+      Update: infer U
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U;
+        Update: infer U
       }
       ? U
       : never
-    : never;
+    : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never;
+    : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never;
+    : never
 
 export const Constants = {
   public: {
@@ -7672,4 +7680,4 @@ export const Constants = {
       org_status: ["pending", "approved", "rejected", "suspended"],
     },
   },
-} as const;
+} as const
