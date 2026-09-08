@@ -8,6 +8,14 @@ import { OrgChat } from "@/components/org/OrgChat";
 import { OrgNotifications } from "@/components/org/OrgNotifications";
 import { OrgMakron } from "@/components/org/OrgMakron";
 import { OrgEdu } from "@/components/org/OrgEdu";
+import { OrgAttendance } from "@/components/org/OrgAttendance";
+import { OrgTimetable } from "@/components/org/OrgTimetable";
+import { OrgGrades } from "@/components/org/OrgGrades";
+import { OrgMeetings } from "@/components/org/OrgMeetings";
+import { OrgHealth } from "@/components/org/OrgHealth";
+import { OrgConsult } from "@/components/org/OrgConsult";
+import { OrgMonitor } from "@/components/org/OrgMonitor";
+
 
 export const Route = createFileRoute("/_authenticated/organizations/$orgId/app/$appKey")({
   component: AppPage,
@@ -53,6 +61,14 @@ function AppPage() {
       {appKey === "notifications" && <OrgNotifications {...props} />}
       {appKey === "makron" && <OrgMakron {...props} />}
       {appKey === "edu" && <OrgEdu {...props} />}
+      {appKey === "attendance" && <OrgAttendance {...props} />}
+      {appKey === "timetable" && <OrgTimetable {...props} />}
+      {appKey === "grades" && <OrgGrades {...props} />}
+      {appKey === "meetings" && <OrgMeetings {...props} />}
+      {appKey === "health" && <OrgHealth {...props} />}
+      {appKey === "consult" && <OrgConsult {...props} />}
+      {appKey === "monitor" && <OrgMonitor {...props} />}
+
     </div>
   );
 }

@@ -3451,6 +3451,45 @@ export type Database = {
         }
         Relationships: []
       }
+      org_absence_requests: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          kind: string
+          organization_id: string
+          reason: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          kind?: string
+          organization_id: string
+          reason?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          kind?: string
+          organization_id?: string
+          reason?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       org_app_settings: {
         Row: {
           app_key: string
@@ -3520,6 +3559,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      org_attendance: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          organization_id: string
+          period: number
+          reason: string | null
+          recorded_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          organization_id: string
+          period?: number
+          reason?: string | null
+          recorded_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          organization_id?: string
+          period?: number
+          reason?: string | null
+          recorded_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       org_calendar_events: {
         Row: {
@@ -4059,6 +4137,51 @@ export type Database = {
           },
         ]
       }
+      org_grades: {
+        Row: {
+          comment: string | null
+          created_at: string
+          created_by: string | null
+          grade: string | null
+          id: string
+          organization_id: string
+          published: boolean
+          score: number | null
+          student_id: string
+          subject: string
+          term: string
+          updated_at: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          created_by?: string | null
+          grade?: string | null
+          id?: string
+          organization_id: string
+          published?: boolean
+          score?: number | null
+          student_id: string
+          subject: string
+          term: string
+          updated_at?: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          created_by?: string | null
+          grade?: string | null
+          id?: string
+          organization_id?: string
+          published?: boolean
+          score?: number | null
+          student_id?: string
+          subject?: string
+          term?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       org_group_members: {
         Row: {
           created_at: string
@@ -4137,6 +4260,165 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      org_guidance_notes: {
+        Row: {
+          author_id: string | null
+          body: string
+          category: string
+          created_at: string
+          id: string
+          organization_id: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          body: string
+          category?: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      org_health_visits: {
+        Row: {
+          action: string | null
+          created_at: string
+          id: string
+          organization_id: string
+          recorded_by: string | null
+          student_id: string
+          symptom: string | null
+          temperature: number | null
+          updated_at: string
+          visited_at: string
+        }
+        Insert: {
+          action?: string | null
+          created_at?: string
+          id?: string
+          organization_id: string
+          recorded_by?: string | null
+          student_id: string
+          symptom?: string | null
+          temperature?: number | null
+          updated_at?: string
+          visited_at?: string
+        }
+        Update: {
+          action?: string | null
+          created_at?: string
+          id?: string
+          organization_id?: string
+          recorded_by?: string | null
+          student_id?: string
+          symptom?: string | null
+          temperature?: number | null
+          updated_at?: string
+          visited_at?: string
+        }
+        Relationships: []
+      }
+      org_incidents: {
+        Row: {
+          anonymous: boolean
+          body: string
+          category: string
+          created_at: string
+          handled_by: string | null
+          id: string
+          organization_id: string
+          reporter_id: string | null
+          staff_reply: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          anonymous?: boolean
+          body: string
+          category?: string
+          created_at?: string
+          handled_by?: string | null
+          id?: string
+          organization_id: string
+          reporter_id?: string | null
+          staff_reply?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          anonymous?: boolean
+          body?: string
+          category?: string
+          created_at?: string
+          handled_by?: string | null
+          id?: string
+          organization_id?: string
+          reporter_id?: string | null
+          staff_reply?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      org_meetings: {
+        Row: {
+          created_at: string
+          duration_min: number
+          id: string
+          kind: string
+          note: string | null
+          organization_id: string
+          place: string | null
+          staff_id: string | null
+          start_at: string
+          status: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_min?: number
+          id?: string
+          kind?: string
+          note?: string | null
+          organization_id: string
+          place?: string | null
+          staff_id?: string | null
+          start_at: string
+          status?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_min?: number
+          id?: string
+          kind?: string
+          note?: string | null
+          organization_id?: string
+          place?: string | null
+          staff_id?: string | null
+          start_at?: string
+          status?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       org_notifications: {
         Row: {
@@ -4592,6 +4874,84 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      org_timetable: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          group_id: string | null
+          id: string
+          organization_id: string
+          period: number
+          room: string | null
+          subject: string
+          teacher_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          group_id?: string | null
+          id?: string
+          organization_id: string
+          period: number
+          room?: string | null
+          subject: string
+          teacher_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          group_id?: string | null
+          id?: string
+          organization_id?: string
+          period?: number
+          room?: string | null
+          subject?: string
+          teacher_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      org_watch_flags: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          detail: string | null
+          id: string
+          kind: string
+          organization_id: string
+          resolved: boolean
+          severity: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          detail?: string | null
+          id?: string
+          kind: string
+          organization_id: string
+          resolved?: boolean
+          severity?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          detail?: string | null
+          id?: string
+          kind?: string
+          organization_id?: string
+          resolved?: boolean
+          severity?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       organization_application_messages: {
         Row: {
@@ -7429,6 +7789,21 @@ export type Database = {
           sessions_30d: number
           user_id: string
           username: string
+        }[]
+      }
+      org_monitor_overview: {
+        Args: { _org: string }
+        Returns: {
+          absents_30d: number
+          display_name: string
+          health_30d: number
+          last_studied: string
+          lates_30d: number
+          minutes_30d: number
+          minutes_7d: number
+          open_flags: number
+          role: Database["public"]["Enums"]["org_role"]
+          user_id: string
         }[]
       }
       org_notify_members: {
