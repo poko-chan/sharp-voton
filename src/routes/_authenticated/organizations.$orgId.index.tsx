@@ -21,6 +21,12 @@ import {
   Settings,
   Plus,
   UserCog,
+  ClipboardCheck,
+  Table,
+  BarChart3,
+  CalendarClock,
+  HeartPulse,
+  Eye,
 } from "lucide-react";
 import { ORG_APPS, useOrg } from "@/lib/org-apps";
 import { ROLE_LABEL } from "@/lib/org-roles";
@@ -38,7 +44,15 @@ const ICONS: Record<string, any> = {
   MessagesSquare,
   BookOpen,
   GraduationCap,
+  ClipboardCheck,
+  Table,
+  BarChart3,
+  CalendarClock,
+  HeartPulse,
+  ShieldAlert,
+  Eye,
 };
+
 
 const MANAGE_ITEMS = [
   { section: "members", label: "メンバー管理", icon: UserCog },
