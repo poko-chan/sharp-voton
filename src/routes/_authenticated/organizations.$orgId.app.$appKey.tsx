@@ -61,6 +61,14 @@ function AppPage() {
       {appKey === "notifications" && <OrgNotifications {...props} />}
       {appKey === "makron" && <OrgMakron {...props} />}
       {appKey === "edu" && <OrgEdu {...props} />}
+      {appKey === "attendance" && <OrgAttendance {...props} />}
+      {appKey === "timetable" && <OrgTimetable {...props} />}
+      {appKey === "grades" && <OrgGrades {...props} />}
+      {appKey === "meetings" && <OrgMeetings {...props} />}
+      {appKey === "health" && <OrgHealth {...props} />}
+      {appKey === "consult" && <OrgConsult {...props} />}
+      {appKey === "monitor" && <OrgMonitor {...props} />}
+
     </div>
   );
 }
