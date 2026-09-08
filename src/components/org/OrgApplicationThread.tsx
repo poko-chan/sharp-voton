@@ -38,7 +38,12 @@ export function OrgApplicationThread({ applicationId }: { applicationId: string 
       .channel(`org-app-${applicationId}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "organization_application_messages", filter: `application_id=eq.${applicationId}` },
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "organization_application_messages",
+          filter: `application_id=eq.${applicationId}`,
+        },
         () => load(),
       )
       .subscribe();
@@ -86,7 +91,11 @@ export function OrgApplicationThread({ applicationId }: { applicationId: string 
                 }`}
               >
                 <div className="mb-0.5 flex items-center gap-1 text-[10px] opacity-80">
-                  {m.is_admin ? <ShieldCheck className="h-3 w-3" /> : <UserIcon className="h-3 w-3" />}
+                  {m.is_admin ? (
+                    <ShieldCheck className="h-3 w-3" />
+                  ) : (
+                    <UserIcon className="h-3 w-3" />
+                  )}
                   {m.is_admin ? "Study# 運営" : "申請者"}
                   <span>・{new Date(m.created_at).toLocaleString("ja-JP")}</span>
                 </div>

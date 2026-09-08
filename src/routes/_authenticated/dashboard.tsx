@@ -8,15 +8,63 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { unreadCount as nUnreadCount } from "@/lib/notifications.functions";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  unreadCount as nUnreadCount,
+  listNotifications,
+  markNotificationRead,
+} from "@/lib/notifications.functions";
+import { useQueryClient } from "@tanstack/react-query";
 import { RadialGauge, PowerBar } from "@/components/RadialGauge";
 import {
-  BookOpen, Clock, Flame, TrendingUp, Award, Target, Megaphone,
-  CalendarDays, BarChart3, ArrowUp, ArrowDown, Minus, Star, Sun, CheckCircle2, Bell,
-  Timer, Zap, Sparkles, Settings2, FileDown, Trophy, Lightbulb, ChevronRight, Brain, Layers,
+  BookOpen,
+  Clock,
+  Flame,
+  TrendingUp,
+  Award,
+  Target,
+  Megaphone,
+  CalendarDays,
+  BarChart3,
+  ArrowUp,
+  ArrowDown,
+  Minus,
+  Star,
+  Sun,
+  CheckCircle2,
+  Bell,
+  Timer,
+  Zap,
+  Sparkles,
+  Settings2,
+  FileDown,
+  Trophy,
+  Lightbulb,
+  ChevronRight,
+  Brain,
+  Layers,
 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, PieChart, Pie, Cell, AreaChart, Area, CartesianGrid } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Tooltip,
+  PieChart,
+  Pie,
+  Cell,
+  AreaChart,
+  Area,
+  CartesianGrid,
+} from "recharts";
 import { localDateStr, addDaysStr } from "@/lib/date";
 import { levelInfo } from "@/lib/level";
 import { Town } from "@/components/Town";
@@ -25,12 +73,18 @@ import { TodayBreakdownChart } from "@/components/TodayBreakdownChart";
 import { WeeklySubjectDiff } from "@/components/WeeklySubjectDiff";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { FocusPanel } from "@/components/dashboard/FocusPanel";
+import { GettingStartedCard } from "@/components/dashboard/GettingStartedCard";
+import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
       { title: "ダッシュボード｜Study#" },
-      { name: "description", content: "今日の学習時間・連続記録・目標達成度・教科バランスをひと目で。学習の積み重ねを可視化するダッシュボード。" },
+      {
+        name: "description",
+        content:
+          "今日の学習時間・連続記録・目標達成度・教科バランスをひと目で。学習の積み重ねを可視化するダッシュボード。",
+      },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),
@@ -40,18 +94,34 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 const DAILY_GOAL_KEY = "dashboard.dailyGoalMinutes";
 
 const RANKS = [
-  { min: 0, title: "白帯" }, { min: 60, title: "黄帯" }, { min: 300, title: "緑帯" },
-  { min: 900, title: "青帯" }, { min: 2400, title: "紫帯" }, { min: 6000, title: "茶帯" },
-  { min: 12000, title: "黒帯" }, { min: 30000, title: "師範" },
+  { min: 0, title: "白帯" },
+  { min: 60, title: "黄帯" },
+  { min: 300, title: "緑帯" },
+  { min: 900, title: "青帯" },
+  { min: 2400, title: "紫帯" },
+  { min: 6000, title: "茶帯" },
+  { min: 12000, title: "黒帯" },
+  { min: 30000, title: "師範" },
 ];
 
-type Goal = { id: string; title: string; target_minutes: number; progress_minutes: number; done: boolean; deadline: string | null; scope: string };
+type Goal = {
+  id: string;
+  title: string;
+  target_minutes: number;
+  progress_minutes: number;
+  done: boolean;
+  deadline: string | null;
+  scope: string;
+};
 type Announce = { id: string; title: string; body: string; publish_at: string; tag: string };
 
 const ANN_TAGS: Record<string, { label: string; className: string }> = {
   update: { label: "アップデート", className: "bg-blue-500/15 text-blue-600 border-blue-500/30" },
   bug: { label: "バグ", className: "bg-red-500/15 text-red-600 border-red-500/30" },
-  maintenance: { label: "メンテナンス", className: "bg-amber-500/15 text-amber-600 border-amber-500/30" },
+  maintenance: {
+    label: "メンテナンス",
+    className: "bg-amber-500/15 text-amber-600 border-amber-500/30",
+  },
   other: { label: "その他", className: "bg-muted text-muted-foreground border-border" },
 };
 const annTagMeta = (v: string) => ANN_TAGS[v] ?? ANN_TAGS.other;
@@ -77,19 +147,35 @@ function Dashboard() {
 
   const loadDashboard = async (uid: string) => {
     const [logsRes, goalsAllRes, annRes, gradesRes, subsRes, examsRes] = await Promise.all([
-      supabase.from("study_logs")
-        .select("id, date, duration_minutes, subject_id, start_time, content, materials(title), subjects(name, color)")
+      supabase
+        .from("study_logs")
+        .select(
+          "id, date, duration_minutes, subject_id, start_time, content, materials(title), subjects(name, color)",
+        )
 
-        .eq("user_id", uid).order("date", { ascending: false }).limit(2000),
-      supabase.from("goals").select("*").eq("user_id", uid).order("created_at", { ascending: false }),
-      supabase.from("announcements").select("id, title, body, publish_at, tag")
+        .eq("user_id", uid)
+        .order("date", { ascending: false })
+        .limit(2000),
+      supabase
+        .from("goals")
+        .select("*")
+        .eq("user_id", uid)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("announcements")
+        .select("id, title, body, publish_at, tag")
         .lte("publish_at", new Date().toISOString())
-        .order("publish_at", { ascending: false }).limit(2),
+        .order("publish_at", { ascending: false })
+        .limit(2),
       supabase.from("grading_history").select("score, correct").eq("user_id", uid).limit(2000),
       supabase.from("submissions").select("xp_awarded").eq("user_id", uid),
-      supabase.from("exams").select("id, name, start_date")
-        .eq("user_id", uid).gte("start_date", localDateStr())
-        .order("start_date", { ascending: true }).limit(3),
+      supabase
+        .from("exams")
+        .select("id, name, start_date")
+        .eq("user_id", uid)
+        .gte("start_date", localDateStr())
+        .order("start_date", { ascending: true })
+        .limit(3),
     ]);
     const xp = (subsRes.data ?? []).reduce((s, r) => s + (r.xp_awarded ?? 0), 0);
     const logs = logsRes.data ?? [];
@@ -97,17 +183,23 @@ function Dashboard() {
 
     const today = localDateStr();
     const totalMin = logs.reduce((s, l) => s + (l.duration_minutes ?? 0), 0);
-    const todayMin = logs.filter((l) => l.date === today).reduce((s, l) => s + (l.duration_minutes ?? 0), 0);
+    const todayMin = logs
+      .filter((l) => l.date === today)
+      .reduce((s, l) => s + (l.duration_minutes ?? 0), 0);
     const dayMap = new Map<string, number>();
     logs.forEach((l) => dayMap.set(l.date, (dayMap.get(l.date) ?? 0) + (l.duration_minutes ?? 0)));
     const base = new Date();
     let streak = 0;
     for (let i = 0; i < 365; i++) {
       const k = addDaysStr(base, -i);
-      if ((dayMap.get(k) ?? 0) > 0) streak++; else if (i > 0) break; else continue;
+      if ((dayMap.get(k) ?? 0) > 0) streak++;
+      else if (i > 0) break;
+      else continue;
     }
     const sortedDays = Array.from(dayMap.keys()).sort();
-    let longest = 0, cur = 0, prev: string | null = null;
+    let longest = 0,
+      cur = 0,
+      prev: string | null = null;
     for (const d of sortedDays) {
       if (prev && addDaysStr(new Date(prev + "T00:00:00"), 1) === d) cur++;
       else cur = 1;
@@ -121,13 +213,14 @@ function Dashboard() {
       const m = dayMap.get(k) ?? 0;
       weekMin += m;
       const d = new Date(k + "T00:00:00");
-      week.push({ day: ["日","月","火","水","木","金","土"][d.getDay()], minutes: m });
+      week.push({ day: ["日", "月", "火", "水", "木", "金", "土"][d.getDay()], minutes: m });
     }
     let lastWeekMin = 0;
     for (let i = 13; i >= 7; i--) lastWeekMin += dayMap.get(addDaysStr(base, -i)) ?? 0;
 
     const month: { date: string; minutes: number }[] = [];
-    let monthMin = 0, monthActiveDays = 0;
+    let monthMin = 0,
+      monthActiveDays = 0;
     for (let i = 29; i >= 0; i--) {
       const k = addDaysStr(base, -i);
       const m = dayMap.get(k) ?? 0;
@@ -150,7 +243,7 @@ function Dashboard() {
       dowCounts[d]++;
     });
     const byDow = dowTotals.map((t, i) => ({
-      day: ["日","月","火","水","木","金","土"][i],
+      day: ["日", "月", "火", "水", "木", "金", "土"][i],
       minutes: dowCounts[i] ? Math.round(t / dowCounts[i]) : 0,
     }));
 
@@ -173,7 +266,8 @@ function Dashboard() {
     });
     const byMaterial = Array.from(matMap.entries())
       .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value).slice(0, 5);
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
 
     const hourArr = new Array(24).fill(0);
     logs.forEach((l: any) => {
@@ -182,13 +276,21 @@ function Dashboard() {
         if (!isNaN(h)) hourArr[h] += l.duration_minutes ?? 0;
       }
     });
-    let peakHour = -1, peakHourMin = 0;
-    hourArr.forEach((m, h) => { if (m > peakHourMin) { peakHourMin = m; peakHour = h; } });
+    let peakHour = -1,
+      peakHourMin = 0;
+    hourArr.forEach((m, h) => {
+      if (m > peakHourMin) {
+        peakHourMin = m;
+        peakHour = h;
+      }
+    });
     const peakBuckets = hourArr.map((m, h) => ({ hour: `${h}`, minutes: m }));
 
     const grades = gradesRes.data ?? [];
     const gradingCount = grades.length;
-    const gradingAvg = gradingCount ? Math.round(grades.reduce((s, g) => s + (g.score ?? 0), 0) / gradingCount) : 0;
+    const gradingAvg = gradingCount
+      ? Math.round(grades.reduce((s, g) => s + (g.score ?? 0), 0) / gradingCount)
+      : 0;
     const gradingPass = grades.filter((g) => g.correct).length;
     const activeDays = Array.from(dayMap.values()).filter((v) => v > 0).length;
     const avgPerActiveDay = activeDays ? Math.round(totalMin / activeDays) : 0;
@@ -199,15 +301,34 @@ function Dashboard() {
       announcements: (annRes.data ?? []) as Announce[],
       recent: logs.slice(0, 6) as any[],
       stats: {
-        totalMin, todayMin, streak, longestStreak: longest, sessions: logs.length,
-        weekMin, lastWeekMin, avgPerActiveDay, activeDays,
-        monthMin, monthActiveDays, peakHour, peakHourMin,
-        gradingAvg, gradingCount, gradingPass,
-        goalsDone: goalsAll.filter((g: any) => g.done).length, goalsTotal: goalsAll.length,
+        totalMin,
+        todayMin,
+        streak,
+        longestStreak: longest,
+        sessions: logs.length,
+        weekMin,
+        lastWeekMin,
+        avgPerActiveDay,
+        activeDays,
+        monthMin,
+        monthActiveDays,
+        peakHour,
+        peakHourMin,
+        gradingAvg,
+        gradingCount,
+        gradingPass,
+        goalsDone: goalsAll.filter((g: any) => g.done).length,
+        goalsTotal: goalsAll.length,
       },
-      weekly: week, monthly: month, heatmap: heat, byDow,
-      bySubject: subjArr, topSubjects: subjArr.slice(0, 5), peakByHour: peakBuckets,
-      byMaterial, exams: (examsRes.data ?? []) as { id: string; name: string; start_date: string | null }[],
+      weekly: week,
+      monthly: month,
+      heatmap: heat,
+      byDow,
+      bySubject: subjArr,
+      topSubjects: subjArr.slice(0, 5),
+      peakByHour: peakBuckets,
+      byMaterial,
+      exams: (examsRes.data ?? []) as { id: string; name: string; start_date: string | null }[],
     };
   };
 
@@ -221,10 +342,24 @@ function Dashboard() {
   });
 
   const stats = data?.stats ?? {
-    totalMin: 0, todayMin: 0, streak: 0, longestStreak: 0, sessions: 0,
-    weekMin: 0, lastWeekMin: 0, avgPerActiveDay: 0, activeDays: 0,
-    monthMin: 0, monthActiveDays: 0, peakHour: -1, peakHourMin: 0,
-    gradingAvg: 0, gradingCount: 0, gradingPass: 0, goalsDone: 0, goalsTotal: 0,
+    totalMin: 0,
+    todayMin: 0,
+    streak: 0,
+    longestStreak: 0,
+    sessions: 0,
+    weekMin: 0,
+    lastWeekMin: 0,
+    avgPerActiveDay: 0,
+    activeDays: 0,
+    monthMin: 0,
+    monthActiveDays: 0,
+    peakHour: -1,
+    peakHourMin: 0,
+    gradingAvg: 0,
+    gradingCount: 0,
+    gradingPass: 0,
+    goalsDone: 0,
+    goalsTotal: 0,
   };
   const weekly = data?.weekly ?? [];
   const monthly = data?.monthly ?? [];
@@ -244,13 +379,17 @@ function Dashboard() {
   const diff = stats.weekMin - stats.lastWeekMin;
   const diffPct = stats.lastWeekMin > 0 ? Math.round((diff / stats.lastWeekMin) * 100) : null;
 
-  const lastDate = heatmap.slice().reverse().find((h) => h.minutes > 0)?.date;
+  const lastDate = heatmap
+    .slice()
+    .reverse()
+    .find((h) => h.minutes > 0)?.date;
   const daysSinceLast = lastDate
     ? Math.floor((Date.now() - new Date(lastDate + "T00:00:00").getTime()) / 86400000)
     : 999;
   const lvl = levelInfo(stats.totalMin + classroomXp, daysSinceLast);
   const peakLabel = stats.peakHour >= 0 ? `${stats.peakHour}時台` : "—";
-  const goalRate = stats.goalsTotal > 0 ? Math.round((stats.goalsDone / stats.goalsTotal) * 100) : 0;
+  const goalRate =
+    stats.goalsTotal > 0 ? Math.round((stats.goalsDone / stats.goalsTotal) * 100) : 0;
 
   const dailyPct = dailyGoal > 0 ? Math.min(100, (stats.todayMin / dailyGoal) * 100) : 0;
   const weeklyTarget = dailyGoal * 7;
@@ -262,27 +401,61 @@ function Dashboard() {
   const insights = useMemo(() => {
     const out: { icon: any; tone: string; text: string }[] = [];
     if (stats.todayMin === 0) {
-      out.push({ icon: Zap, tone: "amber", text: `今日はまだ記録がありません。まずは ${Math.min(25, dailyGoal)} 分だけ始めてみましょう。` });
+      out.push({
+        icon: Zap,
+        tone: "amber",
+        text: `今日はまだ記録がありません。まずは ${Math.min(25, dailyGoal)} 分だけ始めてみましょう。`,
+      });
     } else if (dailyPct >= 100) {
-      out.push({ icon: CheckCircle2, tone: "emerald", text: `今日の目標 ${fmt(dailyGoal)} を達成！連続 ${stats.streak} 日目です。` });
+      out.push({
+        icon: CheckCircle2,
+        tone: "emerald",
+        text: `今日の目標 ${fmt(dailyGoal)} を達成！連続 ${stats.streak} 日目です。`,
+      });
     } else {
-      out.push({ icon: Target, tone: "primary", text: `今日の目標まであと ${fmt(Math.max(0, dailyGoal - stats.todayMin))}。あと少し！` });
+      out.push({
+        icon: Target,
+        tone: "primary",
+        text: `今日の目標まであと ${fmt(Math.max(0, dailyGoal - stats.todayMin))}。あと少し！`,
+      });
     }
     if (diffPct !== null) {
-      out.push(diff >= 0
-        ? { icon: TrendingUp, tone: "emerald", text: `今週は先週より ${diffPct}% 多く学習しています。いいペースです。` }
-        : { icon: ArrowDown, tone: "amber", text: `今週は先週より ${Math.abs(diffPct)}% 少なめ。取り戻すには 1 日 ${fmt(Math.ceil(Math.abs(diff) / 7))} 追加でOK。` });
+      out.push(
+        diff >= 0
+          ? {
+              icon: TrendingUp,
+              tone: "emerald",
+              text: `今週は先週より ${diffPct}% 多く学習しています。いいペースです。`,
+            }
+          : {
+              icon: ArrowDown,
+              tone: "amber",
+              text: `今週は先週より ${Math.abs(diffPct)}% 少なめ。取り戻すには 1 日 ${fmt(Math.ceil(Math.abs(diff) / 7))} 追加でOK。`,
+            },
+      );
     }
     const bestDow = [...byDow].sort((a, b) => b.minutes - a.minutes)[0];
     if (bestDow && bestDow.minutes > 0) {
-      out.push({ icon: CalendarDays, tone: "primary", text: `一番集中できているのは ${bestDow.day}曜日（平均 ${fmt(bestDow.minutes)}）。` });
+      out.push({
+        icon: CalendarDays,
+        tone: "primary",
+        text: `一番集中できているのは ${bestDow.day}曜日（平均 ${fmt(bestDow.minutes)}）。`,
+      });
     }
     if (stats.peakHour >= 0) {
-      out.push({ icon: Sun, tone: "primary", text: `${stats.peakHour}時台がゴールデンタイム。重い科目はこの時間に。` });
+      out.push({
+        icon: Sun,
+        tone: "primary",
+        text: `${stats.peakHour}時台がゴールデンタイム。重い科目はこの時間に。`,
+      });
     }
     if (topSubjects.length >= 2) {
       const low = topSubjects[topSubjects.length - 1];
-      out.push({ icon: Layers, tone: "amber", text: `「${low.name}」の比率が低めです。バランスを整えると伸びやすくなります。` });
+      out.push({
+        icon: Layers,
+        tone: "amber",
+        text: `「${low.name}」の比率が低めです。バランスを整えると伸びやすくなります。`,
+      });
     }
     return out.slice(0, 4);
   }, [stats, dailyGoal, dailyPct, diff, diffPct, byDow, topSubjects]);
@@ -291,88 +464,135 @@ function Dashboard() {
     <div className="dashboard-page p-4 md:p-8 lg:p-10 space-y-8 max-w-[1480px] mx-auto">
       {/* ===== 一番上: 左=1日の目標 / 右=あなたの街 ===== */}
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.12fr)_minmax(360px,0.88fr)] items-start">
-      {/* ===== ヒーロー ===== */}
-      <Card className="relative overflow-hidden liquid-card p-0 border-primary/15 shadow-[0_24px_60px_-36px_color-mix(in_oklab,var(--primary)_55%,transparent)]">
-        <div
-          className="absolute inset-0 opacity-[0.18] pointer-events-none"
-          style={{ background: "radial-gradient(1000px 320px at 12% -10%, oklch(0.7 0.2 150), transparent 60%), radial-gradient(800px 320px at 92% 0%, oklch(0.62 0.22 275), transparent 60%)" }}
-        />
-        <div className="relative p-5 md:p-7 grid gap-6 md:grid-cols-[auto_1fr] items-center">
-
-          {/* 今日のリング */}
-          <div className="flex items-center gap-5 justify-center lg:justify-start">
-            <RadialGauge
-              value={dailyPct}
-              size={172}
-              thickness={15}
-              ticks={12}
-              label={<span className="text-3xl">{fmt(stats.todayMin)}</span>}
-              sub={<>今日 / 目標 {fmt(dailyGoal)}<br /><span className="font-semibold text-foreground">{Math.round(dailyPct)}%</span></>}
-            />
-          </div>
-
-          <div className="min-w-0 space-y-3">
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary/80 mb-2">
-                TODAY / 学習ダッシュボード
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {new Date().toLocaleDateString("ja-JP", { month: "long", day: "numeric", weekday: "long" })}
-              </p>
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-                {greeting()}{isLoading ? "" : "、今日も積み上げよう"}
-              </h1>
+        {/* ===== ヒーロー ===== */}
+        <Card className="relative overflow-hidden liquid-card p-0 border-primary/15 shadow-[0_24px_60px_-36px_color-mix(in_oklab,var(--primary)_55%,transparent)]">
+          <div
+            className="absolute inset-0 opacity-[0.18] pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(1000px 320px at 12% -10%, oklch(0.7 0.2 150), transparent 60%), radial-gradient(800px 320px at 92% 0%, oklch(0.62 0.22 275), transparent 60%)",
+            }}
+          />
+          <div className="relative p-5 md:p-7 grid gap-6 md:grid-cols-[auto_1fr] items-center">
+            {/* 今日のリング */}
+            <div className="flex items-center gap-5 justify-center lg:justify-start">
+              <RadialGauge
+                value={dailyPct}
+                size={172}
+                thickness={15}
+                ticks={12}
+                label={<span className="text-3xl">{fmt(stats.todayMin)}</span>}
+                sub={
+                  <>
+                    今日 / 目標 {fmt(dailyGoal)}
+                    <br />
+                    <span className="font-semibold text-foreground">{Math.round(dailyPct)}%</span>
+                  </>
+                }
+              />
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <Chip icon={Flame} tone="amber" label={`${stats.streak} 日連続`} />
-              <Chip icon={Award} tone="violet" label={`Lv ${lvl.level}`} />
-              <Chip icon={Trophy} tone="emerald" label={rank.title} />
-              <Chip icon={BookOpen} tone="slate" label={`累計 ${fmt(stats.totalMin)}`} />
-            </div>
-
-            {/* レベルゲージ */}
-            <div>
-              <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
-                <span>次のレベルまで <b className="text-foreground">{Math.ceil(lvl.remainingHours * 60)} 分</b></span>
-                <span className="tabular-nums">{Math.round(lvl.progressPct)}%</span>
+            <div className="min-w-0 space-y-3">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary/80 mb-2">
+                  TODAY / 学習ダッシュボード
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {new Date().toLocaleDateString("ja-JP", {
+                    month: "long",
+                    day: "numeric",
+                    weekday: "long",
+                  })}
+                </p>
+                <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+                  {greeting()}
+                  {isLoading ? "" : "、今日も積み上げよう"}
+                </h1>
               </div>
-              <PowerBar value={lvl.progressPct} height={14} from="oklch(0.78 0.17 85)" to="oklch(0.62 0.22 275)" />
-              {lvl.inactivityFactor < 1 && (
-                <p className="text-[10px] text-amber-600 mt-1">⚠ 停滞中: レベル上昇が ×{lvl.inactivityFactor.toFixed(2)} に減速しています</p>
-              )}
-            </div>
 
-            {/* 週ペース */}
-            <div>
-              <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
-                <span>今週のペース <b className="text-foreground">{fmt(stats.weekMin)}</b> / {fmt(weeklyTarget)}</span>
-                <span className="tabular-nums">{Math.round(weekPct)}%</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <Chip icon={Flame} tone="amber" label={`${stats.streak} 日連続`} />
+                <Chip icon={Award} tone="violet" label={`Lv ${lvl.level}`} />
+                <Chip icon={Trophy} tone="emerald" label={rank.title} />
+                <Chip icon={BookOpen} tone="slate" label={`累計 ${fmt(stats.totalMin)}`} />
               </div>
-              <PowerBar value={weekPct} height={10} striped={false} from="oklch(0.75 0.16 200)" to="oklch(0.66 0.2 150)" />
+
+              {/* レベルゲージ */}
+              <div>
+                <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
+                  <span>
+                    次のレベルまで{" "}
+                    <b className="text-foreground">{Math.ceil(lvl.remainingHours * 60)} 分</b>
+                  </span>
+                  <span className="tabular-nums">{Math.round(lvl.progressPct)}%</span>
+                </div>
+                <PowerBar
+                  value={lvl.progressPct}
+                  height={14}
+                  from="oklch(0.78 0.17 85)"
+                  to="oklch(0.62 0.22 275)"
+                />
+                {lvl.inactivityFactor < 1 && (
+                  <p className="text-[10px] text-amber-600 mt-1">
+                    ⚠ 停滞中: レベル上昇が ×{lvl.inactivityFactor.toFixed(2)} に減速しています
+                  </p>
+                )}
+              </div>
+
+              {/* 週ペース */}
+              <div>
+                <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
+                  <span>
+                    今週のペース <b className="text-foreground">{fmt(stats.weekMin)}</b> /{" "}
+                    {fmt(weeklyTarget)}
+                  </span>
+                  <span className="tabular-nums">{Math.round(weekPct)}%</span>
+                </div>
+                <PowerBar
+                  value={weekPct}
+                  height={10}
+                  striped={false}
+                  from="oklch(0.75 0.16 200)"
+                  to="oklch(0.66 0.2 150)"
+                />
+              </div>
+            </div>
+
+            <div className="flex lg:flex-col gap-2 flex-wrap justify-center">
+              <DailyGoalDialog
+                value={dailyGoal}
+                onChange={(v) => {
+                  setDailyGoal(v);
+                  localStorage.setItem(DAILY_GOAL_KEY, String(v));
+                }}
+              />
+              <NotificationBell />
             </div>
           </div>
 
-          <div className="flex lg:flex-col gap-2 flex-wrap justify-center">
-            <DailyGoalDialog value={dailyGoal} onChange={(v) => { setDailyGoal(v); localStorage.setItem(DAILY_GOAL_KEY, String(v)); }} />
-            <NotificationBell />
+          {/* クイックアクション */}
+          <div className="relative border-t border-border/60 bg-background/25 grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/60">
+            <QuickAction to="/timer" icon={Timer} label="タイマー開始" />
+            <QuickAction to="/study" icon={BookOpen} label="学習を記録" />
+            <QuickAction to="/makron" icon={Brain} label="Makron 演習" />
+            <QuickAction to="/flashcards" icon={Layers} label="暗記カード" />
           </div>
-        </div>
+        </Card>
 
-        {/* クイックアクション */}
-        <div className="relative border-t border-border/60 bg-background/25 grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/60">
-          <QuickAction to="/timer" icon={Timer} label="タイマー開始" />
-          <QuickAction to="/study" icon={BookOpen} label="学習を記録" />
-          <QuickAction to="/makron" icon={Brain} label="Makron 演習" />
-          <QuickAction to="/flashcards" icon={Layers} label="暗記カード" />
+        {/* ===== あなたの街（右上） ===== */}
+        <div className="xl:sticky xl:top-4">
+          <Town />
         </div>
-      </Card>
+      </div>
 
-      {/* ===== あなたの街（右上） ===== */}
-      <div className="xl:sticky xl:top-4">
-        <Town />
+      {/* ===== はじめかた & 最近の利用状況 ===== */}
+      <div className="grid gap-5 lg:grid-cols-2 items-start">
+        <GettingStartedCard />
+        <RecentActivityCard />
       </div>
-      </div>
+
+      {/* ===== 最近の通知 ===== */}
+      <RecentNotifications />
 
       {/* ===== タイマー & 学習時間の集約 ===== */}
       <FocusPanel dailyGoal={dailyGoal} />
@@ -382,10 +602,15 @@ function Dashboard() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {insights.map((i, idx) => (
             <Card key={idx} className="p-3.5 flex gap-3 items-start liquid-hover transition">
-              <div className={`h-8 w-8 rounded-xl grid place-items-center shrink-0 ${
-                i.tone === "emerald" ? "bg-emerald-500/15 text-emerald-600"
-                : i.tone === "amber" ? "bg-amber-500/15 text-amber-600"
-                : "bg-primary/12 text-primary"}`}>
+              <div
+                className={`h-8 w-8 rounded-xl grid place-items-center shrink-0 ${
+                  i.tone === "emerald"
+                    ? "bg-emerald-500/15 text-emerald-600"
+                    : i.tone === "amber"
+                      ? "bg-amber-500/15 text-amber-600"
+                      : "bg-primary/12 text-primary"
+                }`}
+              >
                 <i.icon className="h-4 w-4" />
               </div>
               <p className="text-[12px] leading-relaxed">{i.text}</p>
@@ -397,25 +622,78 @@ function Dashboard() {
       {/* ===== KPI ===== */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard icon={Clock} label="今日の勉強" value={fmt(stats.todayMin)} />
-        <StatCard icon={Flame} label="連続日数" value={`${stats.streak} 日`} sub={`最長 ${stats.longestStreak} 日`} accent={stats.streak > 0} />
-        <StatCard icon={CalendarDays} label="今週" value={fmt(stats.weekMin)} sub={
-          diffPct === null ? "—" :
-          diff > 0 ? <span className="text-emerald-600 inline-flex items-center"><ArrowUp className="h-3 w-3" />{diffPct}%</span> :
-          diff < 0 ? <span className="text-amber-600 inline-flex items-center"><ArrowDown className="h-3 w-3" />{Math.abs(diffPct)}%</span> :
-          <span className="text-muted-foreground inline-flex items-center"><Minus className="h-3 w-3" />0%</span>
-        } />
-        <StatCard icon={CalendarDays} label="今月 (30日)" value={fmt(stats.monthMin)} sub={`${stats.monthActiveDays} 活動日`} />
-        <StatCard icon={Sun} label="ピーク時間帯" value={peakLabel} sub={stats.peakHourMin > 0 ? fmt(stats.peakHourMin) : "—"} />
-        <StatCard icon={Star} label="採点平均" value={stats.gradingCount ? `${stats.gradingAvg}点` : "—"} sub={`${stats.gradingCount}件 / 正解${stats.gradingPass}`} />
-        <StatCard icon={TrendingUp} label="平均/活動日" value={fmt(stats.avgPerActiveDay)} sub={`${stats.activeDays} 活動日`} />
-        <StatCard icon={CheckCircle2} label="目標達成率" value={`${goalRate}%`} sub={`${stats.goalsDone}/${stats.goalsTotal}`} />
+        <StatCard
+          icon={Flame}
+          label="連続日数"
+          value={`${stats.streak} 日`}
+          sub={`最長 ${stats.longestStreak} 日`}
+          accent={stats.streak > 0}
+        />
+        <StatCard
+          icon={CalendarDays}
+          label="今週"
+          value={fmt(stats.weekMin)}
+          sub={
+            diffPct === null ? (
+              "—"
+            ) : diff > 0 ? (
+              <span className="text-emerald-600 inline-flex items-center">
+                <ArrowUp className="h-3 w-3" />
+                {diffPct}%
+              </span>
+            ) : diff < 0 ? (
+              <span className="text-amber-600 inline-flex items-center">
+                <ArrowDown className="h-3 w-3" />
+                {Math.abs(diffPct)}%
+              </span>
+            ) : (
+              <span className="text-muted-foreground inline-flex items-center">
+                <Minus className="h-3 w-3" />
+                0%
+              </span>
+            )
+          }
+        />
+        <StatCard
+          icon={CalendarDays}
+          label="今月 (30日)"
+          value={fmt(stats.monthMin)}
+          sub={`${stats.monthActiveDays} 活動日`}
+        />
+        <StatCard
+          icon={Sun}
+          label="ピーク時間帯"
+          value={peakLabel}
+          sub={stats.peakHourMin > 0 ? fmt(stats.peakHourMin) : "—"}
+        />
+        <StatCard
+          icon={Star}
+          label="採点平均"
+          value={stats.gradingCount ? `${stats.gradingAvg}点` : "—"}
+          sub={`${stats.gradingCount}件 / 正解${stats.gradingPass}`}
+        />
+        <StatCard
+          icon={TrendingUp}
+          label="平均/活動日"
+          value={fmt(stats.avgPerActiveDay)}
+          sub={`${stats.activeDays} 活動日`}
+        />
+        <StatCard
+          icon={CheckCircle2}
+          label="目標達成率"
+          value={`${goalRate}%`}
+          sub={`${stats.goalsDone}/${stats.goalsTotal}`}
+        />
       </div>
 
       {/* ===== グラフ（タブ） ===== */}
       <Card className="p-4 md:p-6">
         <Tabs defaultValue="week">
           <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
-            <h3 className="font-bold flex items-center gap-2"><BarChart3 className="h-4 w-4 text-primary" />学習の推移</h3>
+            <h3 className="font-bold flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-primary" />
+              学習の推移
+            </h3>
             <TabsList>
               <TabsTrigger value="week">7日</TabsTrigger>
               <TabsTrigger value="month">30日</TabsTrigger>
@@ -427,8 +705,18 @@ function Dashboard() {
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={weekly}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="day" stroke="var(--muted-foreground)" tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--muted-foreground)" tickLine={false} axisLine={false} width={36} />
+                <XAxis
+                  dataKey="day"
+                  stroke="var(--muted-foreground)"
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  stroke="var(--muted-foreground)"
+                  tickLine={false}
+                  axisLine={false}
+                  width={36}
+                />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v}分`, "学習"]} />
                 <Bar dataKey="minutes" fill="oklch(0.65 0.19 150)" radius={[10, 10, 0, 0]} />
               </BarChart>
@@ -444,10 +732,27 @@ function Dashboard() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="date" stroke="var(--muted-foreground)" interval={4} tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--muted-foreground)" tickLine={false} axisLine={false} width={36} />
+                <XAxis
+                  dataKey="date"
+                  stroke="var(--muted-foreground)"
+                  interval={4}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  stroke="var(--muted-foreground)"
+                  tickLine={false}
+                  axisLine={false}
+                  width={36}
+                />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v}分`, "学習"]} />
-                <Area type="monotone" dataKey="minutes" stroke="oklch(0.55 0.2 265)" strokeWidth={2.5} fill="url(#dashArea)" />
+                <Area
+                  type="monotone"
+                  dataKey="minutes"
+                  stroke="oklch(0.55 0.2 265)"
+                  strokeWidth={2.5}
+                  fill="url(#dashArea)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </TabsContent>
@@ -455,21 +760,49 @@ function Dashboard() {
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={byDow}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="day" stroke="var(--muted-foreground)" tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--muted-foreground)" tickLine={false} axisLine={false} width={36} />
+                <XAxis
+                  dataKey="day"
+                  stroke="var(--muted-foreground)"
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  stroke="var(--muted-foreground)"
+                  tickLine={false}
+                  axisLine={false}
+                  width={36}
+                />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v}分`, "平均"]} />
                 <Bar dataKey="minutes" fill="oklch(0.68 0.17 200)" radius={[10, 10, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
-            <p className="text-[11px] text-muted-foreground mt-2">直近12週間の曜日ごとの平均学習時間</p>
+            <p className="text-[11px] text-muted-foreground mt-2">
+              直近12週間の曜日ごとの平均学習時間
+            </p>
           </TabsContent>
           <TabsContent value="hour">
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={peakByHour}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="hour" stroke="var(--muted-foreground)" interval={1} fontSize={10} tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--muted-foreground)" tickLine={false} axisLine={false} width={36} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v}分`, "学習"]} labelFormatter={(l) => `${l}時台`} />
+                <XAxis
+                  dataKey="hour"
+                  stroke="var(--muted-foreground)"
+                  interval={1}
+                  fontSize={10}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  stroke="var(--muted-foreground)"
+                  tickLine={false}
+                  axisLine={false}
+                  width={36}
+                />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  formatter={(v: any) => [`${v}分`, "学習"]}
+                  labelFormatter={(l) => `${l}時台`}
+                />
                 <Bar dataKey="minutes" fill="oklch(0.72 0.16 80)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -481,11 +814,18 @@ function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <Card className="p-5 lg:col-span-2">
           <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-            <h3 className="font-bold flex items-center gap-2"><Flame className="h-4 w-4 text-amber-500" />学習ヒートマップ（12週間）</h3>
+            <h3 className="font-bold flex items-center gap-2">
+              <Flame className="h-4 w-4 text-amber-500" />
+              学習ヒートマップ（12週間）
+            </h3>
             <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
               少ない
               {[0, 0.25, 0.5, 0.75, 1].map((i) => (
-                <span key={i} className="h-3 w-3 rounded-[3px]" style={{ background: heatColor(i * 120) }} />
+                <span
+                  key={i}
+                  className="h-3 w-3 rounded-[3px]"
+                  style={{ background: heatColor(i * 120) }}
+                />
               ))}
               多い
             </div>
@@ -505,7 +845,10 @@ function Dashboard() {
           <div className="mt-4 pt-4 border-t flex items-center justify-between gap-3">
             <div>
               <div className="text-[10px] text-muted-foreground">現在の段位</div>
-              <div className="text-lg font-bold flex items-center gap-1"><Award className="h-4 w-4 text-amber-500" />{rank.title}</div>
+              <div className="text-lg font-bold flex items-center gap-1">
+                <Award className="h-4 w-4 text-amber-500" />
+                {rank.title}
+              </div>
             </div>
             {nextRank && (
               <div className="flex-1 max-w-xs">
@@ -514,8 +857,10 @@ function Dashboard() {
                 </div>
                 <PowerBar
                   value={((stats.totalMin - rank.min) / Math.max(1, nextRank.min - rank.min)) * 100}
-                  height={10} striped={false}
-                  from="oklch(0.8 0.16 85)" to="oklch(0.6 0.19 30)"
+                  height={10}
+                  striped={false}
+                  from="oklch(0.8 0.16 85)"
+                  to="oklch(0.6 0.19 30)"
                 />
               </div>
             )}
@@ -523,17 +868,34 @@ function Dashboard() {
         </Card>
 
         <Card className="p-5">
-          <h3 className="font-bold mb-3 flex items-center gap-2"><BookOpen className="h-4 w-4 text-primary" />教科バランス</h3>
+          <h3 className="font-bold mb-3 flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-primary" />
+            教科バランス
+          </h3>
           {bySubject.length === 0 ? (
             <p className="text-sm text-muted-foreground">記録がありません</p>
           ) : (
             <>
               <ResponsiveContainer width="100%" height={160}>
                 <PieChart>
-                  <Pie data={bySubject} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={44} outerRadius={70} paddingAngle={2}>
-                    {bySubject.map((s, i) => <Cell key={i} fill={s.color} stroke="none" />)}
+                  <Pie
+                    data={bySubject}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={44}
+                    outerRadius={70}
+                    paddingAngle={2}
+                  >
+                    {bySubject.map((s, i) => (
+                      <Cell key={i} fill={s.color} stroke="none" />
+                    ))}
                   </Pie>
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: any, n: any) => [`${v}分`, n]} />
+                  <Tooltip
+                    contentStyle={tooltipStyle}
+                    formatter={(v: any, n: any) => [`${v}分`, n]}
+                  />
                 </PieChart>
               </ResponsiveContainer>
               <div className="space-y-2.5 mt-3">
@@ -542,10 +904,20 @@ function Dashboard() {
                   return (
                     <div key={s.name}>
                       <div className="flex justify-between text-[11px] mb-1">
-                        <span className="font-semibold" style={{ color: s.color }}>{s.name}</span>
-                        <span className="text-muted-foreground tabular-nums">{fmt(s.value)}・{Math.round(pct)}%</span>
+                        <span className="font-semibold" style={{ color: s.color }}>
+                          {s.name}
+                        </span>
+                        <span className="text-muted-foreground tabular-nums">
+                          {fmt(s.value)}・{Math.round(pct)}%
+                        </span>
                       </div>
-                      <PowerBar value={pct} height={8} striped={false} from={s.color} to={s.color} />
+                      <PowerBar
+                        value={pct}
+                        height={8}
+                        striped={false}
+                        from={s.color}
+                        to={s.color}
+                      />
                     </div>
                   );
                 })}
@@ -559,29 +931,58 @@ function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <Card className="p-5">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold flex items-center gap-2"><CalendarDays className="h-4 w-4 text-rose-500" />試験カウントダウン</h3>
-            <Button asChild size="sm" variant="ghost"><Link to="/exams">管理 <ChevronRight className="h-3 w-3" /></Link></Button>
+            <h3 className="font-bold flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-rose-500" />
+              試験カウントダウン
+            </h3>
+            <Button asChild size="sm" variant="ghost">
+              <Link to="/exams">
+                管理 <ChevronRight className="h-3 w-3" />
+              </Link>
+            </Button>
           </div>
           {exams.length === 0 ? (
-            <p className="text-sm text-muted-foreground">予定されている試験はありません。<Link to="/exams" className="ml-1 text-primary underline">登録する</Link></p>
+            <p className="text-sm text-muted-foreground">
+              予定されている試験はありません。
+              <Link to="/exams" className="ml-1 text-primary underline">
+                登録する
+              </Link>
+            </p>
           ) : (
             <div className="space-y-3">
               {exams.map((e) => {
                 const days = e.start_date
-                  ? Math.max(0, Math.ceil((new Date(e.start_date + "T00:00:00").getTime() - Date.now()) / 86400000))
+                  ? Math.max(
+                      0,
+                      Math.ceil(
+                        (new Date(e.start_date + "T00:00:00").getTime() - Date.now()) / 86400000,
+                      ),
+                    )
                   : null;
-                const urgency = days === null ? "slate" : days <= 3 ? "rose" : days <= 14 ? "amber" : "primary";
+                const urgency =
+                  days === null ? "slate" : days <= 3 ? "rose" : days <= 14 ? "amber" : "primary";
                 return (
-                  <div key={e.id} className="flex items-center gap-3 p-3 rounded-xl border bg-muted/20">
-                    <div className={`h-12 w-12 rounded-xl grid place-items-center shrink-0 font-extrabold tabular-nums ${
-                      urgency === "rose" ? "bg-rose-500/15 text-rose-600"
-                      : urgency === "amber" ? "bg-amber-500/15 text-amber-600"
-                      : "bg-primary/12 text-primary"}`}>
+                  <div
+                    key={e.id}
+                    className="flex items-center gap-3 p-3 rounded-xl border bg-muted/20"
+                  >
+                    <div
+                      className={`h-12 w-12 rounded-xl grid place-items-center shrink-0 font-extrabold tabular-nums ${
+                        urgency === "rose"
+                          ? "bg-rose-500/15 text-rose-600"
+                          : urgency === "amber"
+                            ? "bg-amber-500/15 text-amber-600"
+                            : "bg-primary/12 text-primary"
+                      }`}
+                    >
                       {days ?? "—"}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="text-sm font-semibold truncate">{e.name}</div>
-                      <div className="text-[11px] text-muted-foreground">{e.start_date ?? "日付未設定"}{days !== null ? ` ・ あと ${days} 日` : ""}</div>
+                      <div className="text-[11px] text-muted-foreground">
+                        {e.start_date ?? "日付未設定"}
+                        {days !== null ? ` ・ あと ${days} 日` : ""}
+                      </div>
                     </div>
                   </div>
                 );
@@ -592,8 +993,15 @@ function Dashboard() {
 
         <Card className="p-5">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold flex items-center gap-2"><Layers className="h-4 w-4 text-primary" />よく使う教材 TOP5</h3>
-            <Button asChild size="sm" variant="ghost"><Link to="/materials">教材DB <ChevronRight className="h-3 w-3" /></Link></Button>
+            <h3 className="font-bold flex items-center gap-2">
+              <Layers className="h-4 w-4 text-primary" />
+              よく使う教材 TOP5
+            </h3>
+            <Button asChild size="sm" variant="ghost">
+              <Link to="/materials">
+                教材DB <ChevronRight className="h-3 w-3" />
+              </Link>
+            </Button>
           </div>
           {byMaterial.length === 0 ? (
             <p className="text-sm text-muted-foreground">教材を紐づけた記録がまだありません。</p>
@@ -602,11 +1010,20 @@ function Dashboard() {
               {byMaterial.map((m, i) => (
                 <div key={m.name}>
                   <div className="flex justify-between text-[12px] mb-1">
-                    <span className="font-semibold truncate pr-2">{i + 1}. {m.name}</span>
-                    <span className="text-muted-foreground tabular-nums shrink-0">{fmt(m.value)}</span>
+                    <span className="font-semibold truncate pr-2">
+                      {i + 1}. {m.name}
+                    </span>
+                    <span className="text-muted-foreground tabular-nums shrink-0">
+                      {fmt(m.value)}
+                    </span>
                   </div>
-                  <PowerBar value={(m.value / maxMaterialMin) * 100} height={9} striped={false}
-                    from="oklch(0.75 0.16 200)" to="oklch(0.62 0.22 275)" />
+                  <PowerBar
+                    value={(m.value / maxMaterialMin) * 100}
+                    height={9}
+                    striped={false}
+                    from="oklch(0.75 0.16 200)"
+                    to="oklch(0.62 0.22 275)"
+                  />
                 </div>
               ))}
             </div>
@@ -618,26 +1035,42 @@ function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <Card className="p-5">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold flex items-center gap-2"><Target className="h-4 w-4 text-primary" />進行中の目標</h3>
-            <Button asChild size="sm" variant="ghost"><Link to="/goals">管理 <ChevronRight className="h-3 w-3" /></Link></Button>
+            <h3 className="font-bold flex items-center gap-2">
+              <Target className="h-4 w-4 text-primary" />
+              進行中の目標
+            </h3>
+            <Button asChild size="sm" variant="ghost">
+              <Link to="/goals">
+                管理 <ChevronRight className="h-3 w-3" />
+              </Link>
+            </Button>
           </div>
           {goals.length === 0 ? (
             <div className="text-sm text-muted-foreground">
-              目標はまだ設定されていません。<Link to="/goals" className="ml-1 text-primary underline">設定する</Link>
+              目標はまだ設定されていません。
+              <Link to="/goals" className="ml-1 text-primary underline">
+                設定する
+              </Link>
             </div>
           ) : (
             <div className="space-y-4">
               {goals.slice(0, 4).map((g) => {
-                const pct = g.target_minutes > 0 ? Math.min(100, (g.progress_minutes / g.target_minutes) * 100) : 0;
+                const pct =
+                  g.target_minutes > 0
+                    ? Math.min(100, (g.progress_minutes / g.target_minutes) * 100)
+                    : 0;
                 return (
                   <div key={g.id}>
                     <div className="flex justify-between text-sm mb-1.5">
                       <span className="font-semibold truncate pr-2">{g.title}</span>
-                      <span className="text-xs text-muted-foreground shrink-0 tabular-nums">{Math.round(pct)}%</span>
+                      <span className="text-xs text-muted-foreground shrink-0 tabular-nums">
+                        {Math.round(pct)}%
+                      </span>
                     </div>
                     <PowerBar value={pct} height={12} />
                     <div className="text-[10px] text-muted-foreground mt-1">
-                      {fmt(g.progress_minutes)} / {fmt(g.target_minutes)}{g.deadline ? ` ・ 〆${g.deadline}` : ""}
+                      {fmt(g.progress_minutes)} / {fmt(g.target_minutes)}
+                      {g.deadline ? ` ・ 〆${g.deadline}` : ""}
                     </div>
                   </div>
                 );
@@ -648,8 +1081,15 @@ function Dashboard() {
 
         <Card className="p-5">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold flex items-center gap-2"><Clock className="h-4 w-4 text-primary" />最近の学習記録</h3>
-            <Button asChild size="sm" variant="ghost"><Link to="/study">すべて <ChevronRight className="h-3 w-3" /></Link></Button>
+            <h3 className="font-bold flex items-center gap-2">
+              <Clock className="h-4 w-4 text-primary" />
+              最近の学習記録
+            </h3>
+            <Button asChild size="sm" variant="ghost">
+              <Link to="/study">
+                すべて <ChevronRight className="h-3 w-3" />
+              </Link>
+            </Button>
           </div>
           {recent.length === 0 ? (
             <p className="text-sm text-muted-foreground">まだ記録がありません。</p>
@@ -657,17 +1097,23 @@ function Dashboard() {
             <div className="divide-y">
               {recent.map((r: any) => (
                 <div key={r.id} className="py-2 flex items-center gap-3">
-                  <span className="h-8 w-1.5 rounded-full shrink-0" style={{ background: r.subjects?.color ?? "#94a3b8" }} />
+                  <span
+                    className="h-8 w-1.5 rounded-full shrink-0"
+                    style={{ background: r.subjects?.color ?? "#94a3b8" }}
+                  />
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium truncate">{r.subjects?.name ?? "その他"}</div>
+                    <div className="text-sm font-medium truncate">
+                      {r.subjects?.name ?? "その他"}
+                    </div>
                     <div className="text-[10px] text-muted-foreground truncate">
                       {r.date}
                       {r.materials?.title ? ` ・ 📗${r.materials.title}` : ""}
                       {r.content ? ` ・ ${r.content}` : ""}
                     </div>
-
                   </div>
-                  <div className="text-sm font-bold tabular-nums shrink-0">{fmt(r.duration_minutes ?? 0)}</div>
+                  <div className="text-sm font-bold tabular-nums shrink-0">
+                    {fmt(r.duration_minutes ?? 0)}
+                  </div>
                 </div>
               ))}
             </div>
@@ -679,8 +1125,13 @@ function Dashboard() {
       {announcements.length > 0 && (
         <Card className="p-5">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold flex items-center gap-2"><Megaphone className="h-4 w-4" />最新のお知らせ</h3>
-            <Button asChild variant="ghost" size="sm"><Link to="/announcements">すべて見る</Link></Button>
+            <h3 className="font-bold flex items-center gap-2">
+              <Megaphone className="h-4 w-4" />
+              最新のお知らせ
+            </h3>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/announcements">すべて見る</Link>
+            </Button>
           </div>
           <div className="space-y-2">
             {announcements.map((a) => {
@@ -689,12 +1140,20 @@ function Dashboard() {
                 <div key={a.id} className="p-3 rounded-xl border bg-muted/20">
                   <div className="flex justify-between items-baseline gap-2 flex-wrap">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded border shrink-0 ${t.className}`}>{t.label}</span>
+                      <span
+                        className={`text-[10px] px-1.5 py-0.5 rounded border shrink-0 ${t.className}`}
+                      >
+                        {t.label}
+                      </span>
                       <p className="font-medium text-sm truncate">{a.title}</p>
                     </div>
-                    <span className="text-[10px] text-muted-foreground shrink-0">{new Date(a.publish_at).toLocaleString("ja-JP")}</span>
+                    <span className="text-[10px] text-muted-foreground shrink-0">
+                      {new Date(a.publish_at).toLocaleString("ja-JP")}
+                    </span>
                   </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2 mt-1 whitespace-pre-wrap">{a.body}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-2 mt-1 whitespace-pre-wrap">
+                    {a.body}
+                  </p>
                 </div>
               );
             })}
@@ -708,12 +1167,16 @@ function Dashboard() {
       <DashboardRanking />
 
       <div className="flex items-center gap-2 flex-wrap justify-end no-print">
-        <Button size="sm" variant="outline" onClick={() => window.print()}>🖨 印刷</Button>
+        <Button size="sm" variant="outline" onClick={() => window.print()}>
+          🖨 印刷
+        </Button>
         <Button size="sm" variant="outline" onClick={() => exportReport(user?.id, "week")}>
-          <FileDown className="h-4 w-4 mr-1" />週レポート
+          <FileDown className="h-4 w-4 mr-1" />
+          週レポート
         </Button>
         <Button size="sm" variant="outline" onClick={() => exportReport(user?.id, "month")}>
-          <FileDown className="h-4 w-4 mr-1" />月レポート
+          <FileDown className="h-4 w-4 mr-1" />
+          月レポート
         </Button>
       </div>
     </div>
@@ -752,15 +1215,21 @@ function Chip({ icon: Icon, label, tone }: { icon: any; label: string; tone: str
     slate: "bg-muted text-muted-foreground border-border",
   };
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-bold ${tones[tone]}`}>
-      <Icon className="h-3.5 w-3.5" />{label}
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-bold ${tones[tone]}`}
+    >
+      <Icon className="h-3.5 w-3.5" />
+      {label}
     </span>
   );
 }
 
 function QuickAction({ to, icon: Icon, label }: { to: string; icon: any; label: string }) {
   return (
-    <Link to={to} className="group flex items-center justify-center gap-2 px-3 py-3.5 text-sm font-semibold hover:bg-accent/60 transition">
+    <Link
+      to={to}
+      className="group flex items-center justify-center gap-2 px-3 py-3.5 text-sm font-semibold hover:bg-accent/60 transition"
+    >
       <Icon className="h-4 w-4 text-primary group-hover:scale-110 transition" />
       <span className="truncate">{label}</span>
     </Link>
@@ -775,19 +1244,36 @@ function DailyGoalDialog({ value, onChange }: { value: number; onChange: (v: num
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline" className="gap-1.5 h-11 rounded-full">
-          <Settings2 className="h-4 w-4" />1日の目標
+          <Settings2 className="h-4 w-4" />
+          1日の目標
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-sm">
-        <DialogHeader><DialogTitle className="flex items-center gap-2"><Target className="h-4 w-4" />1日の目標学習時間</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Target className="h-4 w-4" />
+            1日の目標学習時間
+          </DialogTitle>
+        </DialogHeader>
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Input type="number" min={5} step={5} value={draft} onChange={(e) => setDraft(Math.max(5, +e.target.value))} />
+            <Input
+              type="number"
+              min={5}
+              step={5}
+              value={draft}
+              onChange={(e) => setDraft(Math.max(5, +e.target.value))}
+            />
             <span className="text-sm text-muted-foreground shrink-0">分</span>
           </div>
           <div className="flex gap-2 flex-wrap">
             {[30, 60, 90, 120, 180, 240].map((m) => (
-              <Button key={m} size="sm" variant={draft === m ? "default" : "outline"} onClick={() => setDraft(m)}>
+              <Button
+                key={m}
+                size="sm"
+                variant={draft === m ? "default" : "outline"}
+                onClick={() => setDraft(m)}
+              >
                 {fmt(m)}
               </Button>
             ))}
@@ -798,8 +1284,14 @@ function DailyGoalDialog({ value, onChange }: { value: number; onChange: (v: num
           </p>
         </div>
         <DialogFooter>
-          <Button onClick={() => { onChange(draft); setOpen(false); }}>
-            <Sparkles className="h-4 w-4 mr-1" />保存
+          <Button
+            onClick={() => {
+              onChange(draft);
+              setOpen(false);
+            }}
+          >
+            <Sparkles className="h-4 w-4 mr-1" />
+            保存
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -811,11 +1303,15 @@ function StatCard({ icon: Icon, label, value, sub, accent }: any) {
   return (
     <Card className={`p-4 liquid-hover transition ${accent ? "border-amber-500/40" : ""}`}>
       <div className="flex items-center gap-3">
-        <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${accent ? "bg-amber-500/15 text-amber-600" : "bg-primary/10 text-primary"}`}>
+        <div
+          className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${accent ? "bg-amber-500/15 text-amber-600" : "bg-primary/10 text-primary"}`}
+        >
           <Icon className="h-5 w-5" />
         </div>
         <div className="min-w-0">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide truncate">{label}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wide truncate">
+            {label}
+          </p>
           <p className="text-xl font-extrabold leading-tight tabular-nums">{value}</p>
           {sub && <p className="text-[10px] mt-0.5 text-muted-foreground">{sub}</p>}
         </div>
@@ -839,13 +1335,19 @@ function DashboardRanking() {
   return (
     <Card className="p-5 grid md:grid-cols-2 gap-6">
       <div>
-        <div className="font-bold flex items-center gap-2 mb-2"><Trophy className="h-4 w-4 text-amber-500" />学習時間ランキング Top10</div>
+        <div className="font-bold flex items-center gap-2 mb-2">
+          <Trophy className="h-4 w-4 text-amber-500" />
+          学習時間ランキング Top10
+        </div>
         <div className="divide-y">
           {rows.length === 0 && <div className="text-xs text-muted-foreground p-2">データなし</div>}
           {rows.map((r: any, i: number) => (
             <div key={r.user_id} className="flex items-center gap-2 py-1.5">
               <div className="w-6 text-center text-sm font-bold tabular-nums">{medal(i)}</div>
-              <Avatar className="h-6 w-6"><AvatarImage src={r.avatar_url ?? undefined} /><AvatarFallback>{(r.display_name ?? "?").slice(0,1)}</AvatarFallback></Avatar>
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={r.avatar_url ?? undefined} />
+                <AvatarFallback>{(r.display_name ?? "?").slice(0, 1)}</AvatarFallback>
+              </Avatar>
               <div className="flex-1 text-sm truncate">{r.display_name ?? "?"}</div>
               <div className="text-xs tabular-nums">{r.total_minutes}分</div>
             </div>
@@ -853,19 +1355,102 @@ function DashboardRanking() {
         </div>
       </div>
       <div>
-        <div className="font-bold flex items-center gap-2 mb-2"><Trophy className="h-4 w-4 text-primary" />Makron XP Top10</div>
+        <div className="font-bold flex items-center gap-2 mb-2">
+          <Trophy className="h-4 w-4 text-primary" />
+          Makron XP Top10
+        </div>
         <div className="divide-y">
           {mk.length === 0 && <div className="text-xs text-muted-foreground p-2">データなし</div>}
           {mk.map((r: any, i: number) => (
             <div key={r.user_id} className="flex items-center gap-2 py-1.5">
               <div className="w-6 text-center text-sm font-bold tabular-nums">{medal(i)}</div>
-              <Avatar className="h-6 w-6"><AvatarImage src={r.avatar_url ?? undefined} /><AvatarFallback>{(r.display_name ?? "?").slice(0,1)}</AvatarFallback></Avatar>
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={r.avatar_url ?? undefined} />
+                <AvatarFallback>{(r.display_name ?? "?").slice(0, 1)}</AvatarFallback>
+              </Avatar>
               <div className="flex-1 text-sm truncate">{r.display_name ?? "?"}</div>
-              <div className="text-xs tabular-nums">{r.xp} XP / Lv{r.level}</div>
+              <div className="text-xs tabular-nums">
+                {r.xp} XP / Lv{r.level}
+              </div>
             </div>
           ))}
         </div>
       </div>
+    </Card>
+  );
+}
+
+function RecentNotifications() {
+  const list = useServerFn(listNotifications);
+  const mark = useServerFn(markNotificationRead);
+  const qc = useQueryClient();
+  const { data: items = [] } = useQuery({
+    queryKey: ["notifications", "recent"],
+    queryFn: () => list(),
+    staleTime: 30_000,
+    refetchOnWindowFocus: true,
+  });
+  const recent = (items as any[]).slice(0, 5);
+  const unread = (items as any[]).filter((n) => !n.read_at).length;
+
+  const readAll = async () => {
+    await mark({ data: { all: true } });
+    qc.invalidateQueries({ queryKey: ["notifications"] });
+    qc.invalidateQueries({ queryKey: ["notif-unread"] });
+  };
+
+  return (
+    <Card className="p-4 md:p-5 space-y-3">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <h3 className="font-bold flex items-center gap-2">
+          <Bell className="h-4 w-4 text-primary" />
+          最近の通知
+          {unread > 0 && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-destructive text-destructive-foreground font-bold">
+              未読 {unread}
+            </span>
+          )}
+        </h3>
+        <div className="flex gap-2">
+          {unread > 0 && (
+            <Button size="sm" variant="outline" onClick={readAll}>
+              すべて既読
+            </Button>
+          )}
+          <Button size="sm" variant="ghost" asChild>
+            <Link to="/notifications">
+              すべて見る
+              <ChevronRight className="h-3 w-3" />
+            </Link>
+          </Button>
+        </div>
+      </div>
+      {recent.length === 0 ? (
+        <p className="text-xs text-muted-foreground">通知はありません</p>
+      ) : (
+        <div className="divide-y">
+          {recent.map((n: any) => (
+            <div
+              key={n.id}
+              className={`py-2 flex items-start gap-2 ${n.read_at ? "opacity-60" : ""}`}
+            >
+              <span
+                className={`mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 ${n.read_at ? "bg-muted-foreground/40" : "bg-primary"}`}
+              />
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium truncate">{n.title}</div>
+                {n.body && <div className="text-xs text-muted-foreground truncate">{n.body}</div>}
+              </div>
+              <div className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
+                {new Date(n.created_at).toLocaleDateString("ja-JP", {
+                  month: "numeric",
+                  day: "numeric",
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </Card>
   );
 }

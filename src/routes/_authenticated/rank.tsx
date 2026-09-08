@@ -23,8 +23,13 @@ function RankPage() {
   const [mins, setMins] = useState(0);
   useEffect(() => {
     if (!user) return;
-    supabase.from("study_logs").select("duration_minutes").eq("user_id", user.id)
-      .then(({ data }) => setMins((data ?? []).reduce((s, r: any) => s + (r.duration_minutes ?? 0), 0)));
+    supabase
+      .from("study_logs")
+      .select("duration_minutes")
+      .eq("user_id", user.id)
+      .then(({ data }) =>
+        setMins((data ?? []).reduce((s, r: any) => s + (r.duration_minutes ?? 0), 0)),
+      );
   }, [user?.id]);
 
   const current = [...RANKS].reverse().find((r) => mins >= r.min)!;
@@ -33,17 +38,26 @@ function RankPage() {
 
   return (
     <div className="container mx-auto p-6 max-w-3xl">
-      <h1 className="text-3xl font-bold mb-6 flex items-center gap-2"><Award /> 段位・称号</h1>
+      <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
+        <Award /> 段位・称号
+      </h1>
       <Card className={`p-8 text-center ${current.color}`}>
         <div className="text-sm opacity-80">現在の段位</div>
         <div className="text-5xl font-bold mt-2">{current.title}</div>
         <div className="mt-4">合計 {mins} 分</div>
-        {next && <div className="mt-2 text-sm">次の段位「{next.title}」まで あと {next.min - mins} 分</div>}
+        {next && (
+          <div className="mt-2 text-sm">
+            次の段位「{next.title}」まで あと {next.min - mins} 分
+          </div>
+        )}
       </Card>
       <h2 className="text-xl font-bold mt-8 mb-3">すべての段位</h2>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {RANKS.map((r) => (
-          <Card key={r.title} className={`p-4 text-center ${r.color} ${mins >= r.min ? "" : "opacity-30"}`}>
+          <Card
+            key={r.title}
+            className={`p-4 text-center ${r.color} ${mins >= r.min ? "" : "opacity-30"}`}
+          >
             <div className="font-bold">{r.title}</div>
             <div className="text-xs mt-1">{r.min}分〜</div>
           </Card>

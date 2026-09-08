@@ -25,24 +25,23 @@ export function useOrderedSubjects() {
   }, [reload]);
 
   /** 指定した教科を上下に1つ移動し、sort_order をDBへ保存する */
-  const move = useCallback(
-    async (id: string, direction: "up" | "down") => {
-      setSubjects((prev) => {
-        const idx = prev.findIndex((s) => s.id === id);
-        if (idx < 0) return prev;
-        const swapIdx = direction === "up" ? idx - 1 : idx + 1;
-        if (swapIdx < 0 || swapIdx >= prev.length) return prev;
-        const next = [...prev];
-        [next[idx], next[swapIdx]] = [next[swapIdx], next[idx]];
-        const updated = next.map((s, i) => ({ ...s, sort_order: i }));
-        Promise.all(
-          updated.map((s) => supabase.from("subjects").update({ sort_order: s.sort_order }).eq("id", s.id)),
-        );
-        return updated;
-      });
-    },
-    [],
-  );
+  const move = useCallback(async (id: string, direction: "up" | "down") => {
+    setSubjects((prev) => {
+      const idx = prev.findIndex((s) => s.id === id);
+      if (idx < 0) return prev;
+      const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+      if (swapIdx < 0 || swapIdx >= prev.length) return prev;
+      const next = [...prev];
+      [next[idx], next[swapIdx]] = [next[swapIdx], next[idx]];
+      const updated = next.map((s, i) => ({ ...s, sort_order: i }));
+      Promise.all(
+        updated.map((s) =>
+          supabase.from("subjects").update({ sort_order: s.sort_order }).eq("id", s.id),
+        ),
+      );
+      return updated;
+    });
+  }, []);
 
   return { subjects, reload, move };
 }

@@ -12,7 +12,10 @@ export function RouteLoading() {
       // 完了演出
       if (visible) {
         setProgress(100);
-        const t = setTimeout(() => { setVisible(false); setProgress(0); }, 250);
+        const t = setTimeout(() => {
+          setVisible(false);
+          setProgress(0);
+        }, 250);
         return () => clearTimeout(t);
       }
       return;
@@ -59,10 +62,6 @@ export function RouteLoading() {
             <span className="voton-loading__spark voton-loading__spark--one" />
             <span className="voton-loading__spark voton-loading__spark--two" />
             <span className="voton-loading__spark voton-loading__spark--three" />
-          </div>
-          <div className="flex flex-col items-center gap-1">
-            <p className="text-sm font-bold tracking-[0.18em] text-foreground">読み込み中</p>
-            <p className="text-[10px] tracking-[0.28em] text-muted-foreground uppercase">Voton</p>
           </div>
         </div>
       </div>

@@ -4,16 +4,22 @@ import { Label } from "@/components/ui/label";
 import { useLocalPrefs } from "@/lib/user-prefs";
 import { SectionHeading, SettingRow } from "./shared";
 
-
 export function ChatSection() {
   const { prefs, save } = useLocalPrefs();
   return (
     <div className="space-y-6">
-      <SectionHeading title="チャット" desc="メッセージの送信方法や表示を調整します（この端末のみ）" />
+      <SectionHeading
+        title="チャット"
+        desc="メッセージの送信方法や表示を調整します（この端末のみ）"
+      />
       <Card className="p-6 space-y-5">
         <SettingRow
           label="Enterで送信"
-          desc={prefs.chat_enter_send ? "Shift+Enterで改行します" : "Ctrl(⌘)+Enterで送信、Enterで改行します"}
+          desc={
+            prefs.chat_enter_send
+              ? "Shift+Enterで改行します"
+              : "Ctrl(⌘)+Enterで送信、Enterで改行します"
+          }
           checked={prefs.chat_enter_send}
           onChange={(v) => save({ chat_enter_send: v })}
         />
@@ -38,12 +44,31 @@ export function ChatSection() {
         <div className="space-y-2">
           <Label>吹き出しの文字サイズ: {Math.round(prefs.chat_font_scale * 100)}%</Label>
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={() => save({ chat_font_scale: Math.max(0.85, +(prefs.chat_font_scale - 0.05).toFixed(2)) })}>−</Button>
-            <Button size="sm" variant="outline" onClick={() => save({ chat_font_scale: 1 })}>標準</Button>
-            <Button size="sm" variant="outline" onClick={() => save({ chat_font_scale: Math.min(1.4, +(prefs.chat_font_scale + 0.05).toFixed(2)) })}>+</Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() =>
+                save({
+                  chat_font_scale: Math.max(0.85, +(prefs.chat_font_scale - 0.05).toFixed(2)),
+                })
+              }
+            >
+              −
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => save({ chat_font_scale: 1 })}>
+              標準
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() =>
+                save({ chat_font_scale: Math.min(1.4, +(prefs.chat_font_scale + 0.05).toFixed(2)) })
+              }
+            >
+              +
+            </Button>
           </div>
         </div>
-
       </Card>
     </div>
   );

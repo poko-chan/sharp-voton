@@ -4,7 +4,16 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Check, X, ChevronRight, Sparkles, Loader2, RefreshCw, History, Trash2 } from "lucide-react";
+import {
+  Check,
+  X,
+  ChevronRight,
+  Sparkles,
+  Loader2,
+  RefreshCw,
+  History,
+  Trash2,
+} from "lucide-react";
 import { recordAttempt, gradeWrittenAnswer, deleteGradingRecord } from "@/lib/questions.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -47,7 +56,12 @@ export function PracticeSession({
   const [correctCount, setCorrectCount] = useState(0);
   const [written, setWritten] = useState("");
   const [grading, setGrading] = useState(false);
-  const [gradeResult, setGradeResult] = useState<{ score: number; correct: boolean; feedback: string; at?: string } | null>(null);
+  const [gradeResult, setGradeResult] = useState<{
+    score: number;
+    correct: boolean;
+    feedback: string;
+    at?: string;
+  } | null>(null);
 
   const q = questions[idx];
 
@@ -56,7 +70,8 @@ export function PracticeSession({
     enabled: !!q?.id && q?.format === "exam",
     queryFn: async () => {
       const { data, error } = await (supabase as any)
-        .from("grading_history").select("*")
+        .from("grading_history")
+        .select("*")
         .eq("question_id", q!.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -74,7 +89,9 @@ export function PracticeSession({
     setReveal(true);
     const correct = val.trim().toLowerCase() === q.answer.trim().toLowerCase();
     if (correct) setCorrectCount((c) => c + 1);
-    try { await record({ data: { id: q.id, correct } }); } catch {}
+    try {
+      await record({ data: { id: q.id, correct } });
+    } catch {}
   };
 
   const doGrade = async (isRegrade = false) => {
@@ -113,7 +130,10 @@ export function PracticeSession({
       await delGrading({ data: { id } });
       toast.success("採点履歴を削除しました");
       qc.invalidateQueries({ queryKey: ["grading_history", q.id] });
-    } catch (e: any) { toast.error(e.message); throw e; }
+    } catch (e: any) {
+      toast.error(e.message);
+      throw e;
+    }
   };
 
   const isCorrect = picked && picked.trim().toLowerCase() === q.answer.trim().toLowerCase();
@@ -122,7 +142,9 @@ export function PracticeSession({
     <Card className="p-6 space-y-4">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{q.topic}</span>
-        <span>{idx + 1} / {questions.length}</span>
+        <span>
+          {idx + 1} / {questions.length}
+        </span>
       </div>
       <div className="text-lg font-medium whitespace-pre-wrap">{q.question}</div>
 
@@ -157,7 +179,11 @@ export function PracticeSession({
             {!reveal ? (
               <>
                 <Button disabled={!written.trim() || grading} onClick={() => doGrade(false)}>
-                  {grading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Sparkles className="h-4 w-4 mr-1" />}
+                  {grading ? (
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 mr-1" />
+                  )}
                   AIに採点してもらう
                 </Button>
                 <Button variant="outline" disabled={grading} onClick={() => setReveal(true)}>
@@ -165,15 +191,25 @@ export function PracticeSession({
                 </Button>
               </>
             ) : (
-              <Button variant="outline" disabled={!written.trim() || grading} onClick={() => doGrade(true)}>
-                {grading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1" />}
+              <Button
+                variant="outline"
+                disabled={!written.trim() || grading}
+                onClick={() => doGrade(true)}
+              >
+                {grading ? (
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4 mr-1" />
+                )}
                 再採点する
               </Button>
             )}
           </div>
         </div>
       ) : !reveal ? (
-        <Button variant="outline" onClick={() => setReveal(true)}>答えを見る</Button>
+        <Button variant="outline" onClick={() => setReveal(true)}>
+          答えを見る
+        </Button>
       ) : null}
 
       {reveal && (
@@ -181,30 +217,68 @@ export function PracticeSession({
           {gradeResult && (
             <div className="rounded border border-border p-3 bg-background space-y-1">
               <div className="flex items-center gap-2 font-semibold">
-                {gradeResult.correct ? <Check className="h-4 w-4 text-success" /> : <X className="h-4 w-4 text-destructive" />}
+                {gradeResult.correct ? (
+                  <Check className="h-4 w-4 text-success" />
+                ) : (
+                  <X className="h-4 w-4 text-destructive" />
+                )}
                 採点: {gradeResult.score}点 / 100
               </div>
-              <div className="text-muted-foreground whitespace-pre-wrap">{gradeResult.feedback}</div>
+              <div className="text-muted-foreground whitespace-pre-wrap">
+                {gradeResult.feedback}
+              </div>
             </div>
           )}
           <div className="flex items-center gap-2 font-medium">
-            {isMC ? (isCorrect ? <Check className="h-4 w-4 text-success" /> : <X className="h-4 w-4 text-destructive" />) : null}
+            {isMC ? (
+              isCorrect ? (
+                <Check className="h-4 w-4 text-success" />
+              ) : (
+                <X className="h-4 w-4 text-destructive" />
+              )
+            ) : null}
             模範解答: {q.answer}
           </div>
           {q.explanation && <div className="text-muted-foreground">{q.explanation}</div>}
           {!isMC && !isExam && (
             <div className="flex gap-2 pt-2">
-              <Button size="sm" onClick={() => submit(q.answer)}><Check className="h-4 w-4 mr-1" />正解だった</Button>
-              <Button size="sm" variant="outline" onClick={() => submit("__wrong__")}><X className="h-4 w-4 mr-1" />間違えた</Button>
+              <Button size="sm" onClick={() => submit(q.answer)}>
+                <Check className="h-4 w-4 mr-1" />
+                正解だった
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => submit("__wrong__")}>
+                <X className="h-4 w-4 mr-1" />
+                間違えた
+              </Button>
             </div>
           )}
           {isExam && !gradeResult && (
             <div className="flex gap-2 pt-2">
-              <Button size="sm" onClick={async () => { setCorrectCount((c) => c + 1); try { await record({ data: { id: q.id, correct: true } }); } catch {} setPicked(q.answer); }}>
-                <Check className="h-4 w-4 mr-1" />合っていた
+              <Button
+                size="sm"
+                onClick={async () => {
+                  setCorrectCount((c) => c + 1);
+                  try {
+                    await record({ data: { id: q.id, correct: true } });
+                  } catch {}
+                  setPicked(q.answer);
+                }}
+              >
+                <Check className="h-4 w-4 mr-1" />
+                合っていた
               </Button>
-              <Button size="sm" variant="outline" onClick={async () => { try { await record({ data: { id: q.id, correct: false } }); } catch {} setPicked("__wrong__"); }}>
-                <X className="h-4 w-4 mr-1" />間違えた
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={async () => {
+                  try {
+                    await record({ data: { id: q.id, correct: false } });
+                  } catch {}
+                  setPicked("__wrong__");
+                }}
+              >
+                <X className="h-4 w-4 mr-1" />
+                間違えた
               </Button>
             </div>
           )}
@@ -223,27 +297,44 @@ export function PracticeSession({
       {isExam && history.data && history.data.length > 0 && (
         <details className="rounded border border-border p-3 text-sm">
           <summary className="cursor-pointer flex items-center gap-1.5 font-medium">
-            <History className="h-4 w-4" />採点履歴 ({history.data.length})
+            <History className="h-4 w-4" />
+            採点履歴 ({history.data.length})
           </summary>
           <ul className="mt-3 space-y-2">
             {history.data.map((h) => (
               <li key={h.id} className="border-l-2 border-muted-foreground/30 pl-3 space-y-1">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 text-xs">
-                    {h.correct ? <Check className="h-3.5 w-3.5 text-success" /> : <X className="h-3.5 w-3.5 text-destructive" />}
+                    {h.correct ? (
+                      <Check className="h-3.5 w-3.5 text-success" />
+                    ) : (
+                      <X className="h-3.5 w-3.5 text-destructive" />
+                    )}
                     <span className="font-medium">{h.score}点</span>
-                    <span className="text-muted-foreground">{new Date(h.created_at).toLocaleString("ja-JP")}</span>
+                    <span className="text-muted-foreground">
+                      {new Date(h.created_at).toLocaleString("ja-JP")}
+                    </span>
                   </div>
                   <ConfirmDialog
-                    trigger={<button className="text-destructive hover:opacity-70"><Trash2 className="h-3.5 w-3.5" /></button>}
+                    trigger={
+                      <button className="text-destructive hover:opacity-70">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    }
                     title="採点履歴を削除しますか？"
                     description="この採点記録（点数・フィードバック・解答）が削除されます。問題本体は残ります。"
-                    scopeItems={[`採点記録 1 件（${h.score}点, ${new Date(h.created_at).toLocaleString("ja-JP")}）`]}
+                    scopeItems={[
+                      `採点記録 1 件（${h.score}点, ${new Date(h.created_at).toLocaleString("ja-JP")}）`,
+                    ]}
                     onConfirm={() => removeGradingRecord(h.id)}
                   />
                 </div>
-                <div className="text-xs text-muted-foreground">解答: <span className="whitespace-pre-wrap">{h.user_answer}</span></div>
-                <div className="text-xs text-muted-foreground whitespace-pre-wrap">講評: {h.feedback}</div>
+                <div className="text-xs text-muted-foreground">
+                  解答: <span className="whitespace-pre-wrap">{h.user_answer}</span>
+                </div>
+                <div className="text-xs text-muted-foreground whitespace-pre-wrap">
+                  講評: {h.feedback}
+                </div>
               </li>
             ))}
           </ul>

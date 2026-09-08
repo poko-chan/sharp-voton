@@ -78,7 +78,8 @@ function NotesPage() {
   /** 付箋を最前面に持ち上げる（z_indexをDBに保存） */
   const bringToFront = (note: Note) => {
     const z = nextZIndex();
-    if (note.z_index === z - 1 && Math.max(0, ...notes.map((n) => n.z_index ?? 0)) === note.z_index) return;
+    if (note.z_index === z - 1 && Math.max(0, ...notes.map((n) => n.z_index ?? 0)) === note.z_index)
+      return;
     updateNote(note.id, { z_index: z });
   };
 
@@ -126,7 +127,8 @@ function NotesPage() {
             />
           ))}
           <Button onClick={() => addNote("yellow")} size="sm">
-            <Plus className="h-4 w-4 mr-1" />追加
+            <Plus className="h-4 w-4 mr-1" />
+            追加
           </Button>
         </div>
       </div>
@@ -163,7 +165,10 @@ function NotesPage() {
                 <span>📌 ドラッグで移動</span>
                 <button
                   onPointerDown={(e) => e.stopPropagation()}
-                  onClick={(e) => { e.stopPropagation(); deleteNote(n.id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteNote(n.id);
+                  }}
                   className="hover:opacity-70 p-1"
                 >
                   <Trash2 className="h-3 w-3" />

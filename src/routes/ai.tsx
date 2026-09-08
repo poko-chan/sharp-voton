@@ -63,7 +63,8 @@ function AiPage() {
           Study# の<span className="text-gradient">AI</span>の仕組み
         </h1>
         <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
-          Study# のAI機能は、できるだけ「あなたの端末の中」で動かすことを基本にしています。使えるエンジンは設定画面から選択でき、選んだエンジンに応じてモデルの一覧が表示されます。
+          Study#
+          のAI機能は、できるだけ「あなたの端末の中」で動かすことを基本にしています。使えるエンジンは設定画面から選択でき、選んだエンジンに応じてモデルの一覧が表示されます。
         </p>
         <p className="mt-3 rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm leading-relaxed">
           AIチャットは現在ベータ版です。回答内容は必ず自分で確かめてから使ってください。
@@ -87,7 +88,10 @@ function AiPage() {
             <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted-foreground">
               {CAN.map((c) => (
                 <li key={c} className="flex gap-2">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden />
+                  <span
+                    className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+                    aria-hidden
+                  />
                   <span>{c}</span>
                 </li>
               ))}
@@ -98,7 +102,10 @@ function AiPage() {
             <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted-foreground">
               {CANNOT.map((c) => (
                 <li key={c} className="flex gap-2">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-destructive" aria-hidden />
+                  <span
+                    className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-destructive"
+                    aria-hidden
+                  />
                   <span>{c}</span>
                 </li>
               ))}

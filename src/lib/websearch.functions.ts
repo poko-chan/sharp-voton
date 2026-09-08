@@ -16,8 +16,12 @@ const UA =
 const strip = (html: string) =>
   html
     .replace(/<[^>]*>/g, "")
-    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -74,7 +78,12 @@ async function ddgInstant(q: string): Promise<WebResult[]> {
       const url = String(it?.FirstURL ?? "");
       const text = strip(String(it?.Text ?? ""));
       if (!url || !text || url.includes("duckduckgo.com/c/")) continue;
-      out.push({ title: text.split(" - ")[0].slice(0, 80), snippet: clip(text), url, source: hostOf(url) });
+      out.push({
+        title: text.split(" - ")[0].slice(0, 80),
+        snippet: clip(text),
+        url,
+        source: hostOf(url),
+      });
       if (out.length >= 5) break;
     }
     if (out.length >= 5) break;
@@ -107,7 +116,8 @@ async function ddgLite(q: string): Promise<WebResult[]> {
     if (link.startsWith("//")) link = `https:${link}`;
     const title = strip(m[2]);
     const snippet = clip(strip(m[3]));
-    if (title && link.startsWith("http")) out.push({ title, snippet, url: link, source: hostOf(link) });
+    if (title && link.startsWith("http"))
+      out.push({ title, snippet, url: link, source: hostOf(link) });
   }
   return out;
 }
@@ -136,7 +146,8 @@ async function ddgWeb(q: string): Promise<WebResult[]> {
     const link = normalizeLink(m[1]);
     const title = strip(m[2]);
     const snippet = clip(strip(m[3]));
-    if (title && link.startsWith("http")) out.push({ title, snippet, url: link, source: hostOf(link) });
+    if (title && link.startsWith("http"))
+      out.push({ title, snippet, url: link, source: hostOf(link) });
   }
   return out;
 }
@@ -190,9 +201,12 @@ async function wiktionary(q: string): Promise<WebResult[]> {
     }));
 }
 
-
 function hostOf(url: string): string {
-  try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return "web"; }
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "web";
+  }
 }
 
 /** 信頼できそうな出典を上に。 */
@@ -258,7 +272,12 @@ function extractReadable(html: string): { title: string; text: string } {
  */
 export const fetchPage = createServerFn({ method: "POST" })
   .inputValidator((i) =>
-    z.object({ url: z.string().min(8).max(2000), maxChars: z.number().int().min(500).max(8000).optional() }).parse(i),
+    z
+      .object({
+        url: z.string().min(8).max(2000),
+        maxChars: z.number().int().min(500).max(8000).optional(),
+      })
+      .parse(i),
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ data }): Promise<PageFetchResponse> => {
@@ -270,11 +289,30 @@ export const fetchPage = createServerFn({ method: "POST" })
     try {
       parsed = new URL(url);
     } catch {
-      return { url, finalUrl: url, title: "", text: "", ok: false, error: "URLの形式が正しくありません" };
+      return {
+        url,
+        finalUrl: url,
+        title: "",
+        text: "",
+        ok: false,
+        error: "URLの形式が正しくありません",
+      };
     }
     // ローカル・内部アドレスへのアクセスは拒否（安全のため）
-    if (!/^https?:$/.test(parsed.protocol) || /^(localhost|127\.|0\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|\[?::1)/.test(parsed.hostname)) {
-      return { url, finalUrl: url, title: "", text: "", ok: false, error: "このアドレスにはアクセスできません" };
+    if (
+      !/^https?:$/.test(parsed.protocol) ||
+      /^(localhost|127\.|0\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|\[?::1)/.test(
+        parsed.hostname,
+      )
+    ) {
+      return {
+        url,
+        finalUrl: url,
+        title: "",
+        text: "",
+        ok: false,
+        error: "このアドレスにはアクセスできません",
+      };
     }
 
     const key = `${url}::${maxChars}`;
@@ -283,37 +321,72 @@ export const fetchPage = createServerFn({ method: "POST" })
 
     try {
       const res = await fetch(url, {
-        headers: { "user-agent": UA, "accept-language": "ja,en;q=0.8", accept: "text/html,application/xhtml+xml" },
+        headers: {
+          "user-agent": UA,
+          "accept-language": "ja,en;q=0.8",
+          accept: "text/html,application/xhtml+xml",
+        },
         redirect: "follow",
       });
       const finalUrl = res.url || url;
       const ct = res.headers.get("content-type") ?? "";
       if (!res.ok) {
-        return { url, finalUrl, title: "", text: "", ok: false, error: `ページを開けませんでした（${res.status}）` };
+        return {
+          url,
+          finalUrl,
+          title: "",
+          text: "",
+          ok: false,
+          error: `ページを開けませんでした（${res.status}）`,
+        };
       }
       if (!ct.includes("html") && !ct.includes("text")) {
-        return { url, finalUrl, title: "", text: "", ok: false, error: "HTMLページではないため読み取れません（PDF・画像など）" };
+        return {
+          url,
+          finalUrl,
+          title: "",
+          text: "",
+          ok: false,
+          error: "HTMLページではないため読み取れません（PDF・画像など）",
+        };
       }
       const html = (await res.text()).slice(0, 1_500_000);
       const { title, text } = extractReadable(html);
-      if (!text) return { url, finalUrl, title, text: "", ok: false, error: "本文を読み取れませんでした（ログインが必要なページの可能性があります）" };
+      if (!text)
+        return {
+          url,
+          finalUrl,
+          title,
+          text: "",
+          ok: false,
+          error: "本文を読み取れませんでした（ログインが必要なページの可能性があります）",
+        };
       const clipped = text.length > maxChars ? `${text.slice(0, maxChars)}…` : text;
       const value: PageFetchResponse = { url, finalUrl, title, text: clipped, ok: true };
       PAGE_CACHE.set(key, { at: Date.now(), value });
       if (PAGE_CACHE.size > 100) PAGE_CACHE.delete(PAGE_CACHE.keys().next().value as string);
       return value;
     } catch (e: any) {
-      return { url, finalUrl: url, title: "", text: "", ok: false, error: `アクセスに失敗しました（${String(e?.message ?? e).slice(0, 80)}）` };
+      return {
+        url,
+        finalUrl: url,
+        title: "",
+        text: "",
+        ok: false,
+        error: `アクセスに失敗しました（${String(e?.message ?? e).slice(0, 80)}）`,
+      };
     }
   });
 
 /** 学習質問の事実確認に使う軽量Web検索（外部APIキー不要・複数ソースで冗長化）。 */
 export const webSearch = createServerFn({ method: "POST" })
   .inputValidator((i) =>
-    z.object({
-      query: z.string().min(1).max(300),
-      limit: z.number().int().min(1).max(8).optional(),
-    }).parse(i),
+    z
+      .object({
+        query: z.string().min(1).max(300),
+        limit: z.number().int().min(1).max(8).optional(),
+      })
+      .parse(i),
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ data }): Promise<WebSearchResponse> => {
@@ -349,27 +422,35 @@ export const webSearch = createServerFn({ method: "POST" })
     // 何も取れなければ 軽量版DDG → 英語Wikipedia の順にフォールバック
     if (results.length === 0) {
       const lite = await timeout(ddgLite(q), 6000).catch(() => [] as WebResult[]);
-      if (lite.length) { providers.push("web-lite"); results = lite; }
+      if (lite.length) {
+        providers.push("web-lite");
+        results = lite;
+      }
     }
     if (results.length === 0) {
       const en = await timeout(wikipedia(q, "en"), 6000).catch(() => [] as WebResult[]);
-      if (en.length) { providers.push("wikipedia-en"); results = en; }
+      if (en.length) {
+        providers.push("wikipedia-en");
+        results = en;
+      }
     }
-
 
     const seenUrl = new Set<string>();
     const seenTitle = new Set<string>();
     const perHost = new Map<string, number>();
-    const unique = rank(results, q).filter((r) => {
-      const t = r.title.toLowerCase();
-      const h = hostOf(r.url);
-      if (seenUrl.has(r.url) || seenTitle.has(t)) return false;
-      // 1つのサイトに偏らせず、いろいろな出典を混ぜる
-      if ((perHost.get(h) ?? 0) >= 2) return false;
-      seenUrl.add(r.url); seenTitle.add(t); perHost.set(h, (perHost.get(h) ?? 0) + 1);
-      return true;
-    }).slice(0, limit);
-
+    const unique = rank(results, q)
+      .filter((r) => {
+        const t = r.title.toLowerCase();
+        const h = hostOf(r.url);
+        if (seenUrl.has(r.url) || seenTitle.has(t)) return false;
+        // 1つのサイトに偏らせず、いろいろな出典を混ぜる
+        if ((perHost.get(h) ?? 0) >= 2) return false;
+        seenUrl.add(r.url);
+        seenTitle.add(t);
+        perHost.set(h, (perHost.get(h) ?? 0) + 1);
+        return true;
+      })
+      .slice(0, limit);
 
     const value: WebSearchResponse = { query: q, results: unique, providers, cached: false };
     CACHE.set(key, { at: Date.now(), value });

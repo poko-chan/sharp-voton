@@ -1,14 +1,35 @@
 // AIチャットの「どう考えるか・何を見るか」の設定をまとめて管理する。
 import {
-  Brain, BookOpen, Target, CalendarDays, NotebookTabs, Database, ChartNoAxesColumnIncreasing,
+  Brain,
+  BookOpen,
+  Target,
+  CalendarDays,
+  NotebookTabs,
+  Database,
+  ChartNoAxesColumnIncreasing,
 } from "lucide-react";
 
 export const SCOPE_DEFS = [
-  { key: "study", label: "学習時間と教科", desc: "直近30日の学習時間、活動日数、よく勉強した教科", icon: ChartNoAxesColumnIncreasing },
+  {
+    key: "study",
+    label: "学習時間と教科",
+    desc: "直近30日の学習時間、活動日数、よく勉強した教科",
+    icon: ChartNoAxesColumnIncreasing,
+  },
   { key: "goals", label: "学習目標", desc: "進行中の目標、目標時間、現在の進み具合", icon: Target },
   { key: "weak", label: "苦手な内容", desc: "間違いが多い単元やトピック", icon: Brain },
-  { key: "notes", label: "学習記録の内容", desc: "最近勉強した内容や自分で残したメモ", icon: NotebookTabs },
-  { key: "exams", label: "試験とやること", desc: "これからの試験日程と未完了タスク", icon: CalendarDays },
+  {
+    key: "notes",
+    label: "学習記録の内容",
+    desc: "最近勉強した内容や自分で残したメモ",
+    icon: NotebookTabs,
+  },
+  {
+    key: "exams",
+    label: "試験とやること",
+    desc: "これからの試験日程と未完了タスク",
+    icon: CalendarDays,
+  },
   { key: "flashcards", label: "暗記カード", desc: "復習回数や忘れやすいカード", icon: BookOpen },
   { key: "markon", label: "Markon演習", desc: "最近取り組んだパックと挑戦回数", icon: Database },
 ] as const;
@@ -28,7 +49,6 @@ export const QUALITY_DEFS = [
   { key: "think", label: "Think", desc: "考えてから答える。説明・相談向け。" },
   { key: "pro", label: "Pro", desc: "深く考えて検証。難問・長文向け。" },
 ] as const;
-
 
 export type ChatPrefs = {
   /** 学習データを見るかどうか（オン／オフ） */
@@ -63,7 +83,6 @@ export const DEFAULT_PREFS: ChatPrefs = {
   scopes: ALL_SCOPES,
 };
 
-
 const LS = "ai.tutor.prefs.v3";
 
 export function loadPrefs(): ChatPrefs {
@@ -77,16 +96,24 @@ export function loadPrefs(): ChatPrefs {
       ...p,
       lookup: p.lookup === "off" ? "off" : "on",
       web: p.web === "on" ? "on" : "auto",
-      quality: p.quality === "lite" || p.quality === "flash" || p.quality === "pro" ? p.quality : "think",
-      scopes: Array.isArray(p.scopes) ? ALL_SCOPES.filter((k) => p.scopes!.includes(k)) : ALL_SCOPES,
+      quality:
+        p.quality === "lite" || p.quality === "flash" || p.quality === "pro" ? p.quality : "think",
+      scopes: Array.isArray(p.scopes)
+        ? ALL_SCOPES.filter((k) => p.scopes!.includes(k))
+        : ALL_SCOPES,
     };
-  } catch { return DEFAULT_PREFS; }
+  } catch {
+    return DEFAULT_PREFS;
+  }
 }
 
 export function savePrefs(p: ChatPrefs) {
-  try { window.localStorage.setItem(LS, JSON.stringify(p)); } catch { /* noop */ }
+  try {
+    window.localStorage.setItem(LS, JSON.stringify(p));
+  } catch {
+    /* noop */
+  }
 }
-
 
 /** 質問文から、どの学習データが必要かを推定する */
 export function relevantScopes(text: string, allowed: ScopeKey[]): ScopeKey[] {
@@ -100,7 +127,9 @@ export function relevantScopes(text: string, allowed: ScopeKey[]): ScopeKey[] {
     markon: /(Markon|マクロン|演習|パック|正答|成績)/i,
   };
   const personal = /(私|自分|ぼく|僕|わたし|おすすめ|何をすべき|どう勉強|アドバイス)/.test(text);
-  return allowed.filter((key) => rules[key].test(text) || (personal && ["study", "goals", "weak"].includes(key)));
+  return allowed.filter(
+    (key) => rules[key].test(text) || (personal && ["study", "goals", "weak"].includes(key)),
+  );
 }
 
 export const LENGTH_RULE: Record<Length, string> = {
@@ -120,11 +149,17 @@ export function needsWebSearch(text: string): boolean {
   const t = text.trim();
   if (t.length < 4) return false;
   // 自分のデータ・記録・計画の話は検索しない
-  if (/(記録して|登録して|目標を|勉強計画|振り返|私の|自分の|ぼくの|僕の)/.test(t) && !/(とは|意味|調べ|最新|ニュース|違い)/.test(t)) return false;
+  if (
+    /(記録して|登録して|目標を|勉強計画|振り返|私の|自分の|ぼくの|僕の)/.test(t) &&
+    !/(とは|意味|調べ|最新|ニュース|違い)/.test(t)
+  )
+    return false;
   // 計算・添削など、その場で解ける依頼は検索しない
   if (/(計算して|解いて|添削|翻訳して|要約して|作文|例文を作)/.test(t)) return false;
   return (
-    /(とは|意味|由来|違い|なぜ|誰|いつ|どこ|年号|出典|根拠|最新|今年|去年|ニュース|統計|データ|入試|倍率|日程|要項|定義|公式|法律|制度|ランキング|価格|相場|調べて|検索|事実|正しい|本当)/.test(t) ||
+    /(とは|意味|由来|違い|なぜ|誰|いつ|どこ|年号|出典|根拠|最新|今年|去年|ニュース|統計|データ|入試|倍率|日程|要項|定義|公式|法律|制度|ランキング|価格|相場|調べて|検索|事実|正しい|本当)/.test(
+      t,
+    ) ||
     (/[A-Za-z]{4,}/.test(t) && /(について|解説|教えて)/.test(t))
   );
 }
@@ -142,4 +177,3 @@ export function buildSearchQuery(text: string): string {
   const q = cleaned.length >= 2 ? cleaned : text.trim();
   return q.slice(0, 120);
 }
-

@@ -39,11 +39,7 @@ export function MaintenanceProvider({ children }: { children: ReactNode }) {
     load();
     const channel = supabase
       .channel("app-settings")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "app_settings" },
-        () => load(),
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "app_settings" }, () => load())
       .subscribe();
     const i = setInterval(load, 30000);
     return () => {

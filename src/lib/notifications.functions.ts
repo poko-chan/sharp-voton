@@ -18,9 +18,14 @@ export const listNotifications = createServerFn({ method: "POST" })
 
 export const markNotificationRead = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid().optional(), all: z.boolean().optional() }).parse(d))
+  .inputValidator((d: unknown) =>
+    z.object({ id: z.string().uuid().optional(), all: z.boolean().optional() }).parse(d),
+  )
   .handler(async ({ data, context }) => {
-    const q = supabaseAdmin.from("notifications").update({ read_at: new Date().toISOString() }).eq("user_id", context.userId);
+    const q = supabaseAdmin
+      .from("notifications")
+      .update({ read_at: new Date().toISOString() })
+      .eq("user_id", context.userId);
     if (data.all) {
       const { error } = await q.is("read_at", null);
       if (error) throw new Error(error.message);
@@ -34,11 +39,13 @@ export const markNotificationRead = createServerFn({ method: "POST" })
 export const deleteNotification = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      id: z.string().uuid().optional(),
-      ids: z.array(z.string().uuid()).optional(),
-      all: z.boolean().optional(),
-    }).parse(d),
+    z
+      .object({
+        id: z.string().uuid().optional(),
+        ids: z.array(z.string().uuid()).optional(),
+        all: z.boolean().optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const base = supabaseAdmin.from("notifications").delete().eq("user_id", context.userId);
@@ -65,4 +72,3 @@ export const unreadCount = createServerFn({ method: "POST" })
       .is("read_at", null);
     return { count: count ?? 0 };
   });
-

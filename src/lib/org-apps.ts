@@ -3,18 +3,138 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { fetchPublicProfiles } from "@/lib/public-profiles";
 
-export type OrgAppKey = "notifications" | "posts" | "surveys" | "calendar" | "digitalid" | "chat" | "makron" | "edu";
+export type OrgAppKey =
+  | "notifications"
+  | "posts"
+  | "surveys"
+  | "calendar"
+  | "digitalid"
+  | "chat"
+  | "makron"
+  | "edu"
+  | "attendance"
+  | "timetable"
+  | "grades"
+  | "meetings"
+  | "health"
+  | "consult"
+  | "monitor";
 
-export const ORG_APPS: { key: OrgAppKey; label: string; desc: string; icon: string; color: string }[] = [
-  { key: "notifications", label: "通知", desc: "各アプリからのお知らせ", icon: "Bell", color: "#f59e0b" },
-  { key: "posts", label: "投稿", desc: "お知らせ・連絡（画像5枚まで）", icon: "Megaphone", color: "#7B6CFF" },
-  { key: "surveys", label: "アンケート", desc: "組織・グループへ配信", icon: "ClipboardList", color: "#34D7B5" },
-  { key: "calendar", label: "カレンダー", desc: "組織・グループの予定", icon: "CalendarDays", color: "#38bdf8" },
-  { key: "digitalid", label: "デジタル証", desc: "学生証・入退室バーコード", icon: "IdCard", color: "#f472b6" },
-  { key: "chat", label: "チャット", desc: "承認制のDM・グループ会話", icon: "MessagesSquare", color: "#a78bfa" },
-  { key: "makron", label: "Makron for school", desc: "組織専用の問題集・課題", icon: "BookOpen", color: "#fb923c" },
-  { key: "edu", label: "Makron for education", desc: "学年・クラス別の組織専用教材", icon: "GraduationCap", color: "#22c55e" },
+
+export const ORG_APPS: {
+  key: OrgAppKey;
+  label: string;
+  desc: string;
+  icon: string;
+  color: string;
+}[] = [
+  {
+    key: "notifications",
+    label: "通知",
+    desc: "各アプリからのお知らせ",
+    icon: "Bell",
+    color: "#f59e0b",
+  },
+  {
+    key: "posts",
+    label: "投稿",
+    desc: "お知らせ・連絡（画像5枚まで）",
+    icon: "Megaphone",
+    color: "#7B6CFF",
+  },
+  {
+    key: "surveys",
+    label: "アンケート",
+    desc: "組織・グループへ配信",
+    icon: "ClipboardList",
+    color: "#34D7B5",
+  },
+  {
+    key: "calendar",
+    label: "カレンダー",
+    desc: "組織・グループの予定",
+    icon: "CalendarDays",
+    color: "#38bdf8",
+  },
+  {
+    key: "digitalid",
+    label: "デジタル証",
+    desc: "学生証・入退室バーコード",
+    icon: "IdCard",
+    color: "#f472b6",
+  },
+  {
+    key: "chat",
+    label: "チャット",
+    desc: "承認制のDM・グループ会話",
+    icon: "MessagesSquare",
+    color: "#a78bfa",
+  },
+  {
+    key: "makron",
+    label: "Makron for school",
+    desc: "組織専用の問題集・課題",
+    icon: "BookOpen",
+    color: "#fb923c",
+  },
+  {
+    key: "edu",
+    label: "Makron for education",
+    desc: "学年・クラス別の組織専用教材",
+    icon: "GraduationCap",
+    color: "#22c55e",
+  },
+  {
+    key: "attendance",
+    label: "出欠・欠席連絡",
+    desc: "毎日の出欠記録と欠席連絡の受付",
+    icon: "ClipboardCheck",
+    color: "#ef4444",
+  },
+  {
+    key: "timetable",
+    label: "時間割",
+    desc: "曜日・時限ごとの授業表",
+    icon: "Table",
+    color: "#0ea5e9",
+  },
+  {
+    key: "grades",
+    label: "成績",
+    desc: "テスト結果の登録と公開",
+    icon: "BarChart3",
+    color: "#8b5cf6",
+  },
+  {
+    key: "meetings",
+    label: "面談",
+    desc: "面談の予約・記録",
+    icon: "CalendarClock",
+    color: "#14b8a6",
+  },
+  {
+    key: "health",
+    label: "保健室",
+    desc: "来室記録・体温・対応",
+    icon: "HeartPulse",
+    color: "#fb7185",
+  },
+  {
+    key: "consult",
+    label: "相談・報告",
+    desc: "匿名でも送れる相談窓口",
+    icon: "ShieldAlert",
+    color: "#f59e0b",
+  },
+  {
+    key: "monitor",
+    label: "見守り一覧",
+    desc: "学習量・出欠・気づきをまとめて確認（先生のみ）",
+    icon: "Eye",
+    color: "#64748b",
+  },
 ];
+
 
 export const GROUP_PERMS: { key: string; label: string; app: string }[] = [
   { key: "post_create", label: "一般が投稿できる", app: "投稿" },
@@ -29,8 +149,15 @@ export const GROUP_PERMS: { key: string; label: string; app: string }[] = [
 ];
 
 export const DEFAULT_PERMS: Record<string, boolean> = {
-  post_create: false, post_like: true, post_comment: true, member_view: true,
-  survey_create: false, calendar_add: false, dm_member: true, dm_teacher: true, group_chat_create: false,
+  post_create: false,
+  post_like: true,
+  post_comment: true,
+  member_view: true,
+  survey_create: false,
+  calendar_add: false,
+  dm_member: true,
+  dm_teacher: true,
+  group_chat_create: false,
 };
 
 export function useOrg(orgId: string) {
@@ -46,9 +173,18 @@ export function useOrg(orgId: string) {
     if (!user) return;
     const [{ data: o }, { data: me }, { data: a }, { data: g }] = await Promise.all([
       (supabase as any).from("organizations").select("*").eq("id", orgId).maybeSingle(),
-      (supabase as any).from("organization_members").select("role, suspended").eq("organization_id", orgId).eq("user_id", user.id).maybeSingle(),
+      (supabase as any)
+        .from("organization_members")
+        .select("role, suspended")
+        .eq("organization_id", orgId)
+        .eq("user_id", user.id)
+        .maybeSingle(),
       (supabase as any).from("org_app_settings").select("*").eq("organization_id", orgId),
-      (supabase as any).from("org_groups").select("*").eq("organization_id", orgId).order("created_at"),
+      (supabase as any)
+        .from("org_groups")
+        .select("*")
+        .eq("organization_id", orgId)
+        .order("created_at"),
     ]);
     setOrg(o);
     setMyRole(me?.role ?? null);
@@ -60,7 +196,9 @@ export function useOrg(orgId: string) {
     setLoading(false);
   }, [orgId, user?.id, isAdmin]);
 
-  useEffect(() => { reload(); }, [reload]);
+  useEffect(() => {
+    reload();
+  }, [reload]);
 
   const canAdmin = isAdmin || ["owner", "admin"].includes(myRole ?? "");
   const isStaff = canAdmin || myRole === "teacher";
@@ -68,10 +206,24 @@ export function useOrg(orgId: string) {
     const row = apps.find((x) => x.app_key === key);
     return row ? row.enabled : true;
   };
-  const appLabel = (key: string) => apps.find((x) => x.app_key === key)?.label
-    || ORG_APPS.find((a) => a.key === key)?.label || key;
+  const appLabel = (key: string) =>
+    apps.find((x) => x.app_key === key)?.label || ORG_APPS.find((a) => a.key === key)?.label || key;
 
-  return { org, setOrg, myRole, canAdmin, isStaff, isOwner: isAdmin || myRole === "owner", apps, groups, leadGroups, loading, reload, appEnabled, appLabel };
+  return {
+    org,
+    setOrg,
+    myRole,
+    canAdmin,
+    isStaff,
+    isOwner: isAdmin || myRole === "owner",
+    apps,
+    groups,
+    leadGroups,
+    loading,
+    reload,
+    appEnabled,
+    appLabel,
+  };
 }
 
 export async function loadProfiles(ids: string[]) {
@@ -86,19 +238,22 @@ export async function loadProfiles(ids: string[]) {
 /** 組織内プロフィール（表示名など）を優先して解決する */
 export async function loadOrgProfiles(orgId: string, ids: string[]) {
   const base = await loadProfiles(ids);
-  const { data } = await (supabase as any).from("org_profiles")
+  const { data } = await (supabase as any)
+    .from("org_profiles")
     .select("user_id, display_name, avatar_url, grade, class_name, student_number")
-    .eq("organization_id", orgId).in("user_id", Array.from(new Set(ids.filter(Boolean))));
+    .eq("organization_id", orgId)
+    .in("user_id", Array.from(new Set(ids.filter(Boolean))));
   for (const p of data ?? []) {
     base[p.user_id] = {
       ...(base[p.user_id] ?? { id: p.user_id }),
       display_name: p.display_name ?? base[p.user_id]?.display_name,
       avatar_url: p.avatar_url ?? base[p.user_id]?.avatar_url,
-      grade: p.grade, class_name: p.class_name, student_number: p.student_number,
+      grade: p.grade,
+      class_name: p.class_name,
+      student_number: p.student_number,
     };
   }
   return base;
 }
 
-export const nameOf = (p: any, fallback = "メンバー") =>
-  p?.display_name || p?.username || fallback;
+export const nameOf = (p: any, fallback = "メンバー") => p?.display_name || p?.username || fallback;

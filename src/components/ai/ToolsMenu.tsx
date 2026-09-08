@@ -4,7 +4,13 @@ import { MoreHorizontal, GraduationCap, FileDown, Check } from "lucide-react";
 import { TASK_DEFS, TASK_GROUPS, type TaskKind } from "@/lib/tutor-tasks";
 
 export function ToolsMenu({
-  value, onSelect, hintOn, onHintChange, disabled, canExportPdf, onExportPdf,
+  value,
+  onSelect,
+  hintOn,
+  onHintChange,
+  disabled,
+  canExportPdf,
+  onExportPdf,
 }: {
   value: TaskKind | null;
   onSelect: (k: TaskKind | null) => void;
@@ -20,9 +26,13 @@ export function ToolsMenu({
         <button
           type="button"
           disabled={disabled}
-          title={disabled ? "Liteでは使えません。Flash以上に切り替えてください。" : "そのほかの機能"}
+          title={
+            disabled ? "Liteでは使えません。Flash以上に切り替えてください。" : "そのほかの機能"
+          }
           className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition disabled:opacity-40 ${
-            value ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            value
+              ? "bg-foreground text-background"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >
           <MoreHorizontal className="h-4 w-4" />
@@ -65,10 +75,14 @@ export function ToolsMenu({
                         on ? "bg-primary/10" : "hover:bg-muted"
                       }`}
                     >
-                      <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${on ? "text-primary" : "text-muted-foreground"}`} />
+                      <Icon
+                        className={`mt-0.5 h-4 w-4 shrink-0 ${on ? "text-primary" : "text-muted-foreground"}`}
+                      />
                       <span className="min-w-0 flex-1">
                         <span className="block text-xs font-semibold">{def.label}</span>
-                        <span className="block text-[11px] leading-snug text-muted-foreground">{def.desc}</span>
+                        <span className="block text-[11px] leading-snug text-muted-foreground">
+                          {def.desc}
+                        </span>
                       </span>
                       {on && <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />}
                     </button>
@@ -89,7 +103,9 @@ export function ToolsMenu({
               <span className="min-w-0 flex-1">
                 <span className="block text-xs font-semibold">PDFで書き出す</span>
                 <span className="block text-[11px] leading-snug text-muted-foreground">
-                  {canExportPdf ? "右のキャンバスの内容を印刷・PDF保存します。" : "先に成果物を作ると使えます。"}
+                  {canExportPdf
+                    ? "右のキャンバスの内容を印刷・PDF保存します。"
+                    : "先に成果物を作ると使えます。"}
                 </span>
               </span>
             </button>

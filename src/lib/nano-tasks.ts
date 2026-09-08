@@ -4,7 +4,11 @@ import { createAiSession, extractJSON } from "@/lib/ai-provider";
 import { promptJSONRobust, median, sampleN, clampText } from "@/lib/ai-quality";
 
 export type GradeResult = {
-  score: number; rate: number; feedback: string; good: string[]; improve: string[];
+  score: number;
+  rate: number;
+  feedback: string;
+  good: string[];
+  improve: string[];
   /** 採点観点（ルーブリック）。空のこともある */
   rubric?: string[];
 };
@@ -35,7 +39,10 @@ async function buildRubric(input: { prompt: string; model_answer?: string }): Pr
 }
 
 export async function nanoGradeWritten(input: {
-  prompt: string; answer: string; model_answer?: string; max_points?: number;
+  prompt: string;
+  answer: string;
+  model_answer?: string;
+  max_points?: number;
   /** 精度重視: 複数回採点して中央値を取る（既定 true） */
   careful?: boolean;
   onProgress?: (partial: string, chars: number) => void;
@@ -77,7 +84,9 @@ export async function nanoGradeWritten(input: {
         good: Array.isArray(parsed.good) ? parsed.good.map(String) : [],
         improve: Array.isArray(parsed.improve) ? parsed.improve.map(String) : [],
       };
-    } finally { s.destroy(); }
+    } finally {
+      s.destroy();
+    }
   };
 
   const first = await gradeOnce(0);
@@ -87,9 +96,10 @@ export async function nanoGradeWritten(input: {
   const more = await sampleN(1, () => gradeOnce(1));
   const all = [first, ...more];
   const score = median(all.map((r) => r.score));
-  const rate = median(all.map((r) => (r.rate || Math.round((r.score / max) * 100))));
+  const rate = median(all.map((r) => r.rate || Math.round((r.score / max) * 100)));
   const best = all.reduce((a, b) => (b.feedback.length > a.feedback.length ? b : a), first);
-  const uniq = (xs: string[]) => Array.from(new Set(xs.map((x) => x.trim()).filter(Boolean))).slice(0, 5);
+  const uniq = (xs: string[]) =>
+    Array.from(new Set(xs.map((x) => x.trim()).filter(Boolean))).slice(0, 5);
 
   return {
     score,

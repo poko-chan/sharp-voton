@@ -5,11 +5,11 @@
 //  - 複数回サンプリングして中央値を取る「自己一貫性」採点
 
 export type AiTask =
-  | "chat"       // 会話・説明
-  | "reasoning"  // 段取り・分析
-  | "grading"    // 採点（ぶれさせない）
-  | "json"       // 構造化出力
-  | "creative";  // 発想・言い換え
+  | "chat" // 会話・説明
+  | "reasoning" // 段取り・分析
+  | "grading" // 採点（ぶれさせない）
+  | "json" // 構造化出力
+  | "creative"; // 発想・言い換え
 
 export type GenParams = {
   temperature: number;
@@ -20,11 +20,41 @@ export type GenParams = {
 };
 
 export const TASK_PRESETS: Record<AiTask, GenParams> = {
-  chat:      { temperature: 0.55, topP: 0.9,  maxTokens: 1400, frequencyPenalty: 0.5, presencePenalty: 0.3 },
-  reasoning: { temperature: 0.3,  topP: 0.85, maxTokens: 900,  frequencyPenalty: 0.6, presencePenalty: 0.3 },
-  grading:   { temperature: 0.15, topP: 0.8,  maxTokens: 700,  frequencyPenalty: 0.4, presencePenalty: 0.2 },
-  json:      { temperature: 0.1,  topP: 0.8,  maxTokens: 700,  frequencyPenalty: 0.2, presencePenalty: 0.1 },
-  creative:  { temperature: 0.85, topP: 0.95, maxTokens: 1200, frequencyPenalty: 0.7, presencePenalty: 0.6 },
+  chat: {
+    temperature: 0.55,
+    topP: 0.9,
+    maxTokens: 1400,
+    frequencyPenalty: 0.5,
+    presencePenalty: 0.3,
+  },
+  reasoning: {
+    temperature: 0.3,
+    topP: 0.85,
+    maxTokens: 900,
+    frequencyPenalty: 0.6,
+    presencePenalty: 0.3,
+  },
+  grading: {
+    temperature: 0.15,
+    topP: 0.8,
+    maxTokens: 700,
+    frequencyPenalty: 0.4,
+    presencePenalty: 0.2,
+  },
+  json: {
+    temperature: 0.1,
+    topP: 0.8,
+    maxTokens: 700,
+    frequencyPenalty: 0.2,
+    presencePenalty: 0.1,
+  },
+  creative: {
+    temperature: 0.85,
+    topP: 0.95,
+    maxTokens: 1200,
+    frequencyPenalty: 0.7,
+    presencePenalty: 0.6,
+  },
 };
 
 export function paramsFor(task: AiTask, override?: Partial<GenParams>): GenParams {
@@ -125,7 +155,9 @@ export async function promptJSONRobust<T>(
       lastErr = e;
     }
   }
-  throw lastErr instanceof Error ? lastErr : new Error("AIから正しい形式の結果を得られませんでした");
+  throw lastErr instanceof Error
+    ? lastErr
+    : new Error("AIから正しい形式の結果を得られませんでした");
 }
 
 /** 数値の中央値（採点のブレを抑えるのに使う） */
@@ -140,7 +172,11 @@ export function median(values: number[]): number {
 export async function sampleN<T>(n: number, run: (i: number) => Promise<T>): Promise<T[]> {
   const out: T[] = [];
   for (let i = 0; i < n; i++) {
-    try { out.push(await run(i)); } catch { /* 1回失敗しても続行 */ }
+    try {
+      out.push(await run(i));
+    } catch {
+      /* 1回失敗しても続行 */
+    }
   }
   return out;
 }

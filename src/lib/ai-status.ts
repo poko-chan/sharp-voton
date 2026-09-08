@@ -13,25 +13,47 @@ export type AiRunStatus = {
 };
 
 let state: AiRunStatus = {
-  phase: "idle", engine: "", progress: null, chars: 0, message: "", startedAt: null,
+  phase: "idle",
+  engine: "",
+  progress: null,
+  chars: 0,
+  message: "",
+  startedAt: null,
 };
 
 const listeners = new Set<(s: AiRunStatus) => void>();
 
-export function getAiRunStatus() { return state; }
+export function getAiRunStatus() {
+  return state;
+}
 
 export function subscribeAiRunStatus(fn: (s: AiRunStatus) => void) {
   listeners.add(fn);
-  return () => { listeners.delete(fn); };
+  return () => {
+    listeners.delete(fn);
+  };
 }
 
 export function setAiRunStatus(patch: Partial<AiRunStatus>) {
   state = { ...state, ...patch };
-  listeners.forEach((l) => { try { l(state); } catch { /* noop */ } });
+  listeners.forEach((l) => {
+    try {
+      l(state);
+    } catch {
+      /* noop */
+    }
+  });
 }
 
 export function aiRunStart(engine: string, message = "生成を開始しています…") {
-  setAiRunStatus({ phase: "generating", engine, progress: null, chars: 0, message, startedAt: Date.now() });
+  setAiRunStatus({
+    phase: "generating",
+    engine,
+    progress: null,
+    chars: 0,
+    message,
+    startedAt: Date.now(),
+  });
 }
 export function aiRunModelLoading(engine: string, progress: number | null, message: string) {
   setAiRunStatus({ phase: "loading-model", engine, progress, message });
@@ -46,5 +68,12 @@ export function aiRunError(message: string) {
   setAiRunStatus({ phase: "error", message, progress: null });
 }
 export function aiRunIdle() {
-  setAiRunStatus({ phase: "idle", engine: "", progress: null, chars: 0, message: "", startedAt: null });
+  setAiRunStatus({
+    phase: "idle",
+    engine: "",
+    progress: null,
+    chars: 0,
+    message: "",
+    startedAt: null,
+  });
 }

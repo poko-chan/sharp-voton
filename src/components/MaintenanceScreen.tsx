@@ -22,14 +22,10 @@ export function MaintenanceScreen({
         {until && (
           <div className="rounded-xl border bg-card p-6">
             <p className="text-sm text-muted-foreground">終了予定時刻</p>
-            <p className="mt-1 text-2xl font-semibold">
-              {new Date(until).toLocaleString("ja-JP")}
-            </p>
+            <p className="mt-1 text-2xl font-semibold">{new Date(until).toLocaleString("ja-JP")}</p>
           </div>
         )}
-        <p className="text-sm text-muted-foreground">
-          ご不便をおかけして申し訳ございません。
-        </p>
+        <p className="text-sm text-muted-foreground">ご不便をおかけして申し訳ございません。</p>
       </div>
     </div>
   );

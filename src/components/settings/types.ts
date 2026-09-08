@@ -8,7 +8,6 @@ export type SettingsCategoryId =
   | "study"
   | "chat"
   | "town"
-
   | "privacy"
   | "ai"
   | "language"

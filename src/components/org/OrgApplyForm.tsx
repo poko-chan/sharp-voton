@@ -56,7 +56,10 @@ export function OrgApplyForm() {
   const isJapan = draft.country === "日本";
 
   const canNext = () => {
-    if (step === 0) return !!draft.org_type && (draft.org_type !== "other" || draft.org_type_other.trim().length > 0);
+    if (step === 0)
+      return (
+        !!draft.org_type && (draft.org_type !== "other" || draft.org_type_other.trim().length > 0)
+      );
     if (step === 1) return !!user;
     if (step === 2)
       return (
@@ -110,7 +113,11 @@ export function OrgApplyForm() {
           <li key={s} className="flex items-center gap-2">
             <span
               className={`grid h-6 w-6 place-items-center rounded-full font-bold ${
-                i < step ? "bg-primary/20 text-primary" : i === step ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                i < step
+                  ? "bg-primary/20 text-primary"
+                  : i === step
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
               }`}
             >
               {i < step ? <Check className="h-3.5 w-3.5" /> : i + 1}
@@ -131,7 +138,9 @@ export function OrgApplyForm() {
                 type="button"
                 onClick={() => set("org_type", t.value as OrgType)}
                 className={`rounded-xl border p-3 text-left transition ${
-                  draft.org_type === t.value ? "border-primary bg-primary/10" : "border-border/60 hover:bg-muted/50"
+                  draft.org_type === t.value
+                    ? "border-primary bg-primary/10"
+                    : "border-border/60 hover:bg-muted/50"
                 }`}
               >
                 <div className="text-sm font-bold">{t.label}</div>
@@ -163,7 +172,12 @@ export function OrgApplyForm() {
               <div className="font-bold text-primary">ログイン済み</div>
               <div className="mt-1 text-muted-foreground">{user.email}</div>
               <div className="mt-1 text-xs text-muted-foreground">
-                種別: {accountKind === "org" ? "組織アカウント" : accountKind === "parent" ? "保護者アカウント" : "通常アカウント"}
+                種別:{" "}
+                {accountKind === "org"
+                  ? "組織アカウント"
+                  : accountKind === "parent"
+                    ? "保護者アカウント"
+                    : "通常アカウント"}
               </div>
               {accountKind === "parent" && (
                 <p className="mt-2 text-xs text-destructive">
@@ -179,15 +193,20 @@ export function OrgApplyForm() {
           ) : (
             <div className="space-y-3 text-sm text-muted-foreground">
               <p>
-                申請には Study# アカウントが必要です。通常アカウント（学習用）でも、組織の管理だけに使う
-                「Study# 組織アカウント」でも申請できます。
+                申請には Study#
+                アカウントが必要です。通常アカウント（学習用）でも、組織の管理だけに使う 「Study#
+                組織アカウント」でも申請できます。
               </p>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Link to="/login" search={{ next: "/for-schools" } as any} className="cta">
                   <LogIn className="mr-1 inline h-4 w-4" />
                   ログイン
                 </Link>
-                <Link to="/login" search={{ kind: "org", next: "/for-schools" } as any} className="cta-ghost">
+                <Link
+                  to="/login"
+                  search={{ kind: "org", next: "/for-schools" } as any}
+                  className="cta-ghost"
+                >
                   組織アカウントを作成
                 </Link>
               </div>
@@ -203,12 +222,43 @@ export function OrgApplyForm() {
         <div className="space-y-4">
           <h3 className="font-bold">3. 要項入力</h3>
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="代表者名（姓）" required value={draft.rep_last_name} onChange={(v) => set("rep_last_name", v)} placeholder="山田" />
-            <Field label="代表者名（名）" required value={draft.rep_first_name} onChange={(v) => set("rep_first_name", v)} placeholder="太郎" />
-            <Field label="セイ" value={draft.rep_last_kana} onChange={(v) => set("rep_last_kana", v)} placeholder="ヤマダ" />
-            <Field label="メイ" value={draft.rep_first_kana} onChange={(v) => set("rep_first_kana", v)} placeholder="タロウ" />
-            <Field label={departmentLabel(draft.org_type)} value={draft.department} onChange={(v) => set("department", v)} />
-            <Field label={orgNameLabel(draft.org_type)} required value={draft.org_name} onChange={(v) => set("org_name", v)} />
+            <Field
+              label="代表者名（姓）"
+              required
+              value={draft.rep_last_name}
+              onChange={(v) => set("rep_last_name", v)}
+              placeholder="山田"
+            />
+            <Field
+              label="代表者名（名）"
+              required
+              value={draft.rep_first_name}
+              onChange={(v) => set("rep_first_name", v)}
+              placeholder="太郎"
+            />
+            <Field
+              label="セイ"
+              value={draft.rep_last_kana}
+              onChange={(v) => set("rep_last_kana", v)}
+              placeholder="ヤマダ"
+            />
+            <Field
+              label="メイ"
+              value={draft.rep_first_kana}
+              onChange={(v) => set("rep_first_kana", v)}
+              placeholder="タロウ"
+            />
+            <Field
+              label={departmentLabel(draft.org_type)}
+              value={draft.department}
+              onChange={(v) => set("department", v)}
+            />
+            <Field
+              label={orgNameLabel(draft.org_type)}
+              required
+              value={draft.org_name}
+              onChange={(v) => set("org_name", v)}
+            />
             <Field
               label="ご連絡メールアドレス"
               required
@@ -216,15 +266,33 @@ export function OrgApplyForm() {
               value={draft.contact_email}
               onChange={(v) => set("contact_email", v)}
             />
-            <Field label="ご連絡電話番号" required value={draft.contact_phone} onChange={(v) => set("contact_phone", v)} placeholder="03-0000-0000" />
+            <Field
+              label="ご連絡電話番号"
+              required
+              value={draft.contact_phone}
+              onChange={(v) => set("contact_phone", v)}
+              placeholder="03-0000-0000"
+            />
             <div className="space-y-1">
               <Label>
                 所在国 <span className="text-destructive">*</span>
               </Label>
-              <Select value={draft.country} onValueChange={(v) => { set("country", v); if (v !== "日本") set("prefecture", ""); }}>
-                <SelectTrigger><SelectValue placeholder="選択してください" /></SelectTrigger>
+              <Select
+                value={draft.country}
+                onValueChange={(v) => {
+                  set("country", v);
+                  if (v !== "日本") set("prefecture", "");
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="選択してください" />
+                </SelectTrigger>
                 <SelectContent>
-                  {COUNTRIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  {COUNTRIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -234,20 +302,48 @@ export function OrgApplyForm() {
                   都道府県 <span className="text-destructive">*</span>
                 </Label>
                 <Select value={draft.prefecture} onValueChange={(v) => set("prefecture", v)}>
-                  <SelectTrigger><SelectValue placeholder="選択してください" /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="選択してください" />
+                  </SelectTrigger>
                   <SelectContent>
-                    {PREFECTURES.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                    {PREFECTURES.map((p) => (
+                      <SelectItem key={p} value={p}>
+                        {p}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
             )}
-            <Field label="住所" required value={draft.address} onChange={(v) => set("address", v)} placeholder="千代田区…" />
-            <Field label="Webサイト（任意）" value={draft.website} onChange={(v) => set("website", v)} placeholder="https://" />
-            <Field label="想定利用人数（任意）" value={draft.expected_users} onChange={(v) => set("expected_users", v.replace(/[^0-9]/g, ""))} placeholder="300" />
+            <Field
+              label="住所"
+              required
+              value={draft.address}
+              onChange={(v) => set("address", v)}
+              placeholder="千代田区…"
+            />
+            <Field
+              label="Webサイト（任意）"
+              value={draft.website}
+              onChange={(v) => set("website", v)}
+              placeholder="https://"
+            />
+            <Field
+              label="想定利用人数（任意）"
+              value={draft.expected_users}
+              onChange={(v) => set("expected_users", v.replace(/[^0-9]/g, ""))}
+              placeholder="300"
+            />
           </div>
           <div className="space-y-1">
             <Label>連絡事項（任意）</Label>
-            <Textarea rows={4} maxLength={2000} value={draft.note} onChange={(e) => set("note", e.target.value)} placeholder="導入予定時期、利用したい機能、ご質問など" />
+            <Textarea
+              rows={4}
+              maxLength={2000}
+              value={draft.note}
+              onChange={(e) => set("note", e.target.value)}
+              placeholder="導入予定時期、利用したい機能、ご質問など"
+            />
           </div>
         </div>
       )}
@@ -257,8 +353,16 @@ export function OrgApplyForm() {
           <h3 className="font-bold">4. 内容を確認して送信</h3>
           <dl className="divide-y divide-border/60 overflow-hidden rounded-xl border border-border/60 text-sm">
             {[
-              ["種別", draft.org_type === "other" ? `その他（${draft.org_type_other}）` : ORG_TYPES.find((t) => t.value === draft.org_type)?.label ?? "-"],
-              ["代表者名", `${draft.rep_last_name} ${draft.rep_first_name}${draft.rep_last_kana || draft.rep_first_kana ? `（${draft.rep_last_kana} ${draft.rep_first_kana}）` : ""}`],
+              [
+                "種別",
+                draft.org_type === "other"
+                  ? `その他（${draft.org_type_other}）`
+                  : (ORG_TYPES.find((t) => t.value === draft.org_type)?.label ?? "-"),
+              ],
+              [
+                "代表者名",
+                `${draft.rep_last_name} ${draft.rep_first_name}${draft.rep_last_kana || draft.rep_first_kana ? `（${draft.rep_last_kana} ${draft.rep_first_kana}）` : ""}`,
+              ],
               [departmentLabel(draft.org_type), draft.department || "-"],
               [orgNameLabel(draft.org_type), draft.org_name],
               ["ご連絡メールアドレス", draft.contact_email],
@@ -283,7 +387,11 @@ export function OrgApplyForm() {
       )}
 
       <div className="mt-6 flex items-center justify-between gap-3">
-        <Button variant="ghost" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0 || busy}>
+        <Button
+          variant="ghost"
+          onClick={() => setStep((s) => Math.max(0, s - 1))}
+          disabled={step === 0 || busy}
+        >
           <ChevronLeft className="mr-1 h-4 w-4" />
           戻る
         </Button>
@@ -293,7 +401,10 @@ export function OrgApplyForm() {
             <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
         ) : (
-          <Button onClick={submit} disabled={busy || !user || existingPending || accountKind === "parent"}>
+          <Button
+            onClick={submit}
+            disabled={busy || !user || existingPending || accountKind === "parent"}
+          >
             この内容で送信する
           </Button>
         )}
@@ -322,7 +433,13 @@ function Field({
       <Label>
         {label} {required && <span className="text-destructive">*</span>}
       </Label>
-      <Input type={type} value={value} placeholder={placeholder} maxLength={200} onChange={(e) => onChange(e.target.value)} />
+      <Input
+        type={type}
+        value={value}
+        placeholder={placeholder}
+        maxLength={200}
+        onChange={(e) => onChange(e.target.value)}
+      />
     </div>
   );
 }

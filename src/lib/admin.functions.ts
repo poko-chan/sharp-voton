@@ -28,13 +28,15 @@ async function assertNotPokochan(userId: string, action = "操作") {
 export const adminCreateUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      email: z.string().email(),
-      password: z.string().min(6),
-      username: z.string().min(1).max(40),
-      displayName: z.string().min(1).max(80),
-      isAdmin: z.boolean().default(false),
-    }).parse(d),
+    z
+      .object({
+        email: z.string().email(),
+        password: z.string().min(6),
+        username: z.string().min(1).max(40),
+        displayName: z.string().min(1).max(80),
+        isAdmin: z.boolean().default(false),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
@@ -47,7 +49,10 @@ export const adminCreateUser = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     if (created.user) {
       await supabaseAdmin.from("profiles").upsert({
-        id: created.user.id, email: data.email, username: data.username, display_name: data.displayName,
+        id: created.user.id,
+        email: data.email,
+        username: data.username,
+        display_name: data.displayName,
       });
       if (data.isAdmin) {
         await supabaseAdmin.from("user_roles").upsert({ user_id: created.user.id, role: "admin" });
@@ -59,13 +64,15 @@ export const adminCreateUser = createServerFn({ method: "POST" })
 export const adminUpdateUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      userId: z.string().uuid(),
-      username: z.string().optional(),
-      displayName: z.string().optional(),
-      email: z.string().email().optional(),
-      password: z.string().min(6).optional(),
-    }).parse(d),
+    z
+      .object({
+        userId: z.string().uuid(),
+        username: z.string().optional(),
+        displayName: z.string().optional(),
+        email: z.string().email().optional(),
+        password: z.string().min(6).optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
@@ -114,7 +121,11 @@ export const adminSetRole = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
     } else {
       if (data.userId === context.userId) throw new Error("自分の管理者権限は外せません");
-      await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId).eq("role", "admin");
+      await supabaseAdmin
+        .from("user_roles")
+        .delete()
+        .eq("user_id", data.userId)
+        .eq("role", "admin");
     }
     return { ok: true };
   });
@@ -167,7 +178,9 @@ export const adminEnsurePokochan = createServerFn({ method: "POST" })
     let createdPassword: string | null = null;
     if (!userId) {
       const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
-        email, password, email_confirm: true,
+        email,
+        password,
+        email_confirm: true,
         user_metadata: { username, display_name: "ぽこちゃん（管理者）" },
       });
       if (error && !error.message.includes("already")) throw new Error(error.message);
@@ -175,14 +188,21 @@ export const adminEnsurePokochan = createServerFn({ method: "POST" })
       createdPassword = password;
       if (!userId) {
         // fallback: lookup via profile created by trigger
-        const { data: p } = await supabaseAdmin.from("profiles").select("id").eq("email", email).maybeSingle();
+        const { data: p } = await supabaseAdmin
+          .from("profiles")
+          .select("id")
+          .eq("email", email)
+          .maybeSingle();
         userId = p?.id;
         createdPassword = null;
       }
     }
     if (userId) {
       await supabaseAdmin.from("profiles").upsert({
-        id: userId, email, username, display_name: "ぽこちゃん（管理者）",
+        id: userId,
+        email,
+        username,
+        display_name: "ぽこちゃん（管理者）",
       });
       await supabaseAdmin.from("user_roles").upsert({ user_id: userId, role: "admin" });
     }
@@ -192,12 +212,14 @@ export const adminEnsurePokochan = createServerFn({ method: "POST" })
 export const adminUpdateMaintenance = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      enabled: z.boolean(),
-      message: z.string().max(2000).optional(),
-      until: z.string().nullable().optional(),
-      appVersion: z.string().min(1).max(64).optional(),
-    }).parse(d),
+    z
+      .object({
+        enabled: z.boolean(),
+        message: z.string().max(2000).optional(),
+        until: z.string().nullable().optional(),
+        appVersion: z.string().min(1).max(64).optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
@@ -216,11 +238,13 @@ export const adminUpdateMaintenance = createServerFn({ method: "POST" })
 export const adminListUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      search: z.string().optional(),
-      page: z.number().int().min(0).default(0),
-      pageSize: z.number().int().min(1).max(200).default(25),
-    }).parse(d),
+    z
+      .object({
+        search: z.string().optional(),
+        page: z.number().int().min(0).default(0),
+        pageSize: z.number().int().min(1).max(200).default(25),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
@@ -253,7 +277,9 @@ export const adminListUsers = createServerFn({ method: "POST" })
         try {
           const { data: u } = await supabaseAdmin.auth.admin.getUserById(id);
           const bannedUntil = (u.user as any)?.banned_until as string | undefined;
-          const isSuspended = !!bannedUntil && (bannedUntil === "none" ? false : new Date(bannedUntil).getTime() > Date.now());
+          const isSuspended =
+            !!bannedUntil &&
+            (bannedUntil === "none" ? false : new Date(bannedUntil).getTime() > Date.now());
           return [id, isSuspended] as const;
         } catch {
           return [id, false] as const;

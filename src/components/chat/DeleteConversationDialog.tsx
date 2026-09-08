@@ -34,7 +34,10 @@ export function DeleteConversationDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>キャンセル</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+          <AlertDialogAction
+            onClick={onConfirm}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
             {confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>

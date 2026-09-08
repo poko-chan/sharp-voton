@@ -17,8 +17,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const CATEGORIES = [
   { value: "bug", label: "🐛 バグ報告" },
@@ -29,10 +41,14 @@ const CATEGORIES = [
 ];
 
 const CAT_LABEL: Record<string, string> = {
-  bug: "🐛 バグ", feature: "💡 要望", question: "❓ 質問", praise: "🎉 感想", other: "📝 その他",
+  bug: "🐛 バグ",
+  feature: "💡 要望",
+  question: "❓ 質問",
+  praise: "🎉 感想",
+  other: "📝 その他",
 };
 
-export function FeedbackWidget() {
+export function FeedbackWidget({ compact = false }: { compact?: boolean }) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const unreadFn = useServerFn(myThreadsUnreadCount);
@@ -61,10 +77,14 @@ export function FeedbackWidget() {
       <DialogTrigger asChild>
         <button
           aria-label="フィードバック / サポート"
-          className="fixed bottom-20 right-2 md:bottom-4 z-40 inline-flex items-center gap-1 rounded-full bg-primary/90 text-primary-foreground backdrop-blur px-2.5 py-1 text-xs leading-none shadow-sm border border-white/20 hover:bg-primary transition-colors"
+          className={
+            compact
+              ? "relative inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-sm transition hover:bg-accent"
+              : "fixed bottom-20 right-2 md:bottom-4 z-40 inline-flex items-center gap-1 rounded-full bg-primary/90 text-primary-foreground backdrop-blur px-2.5 py-1 text-xs leading-none shadow-sm border border-white/20 hover:bg-primary transition-colors"
+          }
         >
           <MessageCircleQuestion className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">サポート</span>
+          <span className={compact ? "hidden lg:inline" : "hidden sm:inline"}>サポート</span>
           {count > 0 && (
             <span className="ml-0.5 inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
               {count > 99 ? "99+" : count}
@@ -73,7 +93,11 @@ export function FeedbackWidget() {
         </button>
       </DialogTrigger>
       <DialogContent className="max-w-lg p-0 overflow-hidden gap-0">
-        {user ? <ChatPanel onClose={() => setOpen(false)} /> : <AnonymousFeedback onClose={() => setOpen(false)} />}
+        {user ? (
+          <ChatPanel onClose={() => setOpen(false)} />
+        ) : (
+          <AnonymousFeedback onClose={() => setOpen(false)} />
+        )}
       </DialogContent>
     </Dialog>
   );
@@ -86,12 +110,36 @@ function ChatPanel({ onClose: _onClose }: { onClose: () => void }) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   if (view === "thread" && activeId) {
-    return <ThreadView id={activeId} onBack={() => { setView("list"); setActiveId(null); }} />;
+    return (
+      <ThreadView
+        id={activeId}
+        onBack={() => {
+          setView("list");
+          setActiveId(null);
+        }}
+      />
+    );
   }
   if (view === "new") {
-    return <NewThread onBack={() => setView("list")} onCreated={(id) => { setActiveId(id); setView("thread"); }} />;
+    return (
+      <NewThread
+        onBack={() => setView("list")}
+        onCreated={(id) => {
+          setActiveId(id);
+          setView("thread");
+        }}
+      />
+    );
   }
-  return <ThreadList onOpen={(id) => { setActiveId(id); setView("thread"); }} onNew={() => setView("new")} />;
+  return (
+    <ThreadList
+      onOpen={(id) => {
+        setActiveId(id);
+        setView("thread");
+      }}
+      onNew={() => setView("new")}
+    />
+  );
 }
 
 function ThreadList({ onOpen, onNew }: { onOpen: (id: string) => void; onNew: () => void }) {
@@ -114,7 +162,9 @@ function ThreadList({ onOpen, onNew }: { onOpen: (id: string) => void; onNew: ()
         {isLoading && <p className="text-xs text-muted-foreground p-4 text-center">読み込み中…</p>}
         {!isLoading && (threads as any[]).length === 0 && (
           <div className="p-6 text-center text-sm text-muted-foreground">
-            まだやり取りはありません。<br />新しい話題を始めましょう。
+            まだやり取りはありません。
+            <br />
+            新しい話題を始めましょう。
           </div>
         )}
         {(threads as any[]).map((t) => (
@@ -139,7 +189,10 @@ function ThreadList({ onOpen, onNew }: { onOpen: (id: string) => void; onNew: ()
         ))}
       </div>
       <div className="p-3 border-t bg-muted/30">
-        <Button onClick={onNew} className="w-full"><Plus className="h-4 w-4 mr-1" />新しい話題を始める</Button>
+        <Button onClick={onNew} className="w-full">
+          <Plus className="h-4 w-4 mr-1" />
+          新しい話題を始める
+        </Button>
       </div>
     </div>
   );
@@ -152,7 +205,8 @@ function NewThread({ onBack, onCreated }: { onBack: () => void; onCreated: (id: 
   const [category, setCategory] = useState("other");
   const [body, setBody] = useState("");
   const m = useMutation({
-    mutationFn: () => start({ data: { category: category as any, body: body.trim(), route: path } }),
+    mutationFn: () =>
+      start({ data: { category: category as any, body: body.trim(), route: path } }),
     onSuccess: (res: any) => {
       toast.success("送信しました");
       qc.invalidateQueries({ queryKey: ["my-threads"] });
@@ -165,7 +219,9 @@ function NewThread({ onBack, onCreated }: { onBack: () => void; onCreated: (id: 
     <div className="flex flex-col max-h-[80vh]">
       <DialogHeader className="px-5 pt-5 pb-3 border-b">
         <div className="flex items-center gap-2">
-          <button onClick={onBack} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /></button>
+          <button onClick={onBack} className="text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="h-4 w-4" />
+          </button>
           <DialogTitle>新しい話題</DialogTitle>
         </div>
       </DialogHeader>
@@ -173,19 +229,36 @@ function NewThread({ onBack, onCreated }: { onBack: () => void; onCreated: (id: 
         <div className="space-y-1">
           <Label className="text-xs">カテゴリ</Label>
           <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
-              {CATEGORIES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+              {CATEGORIES.map((c) => (
+                <SelectItem key={c.value} value={c.value}>
+                  {c.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-1">
           <Label className="text-xs">内容</Label>
-          <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={6} maxLength={4000} placeholder="お困りごと、ご要望、ご感想など…" />
+          <Textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            rows={6}
+            maxLength={4000}
+            placeholder="お困りごと、ご要望、ご感想など…"
+          />
           <div className="text-right text-[10px] text-muted-foreground">{body.length}/4000</div>
         </div>
-        <Button onClick={() => m.mutate()} disabled={m.isPending || body.trim().length < 1} className="w-full">
-          <Send className="h-4 w-4 mr-2" />送信して会話を開始
+        <Button
+          onClick={() => m.mutate()}
+          disabled={m.isPending || body.trim().length < 1}
+          className="w-full"
+        >
+          <Send className="h-4 w-4 mr-2" />
+          送信して会話を開始
         </Button>
       </div>
     </div>
@@ -229,14 +302,21 @@ function ThreadView({ id, onBack }: { id: string; onBack: () => void }) {
     <div className="flex flex-col max-h-[80vh] h-[80vh]">
       <DialogHeader className="px-5 pt-5 pb-3 border-b">
         <div className="flex items-center gap-2">
-          <button onClick={onBack} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /></button>
-          <DialogTitle className="text-sm">{CAT_LABEL[data?.thread?.category ?? "other"]}</DialogTitle>
+          <button onClick={onBack} className="text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <DialogTitle className="text-sm">
+            {CAT_LABEL[data?.thread?.category ?? "other"]}
+          </DialogTitle>
         </div>
       </DialogHeader>
       <div ref={scrollRef} className="flex-1 overflow-auto p-4 space-y-2 bg-muted/20">
         {isLoading && <p className="text-xs text-muted-foreground text-center">読み込み中…</p>}
         {(data?.messages ?? []).map((m: any) => (
-          <div key={m.id} className={`flex ${m.sender_role === "user" ? "justify-end" : "justify-start"}`}>
+          <div
+            key={m.id}
+            className={`flex ${m.sender_role === "user" ? "justify-end" : "justify-start"}`}
+          >
             <div
               className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap break-words ${
                 m.sender_role === "user"
@@ -248,8 +328,13 @@ function ThreadView({ id, onBack }: { id: string; onBack: () => void }) {
                 <div className="text-[10px] font-semibold text-primary mb-1">🛡 管理者</div>
               )}
               {m.body}
-              <div className={`text-[9px] mt-1 opacity-70 ${m.sender_role === "user" ? "text-right" : ""}`}>
-                {new Date(m.created_at).toLocaleString("ja-JP", { hour: "2-digit", minute: "2-digit" })}
+              <div
+                className={`text-[9px] mt-1 opacity-70 ${m.sender_role === "user" ? "text-right" : ""}`}
+              >
+                {new Date(m.created_at).toLocaleString("ja-JP", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </div>
             </div>
           </div>
@@ -269,7 +354,11 @@ function ThreadView({ id, onBack }: { id: string; onBack: () => void }) {
             }
           }}
         />
-        <Button onClick={() => m.mutate()} disabled={m.isPending || text.trim().length < 1} size="icon">
+        <Button
+          onClick={() => m.mutate()}
+          disabled={m.isPending || text.trim().length < 1}
+          size="icon"
+        >
           <Send className="h-4 w-4" />
         </Button>
       </div>
@@ -301,7 +390,8 @@ function AnonymousFeedback({ onClose }: { onClose: () => void }) {
         },
       });
       toast.success("送信しました。ありがとうございます！");
-      setBody(""); setEmail("");
+      setBody("");
+      setEmail("");
       onClose();
     } catch (e: any) {
       toast.error(e.message ?? "送信に失敗しました");
@@ -317,22 +407,39 @@ function AnonymousFeedback({ onClose }: { onClose: () => void }) {
       <div className="space-y-1">
         <Label className="text-xs">カテゴリ</Label>
         <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
-            {CATEGORIES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+            {CATEGORIES.map((c) => (
+              <SelectItem key={c.value} value={c.value}>
+                {c.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
       <div className="space-y-1">
         <Label className="text-xs">メール（返信希望の場合・任意）</Label>
-        <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+        <Input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@example.com"
+        />
       </div>
       <div className="space-y-1">
         <Label className="text-xs">内容</Label>
-        <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={6} maxLength={4000} />
+        <Textarea
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          rows={6}
+          maxLength={4000}
+        />
       </div>
       <Button onClick={send} disabled={busy || body.trim().length < 3} className="w-full">
-        <Send className="h-4 w-4 mr-2" />送信
+        <Send className="h-4 w-4 mr-2" />
+        送信
       </Button>
     </div>
   );

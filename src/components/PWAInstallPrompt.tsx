@@ -23,7 +23,13 @@ export function PWAInstallPrompt() {
       (window.navigator as any).standalone === true;
     if (isStandalone) return;
     // Skip on Lovable preview / iframe
-    const isIframe = (() => { try { return window.self !== window.top; } catch { return true; } })();
+    const isIframe = (() => {
+      try {
+        return window.self !== window.top;
+      } catch {
+        return true;
+      }
+    })();
     const isPreview =
       window.location.hostname.includes("id-preview--") ||
       window.location.hostname.includes("lovableproject.com");
@@ -97,8 +103,12 @@ export function PWAInstallPrompt() {
       </div>
       {!iosHint && (
         <div className="flex gap-2 mt-3 justify-end">
-          <Button size="sm" variant="ghost" onClick={dismiss}>あとで</Button>
-          <Button size="sm" onClick={install}>インストール</Button>
+          <Button size="sm" variant="ghost" onClick={dismiss}>
+            あとで
+          </Button>
+          <Button size="sm" onClick={install}>
+            インストール
+          </Button>
         </div>
       )}
     </div>

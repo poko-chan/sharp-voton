@@ -40,13 +40,21 @@ const APPS = [
     t: "アンケート",
     d: "セクション分割・必須/任意・条件分岐に対応。行事の出欠や進路希望の集計が、締切と同時に完了します。",
   },
-  { emoji: "📅", t: "カレンダー", d: "行事・定期試験・課題期限を月／週／日ビューで共有。生徒の予定表と同じ画面に並びます。" },
+  {
+    emoji: "📅",
+    t: "カレンダー",
+    d: "行事・定期試験・課題期限を月／週／日ビューで共有。生徒の予定表と同じ画面に並びます。",
+  },
   {
     emoji: "💬",
     t: "チャット",
     d: "「やること」「承認待ち」「スレッド」など目的別タブで整理。既読が見えるので、伝わったかどうかが分かります。",
   },
-  { emoji: "🪪", t: "デジタル学生証", d: "組織内で使える身分証を画面に表示。名簿情報と連動します。" },
+  {
+    emoji: "🪪",
+    t: "デジタル学生証",
+    d: "組織内で使える身分証を画面に表示。名簿情報と連動します。",
+  },
   {
     emoji: "👥",
     t: "名簿・プロフィール",
@@ -67,7 +75,12 @@ const ROLES = [
 ];
 
 const FLOW = [
-  { n: "01", t: "組織を申請", d: "組織名と用途を添えて申請します。公開サービスのため、作成は運営の承認制です。", when: "所要5分" },
+  {
+    n: "01",
+    t: "組織を申請",
+    d: "組織名と用途を添えて申請します。公開サービスのため、作成は運営の承認制です。",
+    when: "所要5分",
+  },
   {
     n: "02",
     t: "承認・初期設定",
@@ -103,7 +116,8 @@ function ForSchoolsPage() {
           </h1>
           <p className="muted-on-ink mt-5 max-w-2xl text-sm leading-relaxed sm:text-base">
             プリントの印刷、出欠の集計、宿題の回収、連絡の行き違い。
-            その多くは「情報が別々の場所にある」ことが原因です。Study# の組織機能は、配る・集める・数えるをひとつの画面にまとめます。
+            その多くは「情報が別々の場所にある」ことが原因です。Study#
+            の組織機能は、配る・集める・数えるをひとつの画面にまとめます。
             生徒はふだん使っている学習アプリの中から、そのまま参加できます。
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -121,7 +135,10 @@ function ForSchoolsPage() {
               ["インストール不要", "スマホのブラウザで参加"],
               ["申請制", "運営が審査して承認"],
             ].map(([v, l]) => (
-              <div key={l} className="rounded-2xl border border-white/12 bg-white/[0.06] p-4 backdrop-blur-sm">
+              <div
+                key={l}
+                className="rounded-2xl border border-white/12 bg-white/[0.06] p-4 backdrop-blur-sm"
+              >
                 <dt className="font-display text-lg font-bold text-gradient sm:text-xl">{v}</dt>
                 <dd className="muted-on-ink mt-1 text-[11px]">{l}</dd>
               </div>
@@ -132,7 +149,9 @@ function ForSchoolsPage() {
         {/* 導入後に何が変わるか */}
         <section className="mt-20">
           <p className="section-eyebrow">What changes</p>
-          <h2 className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">導入すると、何が変わるか</h2>
+          <h2 className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">
+            導入すると、何が変わるか
+          </h2>
           <div className="mt-6 grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-4">
             {SCHOOL_OUTCOMES.map((o) => (
               <article key={o.t} className="surface surface-hover p-6">
@@ -145,14 +164,19 @@ function ForSchoolsPage() {
 
         <section className="mt-20">
           <p className="section-eyebrow">Apps</p>
-          <h2 className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">組織で使えるアプリ</h2>
+          <h2 className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">
+            組織で使えるアプリ
+          </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             組織ホームはアプリが並ぶランチャー形式。必要なものだけを開いて使えます。
           </p>
           <div className="mt-6 grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-4">
             {APPS.map((a) => (
               <article key={a.t} className="surface surface-hover p-5">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-xl" aria-hidden>
+                <span
+                  className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-xl"
+                  aria-hidden
+                >
                   {a.emoji}
                 </span>
                 <h3 className="mt-3 font-bold">{a.t}</h3>
@@ -164,8 +188,12 @@ function ForSchoolsPage() {
 
         <section className="mt-20">
           <p className="section-eyebrow">Roles</p>
-          <h2 className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">4段階の役割</h2>
-          <p className="mt-2 text-sm text-muted-foreground">誰が何をできるかを、はっきり分けて運用できます。</p>
+          <h2 className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">
+            4段階の役割
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            誰が何をできるかを、はっきり分けて運用できます。
+          </p>
           <div className="mt-6 grid gap-3 md:grid-cols-4">
             {ROLES.map((r) => (
               <div key={r.r} className="surface p-5">
@@ -178,7 +206,9 @@ function ForSchoolsPage() {
 
         <section className="mt-20">
           <p className="section-eyebrow">Flow</p>
-          <h2 className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">導入の流れ</h2>
+          <h2 className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">
+            導入の流れ
+          </h2>
           <ol className="mt-6 grid gap-3 md:grid-cols-4">
             {FLOW.map((f) => (
               <li key={f.n} className="surface p-5">
@@ -216,7 +246,9 @@ function ForSchoolsPage() {
         {/* 安心設計 */}
         <section className="mt-20">
           <p className="section-eyebrow">Safety</p>
-          <h2 className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">安心して配れる設計</h2>
+          <h2 className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">
+            安心して配れる設計
+          </h2>
           <div className="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {TRUST.map((t) => (
               <div key={t.t} className="surface p-6">
@@ -229,9 +261,12 @@ function ForSchoolsPage() {
 
         <section id="apply" className="mt-20 scroll-mt-24">
           <p className="section-eyebrow">Contact &amp; apply</p>
-          <h2 className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">導入のお問い合わせ・申請</h2>
+          <h2 className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">
+            導入のお問い合わせ・申請
+          </h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            種別を選び、Study# アカウントでログインのうえ必要事項をご入力ください。送信後、組織タブから運営とのやり取りができます。
+            種別を選び、Study#
+            アカウントでログインのうえ必要事項をご入力ください。送信後、組織タブから運営とのやり取りができます。
             承認されるまで組織の機能はご利用いただけません。まずは「試してみたい」段階のご相談でも構いません。
           </p>
           <div className="mt-6">

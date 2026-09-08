@@ -12,7 +12,12 @@ export const Route = createFileRoute("/catalog/$key")({
   },
   head: ({ loaderData, params }) => {
     if (!loaderData) {
-      return { meta: [{ title: "カテゴリが見つかりません｜Study#" }, { name: "robots", content: "noindex" }] };
+      return {
+        meta: [
+          { title: "カテゴリが見つかりません｜Study#" },
+          { name: "robots", content: "noindex" },
+        ],
+      };
     }
     const c = loaderData.category;
     const title = `${c.title}｜Study# のカテゴリ別ガイド`;
@@ -64,8 +69,12 @@ function CategoryPage() {
         <div className="mt-6 text-4xl" aria-hidden>
           {category.emoji}
         </div>
-        <h1 className="mt-3 font-display text-4xl font-black tracking-tight sm:text-5xl">{category.title}</h1>
-        <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">{category.lead}</p>
+        <h1 className="mt-3 font-display text-4xl font-black tracking-tight sm:text-5xl">
+          {category.title}
+        </h1>
+        <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
+          {category.lead}
+        </p>
 
         <section className="mt-8 space-y-3">
           {category.items.map((i) => (
@@ -87,7 +96,12 @@ function CategoryPage() {
           <h2 className="font-display text-xl font-extrabold">ほかのカテゴリ</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {others.map((c) => (
-              <Link key={c.key} to="/catalog/$key" params={{ key: c.key }} className="surface surface-hover p-4">
+              <Link
+                key={c.key}
+                to="/catalog/$key"
+                params={{ key: c.key }}
+                className="surface surface-hover p-4"
+              >
                 <div className="text-sm font-semibold">
                   {c.emoji} {c.title}
                 </div>

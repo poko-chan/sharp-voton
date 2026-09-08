@@ -22,8 +22,10 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
   const drawing = useRef(false);
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onChangeRef = useRef(onChange);
-  
-  useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   useEffect(() => {
     const c = canvasRef.current;
@@ -34,10 +36,10 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
     ctx.lineWidth = 4;
     ctx.strokeStyle = "#111";
     ctx.fillStyle = "#fff";
-    
+
     // 背景を白で塗る
     ctx.fillRect(0, 0, c.width, c.height);
-    
+
     // 前回の描画があれば復元する
     const currentPage = pages[active];
     if (currentPage?.dataUrl) {
@@ -48,7 +50,7 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
       };
       img.src = currentPage.dataUrl;
     }
-    
+
     ctxRef.current = ctx;
   }, [active, fullscreen]); // ページ切り替え時とフルスクリーン切り替え時に実行
 
@@ -60,9 +62,9 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
     const c = e.currentTarget;
     const r = c.getBoundingClientRect();
     // キャンバスの物理サイズと表示サイズの比率を計算して座標を補正
-    return { 
-      x: ((e.clientX - r.left) / r.width) * c.width, 
-      y: ((e.clientY - r.top) / r.height) * c.height 
+    return {
+      x: ((e.clientX - r.left) / r.width) * c.width,
+      y: ((e.clientY - r.top) / r.height) * c.height,
     };
   };
 
@@ -90,27 +92,32 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
   const triggerOcr = async () => {
     const c = canvasRef.current;
     if (!c || busy) return;
-    
-    setBusy(true); setProgress(0);
+
+    setBusy(true);
+    setProgress(0);
     try {
       // OCR品質向上のためのクロップ処理
       const croppedCanvas = getCroppedCanvas(c);
       const blob: Blob = await new Promise((r) => croppedCanvas.toBlob((b) => r(b!), "image/png")!);
-      
+
       // 保存用には全体の状態を保持
       const fullDataUrl = c.toDataURL("image/png");
-      
+
       const res = await ocrLocal(blob, {
         lang: "jpn",
         onProgress: (_s, p) => setProgress(Math.round(p * 100)),
       });
-      
+
       const cleaned = (res.text ?? "").replace(/\s+/g, "");
-      setPages((prev) => prev.map((p, i) => (i === active ? { ...p, dataUrl: fullDataUrl, text: cleaned } : p)));
+      setPages((prev) =>
+        prev.map((p, i) => (i === active ? { ...p, dataUrl: fullDataUrl, text: cleaned } : p)),
+      );
     } catch (err: any) {
       console.error("OCR Error:", err);
       toast.error(err?.message ?? "OCR失敗");
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   };
 
   const getCroppedCanvas = (c: HTMLCanvasElement) => {
@@ -120,15 +127,18 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
     const h = c.height;
     const imgData = ctx.getImageData(0, 0, w, h);
     const data = imgData.data;
-    let minX = w, minY = h, maxX = 0, maxY = 0;
+    let minX = w,
+      minY = h,
+      maxX = 0,
+      maxY = 0;
     let found = false;
-    
+
     // 内容がある範囲を特定
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const i = (y * w + x) * 4;
         // 背景の白以外をコンテンツとみなす
-        if (data[i] < 250 || data[i+1] < 250 || data[i+2] < 250) {
+        if (data[i] < 250 || data[i + 1] < 250 || data[i + 2] < 250) {
           minX = Math.min(minX, x);
           minY = Math.min(minY, y);
           maxX = Math.max(maxX, x);
@@ -137,9 +147,9 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
         }
       }
     }
-    
+
     if (!found) return c;
-    
+
     // 余白を追加
     const padding = 20;
     const startX = Math.max(0, minX - padding);
@@ -148,7 +158,7 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
     const endY = Math.min(h, maxY + padding);
     const cropW = endX - startX;
     const cropH = endY - startY;
-    
+
     const tempCanvas = document.createElement("canvas");
     tempCanvas.width = cropW;
     tempCanvas.height = cropH;
@@ -164,7 +174,9 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
     if (!c || !ctxRef.current) return;
     ctxRef.current.fillStyle = "#fff";
     ctxRef.current.fillRect(0, 0, c.width, c.height);
-    setPages((prev) => prev.map((p, i) => (i === active ? { ...p, dataUrl: undefined, text: "" } : p)));
+    setPages((prev) =>
+      prev.map((p, i) => (i === active ? { ...p, dataUrl: undefined, text: "" } : p)),
+    );
   };
 
   const addPage = () => {
@@ -187,15 +199,24 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
           <div className="text-xs font-medium">手書き OCR</div>
           <div className="flex gap-1 ml-auto">
             {pages.map((p, i) => (
-              <Button key={p.id} size="sm" variant={i === active ? "default" : "outline"} onClick={() => setActive(i)}>
+              <Button
+                key={p.id}
+                size="sm"
+                variant={i === active ? "default" : "outline"}
+                onClick={() => setActive(i)}
+              >
                 P{i + 1}
               </Button>
             ))}
-            <Button size="sm" variant="outline" onClick={addPage}><Plus className="h-3 w-3" /></Button>
+            <Button size="sm" variant="outline" onClick={addPage}>
+              <Plus className="h-3 w-3" />
+            </Button>
             <Button size="sm" variant="outline" onClick={deletePage} disabled={pages.length <= 1}>
               <Trash2 className="h-3 w-3" />
             </Button>
-            <Button size="sm" variant="outline" onClick={clearPage}><Eraser className="h-3 w-3" /></Button>
+            <Button size="sm" variant="outline" onClick={clearPage}>
+              <Eraser className="h-3 w-3" />
+            </Button>
             <Button size="sm" variant="outline" onClick={() => setFullscreen((v) => !v)}>
               {fullscreen ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
             </Button>
@@ -214,9 +235,16 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
         <div className="bg-muted/40 rounded p-2 text-sm min-h-[2.25rem] select-none" aria-readonly>
           {busy ? (
             <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-              <Loader2 className="h-3 w-3 animate-spin" />オフラインOCR実行中… {progress}%
+              <Loader2 className="h-3 w-3 animate-spin" />
+              オフラインOCR実行中… {progress}%
             </span>
-          ) : (pages[active]?.text || <span className="text-muted-foreground text-xs">手を止めると自動で読み取ります（1 秒・日本語モード）</span>)}
+          ) : (
+            pages[active]?.text || (
+              <span className="text-muted-foreground text-xs">
+                手を止めると自動で読み取ります（1 秒・日本語モード）
+              </span>
+            )
+          )}
         </div>
       </Card>
     </div>

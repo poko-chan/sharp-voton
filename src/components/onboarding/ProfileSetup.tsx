@@ -47,12 +47,15 @@ export function ProfileSetup({ onDone }: { onDone: () => void }) {
     try {
       const uname = username.trim();
       const dname = displayName.trim() || uname;
-      if (!/^[A-Za-z0-9_.\-]{2,32}$/.test(uname)) {
+      if (!/^[A-Za-z0-9_.-]{2,32}$/.test(uname)) {
         throw new Error("ユーザー名は2〜32文字の英数字・_.- のみです");
       }
       if (dname.length > 40) throw new Error("表示名は40文字以内で入力してください");
       if (!agreed) throw new Error("利用規約とプライバシーポリシーに同意してください");
-      const avail = uname === currentUsername ? { available: true } : await check({ data: { username: uname } });
+      const avail =
+        uname === currentUsername
+          ? { available: true }
+          : await check({ data: { username: uname } });
       if (!avail.available) throw new Error("そのユーザー名はすでに使われています");
       const { error } = await supabase
         .from("profiles")
@@ -95,12 +98,18 @@ export function ProfileSetup({ onDone }: { onDone: () => void }) {
               maxLength={32}
               required
             />
-            <p className="text-xs text-muted-foreground">ログインやフレンド検索に使います。あとから変更できません。</p>
+            <p className="text-xs text-muted-foreground">
+              ログインやフレンド検索に使います。あとから変更できません。
+            </p>
           </div>
 
           <div className="space-y-1">
             <Label>表示名</Label>
-            <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={40} />
+            <Input
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              maxLength={40}
+            />
           </div>
 
           <div className="space-y-2">
@@ -126,13 +135,28 @@ export function ProfileSetup({ onDone }: { onDone: () => void }) {
           </div>
 
           <label className="flex items-start gap-2 text-xs text-muted-foreground">
-            <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5" />
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              className="mt-0.5"
+            />
             <span>
-              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+              <a
+                href="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
                 利用規約
               </a>
               {" と "}
-              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+              <a
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
                 プライバシーポリシー
               </a>
               {" に同意します"}

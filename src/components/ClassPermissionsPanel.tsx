@@ -23,7 +23,11 @@ export function ClassPermissionsPanel({
   ownerId,
 }: {
   classId: string;
-  members: { user_id: string; role: string; profile?: { display_name?: string | null; username?: string | null } }[];
+  members: {
+    user_id: string;
+    role: string;
+    profile?: { display_name?: string | null; username?: string | null };
+  }[];
   ownerId: string;
 }) {
   const students = members.filter((m) => m.user_id !== ownerId && m.role !== "teacher");
@@ -49,16 +53,17 @@ export function ClassPermissionsPanel({
     load();
   }, [classId]);
 
-  const update = async (studentId: string, field: keyof Omit<Perm, "student_id">, value: boolean) => {
+  const update = async (
+    studentId: string,
+    field: keyof Omit<Perm, "student_id">,
+    value: boolean,
+  ) => {
     const existing = perms[studentId] ?? { student_id: studentId, ...DEFAULTS };
     const next = { ...existing, [field]: value };
     setPerms({ ...perms, [studentId]: next });
     const { error } = await supabase
       .from("class_student_permissions")
-      .upsert(
-        { class_id: classId, ...next },
-        { onConflict: "class_id,student_id" },
-      );
+      .upsert({ class_id: classId, ...next }, { onConflict: "class_id,student_id" });
     if (error) {
       toast.error(error.message);
       load();
@@ -66,7 +71,9 @@ export function ClassPermissionsPanel({
   };
 
   if (students.length === 0) {
-    return <Card className="p-6 text-center text-sm text-muted-foreground">生徒がまだいません</Card>;
+    return (
+      <Card className="p-6 text-center text-sm text-muted-foreground">生徒がまだいません</Card>
+    );
   }
 
   return (
@@ -118,7 +125,11 @@ export function ClassPermissionsPanel({
 }
 
 /** Helper hook for the current user's effective permissions in a class. */
-export function useMyClassPermissions(classId: string, userId: string | undefined, isTeacherOrOwner: boolean) {
+export function useMyClassPermissions(
+  classId: string,
+  userId: string | undefined,
+  isTeacherOrOwner: boolean,
+) {
   const [perm, setPerm] = useState<Omit<Perm, "student_id">>(DEFAULTS);
   useEffect(() => {
     if (!userId || isTeacherOrOwner) {

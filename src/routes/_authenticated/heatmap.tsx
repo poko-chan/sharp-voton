@@ -13,18 +13,26 @@ function HeatmapPage() {
 
   useEffect(() => {
     if (!user) return;
-    const since = new Date(); since.setDate(since.getDate() - 365);
-    supabase.from("study_logs").select("date,duration_minutes").eq("user_id", user.id).gte("date", since.toISOString().slice(0, 10))
+    const since = new Date();
+    since.setDate(since.getDate() - 365);
+    supabase
+      .from("study_logs")
+      .select("date,duration_minutes")
+      .eq("user_id", user.id)
+      .gte("date", since.toISOString().slice(0, 10))
       .then(({ data }) => {
         const m: Record<string, number> = {};
-        for (const r of (data ?? []) as any[]) m[r.date] = (m[r.date] ?? 0) + (r.duration_minutes ?? 0);
+        for (const r of (data ?? []) as any[])
+          m[r.date] = (m[r.date] ?? 0) + (r.duration_minutes ?? 0);
         setMap(m);
       });
   }, [user]);
 
   const days: string[] = [];
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const start = new Date(today); start.setDate(start.getDate() - 364);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const start = new Date(today);
+  start.setDate(start.getDate() - 364);
   const dow = start.getDay();
   start.setDate(start.getDate() - dow); // align to Sunday
   for (let d = new Date(start); d <= today; d.setDate(d.getDate() + 1)) {
@@ -52,9 +60,22 @@ function HeatmapPage() {
         <h1 className="text-2xl font-bold">ヒートマップ（直近1年）</h1>
       </div>
       <div className="grid md:grid-cols-3 gap-3">
-        <Card className="p-4"><div className="text-xs text-muted-foreground">合計</div><div className="text-2xl font-bold tabular-nums">{Math.floor(total/60)}h {total%60}m</div></Card>
-        <Card className="p-4"><div className="text-xs text-muted-foreground">活動日数</div><div className="text-2xl font-bold tabular-nums">{active}日</div></Card>
-        <Card className="p-4"><div className="text-xs text-muted-foreground">平均/活動日</div><div className="text-2xl font-bold tabular-nums">{active ? Math.round(total/active) : 0}分</div></Card>
+        <Card className="p-4">
+          <div className="text-xs text-muted-foreground">合計</div>
+          <div className="text-2xl font-bold tabular-nums">
+            {Math.floor(total / 60)}h {total % 60}m
+          </div>
+        </Card>
+        <Card className="p-4">
+          <div className="text-xs text-muted-foreground">活動日数</div>
+          <div className="text-2xl font-bold tabular-nums">{active}日</div>
+        </Card>
+        <Card className="p-4">
+          <div className="text-xs text-muted-foreground">平均/活動日</div>
+          <div className="text-2xl font-bold tabular-nums">
+            {active ? Math.round(total / active) : 0}分
+          </div>
+        </Card>
       </div>
       <Card className="p-4 overflow-x-auto">
         <div className="inline-flex gap-1">
@@ -63,7 +84,11 @@ function HeatmapPage() {
               {w.map((d) => {
                 const m = map[d] ?? 0;
                 return (
-                  <div key={d} title={`${d}: ${m}分`} className={`h-3 w-3 rounded-sm ${cellColor(m)} ${d > today.toISOString().slice(0,10) ? "opacity-30" : ""}`} />
+                  <div
+                    key={d}
+                    title={`${d}: ${m}分`}
+                    className={`h-3 w-3 rounded-sm ${cellColor(m)} ${d > today.toISOString().slice(0, 10) ? "opacity-30" : ""}`}
+                  />
                 );
               })}
             </div>
@@ -71,7 +96,9 @@ function HeatmapPage() {
         </div>
         <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
           <span>少</span>
-          {[0, 20, 50, 100, 150, 200].map((m) => <div key={m} className={`h-3 w-3 rounded-sm ${cellColor(m)}`} />)}
+          {[0, 20, 50, 100, 150, 200].map((m) => (
+            <div key={m} className={`h-3 w-3 rounded-sm ${cellColor(m)}`} />
+          ))}
           <span>多</span>
         </div>
       </Card>

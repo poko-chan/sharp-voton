@@ -5,11 +5,17 @@ const listeners = new Set<Listener>();
 
 export function emitProfileChange() {
   listeners.forEach((l) => {
-    try { l(); } catch { /* noop */ }
+    try {
+      l();
+    } catch {
+      /* noop */
+    }
   });
 }
 
 export function onProfileChange(fn: Listener): () => void {
   listeners.add(fn);
-  return () => { listeners.delete(fn); };
+  return () => {
+    listeners.delete(fn);
+  };
 }

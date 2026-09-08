@@ -2,17 +2,71 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const FONT_OPTIONS: { value: string; label: string; css: string; href?: string }[] = [
-  { value: "system", label: "システム標準", css: 'system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", sans-serif' },
-  { value: "noto-sans-jp", label: "Noto Sans JP", css: '"Noto Sans JP", sans-serif', href: "https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" },
-  { value: "noto-serif-jp", label: "Noto Serif JP（明朝）", css: '"Noto Serif JP", serif', href: "https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;700&display=swap" },
-  { value: "m-plus-rounded-1c", label: "M PLUS Rounded 1c（丸ゴ）", css: '"M PLUS Rounded 1c", sans-serif', href: "https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap" },
-  { value: "kosugi-maru", label: "Kosugi Maru", css: '"Kosugi Maru", sans-serif', href: "https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" },
-  { value: "zen-maru-gothic", label: "Zen Maru Gothic", css: '"Zen Maru Gothic", sans-serif', href: "https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" },
-  { value: "zen-kaku-gothic-new", label: "Zen Kaku Gothic New", css: '"Zen Kaku Gothic New", sans-serif', href: "https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" },
-  { value: "shippori-mincho", label: "Shippori Mincho（明朝）", css: '"Shippori Mincho", serif', href: "https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&display=swap" },
-  { value: "klee-one", label: "Klee One（手書き風）", css: '"Klee One", cursive', href: "https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&display=swap" },
-  { value: "yusei-magic", label: "Yusei Magic（鉛筆風）", css: '"Yusei Magic", sans-serif', href: "https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap" },
-  { value: "dela-gothic-one", label: "Dela Gothic One（極太）", css: '"Dela Gothic One", sans-serif', href: "https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap" },
+  {
+    value: "system",
+    label: "システム標準",
+    css: 'system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", sans-serif',
+  },
+  {
+    value: "noto-sans-jp",
+    label: "Noto Sans JP",
+    css: '"Noto Sans JP", sans-serif',
+    href: "https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap",
+  },
+  {
+    value: "noto-serif-jp",
+    label: "Noto Serif JP（明朝）",
+    css: '"Noto Serif JP", serif',
+    href: "https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;700&display=swap",
+  },
+  {
+    value: "m-plus-rounded-1c",
+    label: "M PLUS Rounded 1c（丸ゴ）",
+    css: '"M PLUS Rounded 1c", sans-serif',
+    href: "https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap",
+  },
+  {
+    value: "kosugi-maru",
+    label: "Kosugi Maru",
+    css: '"Kosugi Maru", sans-serif',
+    href: "https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap",
+  },
+  {
+    value: "zen-maru-gothic",
+    label: "Zen Maru Gothic",
+    css: '"Zen Maru Gothic", sans-serif',
+    href: "https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap",
+  },
+  {
+    value: "zen-kaku-gothic-new",
+    label: "Zen Kaku Gothic New",
+    css: '"Zen Kaku Gothic New", sans-serif',
+    href: "https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap",
+  },
+  {
+    value: "shippori-mincho",
+    label: "Shippori Mincho（明朝）",
+    css: '"Shippori Mincho", serif',
+    href: "https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&display=swap",
+  },
+  {
+    value: "klee-one",
+    label: "Klee One（手書き風）",
+    css: '"Klee One", cursive',
+    href: "https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&display=swap",
+  },
+  {
+    value: "yusei-magic",
+    label: "Yusei Magic（鉛筆風）",
+    css: '"Yusei Magic", sans-serif',
+    href: "https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap",
+  },
+  {
+    value: "dela-gothic-one",
+    label: "Dela Gothic One（極太）",
+    css: '"Dela Gothic One", sans-serif',
+    href: "https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap",
+  },
 ];
 
 export function applyFontFamily(value?: string) {
@@ -22,7 +76,9 @@ export function applyFontFamily(value?: string) {
     const id = `gfont-${opt.value}`;
     if (!document.getElementById(id)) {
       const link = document.createElement("link");
-      link.id = id; link.rel = "stylesheet"; link.href = opt.href;
+      link.id = id;
+      link.rel = "stylesheet";
+      link.href = opt.href;
       document.head.appendChild(link);
     }
   }
@@ -36,7 +92,11 @@ export function isLightColor(color: string): boolean {
   const hex = c.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
   if (hex) {
     let h = hex[1];
-    if (h.length === 3) h = h.split("").map((x) => x + x).join("");
+    if (h.length === 3)
+      h = h
+        .split("")
+        .map((x) => x + x)
+        .join("");
     const r = parseInt(h.slice(0, 2), 16) / 255;
     const g = parseInt(h.slice(2, 4), 16) / 255;
     const b = parseInt(h.slice(4, 6), 16) / 255;
@@ -84,20 +144,27 @@ export function useUserPrefs() {
   const [prefs, setPrefs] = useState<UserPrefs>(DEFAULT);
   useEffect(() => {
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase.from("user_prefs").select("*").eq("user_id", user.id).maybeSingle();
-      if (data) setPrefs({
-        widgets: (data.widgets as string[]) ?? DEFAULT.widgets,
-        font_scale: data.font_scale ?? 1,
-        high_contrast: !!data.high_contrast,
-        right_dock: ((data as any).right_dock as string[]) ?? DEFAULT.right_dock,
-        sidebar_hidden: ((data as any).sidebar_hidden as string[]) ?? DEFAULT.sidebar_hidden,
-        act_as_admin: !!(data as any).act_as_admin,
-        theme_color: (data as any).theme_color ?? DEFAULT.theme_color,
-        font_family: (data as any).font_family ?? DEFAULT.font_family,
-        notif_settings: ((data as any).notif_settings as any) ?? {},
-      });
+      const { data } = await supabase
+        .from("user_prefs")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (data)
+        setPrefs({
+          widgets: (data.widgets as string[]) ?? DEFAULT.widgets,
+          font_scale: data.font_scale ?? 1,
+          high_contrast: !!data.high_contrast,
+          right_dock: ((data as any).right_dock as string[]) ?? DEFAULT.right_dock,
+          sidebar_hidden: ((data as any).sidebar_hidden as string[]) ?? DEFAULT.sidebar_hidden,
+          act_as_admin: !!(data as any).act_as_admin,
+          theme_color: (data as any).theme_color ?? DEFAULT.theme_color,
+          font_family: (data as any).font_family ?? DEFAULT.font_family,
+          notif_settings: ((data as any).notif_settings as any) ?? {},
+        });
     })();
   }, []);
   useEffect(() => {
@@ -121,9 +188,13 @@ export function useUserPrefs() {
   const save = async (patch: Partial<UserPrefs>) => {
     const next = { ...prefs, ...patch };
     setPrefs(next);
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return;
-    await (supabase as any).from("user_prefs").upsert({ user_id: user.id, ...next, theme_color: next.theme_color ?? null });
+    await (supabase as any)
+      .from("user_prefs")
+      .upsert({ user_id: user.id, ...next, theme_color: next.theme_color ?? null });
   };
   return { prefs, save };
 }
@@ -153,17 +224,16 @@ export type LocalPrefs = {
   hide_images: boolean;
   tts_enabled: boolean;
   // チャット
-  chat_enter_send: boolean;      // Enterで送信（OFFなら Ctrl+Enter で送信）
-  chat_compact: boolean;         // コンパクト表示
-  chat_show_time: boolean;       // 時刻を表示
-  chat_font_scale: number;       // 吹き出しの文字サイズ倍率
-  chat_send_sound: boolean;      // 送信時の効果音
+  chat_enter_send: boolean; // Enterで送信（OFFなら Ctrl+Enter で送信）
+  chat_compact: boolean; // コンパクト表示
+  chat_show_time: boolean; // 時刻を表示
+  chat_font_scale: number; // 吹き出しの文字サイズ倍率
+  chat_send_sound: boolean; // 送信時の効果音
   // 街
-  town_auto_rotate: boolean;     // 3Dの自動回転
-  town_show_labels: boolean;     // 建物名ラベル
+  town_auto_rotate: boolean; // 3Dの自動回転
+  town_show_labels: boolean; // 建物名ラベル
   town_default_tab: "economy" | "policy" | "build" | "map" | "info";
 };
-
 
 export const DASHBOARD_CARD_OPTIONS: { value: string; label: string }[] = [
   { value: "streak", label: "連続記録" },
@@ -206,7 +276,6 @@ export const DEFAULT_LOCAL_PREFS: LocalPrefs = {
   town_default_tab: "economy",
 };
 
-
 const LOCAL_PREFS_KEY = "voton_local_prefs_v1";
 const localPrefsListeners = new Set<() => void>();
 
@@ -247,15 +316,26 @@ export function useLocalPrefs() {
   useEffect(() => {
     applyLocalPrefsEffects(prefs);
   }, [
-    prefs.reduce_motion, prefs.compact_mode, prefs.readable_font, prefs.text_spacing,
-    prefs.line_height, prefs.letter_spacing, prefs.underline_links, prefs.large_targets,
-    prefs.focus_ring, prefs.big_cursor, prefs.color_filter, prefs.hide_images,
+    prefs.reduce_motion,
+    prefs.compact_mode,
+    prefs.readable_font,
+    prefs.text_spacing,
+    prefs.line_height,
+    prefs.letter_spacing,
+    prefs.underline_links,
+    prefs.large_targets,
+    prefs.focus_ring,
+    prefs.big_cursor,
+    prefs.color_filter,
+    prefs.hide_images,
   ]);
 
   useEffect(() => {
     const listener = () => setPrefs(readLocalPrefs());
     localPrefsListeners.add(listener);
-    return () => { localPrefsListeners.delete(listener); };
+    return () => {
+      localPrefsListeners.delete(listener);
+    };
   }, []);
 
   const save = (patch: Partial<LocalPrefs>) => {

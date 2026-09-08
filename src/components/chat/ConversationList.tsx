@@ -50,17 +50,26 @@ export function ConversationList({
                   {c.conv_type === "group" && <Users className="h-3.5 w-3.5 shrink-0" />}
                   <span className="truncate">{c.display_name ?? "(no name)"}</span>
                   {c.unread_count > 0 && (
-                    <Badge className="ml-auto shrink-0 h-5 min-w-5 px-1 justify-center" variant={isActive ? "secondary" : "default"}>
+                    <Badge
+                      className="ml-auto shrink-0 h-5 min-w-5 px-1 justify-center"
+                      variant={isActive ? "secondary" : "default"}
+                    >
                       {c.unread_count}
                     </Badge>
                   )}
                 </div>
-                <div className={`text-xs truncate ${isActive ? "opacity-80" : "text-muted-foreground"}`}>
-                  {c.last_message ?? (c.conv_type === "group" ? `メンバー ${c.member_count}人` : "")}
+                <div
+                  className={`text-xs truncate ${isActive ? "opacity-80" : "text-muted-foreground"}`}
+                >
+                  {c.last_message ??
+                    (c.conv_type === "group" ? `メンバー ${c.member_count}人` : "")}
                 </div>
               </button>
               <button
-                onClick={(e) => { e.stopPropagation(); onDelete(c); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(c);
+                }}
                 className={`absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity ${isActive ? "hover:bg-primary-foreground/20" : "hover:bg-background"}`}
                 title="削除"
               >

@@ -3,22 +3,47 @@
 
 type Status = "unavailable" | "downloadable" | "downloading" | "available";
 
+type ChromeAiCapabilities = { available?: string } | null;
+type ChromeAiProgressEvent = { loaded?: number; total?: number };
+type ChromeAiMonitor = {
+  addEventListener?: (
+    type: "downloadprogress",
+    listener: (event: ChromeAiProgressEvent) => void,
+  ) => void;
+};
+type ChromeAiRuntimeSession = {
+  prompt: (text: string) => Promise<unknown>;
+  promptStreaming?: (text: string) => ReadableStream<unknown>;
+  destroy?: () => void;
+};
+type ChromeAiCreateOptions = {
+  initialPrompts?: Array<{ role: "system"; content: string }>;
+  temperature?: number;
+  topK?: number;
+  monitor?: (monitor: ChromeAiMonitor) => void;
+};
+type ChromeAiModel = {
+  availability?: () => Promise<string> | string;
+  capabilities?: () => Promise<ChromeAiCapabilities> | ChromeAiCapabilities;
+  create: (options?: ChromeAiCreateOptions) => Promise<ChromeAiRuntimeSession>;
+};
+
 declare global {
   // Chrome 138+
-  // eslint-disable-next-line no-var
-  var LanguageModel: any;
+  var LanguageModel: ChromeAiModel | undefined;
   interface Window {
-    ai?: any;
-    LanguageModel?: any;
+    ai?: { languageModel?: ChromeAiModel };
+    LanguageModel?: ChromeAiModel;
   }
 }
 
-function getLM(): any | null {
+function getLM(): ChromeAiModel | null {
   if (typeof window === "undefined") return null;
-  const w: any = window;
-  if (w.LanguageModel) return w.LanguageModel;
-  if (w.ai?.languageModel) return w.ai.languageModel;
-  if (typeof (globalThis as any).LanguageModel !== "undefined") return (globalThis as any).LanguageModel;
+  if (window.LanguageModel) return window.LanguageModel;
+  if (window.ai?.languageModel) return window.ai.languageModel;
+  const globalModel = (globalThis as typeof globalThis & { LanguageModel?: ChromeAiModel })
+    .LanguageModel;
+  if (globalModel) return globalModel;
   return null;
 }
 
@@ -69,20 +94,33 @@ export async function chromeAiDiagnostics(): Promise<ChromeAiDiagnostics> {
   let reason = "";
   if (!hasApi) {
     if (!isChrome) reason = "Chrome 138+ が必要です（現在のブラウザは非対応）。";
-    else if (chromeVer && Number(chromeVer) < 138) reason = `Chrome ${chromeVer} は非対応です。138 以上に更新してください。`;
-    else reason = "内蔵 AI API が見つかりません。chrome://flags/#prompt-api-for-gemini-nano を Enabled にし、chrome://components の Optimization Guide On Device Model を最新に更新してください。";
-  } else if (status === "unavailable") reason = "モデルは利用不可（デバイス要件未達 or ダウンロード失敗の可能性）。";
-  else if (status === "downloadable") reason = "初回はモデルのダウンロード（数百MB）が必要です。ボタンを押すと開始します。";
+    else if (chromeVer && Number(chromeVer) < 138)
+      reason = `Chrome ${chromeVer} は非対応です。138 以上に更新してください。`;
+    else
+      reason =
+        "内蔵 AI API が見つかりません。chrome://flags/#prompt-api-for-gemini-nano を Enabled にし、chrome://components の Optimization Guide On Device Model を最新に更新してください。";
+  } else if (status === "unavailable")
+    reason = "モデルは利用不可（デバイス要件未達 or ダウンロード失敗の可能性）。";
+  else if (status === "downloadable")
+    reason = "初回はモデルのダウンロード（数百MB）が必要です。ボタンを押すと開始します。";
   else if (status === "downloading") reason = "モデルを取得中です…しばらくお待ちください。";
   else reason = "利用可能です。";
   if (!isSecure) reason = "HTTPS でないため利用できません。";
-  return { status, reason, hasApi, browser: isChrome ? `Chrome ${chromeVer ?? "?"}` : ua.split(" ").pop() ?? ua, isSecure };
+  return {
+    status,
+    reason,
+    hasApi,
+    browser: isChrome ? `Chrome ${chromeVer ?? "?"}` : (ua.split(" ").pop() ?? ua),
+    isSecure,
+  };
 }
 
 let downloadPromise: Promise<Status> | null = null;
 
 /** モデルを明示的にダウンロード開始する（downloadable のとき） */
-export async function chromeAiEnsureDownloaded(onProgress?: (loaded: number, total: number) => void): Promise<Status> {
+export async function chromeAiEnsureDownloaded(
+  onProgress?: (loaded: number, total: number) => void,
+): Promise<Status> {
   const lm = getLM();
   if (!lm) return "unavailable";
 
@@ -93,20 +131,35 @@ export async function chromeAiEnsureDownloaded(onProgress?: (loaded: number, tot
 
   downloadPromise = (async () => {
     try {
-      const createPromise = Promise.resolve(lm.create({
-        monitor(m: any) {
-          m.addEventListener?.("downloadprogress", (e: any) => {
-            try { onProgress?.(e.loaded ?? 0, e.total ?? 1); } catch { /* noop */ }
-          });
-        },
-      }));
-      const s: any = await Promise.race([
+      const createPromise = Promise.resolve(
+        lm.create({
+          monitor(m: ChromeAiMonitor) {
+            m.addEventListener?.("downloadprogress", (e: ChromeAiProgressEvent) => {
+              try {
+                onProgress?.(e.loaded ?? 0, e.total ?? 1);
+              } catch {
+                /* noop */
+              }
+            });
+          },
+        }),
+      );
+      const s = await Promise.race<ChromeAiRuntimeSession>([
         createPromise,
-        new Promise((_, reject) => window.setTimeout(() => reject(new Error("Gemini Nano の取得が 10 分間進まなかったため中断しました")), 10 * 60 * 1000)),
+        new Promise((_, reject) =>
+          window.setTimeout(
+            () => reject(new Error("Gemini Nano の取得が 10 分間進まなかったため中断しました")),
+            10 * 60 * 1000,
+          ),
+        ),
       ]);
-      try { s.destroy?.(); } catch { /* noop */ }
+      try {
+        s.destroy?.();
+      } catch {
+        /* noop */
+      }
       return chromeAiStatus();
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("Chrome AI Download Error:", e);
       throw e;
     } finally {
@@ -136,21 +189,21 @@ export async function createChromeAiSession(opts?: {
 }): Promise<ChromeAiSession> {
   const lm = getLM();
   if (!lm) throw new Error("Chrome Built-in AI が利用できません");
-  const init: any = {};
+  const init: ChromeAiCreateOptions = {};
   if (opts?.system) {
     init.initialPrompts = [{ role: "system", content: opts.system }];
   }
   if (typeof opts?.temperature === "number") init.temperature = opts.temperature;
   if (typeof opts?.topK === "number") init.topK = opts.topK;
 
-  const session: any = await lm.create(init);
+  const session = await lm.create(init);
 
   return {
     prompt: async (text: string) => {
       const r = await session.prompt(text);
       return typeof r === "string" ? r : String(r ?? "");
     },
-    promptJSON: async <T,>(text: string): Promise<T> => {
+    promptJSON: async <T>(text: string): Promise<T> => {
       const out = await session.prompt(text);
       const str = typeof out === "string" ? out : String(out ?? "");
       return extractJSON<T>(str);
@@ -162,7 +215,7 @@ export async function createChromeAiSession(opts?: {
         onChunk(s);
         return s;
       }
-      const stream: ReadableStream<string> = session.promptStreaming(text);
+      const stream = session.promptStreaming(text);
       const reader = stream.getReader();
       let full = "";
       let cumulative = false;
@@ -171,18 +224,27 @@ export async function createChromeAiSession(opts?: {
         if (done) break;
         const v = typeof value === "string" ? value : String(value ?? "");
         if (!cumulative && v.startsWith(full) && v.length >= full.length) {
-          full = v; cumulative = true;
+          full = v;
+          cumulative = true;
         } else if (cumulative) {
           full = v;
         } else {
           full += v;
         }
-        try { onChunk(full); } catch { /* noop */ }
+        try {
+          onChunk(full);
+        } catch {
+          /* noop */
+        }
       }
       return full;
     },
     destroy: () => {
-      try { session.destroy?.(); } catch { /* noop */ }
+      try {
+        session.destroy?.();
+      } catch {
+        /* noop */
+      }
     },
   };
 }
@@ -195,7 +257,7 @@ export function extractJSON<T = unknown>(raw: string): T {
   const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
   if (fence) s = fence[1].trim();
   // 最初の { または [ から末尾の対応する括弧まで切り出す
-  const start = s.search(/[\[{]/);
+  const start = s.search(/[[]{/);
   if (start === -1) throw new Error("JSON が見つかりません");
   const open = s[start];
   const close = open === "{" ? "}" : "]";
@@ -211,25 +273,42 @@ export function extractJSON<T = unknown>(raw: string): T {
       else if (c === '"') inStr = false;
       continue;
     }
-    if (c === '"') { inStr = true; continue; }
+    if (c === '"') {
+      inStr = true;
+      continue;
+    }
     if (c === open) depth++;
-    else if (c === close) { depth--; if (depth === 0) { end = i; break; } }
+    else if (c === close) {
+      depth--;
+      if (depth === 0) {
+        end = i;
+        break;
+      }
+    }
   }
   const slice = end > 0 ? s.slice(start, end + 1) : s.slice(start);
   try {
     return JSON.parse(slice) as T;
-  } catch (e: any) {
-    throw new Error("JSON 解析失敗: " + e.message);
+  } catch (e: unknown) {
+    throw new Error(`JSON 解析失敗: ${e instanceof Error ? e.message : String(e)}`);
   }
 }
 
 /** 単発の便利関数 */
 export async function chromeAiPrompt(text: string, system?: string): Promise<string> {
   const s = await createChromeAiSession({ system });
-  try { return await s.prompt(text); } finally { s.destroy(); }
+  try {
+    return await s.prompt(text);
+  } finally {
+    s.destroy();
+  }
 }
 
 export async function chromeAiJSON<T = unknown>(text: string, system?: string): Promise<T> {
   const s = await createChromeAiSession({ system });
-  try { return await s.promptJSON<T>(text); } finally { s.destroy(); }
+  try {
+    return await s.promptJSON<T>(text);
+  } finally {
+    s.destroy();
+  }
 }

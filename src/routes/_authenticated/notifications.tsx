@@ -1,12 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
-import { listNotifications, markNotificationRead, deleteNotification } from "@/lib/notifications.functions";
+import {
+  listNotifications,
+  markNotificationRead,
+  deleteNotification,
+} from "@/lib/notifications.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Bell, CheckCheck, Trash2 } from "lucide-react";
+import { ArrowLeft, Bell, CheckCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
@@ -44,7 +48,10 @@ function NotificationsPage() {
     },
   });
 
-  const allSelected = useMemo(() => items.length > 0 && selected.size === items.length, [items, selected]);
+  const allSelected = useMemo(
+    () => items.length > 0 && selected.size === items.length,
+    [items, selected],
+  );
   const toggleAll = () => {
     if (allSelected) setSelected(new Set());
     else setSelected(new Set(items.map((n: any) => n.id)));
@@ -52,7 +59,8 @@ function NotificationsPage() {
   const toggle = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
@@ -60,10 +68,21 @@ function NotificationsPage() {
   return (
     <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-3xl font-bold flex items-center gap-2"><Bell className="h-7 w-7 text-primary" />通知</h1>
+        <div className="flex items-center gap-3">
+          <Link to="/dashboard" title="ダッシュボードに戻る" aria-label="ダッシュボードに戻る">
+            <Button size="icon" variant="outline">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <Bell className="h-7 w-7 text-primary" />
+            通知
+          </h1>
+        </div>
         <div className="flex gap-2 flex-wrap">
           <Button size="sm" variant="outline" onClick={() => markM.mutate({ all: true })}>
-            <CheckCheck className="h-3 w-3 mr-1" />すべて既読
+            <CheckCheck className="h-3 w-3 mr-1" />
+            すべて既読
           </Button>
           <Button
             size="sm"
@@ -73,7 +92,8 @@ function NotificationsPage() {
               if (confirm("すべての通知を削除しますか?")) delM.mutate({ all: true });
             }}
           >
-            <Trash2 className="h-3 w-3 mr-1" />すべて削除
+            <Trash2 className="h-3 w-3 mr-1" />
+            すべて削除
           </Button>
         </div>
       </div>
@@ -91,7 +111,8 @@ function NotificationsPage() {
             className="ml-auto"
             onClick={() => delM.mutate({ ids: Array.from(selected) })}
           >
-            <Trash2 className="h-3 w-3 mr-1" />選択を削除
+            <Trash2 className="h-3 w-3 mr-1" />
+            選択を削除
           </Button>
         </Card>
       )}
@@ -103,19 +124,44 @@ function NotificationsPage() {
 
       <div className="space-y-2">
         {items.map((n: any) => (
-          <Card key={n.id} className={`p-4 transition ${n.read_at ? "opacity-70" : "border-primary/30"} ${selected.has(n.id) ? "ring-2 ring-primary/40" : ""}`}>
+          <Card
+            key={n.id}
+            className={`p-4 transition ${n.read_at ? "opacity-70" : "border-primary/30"} ${selected.has(n.id) ? "ring-2 ring-primary/40" : ""}`}
+          >
             <div className="flex justify-between items-start gap-3">
-              <Checkbox checked={selected.has(n.id)} onCheckedChange={() => toggle(n.id)} className="mt-1" />
+              <Checkbox
+                checked={selected.has(n.id)}
+                onCheckedChange={() => toggle(n.id)}
+                className="mt-1"
+              />
               <div className="min-w-0 flex-1">
                 <div className="font-semibold text-sm">{n.title}</div>
-                {n.body && <div className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{n.body}</div>}
-                <div className="text-[10px] text-muted-foreground mt-1">{new Date(n.created_at).toLocaleString("ja-JP")}</div>
+                {n.body && (
+                  <div className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">
+                    {n.body}
+                  </div>
+                )}
+                <div className="text-[10px] text-muted-foreground mt-1">
+                  {new Date(n.created_at).toLocaleString("ja-JP")}
+                </div>
               </div>
               <div className="flex gap-1 shrink-0">
                 {!n.read_at && (
-                  <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => markM.mutate({ id: n.id })}>既読</Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2"
+                    onClick={() => markM.mutate({ id: n.id })}
+                  >
+                    既読
+                  </Button>
                 )}
-                <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive" onClick={() => delM.mutate({ id: n.id })}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 w-7 p-0 text-destructive"
+                  onClick={() => delM.mutate({ id: n.id })}
+                >
                   <Trash2 className="h-3 w-3" />
                 </Button>
               </div>

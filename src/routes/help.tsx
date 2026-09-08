@@ -3,7 +3,12 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { listPublicFaqs, type PublicFaq } from "@/lib/faq.functions";
 import { PublicAmbient, PublicFooter, PublicHeader } from "@/components/public/PublicShell";
 
@@ -58,9 +63,24 @@ export const Route = createFileRoute("/help")({
 });
 
 const QUICK = [
-  { t: "はじめかたを知りたい", d: "アカウント作成から1日の使い方まで、ステップで解説しています。", to: "/guide", cta: "使い方ガイド" },
-  { t: "どんな機能があるか見たい", d: "搭載しているすべての機能をカテゴリ別に掲載しています。", to: "/all-services", cta: "全機能一覧" },
-  { t: "学校・塾で使いたい", d: "組織機能の内容と、導入の流れ・申請フォームはこちら。", to: "/for-schools", cta: "学校・塾の方へ" },
+  {
+    t: "はじめかたを知りたい",
+    d: "アカウント作成から1日の使い方まで、ステップで解説しています。",
+    to: "/guide",
+    cta: "使い方ガイド",
+  },
+  {
+    t: "どんな機能があるか見たい",
+    d: "搭載しているすべての機能をカテゴリ別に掲載しています。",
+    to: "/all-services",
+    cta: "全機能一覧",
+  },
+  {
+    t: "学校・塾で使いたい",
+    d: "組織機能の内容と、導入の流れ・申請フォームはこちら。",
+    to: "/for-schools",
+    cta: "学校・塾の方へ",
+  },
 ];
 
 function HelpPage() {
@@ -107,7 +127,10 @@ function HelpPage() {
             <article key={k.t} className="surface surface-hover flex flex-col p-5">
               <h2 className="font-bold">{k.t}</h2>
               <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{k.d}</p>
-              <Link to={k.to} className="mt-4 text-sm font-semibold text-primary underline-offset-4 hover:underline">
+              <Link
+                to={k.to}
+                className="mt-4 text-sm font-semibold text-primary underline-offset-4 hover:underline"
+              >
                 {k.cta} →
               </Link>
             </article>
@@ -130,7 +153,9 @@ function HelpPage() {
         </section>
 
         <section className="mt-10">
-          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">よくある質問</h2>
+          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">
+            よくある質問
+          </h2>
           <div className="surface mt-4 p-4">
             {filtered.length === 0 ? (
               <p className="py-10 text-center text-sm text-muted-foreground">
@@ -141,7 +166,9 @@ function HelpPage() {
                 {filtered.map((f) => (
                   <AccordionItem key={f.id} value={f.id}>
                     <AccordionTrigger className="text-left">Q. {f.question}</AccordionTrigger>
-                    <AccordionContent className="whitespace-pre-wrap text-sm">{f.answer}</AccordionContent>
+                    <AccordionContent className="whitespace-pre-wrap text-sm">
+                      {f.answer}
+                    </AccordionContent>
                   </AccordionItem>
                 ))}
               </Accordion>

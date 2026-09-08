@@ -1,9 +1,21 @@
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Copy, Sparkles, Loader2, ClipboardPaste, Check } from "lucide-react";
@@ -32,7 +44,12 @@ type GeneratedPayload = {
 };
 
 export function AiPackImportDialog({
-  open, onOpenChange, mode, unit, packId, onDone,
+  open,
+  onOpenChange,
+  mode,
+  unit,
+  packId,
+  onDone,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -55,13 +72,20 @@ export function AiPackImportDialog({
   useEffect(() => {
     if (!open) return;
     isAiUsable().then(setCanAi);
-    setResponse(""); setCopied(false);
+    setResponse("");
+    setCopied(false);
   }, [open]);
 
-  const ctx = [unit?.subject, unit?.field, unit?.unit].filter(Boolean).join(" / ") || unit?.title || "";
+  const ctx =
+    [unit?.subject, unit?.field, unit?.unit].filter(Boolean).join(" / ") || unit?.title || "";
 
   const prompt = buildPrompt({
-    mode, ctx, count, difficulty, qType, extra,
+    mode,
+    ctx,
+    count,
+    difficulty,
+    qType,
+    extra,
     packTitleHint: mode === "new" ? packTitle.trim() : undefined,
   });
 
@@ -72,17 +96,29 @@ export function AiPackImportDialog({
     }
     let targetPackId = packId;
     if (mode === "new") {
-      const title = (payload.pack?.title || packTitle || `AI生成パック ${new Date().toLocaleDateString()}`).slice(0, 100);
-      const description = (payload.pack?.description || packDesc || "AI で自動生成された問題パック").slice(0, 500);
-      const { data: p, error } = await (supabase as any).from("makron_packs")
+      const title = (
+        payload.pack?.title ||
+        packTitle ||
+        `AI生成パック ${new Date().toLocaleDateString()}`
+      ).slice(0, 100);
+      const description = (
+        payload.pack?.description ||
+        packDesc ||
+        "AI で自動生成された問題パック"
+      ).slice(0, 500);
+      const { data: p, error } = await (supabase as any)
+        .from("makron_packs")
         .insert({ unit_id: unit.id, title, description })
-        .select("id").single();
+        .select("id")
+        .single();
       if (error) throw new Error(error.message);
       targetPackId = p.id;
     }
     if (!targetPackId) throw new Error("対象パックがありません");
 
-    const rows = payload.questions.slice(0, 50).map((q, i) => normalizeQuestion(q, targetPackId!, unit.id, i));
+    const rows = payload.questions
+      .slice(0, 50)
+      .map((q, i) => normalizeQuestion(q, targetPackId!, unit.id, i));
     const { error: insErr } = await (supabase as any).from("makron_questions").insert(rows);
     if (insErr) throw new Error(insErr.message);
     toast.success(`${rows.length} 問をインポートしました`);
@@ -97,7 +133,8 @@ export function AiPackImportDialog({
         task: "json",
         maxTokens: 2400,
         temperature: 0.6,
-        system: "あなたは日本の学習問題を作るアシスタントです。出力は必ず厳密な JSON のみ。コードブロックや前置きは禁止。",
+        system:
+          "あなたは日本の学習問題を作るアシスタントです。出力は必ず厳密な JSON のみ。コードブロックや前置きは禁止。",
       });
       try {
         const parsed = await promptJSONRobust<GeneratedPayload>(
@@ -107,10 +144,14 @@ export function AiPackImportDialog({
           3,
         );
         await importPayload(parsed);
-      } finally { session.destroy(); }
+      } finally {
+        session.destroy();
+      }
     } catch (e: any) {
       toast.error(e.message ?? "AI 生成に失敗");
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   };
 
   const applyManualResponse = async () => {
@@ -120,7 +161,9 @@ export function AiPackImportDialog({
       await importPayload(parsed);
     } catch (e: any) {
       toast.error(e.message ?? "解析失敗");
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   };
 
   const canChrome = canAi;
@@ -142,7 +185,11 @@ export function AiPackImportDialog({
             <div className="grid grid-cols-2 gap-2">
               <div className="col-span-2">
                 <label className="text-xs">パック名（任意・空欄ならAIが命名）</label>
-                <Input value={packTitle} onChange={(e) => setPackTitle(e.target.value)} placeholder="例: 二次関数 基礎 10問" />
+                <Input
+                  value={packTitle}
+                  onChange={(e) => setPackTitle(e.target.value)}
+                  placeholder="例: 二次関数 基礎 10問"
+                />
               </div>
               <div className="col-span-2">
                 <label className="text-xs">パック説明（任意）</label>
@@ -154,12 +201,20 @@ export function AiPackImportDialog({
           <div className="grid grid-cols-3 gap-2">
             <div>
               <label className="text-xs">問題数</label>
-              <Input type="number" min={1} max={20} value={count} onChange={(e) => setCount(Math.max(1, Math.min(20, Number(e.target.value) || 1)))} />
+              <Input
+                type="number"
+                min={1}
+                max={20}
+                value={count}
+                onChange={(e) => setCount(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
+              />
             </div>
             <div>
               <label className="text-xs">難易度</label>
               <Select value={difficulty} onValueChange={setDifficulty}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="基礎">基礎</SelectItem>
                   <SelectItem value="標準">標準</SelectItem>
@@ -171,7 +226,9 @@ export function AiPackImportDialog({
             <div>
               <label className="text-xs">形式</label>
               <Select value={qType} onValueChange={(v) => setQType(v as any)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="single">4択（単一選択）</SelectItem>
                   <SelectItem value="multi">複数選択</SelectItem>
@@ -184,7 +241,12 @@ export function AiPackImportDialog({
 
           <div>
             <label className="text-xs">AI への追加指示（任意）</label>
-            <Textarea rows={2} value={extra} onChange={(e) => setExtra(e.target.value)} placeholder="例: 計算過程を解説で丁寧に。引っ掛けの選択肢を入れる。" />
+            <Textarea
+              rows={2}
+              value={extra}
+              onChange={(e) => setExtra(e.target.value)}
+              placeholder="例: 計算過程を解説で丁寧に。引っ掛けの選択肢を入れる。"
+            />
           </div>
 
           <Tabs defaultValue={canChrome ? "auto" : "manual"}>
@@ -198,7 +260,11 @@ export function AiPackImportDialog({
             <TabsContent value="auto" className="space-y-2 pt-2">
               <AiStatusBadge />
               <Button onClick={runChromeAi} disabled={busy || !canChrome} className="w-full">
-                {busy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Sparkles className="h-4 w-4 mr-1" />}
+                {busy ? (
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4 mr-1" />
+                )}
                 AI に生成させてインポート
               </Button>
             </TabsContent>
@@ -206,12 +272,23 @@ export function AiPackImportDialog({
             <TabsContent value="manual" className="space-y-2 pt-2">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-bold">① このプロンプトを ChatGPT / Claude / Gemini などにコピペ</label>
-                  <Button size="sm" variant="outline" onClick={() => {
-                    navigator.clipboard.writeText(prompt);
-                    setCopied(true); setTimeout(() => setCopied(false), 1500);
-                  }}>
-                    {copied ? <Check className="h-3 w-3 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
+                  <label className="text-xs font-bold">
+                    ① このプロンプトを ChatGPT / Claude / Gemini などにコピペ
+                  </label>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(prompt);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 1500);
+                    }}
+                  >
+                    {copied ? (
+                      <Check className="h-3 w-3 mr-1" />
+                    ) : (
+                      <Copy className="h-3 w-3 mr-1" />
+                    )}
                     {copied ? "コピー済み" : "プロンプトをコピー"}
                   </Button>
                 </div>
@@ -220,16 +297,39 @@ export function AiPackImportDialog({
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs font-bold">② AI が返した JSON をここに貼り付け</label>
-                  <Button size="sm" variant="ghost" onClick={async () => {
-                    try { setResponse(await navigator.clipboard.readText()); } catch { /* ignore */ }
-                  }}>
-                    <ClipboardPaste className="h-3 w-3 mr-1" />クリップボードから貼り付け
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={async () => {
+                      try {
+                        setResponse(await navigator.clipboard.readText());
+                      } catch {
+                        /* ignore */
+                      }
+                    }}
+                  >
+                    <ClipboardPaste className="h-3 w-3 mr-1" />
+                    クリップボードから貼り付け
                   </Button>
                 </div>
-                <Textarea value={response} onChange={(e) => setResponse(e.target.value)} rows={8} className="font-mono text-[11px]" placeholder='{ "pack": {...}, "questions": [...] }' />
+                <Textarea
+                  value={response}
+                  onChange={(e) => setResponse(e.target.value)}
+                  rows={8}
+                  className="font-mono text-[11px]"
+                  placeholder='{ "pack": {...}, "questions": [...] }'
+                />
               </div>
-              <Button onClick={applyManualResponse} disabled={busy || !response.trim()} className="w-full">
-                {busy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Sparkles className="h-4 w-4 mr-1" />}
+              <Button
+                onClick={applyManualResponse}
+                disabled={busy || !response.trim()}
+                className="w-full"
+              >
+                {busy ? (
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4 mr-1" />
+                )}
                 解析してインポート
               </Button>
             </TabsContent>
@@ -237,7 +337,9 @@ export function AiPackImportDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>閉じる</Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            閉じる
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -245,17 +347,26 @@ export function AiPackImportDialog({
 }
 
 function buildPrompt(args: {
-  mode: Mode; ctx: string; count: number; difficulty: string;
-  qType: "single" | "multi" | "text" | "mixed"; extra: string; packTitleHint?: string;
+  mode: Mode;
+  ctx: string;
+  count: number;
+  difficulty: string;
+  qType: "single" | "multi" | "text" | "mixed";
+  extra: string;
+  packTitleHint?: string;
 }): string {
   const typeInstr =
-    args.qType === "single" ? '全問 type は "single"（4択・1つ正解）。' :
-    args.qType === "multi" ? '全問 type は "multi"（複数選択）。' :
-    args.qType === "text" ? '全問 type は "text"（短答記述）。' :
-    'type は "single" / "multi" / "text" を適度に混在。';
+    args.qType === "single"
+      ? '全問 type は "single"（4択・1つ正解）。'
+      : args.qType === "multi"
+        ? '全問 type は "multi"（複数選択）。'
+        : args.qType === "text"
+          ? '全問 type は "text"（短答記述）。'
+          : 'type は "single" / "multi" / "text" を適度に混在。';
 
-  const schema = args.mode === "new"
-    ? `{
+  const schema =
+    args.mode === "new"
+      ? `{
   "pack": { "title": "パック名", "description": "概要（1〜2行）" },
   "questions": [
     {
@@ -270,7 +381,7 @@ function buildPrompt(args: {
     }
   ]
 }`
-    : `{
+      : `{
   "questions": [
     {
       "type": "single",
@@ -308,9 +419,15 @@ const ALLOWED_TYPES = new Set(["single", "multi", "text"]);
 
 function normalizeQuestion(q: GeneratedQuestion, packId: string, unitId: string, idx: number) {
   const type = ALLOWED_TYPES.has(q.type as string) ? q.type! : "single";
-  const options = Array.isArray(q.options) ? q.options.filter((o) => typeof o === "string" && o.trim()) : [];
-  const correct = Array.isArray(q.correct_options) ? q.correct_options.filter((o) => typeof o === "string" && o.trim()) : [];
-  const accepted = Array.isArray(q.accepted_answers) ? q.accepted_answers.filter((o) => typeof o === "string" && o.trim()) : [];
+  const options = Array.isArray(q.options)
+    ? q.options.filter((o) => typeof o === "string" && o.trim())
+    : [];
+  const correct = Array.isArray(q.correct_options)
+    ? q.correct_options.filter((o) => typeof o === "string" && o.trim())
+    : [];
+  const accepted = Array.isArray(q.accepted_answers)
+    ? q.accepted_answers.filter((o) => typeof o === "string" && o.trim())
+    : [];
   return {
     pack_id: packId,
     unit_id: unitId,

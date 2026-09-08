@@ -2,9 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { PublicAmbient, PublicFooter, PublicHeader } from "@/components/public/PublicShell";
 import { STEPS, FAQ, SCENARIOS } from "@/content/services";
 
-const TITLE = "使い方ガイド | Study#";
+const TITLE = "Voton Study Sharp (Study#) の使い方ガイド | 学習のすべてをひとつに";
 const DESC =
-  "Study# のはじめ方を、アカウント作成から記録・Makron演習・AI復習・振り返りまでステップごとに解説。1日の使い方の例、タイプ別の使い方、よくある質問もまとめています。";
+  "Voton Study Sharp（Study# / Study Sharp / Voton Study）のはじめ方を、アカウント作成から記録・Makron演習・AI復習・振り返りまで解説。学習のすべてをひとつにする総合学習プラットフォームの使い方ガイドです。";
 
 export const Route = createFileRoute("/guide")({
   head: () => ({
@@ -52,16 +52,33 @@ const DAY = [
 ];
 
 const TIPS = [
-  { t: "記録は「完璧」より「毎日」", d: "5分でも記録に残せば連続日数は途切れません。続いている実感が、いちばんの燃料になります。" },
-  { t: "教材はとりあえず登録", d: "バーコードで数秒です。登録しておくと、タイマーや記録から選ぶだけで教材別の分析が貯まります。" },
-  { t: "AIには「どこまで分かったか」を書く", d: "「ここまでは分かるが、ここで詰まった」と伝えると、解説の精度が大きく上がります。" },
-  { t: "組織のコードは先生から", d: "学校や塾で使う場合は、6桁の参加コードか招待を受け取ってから参加します。" },
+  {
+    t: "記録は「完璧」より「毎日」",
+    d: "5分でも記録に残せば連続日数は途切れません。続いている実感が、いちばんの燃料になります。",
+  },
+  {
+    t: "教材はとりあえず登録",
+    d: "バーコードで数秒です。登録しておくと、タイマーや記録から選ぶだけで教材別の分析が貯まります。",
+  },
+  {
+    t: "AIには「どこまで分かったか」を書く",
+    d: "「ここまでは分かるが、ここで詰まった」と伝えると、解説の精度が大きく上がります。",
+  },
+  {
+    t: "組織のコードは先生から",
+    d: "学校や塾で使う場合は、6桁の参加コードか招待を受け取ってから参加します。",
+  },
 ];
 
 const FIRST_3 = [
   { n: "1", t: "タイマー", d: "押して、止める。それだけで記録になります。", to: "/timer" },
   { n: "2", t: "Makron", d: "パックを1つ選んで解く。誤答は自動で残ります。", to: "/makron" },
-  { n: "3", t: "ダッシュボード", d: "積み上がりを眺める。ここが毎日の起点になります。", to: "/dashboard" },
+  {
+    n: "3",
+    t: "ダッシュボード",
+    d: "積み上がりを眺める。ここが毎日の起点になります。",
+    to: "/dashboard",
+  },
 ];
 
 function GuidePage() {
@@ -76,9 +93,23 @@ function GuidePage() {
           はじめかた<span className="text-gradient">ガイド</span>
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-          機能が多いアプリですが、最初に触るのは3つだけで十分です。タイマー、Makron、ダッシュボード。
+          Voton Study Sharp（Study# / Study Sharp / Voton
+          Study）は、学習のすべてをひとつにする総合学習プラットフォームです。
+          学習を賢く、楽しく続けるために、最初に触るのはタイマー、Makron、ダッシュボードの3つだけで十分です。
           慣れてきたら、目標・教材・組織へ広げていきましょう。
         </p>
+
+        <div className="mt-6 grid gap-3 sm:grid-cols-3" aria-label="Study#のサービスコンセプト">
+          <p className="rounded-xl border border-signal/35 bg-signal/10 px-4 py-3 text-sm font-bold">
+            学習のすべてをひとつに
+          </p>
+          <p className="rounded-xl border border-accent/35 bg-accent/10 px-4 py-3 text-sm font-bold">
+            学習を賢く、楽しく
+          </p>
+          <p className="rounded-xl border border-primary/20 bg-primary/10 px-4 py-3 text-sm font-bold">
+            総合学習プラットフォーム
+          </p>
+        </div>
 
         {/* まず触る3つ */}
         <div className="mt-8 grid gap-3 md:grid-cols-3">
@@ -94,7 +125,9 @@ function GuidePage() {
         </div>
 
         <section className="mt-16">
-          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">5ステップで走り出す</h2>
+          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">
+            5ステップで走り出す
+          </h2>
           <ol className="mt-6 space-y-3">
             {STEPS.map((s) => (
               <li key={s.n} className="surface flex gap-4 p-5">
@@ -109,8 +142,12 @@ function GuidePage() {
         </section>
 
         <section className="mt-16">
-          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">1日の使い方の例</h2>
-          <p className="mt-2 text-sm text-muted-foreground">全部やる必要はありません。できる時間帯だけで十分です。</p>
+          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">
+            1日の使い方の例
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            全部やる必要はありません。できる時間帯だけで十分です。
+          </p>
           <div className="mt-6 grid gap-3 md:grid-cols-2">
             {DAY.map((d) => (
               <article key={d.time} className="surface surface-hover p-5">
@@ -124,7 +161,9 @@ function GuidePage() {
 
         {/* タイプ別 */}
         <section className="mt-16">
-          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">タイプ別・実際の使い方</h2>
+          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">
+            タイプ別・実際の使い方
+          </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             自分に近い状況を選んで、そのまま真似してみてください。
           </p>
@@ -143,14 +182,18 @@ function GuidePage() {
                     </li>
                   ))}
                 </ol>
-                <p className="mt-4 rounded-xl bg-accent/12 p-3 text-sm font-semibold leading-relaxed">{s.result}</p>
+                <p className="mt-4 rounded-xl bg-accent/12 p-3 text-sm font-semibold leading-relaxed">
+                  {s.result}
+                </p>
               </article>
             ))}
           </div>
         </section>
 
         <section className="mt-16">
-          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">続けるためのコツ</h2>
+          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">
+            続けるためのコツ
+          </h2>
           <div className="mt-6 grid gap-3 md:grid-cols-2">
             {TIPS.map((t) => (
               <article key={t.t} className="surface p-5">
@@ -162,7 +205,9 @@ function GuidePage() {
         </section>
 
         <section className="mt-16">
-          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">よくある質問</h2>
+          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">
+            よくある質問
+          </h2>
           <div className="surface mt-6 divide-y divide-border/60 overflow-hidden">
             {FAQ.map((f) => (
               <details key={f.q} className="group p-5 transition hover:bg-muted/40">

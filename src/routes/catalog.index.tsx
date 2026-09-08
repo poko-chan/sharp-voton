@@ -41,13 +41,20 @@ function CatalogIndex() {
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {SERVICE_CATALOG.map((c) => (
-            <Link key={c.key} to="/catalog/$key" params={{ key: c.key }} className="surface surface-hover flex flex-col p-5">
+            <Link
+              key={c.key}
+              to="/catalog/$key"
+              params={{ key: c.key }}
+              className="surface surface-hover flex flex-col p-5"
+            >
               <div className="text-2xl" aria-hidden>
                 {c.emoji}
               </div>
               <h2 className="mt-3 font-display text-lg font-extrabold">{c.title}</h2>
               <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{c.lead}</p>
-              <span className="mt-4 text-sm font-semibold text-primary">{c.items.length}件の機能を見る →</span>
+              <span className="mt-4 text-sm font-semibold text-primary">
+                {c.items.length}件の機能を見る →
+              </span>
             </Link>
           ))}
         </div>

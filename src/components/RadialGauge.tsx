@@ -35,7 +35,10 @@ export function RadialGauge({
   const id = `gauge-${++uid}`;
 
   return (
-    <div className={`relative inline-grid place-items-center ${className}`} style={{ width: size, height: size }}>
+    <div
+      className={`relative inline-grid place-items-center ${className}`}
+      style={{ width: size, height: size }}
+    >
       <svg width={size} height={size} className="-rotate-90 overflow-visible">
         <defs>
           <linearGradient id={id} x1="0%" y1="0%" x2="100%" y2="100%">
@@ -51,13 +54,18 @@ export function RadialGauge({
           </filter>
         </defs>
         <circle
-          cx={size / 2} cy={size / 2} r={r}
-          fill="none" stroke="currentColor"
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke="currentColor"
           className="text-muted/40"
           strokeWidth={thickness}
         />
         <circle
-          cx={size / 2} cy={size / 2} r={r}
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
           fill="none"
           stroke={`url(#${id})`}
           strokeWidth={thickness}
@@ -88,8 +96,12 @@ export function RadialGauge({
       </svg>
       <div className="absolute inset-0 grid place-items-center text-center px-4">
         <div>
-          <div className="text-3xl font-extrabold tabular-nums leading-none tracking-tight">{label}</div>
-          {sub && <div className="text-[11px] text-muted-foreground mt-1.5 leading-tight">{sub}</div>}
+          <div className="text-3xl font-extrabold tabular-nums leading-none tracking-tight">
+            {label}
+          </div>
+          {sub && (
+            <div className="text-[11px] text-muted-foreground mt-1.5 leading-tight">{sub}</div>
+          )}
         </div>
       </div>
     </div>
@@ -103,7 +115,13 @@ export function PowerBar({
   from = "oklch(0.75 0.19 150)",
   to = "oklch(0.62 0.21 265)",
   striped = true,
-}: { value: number; height?: number; from?: string; to?: string; striped?: boolean }) {
+}: {
+  value: number;
+  height?: number;
+  from?: string;
+  to?: string;
+  striped?: boolean;
+}) {
   const pct = Math.max(0, Math.min(100, value));
   return (
     <div
@@ -134,7 +152,11 @@ export function PowerBar({
         )}
       </div>
       {[25, 50, 75].map((m) => (
-        <div key={m} className="absolute top-0 bottom-0 w-px bg-background/50" style={{ left: `${m}%` }} />
+        <div
+          key={m}
+          className="absolute top-0 bottom-0 w-px bg-background/50"
+          style={{ left: `${m}%` }}
+        />
       ))}
     </div>
   );

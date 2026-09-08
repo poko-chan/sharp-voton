@@ -44,7 +44,7 @@ function ChatPage() {
   });
 
   const selectedConv = conversations.data?.find(
-    (c) => selected && c.conv_type === selected.type && c.conv_id === selected.id
+    (c) => selected && c.conv_type === selected.type && c.conv_id === selected.id,
   );
 
   const groupInfo = useQuery({
@@ -60,11 +60,17 @@ function ChatPage() {
       .on("postgres_changes", { event: "*", schema: "public", table: "chat_messages" }, () => {
         qc.invalidateQueries({ queryKey: ["chat-conversations"] });
       })
-      .on("postgres_changes", { event: "*", schema: "public", table: "chat_group_messages" }, () => {
-        qc.invalidateQueries({ queryKey: ["chat-conversations"] });
-      })
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "chat_group_messages" },
+        () => {
+          qc.invalidateQueries({ queryKey: ["chat-conversations"] });
+        },
+      )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [user, qc]);
 
   const selectConv = (c: Conversation) => {
@@ -83,7 +89,11 @@ function ChatPage() {
         await leaveChatGroup(deleteTarget.conv_id);
       }
       toast.success("削除しました");
-      if (selected && selected.type === deleteTarget.conv_type && selected.id === deleteTarget.conv_id) {
+      if (
+        selected &&
+        selected.type === deleteTarget.conv_type &&
+        selected.id === deleteTarget.conv_id
+      ) {
         setSelected(null);
         setMobileShowList(true);
       }
@@ -105,7 +115,9 @@ function ChatPage() {
 
   return (
     <div className="flex h-[calc(100vh-0px)] overflow-hidden">
-      <aside className={`w-full sm:w-72 border-r bg-card overflow-hidden flex-col ${mobileShowList ? "flex" : "hidden"} sm:flex shrink-0`}>
+      <aside
+        className={`w-full sm:w-72 border-r bg-card overflow-hidden flex-col ${mobileShowList ? "flex" : "hidden"} sm:flex shrink-0`}
+      >
         <ConversationList
           conversations={conversations.data ?? []}
           selected={selected}
@@ -125,7 +137,12 @@ function ChatPage() {
         ) : (
           <>
             <div className="sm:hidden border-b p-2">
-              <Button variant="ghost" size="sm" className="gap-1" onClick={() => setMobileShowList(true)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1"
+                onClick={() => setMobileShowList(true)}
+              >
                 <ArrowLeft className="h-4 w-4" />
                 一覧に戻る
               </Button>
@@ -174,8 +191,12 @@ function ChatPage() {
 
       <DeleteConversationDialog
         open={!!deleteTarget}
-        onOpenChange={(v) => { if (!v) setDeleteTarget(null); }}
-        title={deleteTarget?.conv_type === "dm" ? "会話を削除しますか？" : "グループを退出しますか？"}
+        onOpenChange={(v) => {
+          if (!v) setDeleteTarget(null);
+        }}
+        title={
+          deleteTarget?.conv_type === "dm" ? "会話を削除しますか？" : "グループを退出しますか？"
+        }
         description={
           deleteTarget?.conv_type === "dm"
             ? "この会話を一覧から非表示にします。相手からのメッセージ履歴は保持されます。"

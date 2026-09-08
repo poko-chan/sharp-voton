@@ -29,7 +29,8 @@ function UpdatesPage() {
       {items.map((b) => (
         <Card key={b.id} className="p-5 space-y-1">
           <div className="text-xs text-muted-foreground">
-            {new Date(b.created_at).toLocaleString("ja-JP")} ・ {b.audience === "all" ? "全体" : "個別"}
+            {new Date(b.created_at).toLocaleString("ja-JP")} ・{" "}
+            {b.audience === "all" ? "全体" : "個別"}
           </div>
           <div className="text-lg font-semibold">{b.title}</div>
           <div className="whitespace-pre-wrap leading-relaxed text-sm">{b.body}</div>

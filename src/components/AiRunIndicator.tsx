@@ -66,7 +66,10 @@ export function AiRunIndicator({ className = "" }: { className?: string }) {
       </span>
       {s.phase === "error" && (
         <button
-          onClick={() => { setVisible(false); aiRunIdle(); }}
+          onClick={() => {
+            setVisible(false);
+            aiRunIdle();
+          }}
           className="ml-1 p-0.5 hover:bg-destructive/10 rounded-full transition-colors"
         >
           <X className="h-3 w-3" />

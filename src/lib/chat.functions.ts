@@ -51,17 +51,25 @@ export async function listConversations(): Promise<Conversation[]> {
 
 export async function fetchFriends(userId: string): Promise<Profile[]> {
   const { data: f1, error: e1 } = await supabase
-    .from("follows").select("following_id").eq("follower_id", userId).eq("status", "accepted");
+    .from("follows")
+    .select("following_id")
+    .eq("follower_id", userId)
+    .eq("status", "accepted");
   if (e1) throw e1;
   const { data: f2, error: e2 } = await supabase
-    .from("follows").select("follower_id").eq("following_id", userId).eq("status", "accepted");
+    .from("follows")
+    .select("follower_id")
+    .eq("following_id", userId)
+    .eq("status", "accepted");
   if (e2) throw e2;
   const out = (f1 ?? []).map((r: any) => r.following_id);
   const incSet = new Set((f2 ?? []).map((r: any) => r.follower_id));
   const friendIds = out.filter((id) => incSet.has(id));
   if (friendIds.length === 0) return [];
   const profs = await fetchPublicProfiles(friendIds);
-  return profs.sort((a: PublicProfile, b: PublicProfile) => (a.display_name ?? "").localeCompare(b.display_name ?? "")) as Profile[];
+  return profs.sort((a: PublicProfile, b: PublicProfile) =>
+    (a.display_name ?? "").localeCompare(b.display_name ?? ""),
+  ) as Profile[];
 }
 
 export async function fetchProfilesByIds(ids: string[]): Promise<Profile[]> {
@@ -69,25 +77,33 @@ export async function fetchProfilesByIds(ids: string[]): Promise<Profile[]> {
   return (await fetchPublicProfiles(ids)) as Profile[];
 }
 
-
 export async function hideDmConversation(otherId: string) {
   const { error } = await (supabase as any).rpc("hide_dm_conversation", { _other: otherId });
   if (error) throw error;
 }
 
 export async function createChatGroup(name: string, memberIds: string[]): Promise<string> {
-  const { data, error } = await (supabase as any).rpc("create_chat_group", { _name: name, _member_ids: memberIds });
+  const { data, error } = await (supabase as any).rpc("create_chat_group", {
+    _name: name,
+    _member_ids: memberIds,
+  });
   if (error) throw error;
   return data as string;
 }
 
 export async function inviteToChatGroup(groupId: string, userId: string) {
-  const { error } = await (supabase as any).rpc("invite_to_chat_group", { _group: groupId, _user_id: userId });
+  const { error } = await (supabase as any).rpc("invite_to_chat_group", {
+    _group: groupId,
+    _user_id: userId,
+  });
   if (error) throw error;
 }
 
 export async function removeFromChatGroup(groupId: string, userId: string) {
-  const { error } = await (supabase as any).rpc("remove_from_chat_group", { _group: groupId, _user_id: userId });
+  const { error } = await (supabase as any).rpc("remove_from_chat_group", {
+    _group: groupId,
+    _user_id: userId,
+  });
   if (error) throw error;
 }
 
@@ -97,7 +113,10 @@ export async function leaveChatGroup(groupId: string) {
 }
 
 export async function sendGroupMessage(groupId: string, content: string): Promise<string> {
-  const { data, error } = await (supabase as any).rpc("send_group_message", { _group: groupId, _content: content });
+  const { data, error } = await (supabase as any).rpc("send_group_message", {
+    _group: groupId,
+    _content: content,
+  });
   if (error) throw error;
   return data as string;
 }
@@ -115,48 +134,79 @@ export async function sendDm(toId: string, content: string): Promise<string> {
 
 export async function fetchGroupMembers(groupId: string): Promise<GroupMember[]> {
   const { data, error } = await supabase
-    .from("chat_group_members").select("*").eq("group_id", groupId);
+    .from("chat_group_members")
+    .select("*")
+    .eq("group_id", groupId);
   if (error) throw error;
   return (data ?? []) as GroupMember[];
 }
 
 export async function fetchGroupInfo(groupId: string) {
   const { data, error } = await supabase
-    .from("chat_groups").select("*").eq("id", groupId).maybeSingle();
+    .from("chat_groups")
+    .select("*")
+    .eq("id", groupId)
+    .maybeSingle();
   if (error) throw error;
   return data;
 }
 
 // ===== 返信 / リアクション =====
 export type ChatScope = "dm" | "group";
-export type ChatReaction = { id: string; scope: ChatScope; message_id: string; user_id: string; emoji: string };
+export type ChatReaction = {
+  id: string;
+  scope: ChatScope;
+  message_id: string;
+  user_id: string;
+  emoji: string;
+};
 
 export const REACTION_EMOJIS = ["👍", "❤️", "😂", "🎉", "😢", "🙏"];
 
 export async function setReplyTo(scope: ChatScope, messageId: string, replyToId: string) {
   const table = scope === "dm" ? "chat_messages" : "chat_group_messages";
-  const { error } = await (supabase as any).from(table).update({ reply_to_id: replyToId }).eq("id", messageId);
+  const { error } = await (supabase as any)
+    .from(table)
+    .update({ reply_to_id: replyToId })
+    .eq("id", messageId);
   if (error) throw error;
 }
 
-export async function fetchReactions(scope: ChatScope, messageIds: string[]): Promise<ChatReaction[]> {
+export async function fetchReactions(
+  scope: ChatScope,
+  messageIds: string[],
+): Promise<ChatReaction[]> {
   if (messageIds.length === 0) return [];
   const { data, error } = await (supabase as any)
-    .from("chat_reactions").select("*").eq("scope", scope).in("message_id", messageIds);
+    .from("chat_reactions")
+    .select("*")
+    .eq("scope", scope)
+    .in("message_id", messageIds);
   if (error) throw error;
   return (data ?? []) as ChatReaction[];
 }
 
-export async function toggleReaction(scope: ChatScope, messageId: string, emoji: string, userId: string) {
+export async function toggleReaction(
+  scope: ChatScope,
+  messageId: string,
+  emoji: string,
+  userId: string,
+) {
   const { data } = await (supabase as any)
-    .from("chat_reactions").select("id")
-    .eq("scope", scope).eq("message_id", messageId).eq("user_id", userId).eq("emoji", emoji).maybeSingle();
+    .from("chat_reactions")
+    .select("id")
+    .eq("scope", scope)
+    .eq("message_id", messageId)
+    .eq("user_id", userId)
+    .eq("emoji", emoji)
+    .maybeSingle();
   if (data?.id) {
     const { error } = await (supabase as any).from("chat_reactions").delete().eq("id", data.id);
     if (error) throw error;
   } else {
     const { error } = await (supabase as any)
-      .from("chat_reactions").insert({ scope, message_id: messageId, user_id: userId, emoji });
+      .from("chat_reactions")
+      .insert({ scope, message_id: messageId, user_id: userId, emoji });
     if (error) throw error;
   }
 }

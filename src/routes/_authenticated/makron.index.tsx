@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { MakronShell } from "@/components/makron/MakronShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Sparkles, Lock, ChevronRight } from "lucide-react";
+import { BookOpen, GraduationCap, Sparkles, Lock, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/makron/")({ component: MakronHub });
 
@@ -25,17 +25,33 @@ function MakronHub() {
           </Card>
         </Link>
 
-        <Card className="p-6 h-full space-y-3 opacity-70">
+        <Card className="p-6 h-full space-y-3 opacity-70" aria-disabled="true">
           <div className="flex items-center gap-2">
             <Sparkles className="h-6 w-6 text-muted-foreground" />
-            <div className="text-xl font-bold">Makron for YourSelf</div>
+            <div className="text-xl font-bold">Makron for Yourself</div>
             <span className="ml-auto text-[10px] px-2 py-0.5 rounded bg-muted">準備中</span>
           </div>
           <p className="text-sm text-muted-foreground">
             自分専用の問題づくり・自習モード。近日公開予定です。
           </p>
           <Button size="sm" className="w-full" variant="outline" disabled>
-            <Lock className="h-4 w-4 mr-1" />準備中
+            <Lock className="h-4 w-4 mr-1" />
+            準備中
+          </Button>
+        </Card>
+
+        <Card className="p-6 h-full space-y-3 opacity-70" aria-disabled="true">
+          <div className="flex items-center gap-2">
+            <GraduationCap className="h-6 w-6 text-muted-foreground" />
+            <div className="text-xl font-bold">Makron for education</div>
+            <span className="ml-auto text-[10px] px-2 py-0.5 rounded bg-muted">準備中</span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            学校・塾向けの教材配信と学習管理。近日公開予定です。
+          </p>
+          <Button size="sm" className="w-full" variant="outline" disabled>
+            <Lock className="h-4 w-4 mr-1" />
+            準備中
           </Button>
         </Card>
       </div>

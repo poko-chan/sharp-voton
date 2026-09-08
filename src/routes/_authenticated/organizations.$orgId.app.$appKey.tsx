@@ -8,28 +8,51 @@ import { OrgChat } from "@/components/org/OrgChat";
 import { OrgNotifications } from "@/components/org/OrgNotifications";
 import { OrgMakron } from "@/components/org/OrgMakron";
 import { OrgEdu } from "@/components/org/OrgEdu";
+import { OrgAttendance } from "@/components/org/OrgAttendance";
+import { OrgTimetable } from "@/components/org/OrgTimetable";
+import { OrgGrades } from "@/components/org/OrgGrades";
+import { OrgMeetings } from "@/components/org/OrgMeetings";
+import { OrgHealth } from "@/components/org/OrgHealth";
+import { OrgConsult } from "@/components/org/OrgConsult";
+import { OrgMonitor } from "@/components/org/OrgMonitor";
 
-export const Route = createFileRoute("/_authenticated/organizations/$orgId/app/$appKey")({ component: AppPage });
+
+export const Route = createFileRoute("/_authenticated/organizations/$orgId/app/$appKey")({
+  component: AppPage,
+});
 
 function AppPage() {
   const { orgId, appKey } = Route.useParams();
   const ctx = useOrg(orgId);
   if (ctx.loading) return <div className="p-6 text-sm text-muted-foreground">読み込み中…</div>;
-  if (!ctx.myRole && !ctx.canAdmin) return <div className="p-6 text-sm text-muted-foreground">この組織に参加していません。</div>;
-  if (!ctx.appEnabled(appKey)) return (
-    <div className="p-6 space-y-2 text-sm text-muted-foreground">
-      <div>このアプリは組織の管理者によって無効化されています。</div>
-      <Link to="/organizations/$orgId" params={{ orgId }} className="underline">← 組織ホームへ</Link>
-    </div>
-  );
+  if (!ctx.myRole && !ctx.canAdmin)
+    return <div className="p-6 text-sm text-muted-foreground">この組織に参加していません。</div>;
+  if (!ctx.appEnabled(appKey))
+    return (
+      <div className="p-6 space-y-2 text-sm text-muted-foreground">
+        <div>このアプリは組織の管理者によって無効化されています。</div>
+        <Link to="/organizations/$orgId" params={{ orgId }} className="underline">
+          ← 組織ホームへ
+        </Link>
+      </div>
+    );
 
   const meta = ORG_APPS.find((a) => a.key === appKey);
   const props = { orgId, ctx } as any;
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-4">
-      <Link to="/organizations/$orgId" params={{ orgId }} className="text-sm underline text-muted-foreground">← 組織ホームへ</Link>
-      <h1 className="text-xl font-bold">{ctx.appLabel(appKey)}<span className="text-xs font-normal text-muted-foreground ml-2">{meta?.desc}</span></h1>
+      <Link
+        to="/organizations/$orgId"
+        params={{ orgId }}
+        className="text-sm underline text-muted-foreground"
+      >
+        ← 組織ホームへ
+      </Link>
+      <h1 className="text-xl font-bold">
+        {ctx.appLabel(appKey)}
+        <span className="text-xs font-normal text-muted-foreground ml-2">{meta?.desc}</span>
+      </h1>
       {appKey === "posts" && <OrgPosts {...props} />}
       {appKey === "surveys" && <OrgSurveys {...props} />}
       {appKey === "calendar" && <OrgCalendar {...props} />}
@@ -38,6 +61,14 @@ function AppPage() {
       {appKey === "notifications" && <OrgNotifications {...props} />}
       {appKey === "makron" && <OrgMakron {...props} />}
       {appKey === "edu" && <OrgEdu {...props} />}
+      {appKey === "attendance" && <OrgAttendance {...props} />}
+      {appKey === "timetable" && <OrgTimetable {...props} />}
+      {appKey === "grades" && <OrgGrades {...props} />}
+      {appKey === "meetings" && <OrgMeetings {...props} />}
+      {appKey === "health" && <OrgHealth {...props} />}
+      {appKey === "consult" && <OrgConsult {...props} />}
+      {appKey === "monitor" && <OrgMonitor {...props} />}
+
     </div>
   );
 }

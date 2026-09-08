@@ -28,13 +28,19 @@ export type Flashcard = {
 };
 
 export const DECK_COLORS = [
-  "#6366f1", "#8b5cf6", "#ec4899", "#f43f5e", "#f97316",
-  "#f59e0b", "#84cc16", "#10b981", "#06b6d4", "#0ea5e9",
+  "#6366f1",
+  "#8b5cf6",
+  "#ec4899",
+  "#f43f5e",
+  "#f97316",
+  "#f59e0b",
+  "#84cc16",
+  "#10b981",
+  "#06b6d4",
+  "#0ea5e9",
 ];
 
-export const DECK_SUBJECTS = [
-  "国語", "数学", "英語", "理科", "社会", "その他",
-];
+export const DECK_SUBJECTS = ["国語", "数学", "英語", "理科", "社会", "その他"];
 
 export type Grade = "again" | "hard" | "good" | "easy";
 
@@ -69,7 +75,10 @@ export async function fetchDeckCardCounts(userId: string) {
   return counts;
 }
 
-export async function createDeck(userId: string, input: { name: string; description: string; subject: string; color: string }) {
+export async function createDeck(
+  userId: string,
+  input: { name: string; description: string; subject: string; color: string },
+) {
   const { data, error } = await supabase
     .from("flashcard_decks")
     .insert({ user_id: userId, ...input })
@@ -79,7 +88,10 @@ export async function createDeck(userId: string, input: { name: string; descript
   return data as FlashcardDeck;
 }
 
-export async function updateDeck(id: string, input: { name: string; description: string; subject: string; color: string }) {
+export async function updateDeck(
+  id: string,
+  input: { name: string; description: string; subject: string; color: string },
+) {
   const { data, error } = await supabase
     .from("flashcard_decks")
     .update({ ...input, updated_at: new Date().toISOString() })
@@ -120,7 +132,13 @@ export async function fetchDueCardsForDeck(userId: string, deckId: string) {
   return (data ?? []) as Flashcard[];
 }
 
-export async function createCard(userId: string, deckId: string, deckName: string, front: string, back: string) {
+export async function createCard(
+  userId: string,
+  deckId: string,
+  deckName: string,
+  front: string,
+  back: string,
+) {
   const { data, error } = await supabase
     .from("flashcards")
     .insert({ user_id: userId, deck_id: deckId, deck: deckName, front, back })
@@ -130,9 +148,20 @@ export async function createCard(userId: string, deckId: string, deckName: strin
   return data as Flashcard;
 }
 
-export async function bulkCreateCards(userId: string, deckId: string, deckName: string, pairs: { front: string; back: string }[]) {
+export async function bulkCreateCards(
+  userId: string,
+  deckId: string,
+  deckName: string,
+  pairs: { front: string; back: string }[],
+) {
   if (pairs.length === 0) return [];
-  const rows = pairs.map((p) => ({ user_id: userId, deck_id: deckId, deck: deckName, front: p.front, back: p.back }));
+  const rows = pairs.map((p) => ({
+    user_id: userId,
+    deck_id: deckId,
+    deck: deckName,
+    front: p.front,
+    back: p.back,
+  }));
   const { data, error } = await supabase.from("flashcards").insert(rows).select("*");
   if (error) throw error;
   return (data ?? []) as Flashcard[];
@@ -227,7 +256,10 @@ export async function gradeCard(card: Flashcard, grade: Grade) {
 // ---------- Bulk import parsing ----------
 
 export function parseBulkImport(text: string): { front: string; back: string }[] {
-  const lines = text.split("\n").map((l) => l.replace(/\r$/, "")).filter((l) => l.trim().length > 0);
+  const lines = text
+    .split("\n")
+    .map((l) => l.replace(/\r$/, ""))
+    .filter((l) => l.trim().length > 0);
   const pairs: { front: string; back: string }[] = [];
   for (const line of lines) {
     let parts: string[];

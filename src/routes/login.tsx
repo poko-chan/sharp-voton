@@ -16,6 +16,10 @@ import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import logoUrl from "@/assets/logo.png";
 import googleLogo from "@/assets/google-logo.svg.asset.json";
 
+type AccountKind = "child" | "parent" | "org";
+type LoginProfile = { display_name: string | null; avatar_url: string | null };
+type UserMetadata = { username?: string };
+
 export const Route = createFileRoute("/login")({
   head: () => {
     const title = "ログイン｜Study# — 学習を続けやすくする学習プラットフォーム";
@@ -46,7 +50,7 @@ function LoginPage() {
   const { user, loading, accountKind: myKind } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [accountKind, setAccountKind] = useState<"child" | "parent" | "org">("child");
+  const [accountKind, setAccountKind] = useState<AccountKind>("child");
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -68,29 +72,57 @@ function LoginPage() {
     const q = new URLSearchParams(window.location.search);
     const kind = q.get("kind");
     if (kind === "org" || kind === "parent" || kind === "child") {
-      setAccountKind(kind as any);
+      setAccountKind(kind);
       if (kind !== "child") setMode("signup");
     }
     const nx = q.get("next");
     if (nx && nx.startsWith("/")) setNextPath(nx);
+    try {
+      if (sessionStorage.getItem("login.pendingOauth")) {
+        sessionStorage.removeItem("login.pendingOauth");
+        setJustSignedIn(true);
+      }
+    } catch {
+      /* noop */
+    }
   }, []);
+
+  // 既存セッションがある場合は自動遷移せず「おかえりなさい」画面を出す。
+  // ただし next 指定やログイン直後（justSignedIn）はそのまま進む。
+  const [justSignedIn, setJustSignedIn] = useState(false);
+  const [resumeProfile, setResumeProfile] = useState<LoginProfile | null>(null);
+
+  const goHome = () => {
+    if (nextPath) navigate({ to: nextPath as never });
+    else if (myKind === "org") navigate({ to: "/organizations" });
+    else navigate({ to: "/dashboard" });
+  };
 
   useEffect(() => {
     if (loading || !user) return;
-    if (nextPath) navigate({ to: nextPath as any });
-    else if (myKind === "org") navigate({ to: "/organizations" });
-    else if (myKind) navigate({ to: "/dashboard" });
-  }, [user, loading, navigate, nextPath, myKind]);
+    if (nextPath || justSignedIn) {
+      if (nextPath) navigate({ to: nextPath as never });
+      else if (myKind === "org") navigate({ to: "/organizations" });
+      else if (myKind) navigate({ to: "/dashboard" });
+      return;
+    }
+    supabase
+      .from("profiles")
+      .select("display_name, avatar_url")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => setResumeProfile(data ?? { display_name: null, avatar_url: null }));
+  }, [user, loading, navigate, nextPath, myKind, justSignedIn]);
 
   useEffect(() => {
     supabase
       .from("announcements")
       .select("id, title, body, tag, publish_at")
-      .eq("show_on_login" as any, true)
+      .eq("show_on_login", true)
       .lte("publish_at", new Date().toISOString())
       .order("publish_at", { ascending: false })
       .limit(3)
-      .then(({ data }) => setAnnouncements((data ?? []) as any));
+      .then(({ data }) => setAnnouncements(data ?? []));
   }, []);
 
   const submit = async (e: React.FormEvent) => {
@@ -102,7 +134,7 @@ function LoginPage() {
         const uname = username.trim();
         const dname = displayName.trim() || uname;
         if (!uname) throw new Error("ユーザー名を入力してください");
-        if (!/^[A-Za-z0-9_.\-]{2,32}$/.test(uname)) {
+        if (!/^[A-Za-z0-9_.-]{2,32}$/.test(uname)) {
           throw new Error("ユーザー名は2〜32文字の英数字・_.- のみ");
         }
         if (dname.length > 40) throw new Error("表示名は40文字以内で入力してください");
@@ -125,9 +157,10 @@ function LoginPage() {
         // update kind (trigger may not honor metadata)
         await supabase
           .from("profiles")
-          .update({ account_kind: accountKind } as any)
+          .update({ account_kind: accountKind })
           .eq("id", signUpData.session.user.id);
         toast.success("登録完了！自動ログインします");
+        setJustSignedIn(true);
       } else {
         const uname = username.trim();
         if (!uname) throw new Error("ユーザー名を入力してください");
@@ -137,9 +170,10 @@ function LoginPage() {
           refresh_token: tokens.refresh_token,
         });
         if (error) throw error;
+        setJustSignedIn(true);
       }
-    } catch (e: any) {
-      toast.error(e.message ?? "エラーが発生しました");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "エラーが発生しました");
     } finally {
       setBusy(false);
     }
@@ -147,18 +181,100 @@ function LoginPage() {
 
   const google = async () => {
     setBusy(true);
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/login` });
+    try {
+      sessionStorage.setItem("login.pendingOauth", "1");
+    } catch {
+      /* noop */
+    }
+    const r = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: `${window.location.origin}/login`,
+    });
     if (r.error) toast.error("Googleログインに失敗しました");
     setBusy(false);
   };
   const apple = async () => {
     setBusy(true);
-    const r = await lovable.auth.signInWithOAuth("apple", { redirect_uri: `${window.location.origin}/login` });
+    try {
+      sessionStorage.setItem("login.pendingOauth", "1");
+    } catch {
+      /* noop */
+    }
+    const r = await lovable.auth.signInWithOAuth("apple", {
+      redirect_uri: `${window.location.origin}/login`,
+    });
     if (r.error) toast.error("Appleログインに失敗しました");
     setBusy(false);
   };
+
+  // 既存セッションがある場合：おかえりなさい画面
+  if (!loading && user && !nextPath && !justSignedIn && resumeProfile) {
+    const name =
+      resumeProfile.display_name ||
+      (user.user_metadata as UserMetadata).username ||
+      user.email?.split("@")[0] ||
+      "ユーザー";
+    return (
+      <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
+        <Card className="w-full max-w-sm p-8 space-y-6 text-center">
+          <div className="space-y-1">
+            <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+              welcome back
+            </div>
+            <h1 className="text-2xl font-bold">おかえりなさい</h1>
+          </div>
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-20 w-20 rounded-full overflow-hidden border border-border/60 bg-muted grid place-items-center">
+              {resumeProfile.avatar_url ? (
+                <img
+                  src={resumeProfile.avatar_url}
+                  alt={`${name} のプロフィール画像`}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span className="text-2xl font-bold text-muted-foreground">{name.slice(0, 1)}</span>
+              )}
+            </div>
+            <div className="text-lg font-semibold">{name} さん</div>
+          </div>
+          <div className="space-y-2">
+            <Button className="w-full" onClick={goHome}>
+              続行
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={async () => {
+                setBusy(true);
+                await supabase.auth.signOut();
+                setResumeProfile(null);
+                setBusy(false);
+              }}
+            >
+              別のアカウントで続行
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
+      {busy && (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-background/70 backdrop-blur-sm"
+          aria-live="polite"
+        >
+          <div className="flex flex-col items-center gap-3">
+            <span className="relative flex h-14 w-14 items-center justify-center">
+              <span className="absolute inset-0 rounded-full border-2 border-primary/25" />
+              <span className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
+              <img src={logoUrl} alt="" width={28} height={28} className="rounded" />
+            </span>
+            <p className="text-sm text-muted-foreground animate-pulse">ログイン中…</p>
+          </div>
+        </div>
+      )}
       <div className="w-full max-w-md space-y-4">
         {announcements.length > 0 && (
           <Card className="p-4 space-y-2 border-primary/30">
@@ -167,7 +283,9 @@ function LoginPage() {
               {announcements.map((a) => (
                 <div key={a.id} className="text-sm border-l-2 border-primary/40 pl-3">
                   <div className="font-medium">{a.title}</div>
-                  <div className="text-xs text-muted-foreground whitespace-pre-wrap line-clamp-3">{a.body}</div>
+                  <div className="text-xs text-muted-foreground whitespace-pre-wrap line-clamp-3">
+                    {a.body}
+                  </div>
                   <div className="text-[10px] text-muted-foreground mt-0.5">
                     {new Date(a.publish_at).toLocaleDateString("ja-JP")}
                   </div>
@@ -202,14 +320,22 @@ function LoginPage() {
                 fetchPriority="high"
                 className={`login-card__logo mx-auto h-16 w-16 rounded-2xl shadow-md ${busy ? "login-card__logo--busy" : ""}`}
               />
-              <h1 className="text-3xl font-bold">Study# — 学習記録と演習をまとめる学習プラットフォーム</h1>
+              <h1 className="text-3xl font-bold">
+                Study# — 学習記録と演習をまとめる学習プラットフォーム
+              </h1>
               <p className="text-sm text-muted-foreground">
                 {mode === "signin" ? "ログイン" : "新規登録"}してはじめましょう
               </p>
             </div>
 
             <Button onClick={google} variant="outline" className="w-full" disabled={busy}>
-              <img src={googleLogo.url} alt="" width={18} height={18} className="mr-2 h-[18px] w-[18px]" />
+              <img
+                src={googleLogo.url}
+                alt=""
+                width={18}
+                height={18}
+                className="mr-2 h-[18px] w-[18px]"
+              />
               Googleで{mode === "signin" ? "ログイン" : "登録"}
             </Button>
             <div className="grid gap-2">
@@ -292,7 +418,12 @@ function LoginPage() {
                   </div>
                   <div className="space-y-1">
                     <Label>メールアドレス</Label>
-                    <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <Input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
                   </div>
                 </>
               )}
@@ -328,7 +459,12 @@ function LoginPage() {
                     className="mt-0.5"
                   />
                   <span>
-                    <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    <a
+                      href="/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
                       利用規約
                     </a>
                     {" と "}
@@ -344,7 +480,11 @@ function LoginPage() {
                   </span>
                 </label>
               )}
-              <Button type="submit" className="w-full" disabled={busy || (mode === "signup" && !agreed)}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={busy || (mode === "signup" && !agreed)}
+              >
                 {busy && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
                 {busy ? "認証中…" : mode === "signin" ? "ログイン" : "登録する"}
               </Button>
@@ -361,7 +501,10 @@ function LoginPage() {
 
             {mode === "signin" && (
               <div className="text-center text-xs">
-                <Link to="/forgot" className="text-muted-foreground hover:text-primary hover:underline">
+                <Link
+                  to="/forgot"
+                  className="text-muted-foreground hover:text-primary hover:underline"
+                >
                   パスワード／メールアドレスを忘れた場合
                 </Link>
               </div>

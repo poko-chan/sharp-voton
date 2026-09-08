@@ -43,9 +43,16 @@ function FlashcardsPage() {
     }
   };
 
-  useEffect(() => { load(); }, [user?.id]);
+  useEffect(() => {
+    load();
+  }, [user?.id]);
 
-  const handleSubmit = async (input: { name: string; description: string; subject: string; color: string }) => {
+  const handleSubmit = async (input: {
+    name: string;
+    description: string;
+    subject: string;
+    color: string;
+  }) => {
     if (!user) return;
     try {
       if (editingDeck) {
@@ -57,7 +64,9 @@ function FlashcardsPage() {
       }
       await load();
     } catch (e: any) {
-      toast.error(e?.message?.includes("duplicate") ? "同じ名前のデッキが既にあります" : "保存に失敗しました");
+      toast.error(
+        e?.message?.includes("duplicate") ? "同じ名前のデッキが既にあります" : "保存に失敗しました",
+      );
     }
   };
 
@@ -88,7 +97,14 @@ function FlashcardsPage() {
       </div>
 
       {selectedDeck ? (
-        <DeckDetail userId={user!.id} deck={selectedDeck} onBack={() => { setSelectedDeck(null); load(); }} />
+        <DeckDetail
+          userId={user!.id}
+          deck={selectedDeck}
+          onBack={() => {
+            setSelectedDeck(null);
+            load();
+          }}
+        />
       ) : loading ? (
         <div className="text-sm text-muted-foreground">読み込み中...</div>
       ) : (
@@ -96,13 +112,24 @@ function FlashcardsPage() {
           decks={decks}
           counts={counts}
           onOpen={setSelectedDeck}
-          onEdit={(deck) => { setEditingDeck(deck); setDialogOpen(true); }}
+          onEdit={(deck) => {
+            setEditingDeck(deck);
+            setDialogOpen(true);
+          }}
           onDelete={handleDelete}
-          onCreate={() => { setEditingDeck(null); setDialogOpen(true); }}
+          onCreate={() => {
+            setEditingDeck(null);
+            setDialogOpen(true);
+          }}
         />
       )}
 
-      <DeckDialog open={dialogOpen} onOpenChange={setDialogOpen} deck={editingDeck} onSubmit={handleSubmit} />
+      <DeckDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        deck={editingDeck}
+        onSubmit={handleSubmit}
+      />
     </div>
   );
 }

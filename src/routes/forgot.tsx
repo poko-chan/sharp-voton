@@ -16,7 +16,10 @@ export const Route = createFileRoute("/forgot")({
   head: () => ({
     meta: [
       { title: "アカウントを復旧 | Study#" },
-      { name: "description", content: "Study# のパスワードまたはメールアドレスを忘れた場合の復旧手続き。" },
+      {
+        name: "description",
+        content: "Study# のパスワードまたはメールアドレスを忘れた場合の復旧手続き。",
+      },
     ],
   }),
   component: ForgotPage,
@@ -29,18 +32,31 @@ function ForgotPage() {
         <div className="flex items-center gap-3">
           <img src={logoUrl} alt="" className="h-10 w-10 rounded-xl" />
           <h1 className="text-2xl font-bold">アカウントを復旧</h1>
-          <Link to="/login" className="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+          <Link
+            to="/login"
+            className="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
             <ArrowLeft className="h-4 w-4" /> 戻る
           </Link>
         </div>
 
         <Tabs defaultValue="password">
           <TabsList className="grid grid-cols-2 w-full">
-            <TabsTrigger value="password"><KeyRound className="h-4 w-4 mr-1" />パスワード</TabsTrigger>
-            <TabsTrigger value="email"><Mail className="h-4 w-4 mr-1" />メール</TabsTrigger>
+            <TabsTrigger value="password">
+              <KeyRound className="h-4 w-4 mr-1" />
+              パスワード
+            </TabsTrigger>
+            <TabsTrigger value="email">
+              <Mail className="h-4 w-4 mr-1" />
+              メール
+            </TabsTrigger>
           </TabsList>
-          <TabsContent value="password"><ForgotPassword /></TabsContent>
-          <TabsContent value="email"><ForgotEmail /></TabsContent>
+          <TabsContent value="password">
+            <ForgotPassword />
+          </TabsContent>
+          <TabsContent value="email">
+            <ForgotEmail />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
@@ -57,10 +73,12 @@ function ForgotPassword() {
     e.preventDefault();
     setBusy(true);
     try {
-      await requestReset({ data: {
-        username: username.trim(),
-        redirectTo: `${window.location.origin}/reset-password`,
-      } });
+      await requestReset({
+        data: {
+          username: username.trim(),
+          redirectTo: `${window.location.origin}/reset-password`,
+        },
+      });
       setSent(true);
       toast.success("再設定メールを送信しました");
     } catch (e: any) {
@@ -83,9 +101,16 @@ function ForgotPassword() {
         <form onSubmit={submit} className="space-y-3">
           <div>
             <Label>ユーザー名</Label>
-            <Input value={username} onChange={(e) => setUsername(e.target.value)} required autoComplete="username" />
+            <Input
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              autoComplete="username"
+            />
           </div>
-          <Button type="submit" className="w-full" disabled={busy}>再設定メールを送信</Button>
+          <Button type="submit" className="w-full" disabled={busy}>
+            再設定メールを送信
+          </Button>
         </form>
       )}
     </Card>
@@ -120,9 +145,16 @@ function ForgotEmail() {
       <form onSubmit={submit} className="space-y-3">
         <div>
           <Label>ユーザー名</Label>
-          <Input value={username} onChange={(e) => setUsername(e.target.value)} required autoComplete="username" />
+          <Input
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            autoComplete="username"
+          />
         </div>
-        <Button type="submit" className="w-full" disabled={busy}>メールアドレスを確認</Button>
+        <Button type="submit" className="w-full" disabled={busy}>
+          メールアドレスを確認
+        </Button>
       </form>
       {masked && (
         <div className="rounded-md border border-primary/40 bg-primary/5 p-4 text-sm">

@@ -5,11 +5,30 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Send, Check, X, Plus, Users, MessageSquare, Inbox, ArrowLeft, Info, Search } from "lucide-react";
+import {
+  Send,
+  Check,
+  X,
+  Plus,
+  Users,
+  MessageSquare,
+  Inbox,
+  ArrowLeft,
+  Info,
+  Search,
+} from "lucide-react";
 import { toast } from "sonner";
 import { loadOrgProfiles, nameOf } from "@/lib/org-apps";
 
-export function OrgChat({ orgId, ctx, moderateGroupId }: { orgId: string; ctx: any; moderateGroupId?: string }) {
+export function OrgChat({
+  orgId,
+  ctx,
+  moderateGroupId,
+}: {
+  orgId: string;
+  ctx: any;
+  moderateGroupId?: string;
+}) {
   const { user } = useAuth();
   const [threads, setThreads] = useState<any[]>([]);
   const [parts, setParts] = useState<Record<string, any[]>>({});
@@ -27,63 +46,104 @@ export function OrgChat({ orgId, ctx, moderateGroupId }: { orgId: string; ctx: a
   const [editText, setEditText] = useState("");
 
   const load = async () => {
-    let query = (supabase as any).from("org_chat_threads").select("*").eq("organization_id", orgId).order("updated_at", { ascending: false });
+    let query = (supabase as any)
+      .from("org_chat_threads")
+      .select("*")
+      .eq("organization_id", orgId)
+      .order("updated_at", { ascending: false });
     if (moderateGroupId) query = query.eq("group_id", moderateGroupId);
     const { data: th, error } = await query;
     if (error) return toast.error(error.message);
     setThreads(th ?? []);
     const ids = (th ?? []).map((t: any) => t.id);
     if (ids.length) {
-      const { data: p } = await (supabase as any).from("org_chat_participants").select("*").in("thread_id", ids);
+      const { data: p } = await (supabase as any)
+        .from("org_chat_participants")
+        .select("*")
+        .in("thread_id", ids);
       const map: Record<string, any[]> = {};
       for (const r of p ?? []) (map[r.thread_id] ??= []).push(r);
       setParts(map);
-      setProfiles(await loadOrgProfiles(orgId, (p ?? []).map((r: any) => r.user_id)));
+      setProfiles(
+        await loadOrgProfiles(
+          orgId,
+          (p ?? []).map((r: any) => r.user_id),
+        ),
+      );
     } else setParts({});
-    const { data: m } = await (supabase as any).from("organization_members").select("user_id, role").eq("organization_id", orgId);
+    const { data: m } = await (supabase as any)
+      .from("organization_members")
+      .select("user_id, role")
+      .eq("organization_id", orgId);
     setMembers(m ?? []);
     if (m?.length) setProfiles((pr) => ({ ...pr }));
-    const prof = await loadOrgProfiles(orgId, (m ?? []).map((x: any) => x.user_id));
+    const prof = await loadOrgProfiles(
+      orgId,
+      (m ?? []).map((x: any) => x.user_id),
+    );
     setProfiles((pr) => ({ ...prof, ...pr }));
     if (ids.length) {
-      const { data: lm } = await (supabase as any).from("org_chat_messages")
-        .select("thread_id, body, created_at, sender_id, deleted_at").in("thread_id", ids)
-        .order("created_at", { ascending: false }).limit(500);
+      const { data: lm } = await (supabase as any)
+        .from("org_chat_messages")
+        .select("thread_id, body, created_at, sender_id, deleted_at")
+        .in("thread_id", ids)
+        .order("created_at", { ascending: false })
+        .limit(500);
       const last: Record<string, any> = {};
       for (const m of lm ?? []) if (!last[m.thread_id]) last[m.thread_id] = m;
       setLastMsgs(last);
     } else setLastMsgs({});
   };
-  useEffect(() => { load(); }, [orgId, moderateGroupId]);
+  useEffect(() => {
+    load();
+  }, [orgId, moderateGroupId]);
 
   const openThread = async (id: string) => {
     setActive(id);
-    const { data } = await (supabase as any).from("org_chat_messages").select("*").eq("thread_id", id).order("created_at");
+    const { data } = await (supabase as any)
+      .from("org_chat_messages")
+      .select("*")
+      .eq("thread_id", id)
+      .order("created_at");
     setMessages(data ?? []);
-    await (supabase as any).from("org_chat_participants").update({ last_read_at: new Date().toISOString() })
-      .eq("thread_id", id).eq("user_id", user!.id);
+    await (supabase as any)
+      .from("org_chat_participants")
+      .update({ last_read_at: new Date().toISOString() })
+      .eq("thread_id", id)
+      .eq("user_id", user!.id);
   };
 
   const send = async () => {
     if (!text.trim() || !active) return;
-    const { error } = await (supabase as any).from("org_chat_messages").insert({ thread_id: active, sender_id: user!.id, body: text.trim() });
+    const { error } = await (supabase as any)
+      .from("org_chat_messages")
+      .insert({ thread_id: active, sender_id: user!.id, body: text.trim() });
     if (error) return toast.error("メッセージを送れません（相手の承認待ち・権限をご確認ください）");
-    setText(""); openThread(active);
+    setText("");
+    openThread(active);
   };
 
   const respond = async (threadId: string, accept: boolean) => {
-    const { error } = await (supabase as any).from("org_chat_participants")
-      .update({ status: accept ? "accepted" : "blocked" }).eq("thread_id", threadId).eq("user_id", user!.id);
+    const { error } = await (supabase as any)
+      .from("org_chat_participants")
+      .update({ status: accept ? "accepted" : "blocked" })
+      .eq("thread_id", threadId)
+      .eq("user_id", user!.id);
     if (error) return toast.error(error.message);
     toast.success(accept ? "チャットを承認しました" : "拒否しました");
     load();
   };
 
   const startDm = async (other: string) => {
-    const { data, error } = await (supabase as any).rpc("org_start_dm", { _org: orgId, _other: other });
+    const { data, error } = await (supabase as any).rpc("org_start_dm", {
+      _org: orgId,
+      _other: other,
+    });
     if (error) return toast.error(error.message);
     toast.success("チャットを開始しました（相手が承認すると会話できます）");
-    setShowNew(false); await load(); openThread(data);
+    setShowNew(false);
+    await load();
+    openThread(data);
   };
 
   const title = (t: any) => {
@@ -92,7 +152,10 @@ export function OrgChat({ orgId, ctx, moderateGroupId }: { orgId: string; ctx: a
     return others.map((p) => nameOf(profiles[p.user_id])).join("、") || "チャット";
   };
   const myPart = (t: any) => (parts[t.id] ?? []).find((p) => p.user_id === user?.id);
-  const readers = (t: any, at: string) => (parts[t.id] ?? []).filter((p) => p.user_id !== user?.id && p.last_read_at && p.last_read_at >= at).length;
+  const readers = (t: any, at: string) =>
+    (parts[t.id] ?? []).filter(
+      (p) => p.user_id !== user?.id && p.last_read_at && p.last_read_at >= at,
+    ).length;
 
   const pending = threads.filter((t) => myPart(t)?.status === "pending");
   const accepted = threads.filter((t) => !myPart(t) || myPart(t)?.status === "accepted");
@@ -107,7 +170,9 @@ export function OrgChat({ orgId, ctx, moderateGroupId }: { orgId: string; ctx: a
     .filter((t) => tab !== "dm" || t.kind !== "group")
     .filter((t) => tab !== "group" || t.kind === "group")
     .filter((t) => tab !== "unread" || isUnread(t))
-    .filter((t) => !listQ || title(t).includes(listQ) || (lastMsgs[t.id]?.body ?? "").includes(listQ));
+    .filter(
+      (t) => !listQ || title(t).includes(listQ) || (lastMsgs[t.id]?.body ?? "").includes(listQ),
+    );
   const activeThread = threads.find((t) => t.id === active);
   const activeStatus = activeThread ? myPart(activeThread)?.status : null;
 
@@ -116,16 +181,27 @@ export function OrgChat({ orgId, ctx, moderateGroupId }: { orgId: string; ctx: a
     const av = profiles[others[0]?.user_id]?.avatar_url;
     const last = lastMsgs[t.id];
     return (
-      <button onClick={() => openThread(t.id)}
-        className={`w-full flex items-center gap-2 rounded-lg p-2 text-left transition ${active === t.id ? "bg-primary/12" : "hover:bg-muted"}`}>
+      <button
+        onClick={() => openThread(t.id)}
+        className={`w-full flex items-center gap-2 rounded-lg p-2 text-left transition ${active === t.id ? "bg-primary/12" : "hover:bg-muted"}`}
+      >
         <Avatar className="h-8 w-8">
           <AvatarImage src={av ?? undefined} alt="" />
-          <AvatarFallback>{t.kind === "group" ? <Users className="h-4 w-4" /> : title(t).slice(0, 1)}</AvatarFallback>
+          <AvatarFallback>
+            {t.kind === "group" ? <Users className="h-4 w-4" /> : title(t).slice(0, 1)}
+          </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <div className={`text-sm truncate ${isUnread(t) ? "font-bold" : "font-medium"}`}>{title(t)}</div>
+          <div className={`text-sm truncate ${isUnread(t) ? "font-bold" : "font-medium"}`}>
+            {title(t)}
+          </div>
           <div className="text-[10px] text-muted-foreground truncate">
-            {last && !last.deleted_at ? last.body : (t.kind === "group" ? "グループチャット" : "1対1のチャット")}{!myPart(t) && " ・閲覧（管理）"}
+            {last && !last.deleted_at
+              ? last.body
+              : t.kind === "group"
+                ? "グループチャット"
+                : "1対1のチャット"}
+            {!myPart(t) && " ・閲覧（管理）"}
           </div>
         </div>
         {isUnread(t) && <span className="h-2 w-2 rounded-full bg-primary shrink-0" />}
@@ -139,22 +215,40 @@ export function OrgChat({ orgId, ctx, moderateGroupId }: { orgId: string; ctx: a
         {!moderateGroupId && (
           <>
             <Button className="w-full" size="sm" onClick={() => setShowNew(!showNew)}>
-              <Plus className="h-4 w-4 mr-1" />新しいチャットを始める
+              <Plus className="h-4 w-4 mr-1" />
+              新しいチャットを始める
             </Button>
             {showNew && (
               <Card className="p-2 space-y-2">
-                <div className="text-[11px] text-muted-foreground px-1">相手を選ぶと、相手の承認後に会話できます。</div>
+                <div className="text-[11px] text-muted-foreground px-1">
+                  相手を選ぶと、相手の承認後に会話できます。
+                </div>
                 <div className="relative">
                   <Search className="h-3.5 w-3.5 absolute left-2 top-2.5 text-muted-foreground" />
-                  <Input className="pl-7 h-8" placeholder="メンバーを検索" value={q} onChange={(e) => setQ(e.target.value)} />
+                  <Input
+                    className="pl-7 h-8"
+                    placeholder="メンバーを検索"
+                    value={q}
+                    onChange={(e) => setQ(e.target.value)}
+                  />
                 </div>
                 <div className="max-h-60 overflow-auto space-y-0.5">
-                  {members.filter((m) => m.user_id !== user?.id)
+                  {members
+                    .filter((m) => m.user_id !== user?.id)
                     .filter((m) => !q || nameOf(profiles[m.user_id], "").includes(q))
                     .map((m) => (
-                      <button key={m.user_id} className="w-full flex items-center gap-2 text-left text-sm p-1.5 rounded hover:bg-muted" onClick={() => startDm(m.user_id)}>
-                        <Avatar className="h-6 w-6"><AvatarImage src={profiles[m.user_id]?.avatar_url ?? undefined} alt="" /><AvatarFallback>{nameOf(profiles[m.user_id]).slice(0, 1)}</AvatarFallback></Avatar>
-                        <span className="flex-1 truncate">{nameOf(profiles[m.user_id], m.user_id.slice(0, 8))}</span>
+                      <button
+                        key={m.user_id}
+                        className="w-full flex items-center gap-2 text-left text-sm p-1.5 rounded hover:bg-muted"
+                        onClick={() => startDm(m.user_id)}
+                      >
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src={profiles[m.user_id]?.avatar_url ?? undefined} alt="" />
+                          <AvatarFallback>{nameOf(profiles[m.user_id]).slice(0, 1)}</AvatarFallback>
+                        </Avatar>
+                        <span className="flex-1 truncate">
+                          {nameOf(profiles[m.user_id], m.user_id.slice(0, 8))}
+                        </span>
                         <span className="text-[10px] text-muted-foreground">{m.role}</span>
                       </button>
                     ))}
@@ -166,13 +260,27 @@ export function OrgChat({ orgId, ctx, moderateGroupId }: { orgId: string; ctx: a
 
         {pending.length > 0 && (
           <Card className="p-2 space-y-2 border-amber-400/60">
-            <div className="text-[11px] font-semibold flex items-center gap-1 text-amber-600"><Inbox className="h-3.5 w-3.5" />承認まちのリクエスト {pending.length}件</div>
+            <div className="text-[11px] font-semibold flex items-center gap-1 text-amber-600">
+              <Inbox className="h-3.5 w-3.5" />
+              承認まちのリクエスト {pending.length}件
+            </div>
             {pending.map((t) => (
               <div key={t.id} className="rounded-lg border p-2 space-y-1.5">
                 <div className="text-sm font-medium truncate">{title(t)}</div>
                 <div className="flex gap-1">
-                  <Button size="sm" className="h-7 flex-1" onClick={() => respond(t.id, true)}><Check className="h-3 w-3 mr-1" />承認</Button>
-                  <Button size="sm" variant="outline" className="h-7 flex-1" onClick={() => respond(t.id, false)}><X className="h-3 w-3 mr-1" />拒否</Button>
+                  <Button size="sm" className="h-7 flex-1" onClick={() => respond(t.id, true)}>
+                    <Check className="h-3 w-3 mr-1" />
+                    承認
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 flex-1"
+                    onClick={() => respond(t.id, false)}
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    拒否
+                  </Button>
                 </div>
               </div>
             ))}
@@ -181,26 +289,40 @@ export function OrgChat({ orgId, ctx, moderateGroupId }: { orgId: string; ctx: a
 
         <Card className="p-2 space-y-1">
           <div className="flex flex-wrap gap-1">
-            {([
-              { k: "all", l: "すべて" },
-              { k: "unread", l: `未読${unreadCount ? ` ${unreadCount}` : ""}` },
-              { k: "dm", l: "1対1" },
-              { k: "group", l: "グループ" },
-              { k: "pending", l: `承認待ち${pending.length ? ` ${pending.length}` : ""}` },
-            ] as const).map((x) => (
-              <button key={x.k} onClick={() => setTab(x.k)}
-                className={`px-2 py-1 rounded-full text-[11px] border transition ${tab === x.k ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted"}`}>
+            {(
+              [
+                { k: "all", l: "すべて" },
+                { k: "unread", l: `未読${unreadCount ? ` ${unreadCount}` : ""}` },
+                { k: "dm", l: "1対1" },
+                { k: "group", l: "グループ" },
+                { k: "pending", l: `承認待ち${pending.length ? ` ${pending.length}` : ""}` },
+              ] as const
+            ).map((x) => (
+              <button
+                key={x.k}
+                onClick={() => setTab(x.k)}
+                className={`px-2 py-1 rounded-full text-[11px] border transition ${tab === x.k ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted"}`}
+              >
                 {x.l}
               </button>
             ))}
           </div>
           <div className="relative">
             <Search className="h-3.5 w-3.5 absolute left-2 top-2.5 text-muted-foreground" />
-            <Input className="pl-7 h-8" placeholder="チャットを検索" value={listQ} onChange={(e) => setListQ(e.target.value)} />
+            <Input
+              className="pl-7 h-8"
+              placeholder="チャットを検索"
+              value={listQ}
+              onChange={(e) => setListQ(e.target.value)}
+            />
           </div>
           <div className="space-y-0.5 max-h-[60vh] overflow-auto">
-            {visible.length === 0 && <div className="p-3 text-xs text-muted-foreground">該当するチャットはありません</div>}
-            {visible.map((t) => <ThreadItem key={t.id} t={t} />)}
+            {visible.length === 0 && (
+              <div className="p-3 text-xs text-muted-foreground">該当するチャットはありません</div>
+            )}
+            {visible.map((t) => (
+              <ThreadItem key={t.id} t={t} />
+            ))}
           </div>
         </Card>
       </div>
@@ -209,7 +331,9 @@ export function OrgChat({ orgId, ctx, moderateGroupId }: { orgId: string; ctx: a
         {!active ? (
           <div className="m-auto text-center space-y-2 p-8">
             <MessageSquare className="h-10 w-10 mx-auto text-muted-foreground/40" />
-            <div className="text-sm text-muted-foreground">左のリストからチャットを選んでください</div>
+            <div className="text-sm text-muted-foreground">
+              左のリストからチャットを選んでください
+            </div>
             <div className="text-[11px] text-muted-foreground max-w-xs mx-auto">
               「新しいチャットを始める」→ 相手を選ぶ → 相手が承認 → 会話スタート、という流れです。
             </div>
@@ -217,58 +341,112 @@ export function OrgChat({ orgId, ctx, moderateGroupId }: { orgId: string; ctx: a
         ) : (
           <>
             <div className="flex items-center gap-2 border-b px-3 py-2">
-              <Button size="sm" variant="ghost" className="md:hidden" onClick={() => setActive(null)}><ArrowLeft className="h-4 w-4" /></Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="md:hidden"
+                onClick={() => setActive(null)}
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
               <div className="font-medium text-sm flex items-center gap-1">
-                {activeThread?.kind === "group" && <Users className="h-4 w-4" />}{activeThread && title(activeThread)}
+                {activeThread?.kind === "group" && <Users className="h-4 w-4" />}
+                {activeThread && title(activeThread)}
               </div>
               <span className="ml-auto text-[10px] text-muted-foreground">
-                {activeStatus === "pending" ? "承認まち" : !myPart(activeThread) ? "閲覧のみ（管理）" : "参加中"}
+                {activeStatus === "pending"
+                  ? "承認まち"
+                  : !myPart(activeThread)
+                    ? "閲覧のみ（管理）"
+                    : "参加中"}
               </span>
             </div>
 
             {activeStatus === "pending" && (
               <div className="bg-amber-500/10 text-amber-700 text-[11px] px-3 py-2 flex items-center gap-1">
-                <Info className="h-3.5 w-3.5" />このチャットはまだ承認されていません。上のリクエストから承認してください。
+                <Info className="h-3.5 w-3.5" />
+                このチャットはまだ承認されていません。上のリクエストから承認してください。
               </div>
             )}
 
             <div className="flex-1 space-y-3 overflow-auto p-3 max-h-[52vh]">
-              {messages.length === 0 && <div className="text-center text-xs text-muted-foreground py-8">まだメッセージはありません</div>}
+              {messages.length === 0 && (
+                <div className="text-center text-xs text-muted-foreground py-8">
+                  まだメッセージはありません
+                </div>
+              )}
               {messages.map((m) => {
                 const mine = m.sender_id === user?.id;
                 return (
                   <div key={m.id} className={`flex gap-2 ${mine ? "flex-row-reverse" : ""}`}>
                     {!mine && (
-                      <Avatar className="h-7 w-7 mt-4"><AvatarImage src={profiles[m.sender_id]?.avatar_url ?? undefined} alt="" />
-                        <AvatarFallback>{nameOf(profiles[m.sender_id]).slice(0, 1)}</AvatarFallback></Avatar>
+                      <Avatar className="h-7 w-7 mt-4">
+                        <AvatarImage src={profiles[m.sender_id]?.avatar_url ?? undefined} alt="" />
+                        <AvatarFallback>{nameOf(profiles[m.sender_id]).slice(0, 1)}</AvatarFallback>
+                      </Avatar>
                     )}
                     <div className={`max-w-[75%] ${mine ? "text-right" : ""}`}>
                       <div className="text-[10px] text-muted-foreground">
-                        {!mine && `${nameOf(profiles[m.sender_id])} ・ `}{new Date(m.created_at).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}
+                        {!mine && `${nameOf(profiles[m.sender_id])} ・ `}
+                        {new Date(m.created_at).toLocaleTimeString("ja-JP", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                         {m.edited_at && "（編集済み）"}
                       </div>
                       {editing === m.id ? (
                         <div className="flex gap-1">
                           <Input value={editText} onChange={(e) => setEditText(e.target.value)} />
-                          <Button size="sm" onClick={async () => {
-                            await (supabase as any).from("org_chat_messages").update({ body: editText, edited_at: new Date().toISOString() }).eq("id", m.id);
-                            setEditing(null); openThread(active);
-                          }}>保存</Button>
+                          <Button
+                            size="sm"
+                            onClick={async () => {
+                              await (supabase as any)
+                                .from("org_chat_messages")
+                                .update({ body: editText, edited_at: new Date().toISOString() })
+                                .eq("id", m.id);
+                              setEditing(null);
+                              openThread(active);
+                            }}
+                          >
+                            保存
+                          </Button>
                         </div>
                       ) : (
-                        <div className={`inline-block rounded-2xl px-3 py-2 text-sm text-left ${mine ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted rounded-bl-sm"}`}>
-                          {m.deleted_at ? <span className="italic opacity-70">削除されたメッセージ</span> : m.body}
+                        <div
+                          className={`inline-block rounded-2xl px-3 py-2 text-sm text-left ${mine ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted rounded-bl-sm"}`}
+                        >
+                          {m.deleted_at ? (
+                            <span className="italic opacity-70">削除されたメッセージ</span>
+                          ) : (
+                            m.body
+                          )}
                         </div>
                       )}
                       <div className="text-[10px] text-muted-foreground space-x-2">
                         {mine && readers(activeThread, m.created_at) > 0 && <span>既読</span>}
                         {mine && !m.deleted_at && editing !== m.id && (
                           <>
-                            <button className="underline" onClick={() => { setEditing(m.id); setEditText(m.body); }}>編集</button>
-                            <button className="underline text-destructive" onClick={async () => {
-                              await (supabase as any).from("org_chat_messages").update({ deleted_at: new Date().toISOString(), body: "" }).eq("id", m.id);
-                              openThread(active);
-                            }}>削除</button>
+                            <button
+                              className="underline"
+                              onClick={() => {
+                                setEditing(m.id);
+                                setEditText(m.body);
+                              }}
+                            >
+                              編集
+                            </button>
+                            <button
+                              className="underline text-destructive"
+                              onClick={async () => {
+                                await (supabase as any)
+                                  .from("org_chat_messages")
+                                  .update({ deleted_at: new Date().toISOString(), body: "" })
+                                  .eq("id", m.id);
+                                openThread(active);
+                              }}
+                            >
+                              削除
+                            </button>
                           </>
                         )}
                       </div>
@@ -280,9 +458,17 @@ export function OrgChat({ orgId, ctx, moderateGroupId }: { orgId: string; ctx: a
 
             {!moderateGroupId && (
               <div className="flex gap-2 border-t p-3">
-                <Input placeholder={activeStatus === "pending" ? "承認後に送信できます" : "メッセージを入力"} value={text}
-                  onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} />
-                <Button onClick={send}><Send className="h-4 w-4" /></Button>
+                <Input
+                  placeholder={
+                    activeStatus === "pending" ? "承認後に送信できます" : "メッセージを入力"
+                  }
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && send()}
+                />
+                <Button onClick={send}>
+                  <Send className="h-4 w-4" />
+                </Button>
               </div>
             )}
           </>

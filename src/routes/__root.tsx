@@ -12,7 +12,6 @@ import { useEffect } from "react";
 import { ColorFilterDefs } from "@/components/a11y/ColorFilterDefs";
 import { SelectionSpeaker } from "@/components/a11y/SelectionSpeaker";
 
-
 import appCss from "../styles.css?url";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { MaintenanceProvider, useMaintenance } from "@/lib/maintenance-context";
@@ -21,12 +20,10 @@ import { RestrictionProvider } from "@/lib/restriction-context";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { RouteLoading } from "@/components/RouteLoading";
-import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { AmbientSound } from "@/components/AmbientSound";
 import { loadAndApplyUserTheme } from "@/lib/theme";
 
-import { useUserPrefs } from "@/lib/user-prefs";
 import { I18nProvider } from "@/lib/i18n";
 
 function NotFoundComponent() {
@@ -55,7 +52,10 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         <h1 className="text-xl font-semibold">問題が発生しました</h1>
         <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
         <button
-          onClick={() => { router.invalidate(); reset(); }}
+          onClick={() => {
+            router.invalidate();
+            reset();
+          }}
           className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
         >
           再試行
@@ -66,7 +66,8 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 const SITE_URL = "https://sharp-voton.lovable.app";
-const OG_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fd850e55-f433-466a-ae78-8f2f88319d43/id-preview-8ca241ff--70a80aa5-02cd-459f-845f-d642eaffb4f2.lovable.app-1778835357697.png";
+const OG_IMAGE =
+  "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fd850e55-f433-466a-ae78-8f2f88319d43/id-preview-8ca241ff--70a80aa5-02cd-459f-845f-d642eaffb4f2.lovable.app-1778835357697.png";
 
 // Chrome Built-in AI (Prompt API) Origin Trial token.
 // 環境変数 VITE_CHROME_AI_OT_TOKEN にトークンを入れると <meta http-equiv="origin-trial"> が挿入される。
@@ -74,7 +75,8 @@ const OG_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fd850e55-f
 const CHROME_AI_OT_FALLBACK =
   "At5SSSv6Ka5G3TX73NUf8/ORFx50gBEMXNtvjgwSWUmW4ewx/HiJtiEnPDFEMpWmpsfVf1JHn2l9Mcy24uaWMgwAAAB6eyJvcmlnaW4iOiJodHRwczovL3N0dWR5LXBsdXMtdm90b24ubG92YWJsZS5hcHA6NDQzIiwiZmVhdHVyZSI6IkFJUHJvbXB0QVBJUGFyYW1zIiwiZXhwaXJ5IjoxNzkxMjQ0ODAwLCJpc1N1YmRvbWFpbiI6dHJ1ZX0=";
 const CHROME_AI_OT =
-  ((import.meta as any).env?.VITE_CHROME_AI_OT_TOKEN as string | undefined) || CHROME_AI_OT_FALLBACK;
+  ((import.meta as any).env?.VITE_CHROME_AI_OT_TOKEN as string | undefined) ||
+  CHROME_AI_OT_FALLBACK;
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
@@ -91,7 +93,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:image", content: OG_IMAGE },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
-
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -100,7 +101,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "apple-touch-icon", href: "/icon-192.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap",
+      },
     ],
     scripts: [
       {
@@ -133,15 +137,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja">
-      <head><HeadContent /></head>
+      <head>
+        <HeadContent />
+      </head>
       <body>
-        <a href="#main-content" className="skip-link">本文へスキップ</a>
+        <a href="#main-content" className="skip-link">
+          本文へスキップ
+        </a>
         <ColorFilterDefs />
         {children}
         <SelectionSpeaker />
         <Scripts />
       </body>
-
     </html>
   );
 }
@@ -176,7 +183,9 @@ function RootComponent() {
 
   useEffect(() => {
     loadAndApplyUserTheme(undefined);
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_e, session) => {
       router.invalidate();
       loadAndApplyUserTheme(session?.user?.id);
     });
@@ -188,29 +197,21 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <I18nProvider>
-        <MaintenanceProvider>
-          <RestrictionProvider>
-            <MaintenanceGate>
-              <main id="main">
-                <Outlet />
-              </main>
-            </MaintenanceGate>
-          </RestrictionProvider>
-          <RouteLoading />
-          <DockedWidgets />
-          <PWAInstallPrompt />
-          <AmbientSound />
-          <Toaster richColors position="top-center" />
-        </MaintenanceProvider>
+          <MaintenanceProvider>
+            <RestrictionProvider>
+              <MaintenanceGate>
+                <main id="main">
+                  <Outlet />
+                </main>
+              </MaintenanceGate>
+            </RestrictionProvider>
+            <RouteLoading />
+            <PWAInstallPrompt />
+            <AmbientSound />
+            <Toaster richColors position="top-center" />
+          </MaintenanceProvider>
         </I18nProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
-}
-
-function DockedWidgets() {
-  // フィードバック（サポート）はどのページでも表示する。
-  const { prefs } = useUserPrefs();
-  const dock = (prefs as any).right_dock ?? ["ambient", "feedback"];
-  return <>{dock.includes("feedback") && <FeedbackWidget />}</>;
 }

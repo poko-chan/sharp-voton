@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -52,8 +58,12 @@ export function CardFormDialog({ open, onOpenChange, card, onSubmit }: Props) {
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>キャンセル</Button>
-          <Button onClick={handleSubmit} disabled={!front.trim() || !back.trim() || saving}>{card ? "保存" : "追加"}</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            キャンセル
+          </Button>
+          <Button onClick={handleSubmit} disabled={!front.trim() || !back.trim() || saving}>
+            {card ? "保存" : "追加"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

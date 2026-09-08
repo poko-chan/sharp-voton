@@ -17,14 +17,14 @@ export function TownMap({
   onPick?: (gx: number, gz: number) => void;
   size?: number;
 }) {
-  const n = radius * 2 + 1;              // ブロック数（1辺）
-  const ROAD_RATIO = 0.75;               // 道路幅 = 区画幅 × これ
+  const n = radius * 2 + 1; // ブロック数（1辺）
+  const ROAD_RATIO = 0.75; // 道路幅 = 区画幅 × これ
   const lot = size / (n * 3 + (n + 1) * ROAD_RATIO);
   const road = lot * ROAD_RATIO;
 
   const pos = (g: number) => {
     const { block, offset } = cellBlock(g);
-    const bi = block + radius;           // 0..n-1
+    const bi = block + radius; // 0..n-1
     return road * (bi + 1) + lot * (bi * 3 + offset + 1);
   };
   const blockPos = (b: number) => {
@@ -40,16 +40,38 @@ export function TownMap({
   const offsets = [-1, 0, 1];
 
   return (
-    <svg width={size} height={size} className="rounded-xl border select-none" role="img" aria-label="街の区画マップ">
+    <svg
+      width={size}
+      height={size}
+      className="rounded-xl border select-none"
+      role="img"
+      aria-label="街の区画マップ"
+    >
       {/* 道路（地面全体） */}
       <rect x={0} y={0} width={size} height={size} fill="hsl(var(--muted-foreground) / 0.22)" />
       {/* センターライン */}
       {blocks.map((b) => (
         <g key={"cl" + b}>
-          <line x1={blockPos(b) - road / 2} y1={0} x2={blockPos(b) - road / 2} y2={size}
-            stroke="hsl(var(--background))" strokeWidth={1} strokeDasharray="4 5" opacity={0.7} />
-          <line x1={0} y1={blockPos(b) - road / 2} x2={size} y2={blockPos(b) - road / 2}
-            stroke="hsl(var(--background))" strokeWidth={1} strokeDasharray="4 5" opacity={0.7} />
+          <line
+            x1={blockPos(b) - road / 2}
+            y1={0}
+            x2={blockPos(b) - road / 2}
+            y2={size}
+            stroke="hsl(var(--background))"
+            strokeWidth={1}
+            strokeDasharray="4 5"
+            opacity={0.7}
+          />
+          <line
+            x1={0}
+            y1={blockPos(b) - road / 2}
+            x2={size}
+            y2={blockPos(b) - road / 2}
+            stroke="hsl(var(--background))"
+            strokeWidth={1}
+            strokeDasharray="4 5"
+            opacity={0.7}
+          />
         </g>
       ))}
 
@@ -58,9 +80,14 @@ export function TownMap({
         blocks.map((bx) => (
           <rect
             key={`b${bx},${bz}`}
-            x={blockPos(bx) - 1} y={blockPos(bz) - 1}
-            width={lot * 3 + 2} height={lot * 3 + 2}
-            rx={3} fill="hsl(var(--muted) / 0.6)" stroke="hsl(var(--border))" strokeWidth={1}
+            x={blockPos(bx) - 1}
+            y={blockPos(bz) - 1}
+            width={lot * 3 + 2}
+            height={lot * 3 + 2}
+            rx={3}
+            fill="hsl(var(--muted) / 0.6)"
+            stroke="hsl(var(--border))"
+            strokeWidth={1}
           />
         )),
       )}
@@ -70,20 +97,35 @@ export function TownMap({
         offsets.map((oz) =>
           blocks.map((bx) =>
             offsets.map((ox) => {
-              const gx = bx * 3 + ox, gz = bz * 3 + oz;
+              const gx = bx * 3 + ox,
+                gz = bz * 3 + oz;
               const b = byPos.get(`${gx},${gz}`);
               const sel = selected && selected[0] === gx && selected[1] === gz;
-              const x = pos(gx), y = pos(gz);
+              const x = pos(gx),
+                y = pos(gz);
               return (
-                <g key={`${gx},${gz}`} onClick={() => onPick?.(gx, gz)} style={{ cursor: "pointer" }}>
+                <g
+                  key={`${gx},${gz}`}
+                  onClick={() => onPick?.(gx, gz)}
+                  style={{ cursor: "pointer" }}
+                >
                   <rect
-                    x={x + 0.5} y={y + 0.5} width={lot - 1} height={lot - 1} rx={2}
+                    x={x + 0.5}
+                    y={y + 0.5}
+                    width={lot - 1}
+                    height={lot - 1}
+                    rx={2}
                     fill={b ? "hsl(var(--primary) / 0.18)" : "hsl(var(--card))"}
                     stroke={sel ? "hsl(var(--primary))" : "hsl(var(--border) / 0.8)"}
                     strokeWidth={sel ? 2.5 : 0.6}
                   />
                   {b && (
-                    <text x={x + lot / 2} y={y + lot / 2 + lot * 0.24} textAnchor="middle" fontSize={lot * 0.62}>
+                    <text
+                      x={x + lot / 2}
+                      y={y + lot / 2 + lot * 0.24}
+                      textAnchor="middle"
+                      fontSize={lot * 0.62}
+                    >
                       {emoji(b.kind)}
                     </text>
                   )}

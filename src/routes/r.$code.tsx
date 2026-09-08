@@ -18,14 +18,25 @@ function ReferralPage() {
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      try { localStorage.setItem("pending_referral_code", code); } catch {}
+      try {
+        localStorage.setItem("pending_referral_code", code);
+      } catch {}
       navigate({ to: "/login" });
       return;
     }
     (async () => {
       const { error } = await (supabase as any).rpc("claim_referral", { _code: code });
-      if (error) { setStatus("err"); setMsg(error.message); toast.error(error.message); }
-      else { setStatus("ok"); toast.success("+10コインを獲得しました！"); try { localStorage.removeItem("pending_referral_code"); } catch {} }
+      if (error) {
+        setStatus("err");
+        setMsg(error.message);
+        toast.error(error.message);
+      } else {
+        setStatus("ok");
+        toast.success("+10コインを獲得しました！");
+        try {
+          localStorage.removeItem("pending_referral_code");
+        } catch {}
+      }
     })();
   }, [user, loading, code]);
 
