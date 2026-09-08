@@ -11,7 +11,15 @@ export type OrgAppKey =
   | "digitalid"
   | "chat"
   | "makron"
-  | "edu";
+  | "edu"
+  | "attendance"
+  | "timetable"
+  | "grades"
+  | "meetings"
+  | "health"
+  | "consult"
+  | "monitor";
+
 
 export const ORG_APPS: {
   key: OrgAppKey;
