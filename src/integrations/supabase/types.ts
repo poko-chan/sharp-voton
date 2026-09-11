@@ -3871,6 +3871,63 @@ export type Database = {
           },
         ]
       }
+      org_duties: {
+        Row: {
+          assignee_id: string | null
+          created_at: string
+          created_by: string | null
+          date: string | null
+          group_id: string | null
+          id: string
+          note: string | null
+          organization_id: string
+          title: string
+          updated_at: string
+          weekday: number | null
+        }
+        Insert: {
+          assignee_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          date?: string | null
+          group_id?: string | null
+          id?: string
+          note?: string | null
+          organization_id: string
+          title: string
+          updated_at?: string
+          weekday?: number | null
+        }
+        Update: {
+          assignee_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          date?: string | null
+          group_id?: string | null
+          id?: string
+          note?: string | null
+          organization_id?: string
+          title?: string
+          updated_at?: string
+          weekday?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_duties_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "org_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_duties_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       org_edu_attempts: {
         Row: {
           ai_review: string | null
@@ -4374,6 +4431,226 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      org_journals: {
+        Row: {
+          absent_count: number | null
+          author_id: string
+          created_at: string
+          date: string
+          group_id: string | null
+          id: string
+          lessons: string | null
+          organization_id: string
+          present_count: number | null
+          reflection: string | null
+          teacher_comment: string | null
+          updated_at: string
+          weather: string | null
+        }
+        Insert: {
+          absent_count?: number | null
+          author_id: string
+          created_at?: string
+          date?: string
+          group_id?: string | null
+          id?: string
+          lessons?: string | null
+          organization_id: string
+          present_count?: number | null
+          reflection?: string | null
+          teacher_comment?: string | null
+          updated_at?: string
+          weather?: string | null
+        }
+        Update: {
+          absent_count?: number | null
+          author_id?: string
+          created_at?: string
+          date?: string
+          group_id?: string | null
+          id?: string
+          lessons?: string | null
+          organization_id?: string
+          present_count?: number | null
+          reflection?: string | null
+          teacher_comment?: string | null
+          updated_at?: string
+          weather?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_journals_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "org_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_journals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_library_items: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: string
+          location: string | null
+          note: string | null
+          organization_id: string
+          title: string
+          total_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          location?: string | null
+          note?: string | null
+          organization_id: string
+          title: string
+          total_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          location?: string | null
+          note?: string | null
+          organization_id?: string
+          title?: string
+          total_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_library_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_library_loans: {
+        Row: {
+          borrower_id: string
+          created_at: string
+          created_by: string | null
+          due_on: string | null
+          id: string
+          item_id: string
+          loaned_on: string
+          note: string | null
+          organization_id: string
+          returned_on: string | null
+          updated_at: string
+        }
+        Insert: {
+          borrower_id: string
+          created_at?: string
+          created_by?: string | null
+          due_on?: string | null
+          id?: string
+          item_id: string
+          loaned_on?: string
+          note?: string | null
+          organization_id: string
+          returned_on?: string | null
+          updated_at?: string
+        }
+        Update: {
+          borrower_id?: string
+          created_at?: string
+          created_by?: string | null
+          due_on?: string | null
+          id?: string
+          item_id?: string
+          loaned_on?: string
+          note?: string | null
+          organization_id?: string
+          returned_on?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_library_loans_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "org_library_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_library_loans_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_lost_items: {
+        Row: {
+          claimed_by: string | null
+          created_at: string
+          created_by: string | null
+          found_on: string
+          found_place: string | null
+          id: string
+          image_url: string | null
+          note: string | null
+          organization_id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          claimed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          found_on?: string
+          found_place?: string | null
+          id?: string
+          image_url?: string | null
+          note?: string | null
+          organization_id: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          claimed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          found_on?: string
+          found_place?: string | null
+          id?: string
+          image_url?: string | null
+          note?: string | null
+          organization_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_lost_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       org_meetings: {
         Row: {
