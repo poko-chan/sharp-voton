@@ -1126,7 +1126,6 @@ export function TutorPage() {
             <button
               type="button"
               onClick={newChat}
-              onClick={newChat}
               className="flex h-9 flex-1 items-center gap-2.5 rounded-lg border bg-background px-3 text-sm font-medium shadow-sm transition hover:bg-muted/70"
             >
               <Plus className="h-4 w-4" />
