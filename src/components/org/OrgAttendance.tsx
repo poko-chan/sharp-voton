@@ -344,6 +344,65 @@ export function OrgAttendance({ orgId, ctx }: { orgId: string; ctx: any }) {
         <span className="px-2 py-0.5 rounded bg-muted">未入力 {counts["-"] ?? 0}</span>
       </div>
 
+      {showMonthly && (
+        <Card className="p-4 space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="font-bold text-sm">月次の出席集計</div>
+            <Input
+              type="month"
+              className="h-8 w-36"
+              value={month}
+              onChange={(e) => setMonth(e.target.value)}
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() =>
+                downloadCsv(`attendance-monthly-${month}.csv`, [
+                  ["名前", "出席", "遅刻", "早退", "欠席", "公欠", "出席率(%)"],
+                  ...members.map((m) => {
+                    const r = monthly[m.user_id] ?? {};
+                    const total = Object.values(r).reduce((a, b) => a + b, 0);
+                    const att = (r.present ?? 0) + (r.late ?? 0) + (r.early ?? 0);
+                    return [
+                      m.name,
+                      r.present ?? 0,
+                      r.late ?? 0,
+                      r.early ?? 0,
+                      r.absent ?? 0,
+                      r.excused ?? 0,
+                      total > 0 ? Math.round((att / total) * 100) : "-",
+                    ];
+                  }),
+                ])
+              }
+            >
+              <Download className="h-3.5 w-3.5 mr-1" />
+              CSV
+            </Button>
+          </div>
+          {members.map((m) => {
+            const r = monthly[m.user_id] ?? {};
+            const total = Object.values(r).reduce((a, b) => a + b, 0);
+            const att = (r.present ?? 0) + (r.late ?? 0) + (r.early ?? 0);
+            const rate = total > 0 ? Math.round((att / total) * 100) : null;
+            return (
+              <div key={m.user_id} className="flex flex-wrap items-center gap-2 text-xs border-b py-1">
+                <span className="w-40 truncate">{m.name}</span>
+                <span>出席 {r.present ?? 0}</span>
+                <span>遅刻 {r.late ?? 0}</span>
+                <span>早退 {r.early ?? 0}</span>
+                <span>欠席 {r.absent ?? 0}</span>
+                <span>公欠 {r.excused ?? 0}</span>
+                <span className="ml-auto font-medium">
+                  {rate === null ? "記録なし" : `出席率 ${rate}%`}
+                </span>
+              </div>
+            );
+          })}
+        </Card>
+      )}
+
       {list.map((m) => (
         <Card key={m.user_id} className="p-2 flex flex-wrap items-center gap-2">
           <div className="w-40 truncate text-sm">{m.name}</div>
