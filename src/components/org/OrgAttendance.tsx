@@ -29,6 +29,29 @@ export function OrgAttendance({ orgId, ctx }: { orgId: string; ctx: any }) {
   const [q, setQ] = useState("");
   const [form, setForm] = useState({ date: todayStr(), kind: "absent", reason: "" });
   const [busy, setBusy] = useState(false);
+  const [monthly, setMonthly] = useState<Record<string, Record<string, number>>>({});
+  const [month, setMonth] = useState(todayStr().slice(0, 7));
+  const [showMonthly, setShowMonthly] = useState(false);
+
+  const loadMonthly = async () => {
+    const { data } = await (supabase as any)
+      .from("org_attendance")
+      .select("user_id, status")
+      .eq("organization_id", orgId)
+      .eq("period", 0)
+      .gte("date", `${month}-01`)
+      .lte("date", `${month}-31`);
+    const map: Record<string, Record<string, number>> = {};
+    for (const r of data ?? []) {
+      map[r.user_id] = map[r.user_id] ?? {};
+      map[r.user_id][r.status] = (map[r.user_id][r.status] ?? 0) + 1;
+    }
+    setMonthly(map);
+  };
+
+  useEffect(() => {
+    if (staff && showMonthly) loadMonthly();
+  }, [orgId, month, staff, showMonthly]);
 
   useEffect(() => {
     if (staff) loadMembers(orgId).then(setMembers);
