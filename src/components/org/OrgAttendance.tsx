@@ -320,6 +320,13 @@ export function OrgAttendance({ orgId, ctx }: { orgId: string; ctx: any }) {
           <Download className="h-3.5 w-3.5 mr-1" />
           CSV
         </Button>
+        <Button
+          size="sm"
+          variant={showMonthly ? "default" : "outline"}
+          onClick={() => setShowMonthly((v) => !v)}
+        >
+          月次集計
+        </Button>
         <Input
           className="h-9 w-40 ml-auto"
           placeholder="名前で検索"
