@@ -29,6 +29,29 @@ export function OrgAttendance({ orgId, ctx }: { orgId: string; ctx: any }) {
   const [q, setQ] = useState("");
   const [form, setForm] = useState({ date: todayStr(), kind: "absent", reason: "" });
   const [busy, setBusy] = useState(false);
+  const [monthly, setMonthly] = useState<Record<string, Record<string, number>>>({});
+  const [month, setMonth] = useState(todayStr().slice(0, 7));
+  const [showMonthly, setShowMonthly] = useState(false);
+
+  const loadMonthly = async () => {
+    const { data } = await (supabase as any)
+      .from("org_attendance")
+      .select("user_id, status")
+      .eq("organization_id", orgId)
+      .eq("period", 0)
+      .gte("date", `${month}-01`)
+      .lte("date", `${month}-31`);
+    const map: Record<string, Record<string, number>> = {};
+    for (const r of data ?? []) {
+      map[r.user_id] = map[r.user_id] ?? {};
+      map[r.user_id][r.status] = (map[r.user_id][r.status] ?? 0) + 1;
+    }
+    setMonthly(map);
+  };
+
+  useEffect(() => {
+    if (staff && showMonthly) loadMonthly();
+  }, [orgId, month, staff, showMonthly]);
 
   useEffect(() => {
     if (staff) loadMembers(orgId).then(setMembers);
@@ -297,6 +320,13 @@ export function OrgAttendance({ orgId, ctx }: { orgId: string; ctx: any }) {
           <Download className="h-3.5 w-3.5 mr-1" />
           CSV
         </Button>
+        <Button
+          size="sm"
+          variant={showMonthly ? "default" : "outline"}
+          onClick={() => setShowMonthly((v) => !v)}
+        >
+          月次集計
+        </Button>
         <Input
           className="h-9 w-40 ml-auto"
           placeholder="名前で検索"
@@ -313,6 +343,65 @@ export function OrgAttendance({ orgId, ctx }: { orgId: string; ctx: any }) {
         ))}
         <span className="px-2 py-0.5 rounded bg-muted">未入力 {counts["-"] ?? 0}</span>
       </div>
+
+      {showMonthly && (
+        <Card className="p-4 space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="font-bold text-sm">月次の出席集計</div>
+            <Input
+              type="month"
+              className="h-8 w-36"
+              value={month}
+              onChange={(e) => setMonth(e.target.value)}
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() =>
+                downloadCsv(`attendance-monthly-${month}.csv`, [
+                  ["名前", "出席", "遅刻", "早退", "欠席", "公欠", "出席率(%)"],
+                  ...members.map((m) => {
+                    const r = monthly[m.user_id] ?? {};
+                    const total = Object.values(r).reduce((a, b) => a + b, 0);
+                    const att = (r.present ?? 0) + (r.late ?? 0) + (r.early ?? 0);
+                    return [
+                      m.name,
+                      r.present ?? 0,
+                      r.late ?? 0,
+                      r.early ?? 0,
+                      r.absent ?? 0,
+                      r.excused ?? 0,
+                      total > 0 ? Math.round((att / total) * 100) : "-",
+                    ];
+                  }),
+                ])
+              }
+            >
+              <Download className="h-3.5 w-3.5 mr-1" />
+              CSV
+            </Button>
+          </div>
+          {members.map((m) => {
+            const r = monthly[m.user_id] ?? {};
+            const total = Object.values(r).reduce((a, b) => a + b, 0);
+            const att = (r.present ?? 0) + (r.late ?? 0) + (r.early ?? 0);
+            const rate = total > 0 ? Math.round((att / total) * 100) : null;
+            return (
+              <div key={m.user_id} className="flex flex-wrap items-center gap-2 text-xs border-b py-1">
+                <span className="w-40 truncate">{m.name}</span>
+                <span>出席 {r.present ?? 0}</span>
+                <span>遅刻 {r.late ?? 0}</span>
+                <span>早退 {r.early ?? 0}</span>
+                <span>欠席 {r.absent ?? 0}</span>
+                <span>公欠 {r.excused ?? 0}</span>
+                <span className="ml-auto font-medium">
+                  {rate === null ? "記録なし" : `出席率 ${rate}%`}
+                </span>
+              </div>
+            );
+          })}
+        </Card>
+      )}
 
       {list.map((m) => (
         <Card key={m.user_id} className="p-2 flex flex-wrap items-center gap-2">
