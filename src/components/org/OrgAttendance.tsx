@@ -252,7 +252,11 @@ export function OrgAttendance({ orgId, ctx }: { orgId: string; ctx: any }) {
           <div className="font-bold text-sm">わたしの出欠（直近）</div>
           <div className="flex flex-wrap gap-2 text-xs">
             {ATTENDANCE_STATUS.map((s) => (
-              <span key={s.key} className="px-2 py-0.5 rounded" style={{ background: s.color + "22" }}>
+              <span
+                key={s.key}
+                className="px-2 py-0.5 rounded"
+                style={{ background: s.color + "22" }}
+              >
                 {s.label} {summary[s.key] ?? 0}
               </span>
             ))}
@@ -387,7 +391,10 @@ export function OrgAttendance({ orgId, ctx }: { orgId: string; ctx: any }) {
             const att = (r.present ?? 0) + (r.late ?? 0) + (r.early ?? 0);
             const rate = total > 0 ? Math.round((att / total) * 100) : null;
             return (
-              <div key={m.user_id} className="flex flex-wrap items-center gap-2 text-xs border-b py-1">
+              <div
+                key={m.user_id}
+                className="flex flex-wrap items-center gap-2 text-xs border-b py-1"
+              >
                 <span className="w-40 truncate">{m.name}</span>
                 <span>出席 {r.present ?? 0}</span>
                 <span>遅刻 {r.late ?? 0}</span>

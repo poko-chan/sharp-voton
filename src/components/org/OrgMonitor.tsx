@@ -112,7 +112,15 @@ export function OrgMonitor({ orgId, ctx }: { orgId: string; ctx: any }) {
           variant="outline"
           onClick={() =>
             downloadCsv("monitor.csv", [
-              ["名前", "7日の学習分", "30日の学習分", "最終学習日", "欠席30日", "遅刻等30日", "未対応の気づき"],
+              [
+                "名前",
+                "7日の学習分",
+                "30日の学習分",
+                "最終学習日",
+                "欠席30日",
+                "遅刻等30日",
+                "未対応の気づき",
+              ],
               ...list.map((r) => [
                 r.display_name,
                 r.minutes_7d,
@@ -147,8 +155,7 @@ export function OrgMonitor({ orgId, ctx }: { orgId: string; ctx: any }) {
           <tbody>
             {list.map((r) => {
               const stale =
-                !r.last_studied ||
-                (Date.now() - new Date(r.last_studied).getTime()) / 86400000 > 7;
+                !r.last_studied || (Date.now() - new Date(r.last_studied).getTime()) / 86400000 > 7;
               return (
                 <tr
                   key={r.user_id}

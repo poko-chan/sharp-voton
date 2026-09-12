@@ -184,7 +184,9 @@ function NotebooksPage() {
             <NotebookPen className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Your study desk</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+              Your study desk
+            </p>
             <h1 className="text-3xl font-bold tracking-tight">Cnote</h1>
           </div>
         </div>
@@ -196,30 +198,64 @@ function NotebooksPage() {
 
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-2xl border bg-card p-4 shadow-sm">
-          <div className="flex items-center justify-between text-muted-foreground"><span className="text-xs font-medium">すべてのノート</span><BookOpen className="h-4 w-4" /></div>
-          <p className="mt-2 text-2xl font-bold tabular-nums">{notebooks.filter((n) => !n.archived).length}<span className="ml-1 text-sm font-normal text-muted-foreground">冊</span></p>
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span className="text-xs font-medium">すべてのノート</span>
+            <BookOpen className="h-4 w-4" />
+          </div>
+          <p className="mt-2 text-2xl font-bold tabular-nums">
+            {notebooks.filter((n) => !n.archived).length}
+            <span className="ml-1 text-sm font-normal text-muted-foreground">冊</span>
+          </p>
         </div>
         <div className="rounded-2xl border bg-card p-4 shadow-sm">
-          <div className="flex items-center justify-between text-muted-foreground"><span className="text-xs font-medium">教科</span><span className="text-xs">整理の軸</span></div>
-          <p className="mt-2 text-2xl font-bold tabular-nums">{subjects.length}<span className="ml-1 text-sm font-normal text-muted-foreground">教科</span></p>
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span className="text-xs font-medium">教科</span>
+            <span className="text-xs">整理の軸</span>
+          </div>
+          <p className="mt-2 text-2xl font-bold tabular-nums">
+            {subjects.length}
+            <span className="ml-1 text-sm font-normal text-muted-foreground">教科</span>
+          </p>
         </div>
         <div className="rounded-2xl border bg-card p-4 shadow-sm">
-          <div className="flex items-center justify-between text-muted-foreground"><span className="text-xs font-medium">共有の招待</span><Inbox className="h-4 w-4" /></div>
-          <p className="mt-2 text-2xl font-bold tabular-nums">{invites.length}<span className="ml-1 text-sm font-normal text-muted-foreground">件</span></p>
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span className="text-xs font-medium">共有の招待</span>
+            <Inbox className="h-4 w-4" />
+          </div>
+          <p className="mt-2 text-2xl font-bold tabular-nums">
+            {invites.length}
+            <span className="ml-1 text-sm font-normal text-muted-foreground">件</span>
+          </p>
         </div>
       </div>
 
       {latest && (
         <Link to="/notebooks/$id" params={{ id: latest.id }} className="group block">
           <div className="relative overflow-hidden rounded-2xl border bg-foreground p-5 text-background shadow-xl transition group-hover:-translate-y-0.5 group-hover:shadow-2xl md:p-7">
-            <div className="absolute right-0 top-0 h-full w-1/3 opacity-20" style={{ background: latest.cover_color, clipPath: "polygon(35% 0, 100% 0, 100% 100%, 0 100%)" }} />
+            <div
+              className="absolute right-0 top-0 h-full w-1/3 opacity-20"
+              style={{
+                background: latest.cover_color,
+                clipPath: "polygon(35% 0, 100% 0, 100% 100%, 0 100%)",
+              }}
+            />
             <div className="relative flex flex-wrap items-end justify-between gap-5">
               <div>
-                <div className="mb-3 flex items-center gap-2 text-xs font-medium text-background/60"><Clock3 className="h-3.5 w-3.5" />最近ひらいたノート</div>
-                <h2 className="max-w-xl text-2xl font-bold tracking-tight md:text-3xl">{latest.title}</h2>
-                <p className="mt-2 text-sm text-background/65">続きを書く · {subjects.find((s) => s.id === latest.subject_id)?.name ?? "教科なし"}</p>
+                <div className="mb-3 flex items-center gap-2 text-xs font-medium text-background/60">
+                  <Clock3 className="h-3.5 w-3.5" />
+                  最近ひらいたノート
+                </div>
+                <h2 className="max-w-xl text-2xl font-bold tracking-tight md:text-3xl">
+                  {latest.title}
+                </h2>
+                <p className="mt-2 text-sm text-background/65">
+                  続きを書く ·{" "}
+                  {subjects.find((s) => s.id === latest.subject_id)?.name ?? "教科なし"}
+                </p>
               </div>
-              <span className="flex items-center gap-2 text-sm font-semibold">ノートを開く <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></span>
+              <span className="flex items-center gap-2 text-sm font-semibold">
+                ノートを開く <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+              </span>
             </div>
           </div>
         </Link>

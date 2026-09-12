@@ -20,7 +20,6 @@ export type OrgAppKey =
   | "consult"
   | "monitor";
 
-
 export const ORG_APPS: {
   key: OrgAppKey;
   label: string;
@@ -134,7 +133,6 @@ export const ORG_APPS: {
     color: "#64748b",
   },
 ];
-
 
 export const GROUP_PERMS: { key: string; label: string; app: string }[] = [
   { key: "post_create", label: "一般が投稿できる", app: "投稿" },

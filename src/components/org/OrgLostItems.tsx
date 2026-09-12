@@ -108,7 +108,10 @@ export function OrgLostItems({ orgId, ctx }: { orgId: string; ctx: any }) {
 
       <Card className="p-4 space-y-2">
         {list.map((r) => (
-          <div key={r.id} className="flex items-center justify-between rounded-lg border p-2 text-sm">
+          <div
+            key={r.id}
+            className="flex items-center justify-between rounded-lg border p-2 text-sm"
+          >
             <div>
               <div className="font-medium">
                 {r.title}

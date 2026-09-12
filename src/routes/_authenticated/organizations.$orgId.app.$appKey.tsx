@@ -16,7 +16,6 @@ import { OrgHealth } from "@/components/org/OrgHealth";
 import { OrgConsult } from "@/components/org/OrgConsult";
 import { OrgMonitor } from "@/components/org/OrgMonitor";
 
-
 export const Route = createFileRoute("/_authenticated/organizations/$orgId/app/$appKey")({
   component: AppPage,
 });
@@ -68,7 +67,6 @@ function AppPage() {
       {appKey === "health" && <OrgHealth {...props} />}
       {appKey === "consult" && <OrgConsult {...props} />}
       {appKey === "monitor" && <OrgMonitor {...props} />}
-
     </div>
   );
 }

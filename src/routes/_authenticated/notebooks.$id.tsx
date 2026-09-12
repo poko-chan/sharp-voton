@@ -116,8 +116,18 @@ function NotebookEditor() {
   const readOnly = !isOwner && !(myShare?.can_edit ?? false);
   const page = pages[idx];
 
+  /** 保存済み内容の目印。同じ内容なら書き込みを行わない（無駄な通信を減らす） */
+  const savedSig = useRef<Record<string, string>>({});
+  /** ノート本体の更新日時は最大でも5分に1回だけ書き込む */
+  const nbTouched = useRef(0);
+
   const savePage = useCallback(
     async (p: NotePage) => {
+      const sig = JSON.stringify([p.strokes, p.texts]);
+      if (savedSig.current[p.id] === sig) {
+        setSaving("saved");
+        return;
+      }
       setSaving("saving");
       const { error } = await supabase
         .from("notebook_pages")
@@ -133,23 +143,50 @@ function NotebookEditor() {
         toast.error("保存に失敗しました");
         return;
       }
-      await supabase
-        .from("notebooks")
-        .update({ updated_at: new Date().toISOString() })
-        .eq("id", id);
+      savedSig.current[p.id] = sig;
+      const now = Date.now();
+      if (now - nbTouched.current > 5 * 60 * 1000) {
+        nbTouched.current = now;
+        await supabase
+          .from("notebooks")
+          .update({ updated_at: new Date().toISOString() })
+          .eq("id", id);
+      }
       setSaving("saved");
     },
     [id, user?.id],
   );
 
+  /** 最新ページを常に保持し、離脱時の保存に使う */
+  const pendingRef = useRef<NotePage | null>(null);
+
   const onChange = (next: { strokes: Stroke[]; texts: TextBox[] }) => {
     if (!page) return;
     const updated = { ...page, ...next };
+    pendingRef.current = updated;
     setPages((prev) => prev.map((p) => (p.id === page.id ? updated : p)));
     setSaving("dirty");
     if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => savePage(updated), 1200);
+    // 書くたびに保存せず、手が止まってからまとめて1回保存する
+    timer.current = setTimeout(() => savePage(updated), 4000);
   };
+
+  // ページを離れる／タブを隠すときに未保存分だけ保存する
+  useEffect(() => {
+    const flush = () => {
+      if (document.visibilityState !== "hidden") return;
+      const p = pendingRef.current;
+      if (!p) return;
+      if (timer.current) clearTimeout(timer.current);
+      savePage(p);
+    };
+    document.addEventListener("visibilitychange", flush);
+    return () => {
+      document.removeEventListener("visibilitychange", flush);
+      const p = pendingRef.current;
+      if (p) savePage(p);
+    };
+  }, [savePage]);
 
   const addPage = async () => {
     const nextIdx = (pages.at(-1)?.page_index ?? -1) + 1;
@@ -388,55 +425,58 @@ function NotebookEditor() {
 
         <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t bg-card/90 px-3 py-2.5 shadow-[0_-8px_24px_-20px_var(--foreground)] backdrop-blur">
           <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIdx((i) => Math.max(0, i - 1))}
-            disabled={idx === 0}
-          >
-            <ChevronLeft className="h-4 w-4" />前
-          </Button>
-          <div className="flex max-w-[min(52vw,520px)] items-center gap-1 overflow-x-auto py-0.5" aria-label="ページ一覧">
-            {pages.map((p, i) => (
-              <button
-                key={p.id}
-                onClick={() => setIdx(i)}
-                className={cn(
-                  "h-8 min-w-8 rounded-md border px-2 text-xs font-medium transition",
-                  i === idx ? "bg-primary text-primary-foreground" : "hover:bg-muted",
-                )}
-                aria-label={`ページ ${i + 1}`}
-                aria-current={i === idx ? "page" : undefined}
-              >
-                {i + 1}
-              </button>
-            ))}
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIdx((i) => Math.min(pages.length - 1, i + 1))}
-            disabled={idx >= pages.length - 1}
-          >
-            次<ChevronRight className="h-4 w-4" />
-          </Button>
-          <span className="hidden text-xs font-medium tabular-nums text-muted-foreground sm:inline">
-            {idx + 1} / {pages.length} ページ
-          </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIdx((i) => Math.max(0, i - 1))}
+              disabled={idx === 0}
+            >
+              <ChevronLeft className="h-4 w-4" />前
+            </Button>
+            <div
+              className="flex max-w-[min(52vw,520px)] items-center gap-1 overflow-x-auto py-0.5"
+              aria-label="ページ一覧"
+            >
+              {pages.map((p, i) => (
+                <button
+                  key={p.id}
+                  onClick={() => setIdx(i)}
+                  className={cn(
+                    "h-8 min-w-8 rounded-md border px-2 text-xs font-medium transition",
+                    i === idx ? "bg-primary text-primary-foreground" : "hover:bg-muted",
+                  )}
+                  aria-label={`ページ ${i + 1}`}
+                  aria-current={i === idx ? "page" : undefined}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIdx((i) => Math.min(pages.length - 1, i + 1))}
+              disabled={idx >= pages.length - 1}
+            >
+              次<ChevronRight className="h-4 w-4" />
+            </Button>
+            <span className="hidden text-xs font-medium tabular-nums text-muted-foreground sm:inline">
+              {idx + 1} / {pages.length} ページ
+            </span>
           </div>
           <div className="flex items-center gap-1">
-          {!readOnly && (
-            <Button size="sm" onClick={addPage} className="shadow-sm">
-              <Plus className="mr-1 h-4 w-4" />
-              ページ追加
-            </Button>
-          )}
-          {!readOnly && (
-            <Button size="sm" variant="ghost" className="text-destructive" onClick={deletePage}>
-              <Trash2 className="mr-1 h-4 w-4" />
-              ページ削除
-            </Button>
-          )}
+            {!readOnly && (
+              <Button size="sm" onClick={addPage} className="shadow-sm">
+                <Plus className="mr-1 h-4 w-4" />
+                ページ追加
+              </Button>
+            )}
+            {!readOnly && (
+              <Button size="sm" variant="ghost" className="text-destructive" onClick={deletePage}>
+                <Trash2 className="mr-1 h-4 w-4" />
+                ページ削除
+              </Button>
+            )}
           </div>
         </div>
       </div>
