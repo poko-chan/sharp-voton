@@ -37,6 +37,7 @@ import { Route as AuthenticatedUpdatesRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedTutorRouteImport } from './routes/_authenticated/tutor'
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
 import { Route as AuthenticatedStudyRouteImport } from './routes/_authenticated/study'
+import { Route as AuthenticatedXlangRouteImport } from './routes/_authenticated/xlang'
 import { Route as AuthenticatedShareRouteImport } from './routes/_authenticated/share'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRankRouteImport } from './routes/_authenticated/rank'
@@ -232,6 +233,11 @@ const AuthenticatedTimerRoute = AuthenticatedTimerRouteImport.update({
 const AuthenticatedStudyRoute = AuthenticatedStudyRouteImport.update({
   id: '/study',
   path: '/study',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedXlangRoute = AuthenticatedXlangRouteImport.update({
+  id: '/xlang',
+  path: '/xlang',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedShareRoute = AuthenticatedShareRouteImport.update({
@@ -600,6 +606,7 @@ export interface FileRoutesByFullPath {
   '/timer': typeof AuthenticatedTimerRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/updates': typeof AuthenticatedUpdatesRoute
+  '/xlang': typeof AuthenticatedXlangRoute
   '/api/ai-stream': typeof ApiAiStreamRoute
   '/api/chat': typeof ApiChatRoute
   '/catalog/$key': typeof CatalogKeyRoute
@@ -856,6 +863,7 @@ export interface FileRouteTypes {
     | '/timer'
     | '/tutor'
     | '/updates'
+    | '/xlang'
     | '/api/ai-stream'
     | '/api/chat'
     | '/catalog/$key'
@@ -1023,6 +1031,7 @@ export interface FileRouteTypes {
     | '/_authenticated/timer'
     | '/_authenticated/tutor'
     | '/_authenticated/updates'
+    | '/_authenticated/xlang'
     | '/api/ai-stream'
     | '/api/chat'
     | '/catalog/$key'
@@ -1283,6 +1292,13 @@ declare module '@tanstack/react-router' {
       path: '/study'
       fullPath: '/study'
       preLoaderRoute: typeof AuthenticatedStudyRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/xlang': {
+      id: '/_authenticated/xlang'
+      path: '/xlang'
+      fullPath: '/xlang'
+      preLoaderRoute: typeof AuthenticatedXlangRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/share': {
@@ -1845,6 +1861,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTimerRoute: typeof AuthenticatedTimerRoute
   AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
   AuthenticatedUpdatesRoute: typeof AuthenticatedUpdatesRoute
+  AuthenticatedXlangRoute: typeof AuthenticatedXlangRoute
   AuthenticatedClassroomClassIdRoute: typeof AuthenticatedClassroomClassIdRoute
   AuthenticatedNotebooksIdRoute: typeof AuthenticatedNotebooksIdRoute
   AuthenticatedClassroomIndexRoute: typeof AuthenticatedClassroomIndexRoute
@@ -1886,6 +1903,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTimerRoute: AuthenticatedTimerRoute,
   AuthenticatedTutorRoute: AuthenticatedTutorRoute,
   AuthenticatedUpdatesRoute: AuthenticatedUpdatesRoute,
+  AuthenticatedXlangRoute: AuthenticatedXlangRoute,
   AuthenticatedClassroomClassIdRoute: AuthenticatedClassroomClassIdRoute,
   AuthenticatedNotebooksIdRoute: AuthenticatedNotebooksIdRoute,
   AuthenticatedClassroomIndexRoute: AuthenticatedClassroomIndexRoute,

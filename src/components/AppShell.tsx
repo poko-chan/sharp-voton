@@ -26,6 +26,7 @@ import {
   PanelLeftClose,
   NotebookPen,
   BellRing,
+  Languages,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -83,6 +84,7 @@ export const NAV = [
   { to: "/announcements", labelKey: "nav.announcements" as const, icon: Megaphone },
   { to: "/missions", labelKey: "nav.dashboard" as const, icon: Target, override: "ミッション" },
   { to: "/makron", labelKey: "nav.dashboard" as const, icon: Target, override: "Makron" },
+  { to: "/xlang", labelKey: "nav.dashboard" as const, icon: Languages, override: "Xlang" },
   { to: "/organizations", labelKey: "nav.dashboard" as const, icon: Users, override: "組織" },
   { to: "/settings", labelKey: "nav.settings" as const, icon: Settings, override: "設定" },
   { to: "/help", labelKey: "nav.dashboard" as const, icon: HelpCircle, override: "ヘルプ" },
