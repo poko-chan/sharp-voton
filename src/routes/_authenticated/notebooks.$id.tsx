@@ -116,8 +116,18 @@ function NotebookEditor() {
   const readOnly = !isOwner && !(myShare?.can_edit ?? false);
   const page = pages[idx];
 
+  /** 保存済み内容の目印。同じ内容なら書き込みを行わない（無駄な通信を減らす） */
+  const savedSig = useRef<Record<string, string>>({});
+  /** ノート本体の更新日時は最大でも5分に1回だけ書き込む */
+  const nbTouched = useRef(0);
+
   const savePage = useCallback(
     async (p: NotePage) => {
+      const sig = JSON.stringify([p.strokes, p.texts]);
+      if (savedSig.current[p.id] === sig) {
+        setSaving("saved");
+        return;
+      }
       setSaving("saving");
       const { error } = await supabase
         .from("notebook_pages")
@@ -133,23 +143,50 @@ function NotebookEditor() {
         toast.error("保存に失敗しました");
         return;
       }
-      await supabase
-        .from("notebooks")
-        .update({ updated_at: new Date().toISOString() })
-        .eq("id", id);
+      savedSig.current[p.id] = sig;
+      const now = Date.now();
+      if (now - nbTouched.current > 5 * 60 * 1000) {
+        nbTouched.current = now;
+        await supabase
+          .from("notebooks")
+          .update({ updated_at: new Date().toISOString() })
+          .eq("id", id);
+      }
       setSaving("saved");
     },
     [id, user?.id],
   );
 
+  /** 最新ページを常に保持し、離脱時の保存に使う */
+  const pendingRef = useRef<NotePage | null>(null);
+
   const onChange = (next: { strokes: Stroke[]; texts: TextBox[] }) => {
     if (!page) return;
     const updated = { ...page, ...next };
+    pendingRef.current = updated;
     setPages((prev) => prev.map((p) => (p.id === page.id ? updated : p)));
     setSaving("dirty");
     if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => savePage(updated), 1200);
+    // 書くたびに保存せず、手が止まってからまとめて1回保存する
+    timer.current = setTimeout(() => savePage(updated), 4000);
   };
+
+  // ページを離れる／タブを隠すときに未保存分だけ保存する
+  useEffect(() => {
+    const flush = () => {
+      if (document.visibilityState !== "hidden") return;
+      const p = pendingRef.current;
+      if (!p) return;
+      if (timer.current) clearTimeout(timer.current);
+      savePage(p);
+    };
+    document.addEventListener("visibilitychange", flush);
+    return () => {
+      document.removeEventListener("visibilitychange", flush);
+      const p = pendingRef.current;
+      if (p) savePage(p);
+    };
+  }, [savePage]);
 
   const addPage = async () => {
     const nextIdx = (pages.at(-1)?.page_index ?? -1) + 1;
