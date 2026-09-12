@@ -39,7 +39,8 @@ export function OrgGrades({ orgId, ctx }: { orgId: string; ctx: any }) {
   const shown = rows.filter((r) => !term || r.term === term);
 
   const add = async () => {
-    if (!draft.student_id || !draft.subject.trim()) return toast.error("生徒と科目を選んでください");
+    if (!draft.student_id || !draft.subject.trim())
+      return toast.error("生徒と科目を選んでください");
     const { error } = await (supabase as any).from("org_grades").insert({
       organization_id: orgId,
       student_id: draft.student_id,

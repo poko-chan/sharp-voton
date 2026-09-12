@@ -157,7 +157,7 @@ function loadDraft(threadId: string | null): string {
   if (typeof window === "undefined") return "";
   try {
     const raw = window.localStorage.getItem(getDraftKey(threadId));
-    return raw ? JSON.parse(raw) as string : "";
+    return raw ? (JSON.parse(raw) as string) : "";
   } catch {
     return "";
   }
@@ -172,7 +172,9 @@ function saveDraft(threadId: string | null, value: string) {
       return;
     }
     window.localStorage.setItem(key, JSON.stringify(value));
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
 }
 
 const answerSystem = (
@@ -446,13 +448,19 @@ export function TutorPage() {
   const runIdRef = useRef(0);
   const cancelRef = useRef(false);
 
-  useEffect(() => { activeIdRef.current = activeId; }, [activeId]);
+  useEffect(() => {
+    activeIdRef.current = activeId;
+  }, [activeId]);
   useEffect(() => {
     const draft = loadDraft(activeId);
     if (draft && !input.trim()) setInput(draft);
   }, [activeId]);
-  useEffect(() => { saveDraft(activeId, input); }, [activeId, input]);
-  useEffect(() => { savePrefs(prefs); }, [prefs]);
+  useEffect(() => {
+    saveDraft(activeId, input);
+  }, [activeId, input]);
+  useEffect(() => {
+    savePrefs(prefs);
+  }, [prefs]);
   useEffect(() => {
     let active = true;
     const timer = window.setTimeout(() => {
@@ -906,7 +914,7 @@ export function TutorPage() {
       const nextMsgs = [...msgs, insMsg];
       if (activeIdRef.current === tid) setMsgs(nextMsgs);
       setInput("");
-  saveDraft(tid, "");
+      saveDraft(tid, "");
       setPending([]);
       inputWasCleared = true;
 
@@ -1035,7 +1043,8 @@ export function TutorPage() {
       setFlowError(null);
       const session = await createAiSession({
         task: "chat",
-        system: "あなたは学習ログの要約アシスタントです。会話を短く、要点だけ、箇条書きでまとめます。",
+        system:
+          "あなたは学習ログの要約アシスタントです。会話を短く、要点だけ、箇条書きでまとめます。",
       });
       try {
         const content = msgs
@@ -1043,7 +1052,9 @@ export function TutorPage() {
           .map((m) => `${m.role === "user" ? "生徒" : "AI"}: ${m.content}`)
           .join("\n\n");
         const summary = await withTimeout(
-          session.prompt(`以下の会話を、学習の要点・次にやること・注意点の3つに分けて、簡潔な箇条書きで要約してください。\n\n${content}`),
+          session.prompt(
+            `以下の会話を、学習の要点・次にやること・注意点の3つに分けて、簡潔な箇条書きで要約してください。\n\n${content}`,
+          ),
           60_000,
         );
         const nextSummary = summary.trim() || "要点の要約を生成できませんでした。";
@@ -1052,7 +1063,9 @@ export function TutorPage() {
           try {
             window.localStorage.setItem(`ai.tutor.pinned.${activeId}`, JSON.stringify(nextSummary));
             setPinnedNote(nextSummary);
-          } catch { /* noop */ }
+          } catch {
+            /* noop */
+          }
         }
       } finally {
         session.destroy();
@@ -1109,7 +1122,11 @@ export function TutorPage() {
   const filteredMessages = useMemo(() => {
     if (!messageQuery.trim()) return msgs;
     const q = messageQuery.toLowerCase();
-    return msgs.filter((m) => m.content.toLowerCase().includes(q) || (m.attachments ?? []).some((a) => a.name.toLowerCase().includes(q)));
+    return msgs.filter(
+      (m) =>
+        m.content.toLowerCase().includes(q) ||
+        (m.attachments ?? []).some((a) => a.name.toLowerCase().includes(q)),
+    );
   }, [messageQuery, msgs]);
   const activeTitle = threads.find((t) => t.id === activeId)?.title ?? "新しいチャット";
 
@@ -1277,10 +1294,24 @@ export function TutorPage() {
             <AiStatusBadge />
             {msgs.length > 0 && (
               <>
-                <Button type="button" variant="ghost" size="sm" className="h-8 px-2 text-[11px]" onClick={() => void summarizeThread()} title="この会話を要約する">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 text-[11px]"
+                  onClick={() => void summarizeThread()}
+                  title="この会話を要約する"
+                >
                   要約
                 </Button>
-                <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={exportChat} title="この会話を書き出す">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={exportChat}
+                  title="この会話を書き出す"
+                >
                   <Download className="h-4 w-4" />
                 </Button>
               </>
@@ -1359,13 +1390,25 @@ export function TutorPage() {
             {summaryText && !busy && (
               <div className="mb-5 rounded-2xl border border-primary/25 bg-primary/[0.04] p-3">
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-primary">会話の要点</p>
-                  <button type="button" onClick={() => setSummaryText(null)} className="text-[11px] text-muted-foreground underline underline-offset-2">閉じる</button>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-primary">
+                    会話の要点
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setSummaryText(null)}
+                    className="text-[11px] text-muted-foreground underline underline-offset-2"
+                  >
+                    閉じる
+                  </button>
                 </div>
                 <div className="prose prose-sm max-w-none dark:prose-invert">
                   <ReactMarkdown>{summaryText}</ReactMarkdown>
                 </div>
-                {pinnedNote && <p className="mt-3 rounded-lg bg-background/60 p-2 text-[11px] text-muted-foreground">固定メモ: {pinnedNote}</p>}
+                {pinnedNote && (
+                  <p className="mt-3 rounded-lg bg-background/60 p-2 text-[11px] text-muted-foreground">
+                    固定メモ: {pinnedNote}
+                  </p>
+                )}
               </div>
             )}
 
@@ -1377,7 +1420,15 @@ export function TutorPage() {
                 placeholder="メッセージ内を検索"
                 className="w-full bg-transparent text-xs outline-none placeholder:text-muted-foreground"
               />
-              {messageQuery && <button type="button" onClick={() => setMessageQuery("")} className="text-[10px] text-muted-foreground">クリア</button>}
+              {messageQuery && (
+                <button
+                  type="button"
+                  onClick={() => setMessageQuery("")}
+                  className="text-[10px] text-muted-foreground"
+                >
+                  クリア
+                </button>
+              )}
             </div>
 
             <div className="space-y-6">
@@ -1797,7 +1848,9 @@ export function TutorPage() {
             >
               サイト指定なし
             </Button>
-            <Button type="button" onClick={() => setDeepOpen(false)}>この設定で調べる</Button>
+            <Button type="button" onClick={() => setDeepOpen(false)}>
+              この設定で調べる
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -105,8 +105,7 @@
   --ai-muted: #6b6f76;
   color: var(--ai-ink);
   background:
-    radial-gradient(circle at 78% -10%, rgba(16, 163, 127, 0.08), transparent 34%),
-    var(--ai-bg);
+    radial-gradient(circle at 78% -10%, rgba(16, 163, 127, 0.08), transparent 34%), var(--ai-bg);
 }
 
 .ai-workspace aside {
@@ -173,8 +172,7 @@
   --ai-ink: #ececf1;
   --ai-muted: #acacbe;
   background:
-    radial-gradient(circle at 78% -10%, rgba(25, 195, 125, 0.12), transparent 34%),
-    var(--ai-bg);
+    radial-gradient(circle at 78% -10%, rgba(25, 195, 125, 0.12), transparent 34%), var(--ai-bg);
 }
 
 .dark {

@@ -53,7 +53,6 @@ const ICONS: Record<string, any> = {
   Eye,
 };
 
-
 const MANAGE_ITEMS = [
   { section: "members", label: "メンバー管理", icon: UserCog },
   { section: "requests", label: "参加申請", icon: UserPlus },

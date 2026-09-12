@@ -182,7 +182,10 @@ export function OrgLibrary({ orgId, ctx }: { orgId: string; ctx: any }) {
         {loans
           .filter((l) => !l.returned_on)
           .map((l) => (
-            <div key={l.id} className="flex items-center justify-between rounded-lg border p-2 text-sm">
+            <div
+              key={l.id}
+              className="flex items-center justify-between rounded-lg border p-2 text-sm"
+            >
               <div>
                 <div className="font-medium">{titleOf(l.item_id)}</div>
                 <div className="text-xs text-muted-foreground">
@@ -198,7 +201,8 @@ export function OrgLibrary({ orgId, ctx }: { orgId: string; ctx: any }) {
               </div>
               {staff && (
                 <Button size="sm" variant="outline" onClick={() => giveBack(l.id)}>
-                  <Undo2 className="h-4 w-4 mr-1" />返却
+                  <Undo2 className="h-4 w-4 mr-1" />
+                  返却
                 </Button>
               )}
             </div>
@@ -209,11 +213,15 @@ export function OrgLibrary({ orgId, ctx }: { orgId: string; ctx: any }) {
         <Card className="p-4 space-y-2">
           <div className="text-sm font-semibold">登録済みの貸出物</div>
           {items.map((i) => (
-            <div key={i.id} className="flex items-center justify-between rounded-lg border p-2 text-sm">
+            <div
+              key={i.id}
+              className="flex items-center justify-between rounded-lg border p-2 text-sm"
+            >
               <div>
                 <div className="font-medium">{i.title}</div>
                 <div className="text-xs text-muted-foreground">
-                  {i.location || "保管場所未設定"} ・ 全{i.total_count}点 / 貸出中{activeCount(i.id)}
+                  {i.location || "保管場所未設定"} ・ 全{i.total_count}点 / 貸出中
+                  {activeCount(i.id)}
                 </div>
               </div>
               <Button size="icon" variant="ghost" onClick={() => removeItem(i.id)}>

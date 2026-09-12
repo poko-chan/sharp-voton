@@ -15,7 +15,13 @@ export function OrgDuties({ orgId, ctx }: { orgId: string; ctx: any }) {
   const staff = ctx.isStaff;
   const [rows, setRows] = useState<any[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
-  const [draft, setDraft] = useState({ title: "", assignee_id: "", weekday: "1", date: "", note: "" });
+  const [draft, setDraft] = useState({
+    title: "",
+    assignee_id: "",
+    weekday: "1",
+    date: "",
+    note: "",
+  });
 
   const load = async () => {
     const { data } = await (supabase as any)
@@ -131,7 +137,10 @@ export function OrgDuties({ orgId, ctx }: { orgId: string; ctx: any }) {
       <Card className="p-4 space-y-2">
         <div className="text-sm font-semibold">当番表</div>
         {rows.map((r) => (
-          <div key={r.id} className="flex items-center justify-between rounded-lg border p-2 text-sm">
+          <div
+            key={r.id}
+            className="flex items-center justify-between rounded-lg border p-2 text-sm"
+          >
             <div>
               <div className="font-medium">{r.title}</div>
               <div className="text-xs text-muted-foreground">
