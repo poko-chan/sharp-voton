@@ -89,6 +89,8 @@ export function NoteCanvas({
   const redoRef = useRef<{ strokes: Stroke[]; texts: TextBox[] }[]>([]);
   const [, force] = useState(0);
   const drawing = useRef<Stroke | null>(null);
+  const activePointer = useRef<number | null>(null);
+  const erasing = useRef(false);
   const panning = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
   const stateRef = useRef({ zoom, pan });
   stateRef.current = { zoom, pan };
