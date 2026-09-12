@@ -80,7 +80,6 @@ export function NoteCanvas({
   const [eraserSize, setEraserSize] = useState(24);
   const [straight, setStraight] = useState(false);
   const [penOnly, setPenOnly] = useState(true);
-  const [smooth, setSmooth] = useState(true);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [activeText, setActiveText] = useState<string | null>(null);
@@ -281,13 +280,8 @@ export function NoteCanvas({
       const last = d.points[d.points.length - 1];
       const dist = Math.hypot(pt.x - last.x, pt.y - last.y);
       if (dist < 1.2) return;
-      // 手ぶれ補正：直前の点に少し引き寄せて線をなめらかにする
-      const k = smooth ? 0.45 : 1;
-      d.points.push({
-        x: last.x + (pt.x - last.x) * k,
-        y: last.y + (pt.y - last.y) * k,
-        p: pt.p,
-      });
+      // 入力位置は変形せず、描画時の曲線補間だけで滑らかにする
+      d.points.push(pt);
     }
     redraw();
   };
@@ -470,15 +464,6 @@ export function NoteCanvas({
                   aria-label="太さ"
                 />
                 <span className="text-[11px] tabular-nums text-muted-foreground">{width}</span>
-                <Button
-                  size="sm"
-                  variant={smooth ? "default" : "outline"}
-                  className="h-7 text-xs"
-                  onClick={() => setSmooth((v) => !v)}
-                  title="手ぶれ補正：線のガタつきをおさえます"
-                >
-                  手ぶれ補正{smooth ? "オン" : "オフ"}
-                </Button>
                 <Button
                   size="sm"
                   variant={straight ? "default" : "outline"}

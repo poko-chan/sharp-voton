@@ -580,6 +580,52 @@
   }
 
   /* ===== Dashboard entrance ===== */
+  .dashboard-page {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .dashboard-page::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0 0 auto;
+    height: 34rem;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 8% 0%, color-mix(in oklab, var(--accent) 18%, transparent), transparent 28rem),
+      radial-gradient(circle at 88% 2%, color-mix(in oklab, var(--signal) 14%, transparent), transparent 24rem),
+      linear-gradient(to bottom, color-mix(in oklab, var(--background) 72%, transparent), transparent);
+    mask-image: linear-gradient(to bottom, black 12%, transparent 94%);
+  }
+
+  .dashboard-page::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.28;
+    background-image: linear-gradient(color-mix(in oklab, var(--border) 28%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in oklab, var(--border) 28%, transparent) 1px, transparent 1px);
+    background-size: 36px 36px;
+    mask-image: linear-gradient(to bottom, black, transparent 30rem);
+  }
+
+  .dashboard-hero {
+    transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  }
+
+  .dashboard-hero:hover {
+    border-color: color-mix(in oklab, var(--primary) 32%, var(--border));
+    box-shadow: 0 28px 70px -42px color-mix(in oklab, var(--primary) 70%, transparent);
+    transform: translateY(-2px);
+  }
+
+  .dashboard-town > * {
+    height: 100%;
+  }
+
   .dashboard-page > * {
     animation: dashboard-rise 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }

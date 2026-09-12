@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -75,6 +77,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { FocusPanel } from "@/components/dashboard/FocusPanel";
 import { GettingStartedCard } from "@/components/dashboard/GettingStartedCard";
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
+import { useOrderedSubjects } from "@/lib/subjects";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -92,6 +96,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 const DAILY_GOAL_KEY = "dashboard.dailyGoalMinutes";
+const WEEKLY_GOAL_KEY = "dashboard.weeklyGoalMinutes";
 
 const RANKS = [
   { min: 0, title: "白帯" },
@@ -138,11 +143,15 @@ function greeting() {
 
 function Dashboard() {
   const { user } = useAuth();
+  const { subjects } = useOrderedSubjects();
   const [dailyGoal, setDailyGoal] = useState(120);
+  const [weeklyGoal, setWeeklyGoal] = useState(840);
 
   useEffect(() => {
     const v = Number(localStorage.getItem(DAILY_GOAL_KEY));
     if (v > 0) setDailyGoal(v);
+    const weekly = Number(localStorage.getItem(WEEKLY_GOAL_KEY));
+    if (weekly > 0) setWeeklyGoal(weekly);
   }, []);
 
   const loadDashboard = async (uid: string) => {
@@ -364,6 +373,12 @@ function Dashboard() {
   const weekly = data?.weekly ?? [];
   const monthly = data?.monthly ?? [];
   const heatmap = data?.heatmap ?? [];
+  const heatActiveDays = heatmap.filter((h) => h.minutes > 0).length;
+  const heatTotalMinutes = heatmap.reduce((sum, h) => sum + h.minutes, 0);
+  const heatPeak = heatmap.reduce((best, h) => (h.minutes > best.minutes ? h : best), {
+    date: "",
+    minutes: 0,
+  });
   const byDow = data?.byDow ?? [];
   const bySubject = data?.bySubject ?? [];
   const topSubjects = data?.topSubjects ?? [];
@@ -392,10 +407,50 @@ function Dashboard() {
     stats.goalsTotal > 0 ? Math.round((stats.goalsDone / stats.goalsTotal) * 100) : 0;
 
   const dailyPct = dailyGoal > 0 ? Math.min(100, (stats.todayMin / dailyGoal) * 100) : 0;
-  const weeklyTarget = dailyGoal * 7;
+  const weeklyTarget = weeklyGoal;
   const weekPct = weeklyTarget > 0 ? Math.min(100, (stats.weekMin / weeklyTarget) * 100) : 0;
   const rank = [...RANKS].reverse().find((r) => stats.totalMin >= r.min)!;
   const nextRank = RANKS[RANKS.findIndex((r) => r.title === rank.title) + 1];
+
+  const nextAction = useMemo(() => {
+    const urgentGoal = [...goals]
+      .filter((g) => !g.done)
+      .sort((a, b) => {
+        if (!a.deadline) return 1;
+        if (!b.deadline) return -1;
+        return a.deadline.localeCompare(b.deadline);
+      })[0];
+    if (urgentGoal) {
+      const remaining = Math.max(0, urgentGoal.target_minutes - urgentGoal.progress_minutes);
+      return {
+        title: urgentGoal.title,
+        detail: `あと ${fmt(remaining)} で目標に近づきます`,
+        to: "/goals" as const,
+        label: "目標を確認",
+        icon: Target,
+      };
+    }
+    const nextExam = exams[0];
+    if (nextExam) {
+      const days = nextExam.start_date
+        ? Math.max(0, Math.ceil((new Date(nextExam.start_date + "T00:00:00").getTime() - Date.now()) / 86400000))
+        : null;
+      return {
+        title: nextExam.name,
+        detail: days === null ? "試験に向けて学習を始めましょう" : `試験まであと ${days} 日`,
+        to: "/exams" as const,
+        label: "試験を確認",
+        icon: CalendarDays,
+      };
+    }
+    return {
+      title: dailyPct >= 100 ? "この調子で続けましょう" : "まずは25分集中してみましょう",
+      detail: dailyPct >= 100 ? "今日の目標は達成済みです" : "短いセッションから始められます",
+      to: "/timer" as const,
+      label: "タイマー開始",
+      icon: Timer,
+    };
+  }, [goals, exams, dailyPct]);
 
   // 自動インサイト
   const insights = useMemo(() => {
@@ -465,7 +520,7 @@ function Dashboard() {
       {/* ===== 一番上: 左=1日の目標 / 右=あなたの街 ===== */}
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.12fr)_minmax(360px,0.88fr)] items-start">
         {/* ===== ヒーロー ===== */}
-        <Card className="relative overflow-hidden liquid-card p-0 border-primary/15 shadow-[0_24px_60px_-36px_color-mix(in_oklab,var(--primary)_55%,transparent)]">
+        <Card className="dashboard-hero relative overflow-hidden liquid-card p-0 border-primary/15 shadow-[0_24px_60px_-36px_color-mix(in_oklab,var(--primary)_55%,transparent)]">
           <div
             className="absolute inset-0 opacity-[0.18] pointer-events-none"
             style={{
@@ -566,6 +621,13 @@ function Dashboard() {
                   localStorage.setItem(DAILY_GOAL_KEY, String(v));
                 }}
               />
+              <WeeklyGoalDialog
+                value={weeklyGoal}
+                onChange={(v) => {
+                  setWeeklyGoal(v);
+                  localStorage.setItem(WEEKLY_GOAL_KEY, String(v));
+                }}
+              />
               <NotificationBell />
             </div>
           </div>
@@ -580,7 +642,7 @@ function Dashboard() {
         </Card>
 
         {/* ===== あなたの街（右上） ===== */}
-        <div className="xl:sticky xl:top-4">
+        <div className="dashboard-town xl:sticky xl:top-4">
           <Town />
         </div>
       </div>
@@ -596,6 +658,59 @@ function Dashboard() {
 
       {/* ===== タイマー & 学習時間の集約 ===== */}
       <FocusPanel dailyGoal={dailyGoal} />
+
+      {/* ===== 週間目標 ===== */}
+      <Card className="p-5 liquid-card border-signal/25">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary/80">
+              WEEKLY TARGET
+            </p>
+            <h2 className="mt-1 flex items-center gap-2 text-lg font-bold">
+              <Target className="h-5 w-5 text-primary" />
+              今週の目標
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              日ごとの波があっても、週全体でペースを整えられます。
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="text-2xl font-extrabold tabular-nums">{fmt(stats.weekMin)}</div>
+            <div className="text-xs text-muted-foreground">/ {fmt(weeklyTarget)}</div>
+          </div>
+        </div>
+        <div className="mt-4">
+          <PowerBar value={weekPct} height={14} from="oklch(0.75 0.16 200)" to="oklch(0.66 0.2 150)" />
+          <div className="mt-2 flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
+            <span>{weekPct >= 100 ? "今週の目標を達成しました" : `あと ${fmt(Math.max(0, weeklyTarget - stats.weekMin))}`}</span>
+            <span className="font-semibold text-foreground">{Math.round(weekPct)}%</span>
+          </div>
+        </div>
+      </Card>
+
+      <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+        <QuickLogCard subjects={subjects} />
+        <Card className="relative overflow-hidden p-5 liquid-card border-primary/20">
+          <div className="absolute -right-8 -top-10 h-32 w-32 rounded-full bg-primary/10 blur-2xl" />
+          <div className="relative flex h-full flex-col justify-between gap-5">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary/80">NEXT MOVE</p>
+              <h2 className="mt-1 flex items-center gap-2 text-lg font-bold">
+                <Sparkles className="h-5 w-5 text-primary" />
+                今日の次の一手
+              </h2>
+              <p className="mt-4 text-base font-semibold">{nextAction.title}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{nextAction.detail}</p>
+            </div>
+            <Button asChild className="w-full sm:w-fit">
+              <Link to={nextAction.to}>
+                <nextAction.icon className="mr-2 h-4 w-4" />
+                {nextAction.label}
+              </Link>
+            </Button>
+          </div>
+        </Card>
+      </div>
 
       {/* ===== インサイト ===== */}
       {insights.length > 0 && (
@@ -830,8 +945,22 @@ function Dashboard() {
               多い
             </div>
           </div>
+          <div className="mb-4 grid grid-cols-3 gap-2">
+            <div className="rounded-xl bg-muted/60 px-3 py-2">
+              <div className="text-[10px] text-muted-foreground">学習日数</div>
+              <div className="mt-0.5 text-lg font-bold tabular-nums">{heatActiveDays}<span className="ml-0.5 text-xs font-normal">日</span></div>
+            </div>
+            <div className="rounded-xl bg-muted/60 px-3 py-2">
+              <div className="text-[10px] text-muted-foreground">合計時間</div>
+              <div className="mt-0.5 text-lg font-bold tabular-nums">{fmt(heatTotalMinutes)}</div>
+            </div>
+            <div className="rounded-xl bg-muted/60 px-3 py-2">
+              <div className="text-[10px] text-muted-foreground">最多の日</div>
+              <div className="mt-0.5 truncate text-lg font-bold tabular-nums">{fmt(heatPeak.minutes)}</div>
+            </div>
+          </div>
           <div className="overflow-x-auto pb-1">
-            <div className="grid grid-flow-col grid-rows-7 gap-[3px] w-max">
+            <div className="grid grid-flow-col grid-rows-7 gap-[3px] w-max" aria-label="過去12週間の学習量">
               {heatmap.map((h) => (
                 <div
                   key={h.date}
@@ -1236,6 +1365,98 @@ function QuickAction({ to, icon: Icon, label }: { to: string; icon: any; label: 
   );
 }
 
+function QuickLogCard({ subjects }: { subjects: { id: string; name: string; color?: string }[] }) {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [subjectId, setSubjectId] = useState("");
+  const [duration, setDuration] = useState(25);
+  const [content, setContent] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    if (!user || !subjectId) {
+      toast.error("教科を選択してください");
+      return;
+    }
+    if (duration < 1 || duration > 400) {
+      toast.error("学習時間は1〜400分で入力してください");
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase.from("study_logs").insert({
+      user_id: user.id,
+      date: localDateStr(),
+      subject_id: subjectId,
+      duration_minutes: duration,
+      content: content.trim(),
+      start_time: null,
+    } as never);
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setContent("");
+    await queryClient.invalidateQueries({ queryKey: ["dashboard", user.id] });
+    toast.success("学習を記録しました");
+  };
+
+  return (
+    <Card className="p-5 liquid-card border-emerald-500/20">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-600">QUICK LOG</p>
+          <h2 className="mt-1 flex items-center gap-2 text-lg font-bold">
+            <BookOpen className="h-5 w-5 text-emerald-600" />
+            学習をクイック記録
+          </h2>
+        </div>
+        <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
+          今日
+        </span>
+      </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_120px]">
+        <Select value={subjectId} onValueChange={setSubjectId}>
+          <SelectTrigger aria-label="教科を選択">
+            <SelectValue placeholder="教科を選択" />
+          </SelectTrigger>
+          <SelectContent>
+            {subjects.map((subject) => (
+              <SelectItem key={subject.id} value={subject.id}>
+                <span className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full" style={{ background: subject.color ?? "#94a3b8" }} />
+                  {subject.name}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div className="relative">
+          <Input
+            aria-label="学習時間"
+            type="number"
+            min={1}
+            max={400}
+            value={duration}
+            onChange={(event) => setDuration(Number(event.target.value))}
+          />
+          <span className="pointer-events-none absolute right-3 top-2.5 text-xs text-muted-foreground">分</span>
+        </div>
+      </div>
+      <Textarea
+        className="mt-3 min-h-16 resize-none"
+        placeholder="何を学習したか（任意）"
+        value={content}
+        onChange={(event) => setContent(event.target.value)}
+      />
+      <Button className="mt-3 w-full" onClick={save} disabled={saving || subjects.length === 0}>
+        <CheckCircle2 className="mr-2 h-4 w-4" />
+        {saving ? "保存中..." : subjects.length === 0 ? "先に教科を作成" : "記録する"}
+      </Button>
+    </Card>
+  );
+}
+
 function DailyGoalDialog({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(value);
@@ -1281,6 +1502,64 @@ function DailyGoalDialog({ value, onChange }: { value: number; onChange: (v: num
           <p className="text-[11px] text-muted-foreground flex items-start gap-1">
             <Lightbulb className="h-3 w-3 mt-0.5 shrink-0" />
             達成しやすい時間から始めると連続記録が伸びやすくなります。
+          </p>
+        </div>
+        <DialogFooter>
+          <Button
+            onClick={() => {
+              onChange(draft);
+              setOpen(false);
+            }}
+          >
+            <Sparkles className="h-4 w-4 mr-1" />
+            保存
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function WeeklyGoalDialog({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState(value);
+  useEffect(() => setDraft(value), [value]);
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" className="gap-1.5 h-11 rounded-full">
+          <CalendarDays className="h-4 w-4" />
+          週の目標
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <CalendarDays className="h-4 w-4" />
+            週間目標学習時間
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              min={30}
+              step={30}
+              value={draft}
+              onChange={(e) => setDraft(Math.max(30, +e.target.value))}
+            />
+            <span className="text-sm text-muted-foreground shrink-0">分</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {[300, 420, 600, 840, 1200, 1800].map((m) => (
+              <Button key={m} size="sm" variant={draft === m ? "default" : "outline"} onClick={() => setDraft(m)}>
+                {fmt(m)}
+              </Button>
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground flex items-start gap-1">
+            <Lightbulb className="h-3 w-3 mt-0.5 shrink-0" />
+            忙しい日があっても、週の合計で無理なく調整できます。
           </p>
         </div>
         <DialogFooter>

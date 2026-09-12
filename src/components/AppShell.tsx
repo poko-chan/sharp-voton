@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Timer,
@@ -113,6 +113,7 @@ const BOTTOM_NAV = [
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, isAdmin, signOut, accountKind } = useAuth();
   const { t } = useI18n();
+  const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const isMobile = useIsMobile();
   const { prefs } = useUserPrefs(); // apply font scale / contrast on mount
@@ -258,19 +259,29 @@ export function AppShell({ children }: { children: ReactNode }) {
         },
         (payload: any) => {
           const n = payload.new;
+          const notificationPath =
+            typeof n.link === "string" && n.link.startsWith("/") ? n.link : "/notifications";
           toast(n.title || "新しい通知", {
             description: n.body || "通知を確認してください",
             duration: 3200,
             icon: <BellRing className="h-4 w-4 text-primary" />,
-            className: "app-notification-toast",
+            className: "app-notification-toast cursor-pointer",
+            onClick: () => {
+              void navigate({ to: notificationPath });
+            },
           });
           try {
             if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-              new Notification(n.title || "通知", {
+              const browserNotification = new Notification(n.title || "通知", {
                 body: n.body || "",
                 icon: "/favicon.ico",
                 tag: n.id,
               });
+              browserNotification.onclick = () => {
+                window.focus();
+                window.location.assign(notificationPath);
+                browserNotification.close();
+              };
             }
           } catch {
             /* noop */
@@ -281,7 +292,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     return () => {
       supabase.removeChannel(ch);
     };
-  }, [user?.id]);
+  }, [navigate, user?.id]);
 
   // 当日のカレンダー予定を通知に流し込む（1日1回・重複なし）
   useEffect(() => {
