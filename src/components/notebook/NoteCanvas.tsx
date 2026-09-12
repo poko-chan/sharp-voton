@@ -225,12 +225,13 @@ export function NoteCanvas({
       return;
     }
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    activePointer.current = e.pointerId;
     const pt = toPage(e);
     if (tool === "eraser") {
       undoRef.current = [...undoRef.current.slice(-59), { strokes, texts }];
       erase(pt.x, pt.y);
       drawing.current = null;
-      (e.currentTarget as any).__erasing = true;
+      erasing.current = true;
       return;
     }
     drawing.current = {
