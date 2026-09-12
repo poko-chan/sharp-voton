@@ -469,16 +469,16 @@ export function NoteCanvas({
                   className="w-24"
                   aria-label="太さ"
                 />
-                <span className="text-[11px] text-muted-foreground">補正</span>
-                <input
-                  type="range"
-                  min={0}
-                  max={8}
-                  value={stabilizer}
-                  onChange={(e) => setStabilizer(Number(e.target.value))}
-                  className="w-20"
-                  aria-label="手ぶれ補正"
-                />
+                <span className="text-[11px] tabular-nums text-muted-foreground">{width}</span>
+                <Button
+                  size="sm"
+                  variant={smooth ? "default" : "outline"}
+                  className="h-7 text-xs"
+                  onClick={() => setSmooth((v) => !v)}
+                  title="手ぶれ補正：線のガタつきをおさえます"
+                >
+                  手ぶれ補正{smooth ? "オン" : "オフ"}
+                </Button>
                 <Button
                   size="sm"
                   variant={straight ? "default" : "outline"}
