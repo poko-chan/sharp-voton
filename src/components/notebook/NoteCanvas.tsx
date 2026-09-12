@@ -197,16 +197,17 @@ export function NoteCanvas({
   };
 
   const onDown = (e: React.PointerEvent) => {
+    // すでに描き始めている指／ペンがある場合、2本目以降は完全に無視する（変な線の防止）
+    if (activePointer.current !== null || panning.current) return;
+    if (!e.isPrimary) return;
     if (penOnly && e.pointerType === "touch" && tool !== "hand") return;
-    if (
-      tool === "hand" ||
-      e.button === 1 ||
-      (e.pointerType === "touch" && tool !== "eraser" && e.isPrimary === false)
-    ) {
+    if (tool === "hand" || e.button === 1) {
+      activePointer.current = e.pointerId;
       startPan(e);
       return;
     }
     if (readOnly) return;
+
     if (tool === "text") {
       const { x, y } = toPage(e);
       const t: TextBox = {
