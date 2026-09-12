@@ -256,6 +256,7 @@ export function NoteCanvas({
   };
 
   const onMove = (e: React.PointerEvent) => {
+    if (activePointer.current !== null && e.pointerId !== activePointer.current) return;
     if (panning.current) {
       setPan({
         x: panning.current.ox + (e.clientX - panning.current.x),
@@ -266,46 +267,56 @@ export function NoteCanvas({
     const pt = toPage(e);
     setCursor({ x: pt.x, y: pt.y });
     if (readOnly) return;
-    if ((e.currentTarget as any).__erasing) {
-      if (e.buttons === 0) return;
+    // ボタン／指が離れている間は絶対に描かない
+    if (e.buttons === 0) return;
+    if (erasing.current) {
       erase(pt.x, pt.y);
       return;
     }
     const d = drawing.current;
     if (!d) return;
-    if (straight) d.points = [d.points[0], pt];
-    else {
+    if (straight) {
+      d.points = [d.points[0], pt];
+    } else {
       const last = d.points[d.points.length - 1];
-      if (Math.hypot(pt.x - last.x, pt.y - last.y) < Math.max(0.8, 3.2 - stabilizer * 0.45)) return;
-      d.points.push(pt);
+      const dist = Math.hypot(pt.x - last.x, pt.y - last.y);
+      if (dist < 1.2) return;
+      // 手ぶれ補正：直前の点に少し引き寄せて線をなめらかにする
+      const k = smooth ? 0.45 : 1;
+      d.points.push({
+        x: last.x + (pt.x - last.x) * k,
+        y: last.y + (pt.y - last.y) * k,
+        p: pt.p,
+      });
     }
     redraw();
   };
 
-  const onUp = (e: React.PointerEvent) => {
-    if (panning.current) {
-      panning.current = null;
-      return;
-    }
-    if ((e.currentTarget as any).__erasing) {
-      (e.currentTarget as any).__erasing = false;
-      return;
-    }
+  const finishStroke = () => {
+    activePointer.current = null;
+    panning.current = null;
+    erasing.current = false;
     const d = drawing.current;
     drawing.current = null;
-    if (!d) return;
-    commit({ strokes: [...strokes, d], texts });
+    if (d && d.points.length > 0) commit({ strokes: [...strokes, d], texts });
+  };
+
+  const onUp = (e: React.PointerEvent) => {
+    if (activePointer.current !== null && e.pointerId !== activePointer.current) return;
+    finishStroke();
   };
 
   const cancelDrawing = (e: React.PointerEvent) => {
+    activePointer.current = null;
     panning.current = null;
     drawing.current = null;
-    (e.currentTarget as any).__erasing = false;
+    erasing.current = false;
     try {
       (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
     } catch {
       /* noop */
     }
+    redraw();
   };
 
   const updateText = (id: string, patch: Partial<TextBox>, snapshot = false) => {
