@@ -296,6 +296,42 @@ export const adminListUsers = createServerFn({ method: "POST" })
     return { users, total: count ?? 0, page, pageSize };
   });
 
+export const adminSendNotification = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        userId: z.string().uuid().optional(),
+        sendToAll: z.boolean().default(false),
+        title: z.string().trim().min(1).max(160),
+        body: z.string().trim().max(4000).optional(),
+        link: z.string().trim().max(500).optional(),
+      })
+      .refine((v) => v.sendToAll || !!v.userId, "送信先を指定してください")
+      .refine((v) => !(v.sendToAll && v.userId), "送信先を1つだけ指定してください")
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const targets = data.sendToAll
+      ? (await supabaseAdmin.from("profiles").select("id")).data ?? []
+      : data.userId
+        ? [{ id: data.userId }]
+        : [];
+    if (targets.length === 0) throw new Error("送信先ユーザーが見つかりません");
+    const { error } = await supabaseAdmin.from("notifications").insert(
+      targets.map((target) => ({
+        user_id: target.id,
+        type: "admin",
+        title: data.title,
+        body: data.body || null,
+        link: data.link || null,
+      })),
+    );
+    if (error) throw new Error(error.message);
+    return { count: targets.length };
+  });
+
 export const adminSetUserSuspended = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>

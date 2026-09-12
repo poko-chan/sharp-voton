@@ -41,7 +41,7 @@ function AdminLoginPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && user && isAdmin) navigate({ to: "/admin", search: { tab: "users" } });
+    if (!loading && user && isAdmin) navigate({ to: "/admin" });
   }, [user, isAdmin, loading, navigate]);
 
   const submit = async (e: React.FormEvent) => {

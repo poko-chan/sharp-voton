@@ -120,51 +120,66 @@ function NotebookEditor() {
   const savedSig = useRef<Record<string, string>>({});
   /** ノート本体の更新日時は最大でも5分に1回だけ書き込む */
   const nbTouched = useRef(0);
+  /** 入力イベントが連続しても、常に最新ページを基準に更新する */
+  const pagesRef = useRef<NotePage[]>([]);
+  pagesRef.current = pages;
+  /** 最新ページを常に保持し、離脱時の保存に使う */
+  const pendingRef = useRef<NotePage | null>(null);
+  const saveLoopRef = useRef(false);
 
   const savePage = useCallback(
-    async (p: NotePage) => {
-      const sig = JSON.stringify([p.strokes, p.texts]);
-      if (savedSig.current[p.id] === sig) {
+    async (requested?: NotePage) => {
+      if (requested && !pendingRef.current) pendingRef.current = requested;
+      if (saveLoopRef.current) return;
+      saveLoopRef.current = true;
+      try {
+        while (pendingRef.current) {
+          const p = pendingRef.current;
+          pendingRef.current = null;
+          const sig = JSON.stringify([p.strokes, p.texts]);
+          if (savedSig.current[p.id] === sig) continue;
+          setSaving("saving");
+          const { error } = await supabase
+            .from("notebook_pages")
+            .update({
+              strokes: p.strokes as any,
+              texts: p.texts as any,
+              updated_at: new Date().toISOString(),
+              updated_by: user?.id,
+            })
+            .eq("id", p.id);
+          if (error) {
+            pendingRef.current = p;
+            setSaving("dirty");
+            toast.error("保存に失敗しました");
+            return;
+          }
+          savedSig.current[p.id] = sig;
+          const now = Date.now();
+          if (now - nbTouched.current > 5 * 60 * 1000) {
+            nbTouched.current = now;
+            await supabase
+              .from("notebooks")
+              .update({ updated_at: new Date().toISOString() })
+              .eq("id", id);
+          }
+        }
         setSaving("saved");
-        return;
+      } finally {
+        saveLoopRef.current = false;
+        if (pendingRef.current) void savePage();
       }
-      setSaving("saving");
-      const { error } = await supabase
-        .from("notebook_pages")
-        .update({
-          strokes: p.strokes as any,
-          texts: p.texts as any,
-          updated_at: new Date().toISOString(),
-          updated_by: user?.id,
-        })
-        .eq("id", p.id);
-      if (error) {
-        setSaving("dirty");
-        toast.error("保存に失敗しました");
-        return;
-      }
-      savedSig.current[p.id] = sig;
-      const now = Date.now();
-      if (now - nbTouched.current > 5 * 60 * 1000) {
-        nbTouched.current = now;
-        await supabase
-          .from("notebooks")
-          .update({ updated_at: new Date().toISOString() })
-          .eq("id", id);
-      }
-      setSaving("saved");
     },
     [id, user?.id],
   );
 
-  /** 最新ページを常に保持し、離脱時の保存に使う */
-  const pendingRef = useRef<NotePage | null>(null);
-
   const onChange = (next: { strokes: Stroke[]; texts: TextBox[] }) => {
-    if (!page) return;
-    const updated = { ...page, ...next };
+    const currentPage = pagesRef.current.find((candidate) => candidate.id === page?.id);
+    if (!currentPage) return;
+    const updated = { ...currentPage, ...next };
     pendingRef.current = updated;
-    setPages((prev) => prev.map((p) => (p.id === page.id ? updated : p)));
+    pagesRef.current = pagesRef.current.map((p) => (p.id === updated.id ? updated : p));
+    setPages(pagesRef.current);
     setSaving("dirty");
     if (timer.current) clearTimeout(timer.current);
     // 書くたびに保存せず、手が止まってからまとめて1回保存する

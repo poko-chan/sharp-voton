@@ -35,9 +35,7 @@ import {
   Megaphone,
   CalendarDays,
   BarChart3,
-  ArrowUp,
   ArrowDown,
-  Minus,
   Star,
   Sun,
   CheckCircle2,
@@ -659,35 +657,6 @@ function Dashboard() {
       {/* ===== タイマー & 学習時間の集約 ===== */}
       <FocusPanel dailyGoal={dailyGoal} />
 
-      {/* ===== 週間目標 ===== */}
-      <Card className="p-5 liquid-card border-signal/25">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary/80">
-              WEEKLY TARGET
-            </p>
-            <h2 className="mt-1 flex items-center gap-2 text-lg font-bold">
-              <Target className="h-5 w-5 text-primary" />
-              今週の目標
-            </h2>
-            <p className="mt-1 text-xs text-muted-foreground">
-              日ごとの波があっても、週全体でペースを整えられます。
-            </p>
-          </div>
-          <div className="text-right">
-            <div className="text-2xl font-extrabold tabular-nums">{fmt(stats.weekMin)}</div>
-            <div className="text-xs text-muted-foreground">/ {fmt(weeklyTarget)}</div>
-          </div>
-        </div>
-        <div className="mt-4">
-          <PowerBar value={weekPct} height={14} from="oklch(0.75 0.16 200)" to="oklch(0.66 0.2 150)" />
-          <div className="mt-2 flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
-            <span>{weekPct >= 100 ? "今週の目標を達成しました" : `あと ${fmt(Math.max(0, weeklyTarget - stats.weekMin))}`}</span>
-            <span className="font-semibold text-foreground">{Math.round(weekPct)}%</span>
-          </div>
-        </div>
-      </Card>
-
       <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
         <QuickLogCard subjects={subjects} />
         <Card className="relative overflow-hidden p-5 liquid-card border-primary/20">
@@ -734,41 +703,8 @@ function Dashboard() {
         </div>
       )}
 
-      {/* ===== KPI ===== */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard icon={Clock} label="今日の勉強" value={fmt(stats.todayMin)} />
-        <StatCard
-          icon={Flame}
-          label="連続日数"
-          value={`${stats.streak} 日`}
-          sub={`最長 ${stats.longestStreak} 日`}
-          accent={stats.streak > 0}
-        />
-        <StatCard
-          icon={CalendarDays}
-          label="今週"
-          value={fmt(stats.weekMin)}
-          sub={
-            diffPct === null ? (
-              "—"
-            ) : diff > 0 ? (
-              <span className="text-emerald-600 inline-flex items-center">
-                <ArrowUp className="h-3 w-3" />
-                {diffPct}%
-              </span>
-            ) : diff < 0 ? (
-              <span className="text-amber-600 inline-flex items-center">
-                <ArrowDown className="h-3 w-3" />
-                {Math.abs(diffPct)}%
-              </span>
-            ) : (
-              <span className="text-muted-foreground inline-flex items-center">
-                <Minus className="h-3 w-3" />
-                0%
-              </span>
-            )
-          }
-        />
+      {/* ===== KPI: 詳細指標 ===== */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
         <StatCard
           icon={CalendarDays}
           label="今月 (30日)"
