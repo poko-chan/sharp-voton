@@ -80,7 +80,7 @@ export function NoteCanvas({
   const [eraserSize, setEraserSize] = useState(24);
   const [straight, setStraight] = useState(false);
   const [penOnly, setPenOnly] = useState(true);
-  const [stabilizer, setStabilizer] = useState(4);
+  const [smooth, setSmooth] = useState(true);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [activeText, setActiveText] = useState<string | null>(null);
@@ -89,6 +89,8 @@ export function NoteCanvas({
   const redoRef = useRef<{ strokes: Stroke[]; texts: TextBox[] }[]>([]);
   const [, force] = useState(0);
   const drawing = useRef<Stroke | null>(null);
+  const activePointer = useRef<number | null>(null);
+  const erasing = useRef(false);
   const panning = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
   const stateRef = useRef({ zoom, pan });
   stateRef.current = { zoom, pan };
@@ -195,16 +197,17 @@ export function NoteCanvas({
   };
 
   const onDown = (e: React.PointerEvent) => {
+    // すでに描き始めている指／ペンがある場合、2本目以降は完全に無視する（変な線の防止）
+    if (activePointer.current !== null || panning.current) return;
+    if (!e.isPrimary) return;
     if (penOnly && e.pointerType === "touch" && tool !== "hand") return;
-    if (
-      tool === "hand" ||
-      e.button === 1 ||
-      (e.pointerType === "touch" && tool !== "eraser" && e.isPrimary === false)
-    ) {
+    if (tool === "hand" || e.button === 1) {
+      activePointer.current = e.pointerId;
       startPan(e);
       return;
     }
     if (readOnly) return;
+
     if (tool === "text") {
       const { x, y } = toPage(e);
       const t: TextBox = {
@@ -222,12 +225,13 @@ export function NoteCanvas({
       return;
     }
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    activePointer.current = e.pointerId;
     const pt = toPage(e);
     if (tool === "eraser") {
       undoRef.current = [...undoRef.current.slice(-59), { strokes, texts }];
       erase(pt.x, pt.y);
       drawing.current = null;
-      (e.currentTarget as any).__erasing = true;
+      erasing.current = true;
       return;
     }
     drawing.current = {
@@ -252,6 +256,7 @@ export function NoteCanvas({
   };
 
   const onMove = (e: React.PointerEvent) => {
+    if (activePointer.current !== null && e.pointerId !== activePointer.current) return;
     if (panning.current) {
       setPan({
         x: panning.current.ox + (e.clientX - panning.current.x),
@@ -262,46 +267,56 @@ export function NoteCanvas({
     const pt = toPage(e);
     setCursor({ x: pt.x, y: pt.y });
     if (readOnly) return;
-    if ((e.currentTarget as any).__erasing) {
-      if (e.buttons === 0) return;
+    // ボタン／指が離れている間は絶対に描かない
+    if (e.buttons === 0) return;
+    if (erasing.current) {
       erase(pt.x, pt.y);
       return;
     }
     const d = drawing.current;
     if (!d) return;
-    if (straight) d.points = [d.points[0], pt];
-    else {
+    if (straight) {
+      d.points = [d.points[0], pt];
+    } else {
       const last = d.points[d.points.length - 1];
-      if (Math.hypot(pt.x - last.x, pt.y - last.y) < Math.max(0.8, 3.2 - stabilizer * 0.45)) return;
-      d.points.push(pt);
+      const dist = Math.hypot(pt.x - last.x, pt.y - last.y);
+      if (dist < 1.2) return;
+      // 手ぶれ補正：直前の点に少し引き寄せて線をなめらかにする
+      const k = smooth ? 0.45 : 1;
+      d.points.push({
+        x: last.x + (pt.x - last.x) * k,
+        y: last.y + (pt.y - last.y) * k,
+        p: pt.p,
+      });
     }
     redraw();
   };
 
-  const onUp = (e: React.PointerEvent) => {
-    if (panning.current) {
-      panning.current = null;
-      return;
-    }
-    if ((e.currentTarget as any).__erasing) {
-      (e.currentTarget as any).__erasing = false;
-      return;
-    }
+  const finishStroke = () => {
+    activePointer.current = null;
+    panning.current = null;
+    erasing.current = false;
     const d = drawing.current;
     drawing.current = null;
-    if (!d) return;
-    commit({ strokes: [...strokes, d], texts });
+    if (d && d.points.length > 0) commit({ strokes: [...strokes, d], texts });
+  };
+
+  const onUp = (e: React.PointerEvent) => {
+    if (activePointer.current !== null && e.pointerId !== activePointer.current) return;
+    finishStroke();
   };
 
   const cancelDrawing = (e: React.PointerEvent) => {
+    activePointer.current = null;
     panning.current = null;
     drawing.current = null;
-    (e.currentTarget as any).__erasing = false;
+    erasing.current = false;
     try {
       (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
     } catch {
       /* noop */
     }
+    redraw();
   };
 
   const updateText = (id: string, patch: Partial<TextBox>, snapshot = false) => {
@@ -454,16 +469,16 @@ export function NoteCanvas({
                   className="w-24"
                   aria-label="太さ"
                 />
-                <span className="text-[11px] text-muted-foreground">補正</span>
-                <input
-                  type="range"
-                  min={0}
-                  max={8}
-                  value={stabilizer}
-                  onChange={(e) => setStabilizer(Number(e.target.value))}
-                  className="w-20"
-                  aria-label="手ぶれ補正"
-                />
+                <span className="text-[11px] tabular-nums text-muted-foreground">{width}</span>
+                <Button
+                  size="sm"
+                  variant={smooth ? "default" : "outline"}
+                  className="h-7 text-xs"
+                  onClick={() => setSmooth((v) => !v)}
+                  title="手ぶれ補正：線のガタつきをおさえます"
+                >
+                  手ぶれ補正{smooth ? "オン" : "オフ"}
+                </Button>
                 <Button
                   size="sm"
                   variant={straight ? "default" : "outline"}
@@ -556,10 +571,7 @@ export function NoteCanvas({
               onPointerMove={onMove}
               onPointerUp={onUp}
               onPointerCancel={cancelDrawing}
-              onPointerLeave={(e) => {
-                setCursor(null);
-                onUp(e);
-              }}
+              onPointerLeave={() => setCursor(null)}
               className="absolute inset-0 h-full w-full touch-none rounded-sm bg-white"
               style={{
                 cursor:
