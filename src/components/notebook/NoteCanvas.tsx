@@ -571,10 +571,7 @@ export function NoteCanvas({
               onPointerMove={onMove}
               onPointerUp={onUp}
               onPointerCancel={cancelDrawing}
-              onPointerLeave={(e) => {
-                setCursor(null);
-                onUp(e);
-              }}
+              onPointerLeave={() => setCursor(null)}
               className="absolute inset-0 h-full w-full touch-none rounded-sm bg-white"
               style={{
                 cursor:
