@@ -80,7 +80,7 @@ export function NoteCanvas({
   const [eraserSize, setEraserSize] = useState(24);
   const [straight, setStraight] = useState(false);
   const [penOnly, setPenOnly] = useState(true);
-  const [stabilizer, setStabilizer] = useState(4);
+  const [smooth, setSmooth] = useState(true);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [activeText, setActiveText] = useState<string | null>(null);
