@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
+<<<<<<< HEAD
   Check,
   ChevronRight,
   Flame,
@@ -9,27 +10,77 @@ import {
   LockKeyhole,
   Languages,
   Play,
+=======
+  ArrowRight,
+  BookOpen,
+  Check,
+  Coffee,
+  Crown,
+  Flame,
+  Gem,
+  Heart,
+  Languages,
+  LockKeyhole,
+  MessageCircle,
+  Plane,
+>>>>>>> 928e33fa8724ee0583c4a930d3359d06897ff491
   RotateCcw,
   Sparkles,
+  Star,
   Target,
   Trophy,
+<<<<<<< HEAD
+=======
+  Volume2,
+  type LucideIcon,
+>>>>>>> 928e33fa8724ee0583c4a930d3359d06897ff491
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
+import { LessonPlayer } from "@/components/xlang/LessonPlayer";
+import { XLANG_UNITS, ALL_LESSONS, type XLesson } from "@/lib/xlang-content";
 import {
+<<<<<<< HEAD
   answerXLangQuestion,
   completeXLangLesson,
+=======
+  finishLesson,
+>>>>>>> 928e33fa8724ee0583c4a930d3359d06897ff491
   loadXLangState,
+  loseHeart,
+  MAX_HEARTS,
+  refillHearts,
   saveXLangState,
-  XLANG_FORMATS,
+  speak,
   type XLangState,
 } from "@/lib/xlang";
 
-export const Route = createFileRoute("/_authenticated/xlang")({ component: XLangPage });
+export const Route = createFileRoute("/_authenticated/xlang")({
+  component: XLangPage,
+  head: () => ({
+    meta: [
+      { title: "Xlang | 毎日つづく英語トレーニング - Study#" },
+      {
+        name: "description",
+        content:
+          "Xlang は 3〜5分のマイクロレッスンと間隔反復で英語を定着させる学習モード。並び替え・リスニング・発音・ペアマッチングを毎日続けられます。",
+      },
+      { property: "og:title", content: "Xlang | 毎日つづく英語トレーニング" },
+      {
+        property: "og:description",
+        content: "ハート・ストリーク・クラウンで続く、ゲーム感覚の英語レッスン。",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+});
 
+<<<<<<< HEAD
 const QUESTIONS = [
   { prompt: "Good morning!", translation: "おはよう！", choices: ["おやすみ！", "おはよう！", "ありがとう！", "またね！"] },
   { prompt: "I like music.", translation: "私は音楽が好きです。", choices: ["私は映画を見ます。", "私は本を読みます。", "私は音楽が好きです。", "私は料理をします。"] },
@@ -37,20 +88,42 @@ const QUESTIONS = [
   { prompt: "Where is the station?", translation: "駅はどこですか？", choices: ["駅はどこですか？", "駅に行きました。", "電車が好きです。", "これは駅です。"] },
   { prompt: "See you tomorrow!", translation: "また明日！", choices: ["こんにちは！", "また明日！", "お疲れさま！", "はじめまして！"] },
 ] as const;
+=======
+const LESSON_ICONS: Record<XLesson["icon"], LucideIcon> = {
+  star: Star,
+  book: BookOpen,
+  chat: MessageCircle,
+  trophy: Trophy,
+  coffee: Coffee,
+  plane: Plane,
+};
+>>>>>>> 928e33fa8724ee0583c4a930d3359d06897ff491
 
 function XLangPage() {
   const { user } = useAuth();
   const [state, setState] = useState<XLangState | null>(null);
+<<<<<<< HEAD
   const [started, setStarted] = useState(false);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [lessonDone, setLessonDone] = useState(false);
+=======
+  const [active, setActive] = useState<XLesson | null>(null);
+  const [result, setResult] = useState<{
+    lesson: XLesson;
+    xp: number;
+    correct: number;
+    total: number;
+    mistakes: string[];
+  } | null>(null);
+>>>>>>> 928e33fa8724ee0583c4a930d3359d06897ff491
 
   useEffect(() => {
     if (user) setState(loadXLangState(user.id));
   }, [user]);
 
+<<<<<<< HEAD
   const answer = (choice: string) => {
     if (!state || selected) return;
     const current = QUESTIONS[questionIndex];
@@ -170,145 +243,300 @@ function Metric({ label, value }: { label: string; value: string }) {
     setState(next);
     saveXLangState(user.id, next);
     setStarted(false);
+=======
+  const update = (fn: (s: XLangState) => XLangState) => {
+    setState((prev) => {
+      if (!prev || !user) return prev;
+      const next = fn(prev);
+      saveXLangState(user.id, next);
+      return next;
+    });
+>>>>>>> 928e33fa8724ee0583c4a930d3359d06897ff491
   };
+
+  const unlocked = useMemo(() => {
+    const crowns = state?.lessonCrowns ?? {};
+    const set = new Set<string>();
+    let prevDone = true;
+    for (const l of ALL_LESSONS) {
+      if (prevDone) set.add(l.id);
+      prevDone = (crowns[l.id] ?? 0) > 0;
+    }
+    return set;
+  }, [state]);
 
   if (!isAdmin) return <ComingSoon />;
   if (!state) return null;
 
-  const Icon = FORMAT_ICONS[formats[0].icon as keyof typeof FORMAT_ICONS];
+  const goalPct = Math.min(100, (state.dailyXp / state.dailyGoal) * 100);
+  const totalLessons = ALL_LESSONS.length;
+  const doneLessons = ALL_LESSONS.filter((l) => (state.lessonCrowns[l.id] ?? 0) > 0).length;
 
   return (
     <div className="min-h-full bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/.12),transparent_35%),linear-gradient(135deg,hsl(var(--background)),hsl(var(--muted)/.45))]">
       <div className="mx-auto max-w-6xl space-y-8 p-5 md:p-8">
-        <header className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-          <div>
-            <Badge variant="outline" className="mb-3 border-primary/30 bg-primary/5 text-primary">
-              管理者プレビュー
-            </Badge>
-            <div className="flex items-center gap-3">
-              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
-                <Languages className="h-6 w-6" />
-              </div>
-              <div>
+        <header className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+              <Languages className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
                 <h1 className="text-3xl font-black tracking-tight">Xlang</h1>
-                <p className="text-sm text-muted-foreground">英語を、短く続けて、忘れにくく。</p>
+                <Badge variant="outline" className="border-primary/30 bg-primary/5 text-primary">
+                  管理者プレビュー
+                </Badge>
               </div>
+              <p className="text-sm text-muted-foreground">英語を、短く続けて、忘れにくく。</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Target className="h-4 w-4 text-primary" />
-            今日の目標 1レッスン
+          <div className="flex flex-wrap items-center gap-2">
+            <Pill icon={Flame} tone="text-orange-500" value={`${state.streak}`} label="日" />
+            <Pill icon={Gem} tone="text-sky-500" value={`${state.gems}`} label="ジェム" />
+            <Pill icon={Crown} tone="text-amber-500" value={`${state.crownLevel}`} label="クラウン" />
+            <div className="flex items-center gap-1 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-sm font-bold">
+              {Array.from({ length: MAX_HEARTS }).map((_, i) => (
+                <Heart
+                  key={i}
+                  className={cn(
+                    "h-4 w-4",
+                    i < state.hearts ? "fill-rose-500 text-rose-500" : "text-muted-foreground/40",
+                  )}
+                />
+              ))}
+            </div>
           </div>
         </header>
 
-        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Metric icon={Flame} label="ストリーク" value={`${state.streak}日`} tone="text-orange-500" />
-          <Metric icon={Sparkles} label="XP" value={`${state.xp}`} tone="text-primary" />
-          <Metric icon={Trophy} label="クラウン" value={`${state.crownLevel} / 5`} tone="text-amber-500" />
-          <Metric icon={RotateCcw} label="次の復習" value={state.nextReviewDate} tone="text-sky-500" />
-        </section>
-
-        <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
-          <Card className="overflow-hidden border-primary/20 bg-background/80 shadow-xl shadow-primary/5">
-            <div className="border-b border-border/60 bg-primary/[.04] p-6">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[.18em] text-primary">Micro lesson</p>
-                  <h2 className="mt-2 text-2xl font-bold">Daily English · 5分</h2>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    問題コンテンツを登録すると、ここに最適化されたレッスンが出題されます。
-                  </p>
-                </div>
-                <div className="rounded-xl bg-primary/10 p-3 text-primary">
-                  <Icon className="h-6 w-6" />
-                </div>
+        <div className="grid gap-4 lg:grid-cols-[1.3fr_.7fr]">
+          <Card className="border-primary/20 bg-background/80 p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Target className="h-4 w-4 text-primary" /> 今日の目標
               </div>
-              <div className="mt-6 flex items-center justify-between text-xs text-muted-foreground">
-                <span>レベル {state.difficulty} · {formats.length}形式をミックス</span>
-                <span>{state.completedLessons % 3} / 3 回でクラウンアップ</span>
-              </div>
-              <Progress value={(state.completedLessons % 3) * 33.33} className="mt-2 h-2" />
+              <span className="text-sm text-muted-foreground">
+                {state.dailyXp} / {state.dailyGoal} XP
+              </span>
             </div>
-            <div className="p-6">
-              {!started ? (
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="font-semibold">出題エンジンの準備完了</p>
-                    <p className="mt-1 text-sm text-muted-foreground">SRSの復習対象を優先して組み立てます。</p>
-                  </div>
-                  <Button onClick={() => setStarted(true)} className="gap-2">
-                    <Play className="h-4 w-4" />
-                    レッスンを開始
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-5">
-                  <div className="rounded-xl border border-dashed border-primary/40 bg-primary/5 p-5">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-                      <Icon className="h-4 w-4" /> 次の問題形式: {formats[0].label}
-                    </div>
-                    <p className="mt-3 text-sm text-muted-foreground">
-                      問題データは未登録です。ここでは回答結果だけを記録して、学習ロジックを確認できます。
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-2 sm:flex-row">
-                    <Button onClick={() => finishLesson(true)} className="flex-1 gap-2">
-                      <Check className="h-4 w-4" /> 正解として完了
-                    </Button>
-                    <Button onClick={() => finishLesson(false)} variant="outline" className="flex-1 gap-2">
-                      <RotateCcw className="h-4 w-4" /> 復習が必要
-                    </Button>
-                  </div>
-                </div>
-              )}
+            <Progress value={goalPct} className="mt-3 h-3" />
+            <div className="mt-4 flex flex-wrap gap-2">
+              {[20, 30, 50].map((g) => (
+                <Button
+                  key={g}
+                  size="sm"
+                  variant={state.dailyGoal === g ? "default" : "outline"}
+                  onClick={() => update((s) => ({ ...s, dailyGoal: g }))}
+                >
+                  {g} XP / 日
+                </Button>
+              ))}
             </div>
           </Card>
 
-          <Card className="border-border/70 bg-background/70 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[.18em] text-muted-foreground">Adaptive engine</p>
-                <h2 className="mt-2 text-xl font-bold">学習の仕組み</h2>
-              </div>
-              <Brain className="h-6 w-6 text-primary" />
-            </div>
-            <div className="mt-6 space-y-5">
-              <EngineRow label="正答率" value={`${state.accuracy}%`} progress={state.accuracy} />
-              <EngineRow label="次回までの間隔" value={`${state.intervalDays}日`} progress={Math.min(100, state.intervalDays / 30 * 100)} />
-              <div className="rounded-lg bg-muted/50 p-4 text-sm">
-                <p className="font-semibold">難易度 {state.difficulty} / 5</p>
-                <p className="mt-1 text-muted-foreground">正答率80%以上で上がり、55%未満で下がります。</p>
-              </div>
+          <Card className="bg-background/70 p-5">
+            <div className="grid grid-cols-2 gap-4 text-center">
+              <Stat label="正答率" value={`${state.accuracy}%`} />
+              <Stat label="レベル" value={`${state.difficulty} / 5`} />
+              <Stat label="完了レッスン" value={`${doneLessons} / ${totalLessons}`} />
+              <Stat label="次の復習" value={state.nextReviewDate.slice(5)} />
             </div>
           </Card>
         </div>
 
-        <section>
-          <div className="mb-3 flex items-end justify-between">
+        {state.hearts === 0 && (
+          <Card className="flex flex-col gap-3 border-rose-500/30 bg-rose-500/5 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[.18em] text-muted-foreground">Learning path</p>
-              <h2 className="mt-1 text-xl font-bold">英語の学習パス</h2>
+              <p className="font-bold text-rose-600">ハートが なくなりました</p>
+              <p className="text-sm text-muted-foreground">
+                20分ごとに1つ回復します。ジェム5個ですぐ全回復できます。
+              </p>
             </div>
-            <span className="text-sm text-muted-foreground">Unit 01</span>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {[
-              ["01", "First steps", "あいさつと基本表現", true],
-              ["02", "Daily life", "日常のことば", state.completedLessons >= 3],
-              ["03", "Real conversations", "会話を組み立てる", state.completedLessons >= 6],
-            ].map(([number, title, description, unlocked]) => (
-              <div key={number} className={`rounded-xl border p-4 ${unlocked ? "border-primary/30 bg-primary/5" : "border-border/60 bg-muted/30 opacity-65"}`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-primary">UNIT {number}</span>
-                  {unlocked ? <Check className="h-4 w-4 text-primary" /> : <LockKeyhole className="h-4 w-4 text-muted-foreground" />}
-                </div>
-                <p className="mt-4 font-bold">{title}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+            <Button
+              disabled={state.gems < 5}
+              onClick={() => update((s) => refillHearts({ ...s, gems: s.gems - 5 }))}
+              className="gap-2"
+            >
+              <Gem className="h-4 w-4" /> ジェム5でかいふく
+            </Button>
+          </Card>
+        )}
+
+        {XLANG_UNITS.map((unit) => (
+          <section key={unit.id}>
+            <div
+              className={cn(
+                "mb-5 flex items-end justify-between rounded-2xl bg-gradient-to-r p-5",
+                unit.hue,
+              )}
+            >
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[.2em] text-muted-foreground">
+                  UNIT {unit.number}
+                </p>
+                <h2 className="mt-1 text-2xl font-black">{unit.title}</h2>
+                <p className="text-sm text-muted-foreground">{unit.subtitle}</p>
               </div>
-            ))}
+              <span className="text-sm font-semibold text-muted-foreground">
+                {unit.lessons.filter((l) => (state.lessonCrowns[l.id] ?? 0) > 0).length} /{" "}
+                {unit.lessons.length}
+              </span>
+            </div>
+
+            <div className="relative mx-auto flex max-w-xl flex-col items-center gap-6">
+              {unit.lessons.map((lesson, i) => {
+                const crowns = state.lessonCrowns[lesson.id] ?? 0;
+                const open = unlocked.has(lesson.id);
+                const Icon = LESSON_ICONS[lesson.icon];
+                const offset = ["translate-x-0", "translate-x-16", "-translate-x-16"][i % 3];
+                return (
+                  <div key={lesson.id} className={cn("flex flex-col items-center", offset)}>
+                    <button
+                      disabled={!open || state.hearts === 0}
+                      onClick={() => setActive(lesson)}
+                      aria-label={`${lesson.title} のレッスンを開始`}
+                      className={cn(
+                        "grid h-20 w-20 place-items-center rounded-full border-b-[6px] transition-all active:translate-y-1 disabled:cursor-not-allowed",
+                        crowns >= 3
+                          ? "border-amber-600 bg-amber-400 text-amber-950"
+                          : open
+                            ? "border-primary/70 bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:brightness-110"
+                            : "border-border bg-muted text-muted-foreground opacity-70",
+                      )}
+                    >
+                      {open ? <Icon className="h-8 w-8" /> : <LockKeyhole className="h-7 w-7" />}
+                    </button>
+                    <p className="mt-2 text-sm font-bold">{lesson.title}</p>
+                    <div className="flex gap-0.5">
+                      {[0, 1, 2].map((c) => (
+                        <Crown
+                          key={c}
+                          className={cn(
+                            "h-3.5 w-3.5",
+                            c < crowns ? "fill-amber-400 text-amber-500" : "text-muted-foreground/30",
+                          )}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+
+        <Card className="bg-background/70 p-5">
+          <div className="flex items-center gap-2 font-bold">
+            <Volume2 className="h-4 w-4 text-primary" /> 音声チェック
           </div>
-        </section>
+          <p className="mt-1 text-sm text-muted-foreground">
+            端末の読み上げ機能を使っています。聞こえない場合は音量を確認してください。
+          </p>
+          <Button variant="outline" size="sm" className="mt-3" onClick={() => speak("Hello! Let's study English.")}>
+            テスト再生
+          </Button>
+        </Card>
       </div>
+
+      {active && (
+        <LessonPlayer
+          lesson={active}
+          hearts={state.hearts}
+          onWrong={() => update(loseHeart)}
+          onExit={() => setActive(null)}
+          onComplete={(r) => {
+            const res = finishLesson(state, {
+              lessonId: active.id,
+              correct: r.correct,
+              total: r.total,
+              perfect: r.perfect,
+            });
+            update(() => res.state);
+            setResult({
+              lesson: active,
+              xp: res.gainedXp,
+              correct: r.correct,
+              total: r.total,
+              mistakes: r.mistakes,
+            });
+            setActive(null);
+          }}
+        />
+      )}
+
+      {result && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-background/90 p-5 backdrop-blur">
+          <Card className="w-full max-w-md p-7 text-center">
+            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-amber-400 text-amber-950">
+              <Trophy className="h-8 w-8" />
+            </div>
+            <h2 className="mt-4 text-2xl font-black">レッスン完了！</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{result.lesson.title}</p>
+            <div className="mt-6 grid grid-cols-3 gap-3">
+              <Stat label="獲得XP" value={`+${result.xp}`} />
+              <Stat
+                label="正答率"
+                value={`${Math.round((result.correct / Math.max(1, result.total)) * 100)}%`}
+              />
+              <Stat label="ストリーク" value={`${state.streak}日`} />
+            </div>
+            {result.mistakes.length > 0 && (
+              <div className="mt-5 rounded-xl bg-muted/60 p-3 text-left text-sm">
+                <p className="font-semibold">復習したい問題</p>
+                <ul className="mt-1 list-disc pl-5 text-muted-foreground">
+                  {result.mistakes.slice(0, 5).map((m) => (
+                    <li key={m}>{m}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <div className="mt-6 flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1 gap-2"
+                onClick={() => {
+                  const l = result.lesson;
+                  setResult(null);
+                  setActive(l);
+                }}
+              >
+                <RotateCcw className="h-4 w-4" /> もう一度
+              </Button>
+              <Button className="flex-1 gap-2" onClick={() => setResult(null)}>
+                つづける <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Pill({
+  icon: Icon,
+  value,
+  label,
+  tone,
+}: {
+  icon: LucideIcon;
+  value: string;
+  label: string;
+  tone: string;
+}) {
+  return (
+    <div className="flex items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-sm font-bold">
+      <Icon className={cn("h-4 w-4", tone)} />
+      {value}
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="mt-1 text-lg font-black">{value}</p>
     </div>
   );
 }
@@ -328,36 +556,43 @@ function ComingSoon() {
           </div>
         </header>
         <Card className="overflow-hidden border-primary/20 bg-background/80 p-7 shadow-xl shadow-primary/5 md:p-10">
-          <Badge variant="outline" className="border-primary/30 bg-primary/5 text-primary">準備中</Badge>
-          <h2 className="mt-5 max-w-2xl text-3xl font-black tracking-tight md:text-4xl">あなたの英語学習を、毎日の習慣に。</h2>
-          <p className="mt-4 max-w-2xl text-muted-foreground">Xlangは、3〜5分のマイクロレッスンと間隔反復で、英語を無理なく定着させる学習サービスです。</p>
+          <Badge variant="outline" className="border-primary/30 bg-primary/5 text-primary">
+            準備中
+          </Badge>
+          <h2 className="mt-5 max-w-2xl text-3xl font-black tracking-tight md:text-4xl">
+            あなたの英語学習を、毎日の習慣に。
+          </h2>
+          <p className="mt-4 max-w-2xl text-muted-foreground">
+            Xlangは、3〜5分のマイクロレッスンと間隔反復で、英語を無理なく定着させる学習サービスです。
+          </p>
           <div className="mt-8 grid gap-3 md:grid-cols-2">
             {[
               [Flame, "続ける仕組み", "ストリークとXPで毎日の学習を可視化"],
-              [RotateCcw, "忘れる前に復習", "学習履歴から次の復習タイミングを調整"],
-              [Sparkles, "あなたに合わせる", "正答率に応じて難易度を少しずつ最適化"],
-              [ArrowRight, "学習パス", "単元とクラウンで次の目標を見える化"],
+              [RotateCcw, "忘れる前に復習", "間違えた問題をその場で再出題"],
+              [Sparkles, "あなたに合わせる", "正答率に応じて難易度を最適化"],
+              [Check, "6つの出題形式", "並び替え・選択・リスニング・発音など"],
             ].map(([Icon, title, description]) => {
-              const FeatureIcon = Icon as typeof Flame;
+              const FeatureIcon = Icon as LucideIcon;
               return (
-                <div key={title as string} className="flex gap-3 rounded-xl border border-border/60 bg-muted/30 p-4">
+                <div
+                  key={title as string}
+                  className="flex gap-3 rounded-xl border border-border/60 bg-muted/30 p-4"
+                >
                   <FeatureIcon className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                  <div><p className="font-semibold">{title as string}</p><p className="mt-1 text-sm text-muted-foreground">{description as string}</p></div>
+                  <div>
+                    <p className="font-semibold">{title as string}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{description as string}</p>
+                  </div>
                 </div>
               );
             })}
           </div>
-          <div className="mt-8 flex items-center gap-2 text-sm text-muted-foreground"><LockKeyhole className="h-4 w-4" />現在は管理者向けに仕組みを検証しています。</div>
+          <div className="mt-8 flex items-center gap-2 text-sm text-muted-foreground">
+            <LockKeyhole className="h-4 w-4" />
+            現在は管理者向けに仕組みを検証しています。
+          </div>
         </Card>
       </div>
     </div>
   );
-}
-
-function Metric({ icon: Icon, label, value, tone }: { icon: LucideIcon; label: string; value: string; tone: string }) {
-  return <Card className="flex items-center gap-3 border-border/60 bg-background/70 p-4"><Icon className={`h-5 w-5 ${tone}`} /><div><p className="text-xs text-muted-foreground">{label}</p><p className="mt-1 font-bold">{value}</p></div></Card>;
-}
-
-function EngineRow({ label, value, progress }: { label: string; value: string; progress: number }) {
-  return <div><div className="mb-2 flex justify-between text-sm"><span className="text-muted-foreground">{label}</span><span className="font-semibold">{value}</span></div><Progress value={progress} className="h-2" /></div>;
 }
