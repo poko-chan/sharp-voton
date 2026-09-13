@@ -84,6 +84,7 @@ export function NoteCanvas({
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [activeText, setActiveText] = useState<string | null>(null);
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const undoRef = useRef<{ strokes: Stroke[]; texts: TextBox[] }[]>([]);
   const redoRef = useRef<{ strokes: Stroke[]; texts: TextBox[] }[]>([]);
   const [, force] = useState(0);
@@ -91,6 +92,7 @@ export function NoteCanvas({
   const activePointer = useRef<number | null>(null);
   const erasing = useRef(false);
   const panning = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
+  const spacePressed = useRef(false);
   const stateRef = useRef({ zoom, pan });
   stateRef.current = { zoom, pan };
 
@@ -180,15 +182,18 @@ export function NoteCanvas({
     force((n) => n + 1);
   };
 
-  const toPage = (e: React.PointerEvent) => {
+  const toPage = (clientX: number, clientY: number, pressure: number, pointerType: string) => {
     const c = canvasRef.current!;
     const r = c.getBoundingClientRect();
     return {
-      x: ((e.clientX - r.left) / r.width) * PAGE_W,
-      y: ((e.clientY - r.top) / r.height) * PAGE_H,
-      p: e.pointerType === "pen" ? Math.min(1, Math.max(0.05, e.pressure || 0.5)) : 0.5,
+      x: ((clientX - r.left) / r.width) * PAGE_W,
+      y: ((clientY - r.top) / r.height) * PAGE_H,
+      p: pointerType === "pen" ? Math.min(1, Math.max(0.05, pressure || 0.5)) : 0.5,
     };
   };
+
+  const eventPoint = (e: React.PointerEvent) =>
+    toPage(e.clientX, e.clientY, e.pressure, e.pointerType);
 
   const startPan = (e: React.PointerEvent) => {
     panning.current = { x: e.clientX, y: e.clientY, ox: pan.x, oy: pan.y };
@@ -198,9 +203,9 @@ export function NoteCanvas({
   const onDown = (e: React.PointerEvent) => {
     // すでに描き始めている指／ペンがある場合、2本目以降は完全に無視する（変な線の防止）
     if (activePointer.current !== null || panning.current) return;
-    if (!e.isPrimary) return;
+    if (!e.isPrimary && tool !== "hand") return;
     if (penOnly && e.pointerType === "touch" && tool !== "hand") return;
-    if (tool === "hand" || e.button === 1) {
+    if (tool === "hand" || e.button === 1 || spacePressed.current) {
       activePointer.current = e.pointerId;
       startPan(e);
       return;
@@ -208,7 +213,7 @@ export function NoteCanvas({
     if (readOnly) return;
 
     if (tool === "text") {
-      const { x, y } = toPage(e);
+      const { x, y } = eventPoint(e);
       const t: TextBox = {
         id: crypto.randomUUID(),
         x,
@@ -225,7 +230,7 @@ export function NoteCanvas({
     }
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     activePointer.current = e.pointerId;
-    const pt = toPage(e);
+    const pt = eventPoint(e);
     if (tool === "eraser") {
       undoRef.current = [...undoRef.current.slice(-59), { strokes, texts }];
       erase(pt.x, pt.y);
@@ -263,7 +268,7 @@ export function NoteCanvas({
       });
       return;
     }
-    const pt = toPage(e);
+    const pt = eventPoint(e);
     setCursor({ x: pt.x, y: pt.y });
     if (readOnly) return;
     // ボタン／指が離れている間は絶対に描かない
@@ -277,11 +282,18 @@ export function NoteCanvas({
     if (straight) {
       d.points = [d.points[0], pt];
     } else {
-      const last = d.points[d.points.length - 1];
-      const dist = Math.hypot(pt.x - last.x, pt.y - last.y);
-      if (dist < 1.2) return;
-      // 入力位置は変形せず、描画時の曲線補間だけで滑らかにする
-      d.points.push(pt);
+      const samples = e.nativeEvent.getCoalescedEvents?.() ?? [e.nativeEvent];
+      for (const sample of samples) {
+        const samplePoint = toPage(
+          sample.clientX,
+          sample.clientY,
+          sample.pressure,
+          sample.pointerType,
+        );
+        const last = d.points[d.points.length - 1];
+        const dist = Math.hypot(samplePoint.x - last.x, samplePoint.y - last.y);
+        if (dist >= 0.7) d.points.push(samplePoint);
+      }
     }
     redraw();
   };
@@ -311,6 +323,11 @@ export function NoteCanvas({
       /* noop */
     }
     redraw();
+  };
+
+  const openContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY });
   };
 
   const updateText = (id: string, patch: Partial<TextBox>, snapshot = false) => {
@@ -349,6 +366,10 @@ export function NoteCanvas({
         return;
       }
       if (typing) return;
+      if (e.key === " ") {
+        e.preventDefault();
+        spacePressed.current = true;
+      }
       const map: Record<string, Tool> = {
         p: "pen",
         n: "pencil",
@@ -361,9 +382,28 @@ export function NoteCanvas({
       if (map[e.key.toLowerCase()]) setTool(map[e.key.toLowerCase()]);
       if (e.key === "0") fit();
     };
+    const up = (e: KeyboardEvent) => {
+      if (e.key === " ") spacePressed.current = false;
+    };
+    const blur = () => {
+      spacePressed.current = false;
+    };
     window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
+    window.addEventListener("keyup", up);
+    window.addEventListener("blur", blur);
+    return () => {
+      window.removeEventListener("keydown", h);
+      window.removeEventListener("keyup", up);
+      window.removeEventListener("blur", blur);
+    };
   });
+
+  useEffect(() => {
+    if (!contextMenu) return;
+    const close = () => setContextMenu(null);
+    window.addEventListener("pointerdown", close);
+    return () => window.removeEventListener("pointerdown", close);
+  }, [contextMenu]);
 
   const swatches = tool === "highlighter" ? MARKER_COLORS : PEN_COLORS;
   const isPenTool =
@@ -538,6 +578,7 @@ export function NoteCanvas({
         {/* 用紙 */}
         <div
           ref={viewRef}
+          onContextMenu={openContextMenu}
           className="relative min-h-0 flex-1 overflow-hidden bg-muted/40 touch-none"
         >
           <div
@@ -634,6 +675,88 @@ export function NoteCanvas({
               </div>
             ))}
           </div>
+          {contextMenu && (
+            <div
+              role="menu"
+              onPointerDown={(e) => e.stopPropagation()}
+              className="fixed z-50 w-64 rounded-xl border bg-popover p-1.5 text-sm shadow-xl"
+              style={{
+                left: Math.min(contextMenu.x, window.innerWidth - 272),
+                top: Math.min(contextMenu.y, window.innerHeight - 280),
+              }}
+            >
+              <p className="px-2.5 pb-1.5 pt-1 text-[11px] font-semibold text-muted-foreground">
+                Cnoteの操作
+              </p>
+              <div className="grid grid-cols-2 gap-1">
+                {TOOLS.map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setTool(item.key);
+                      setContextMenu(null);
+                    }}
+                    className={cn(
+                      "flex items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs hover:bg-accent",
+                      tool === item.key && "bg-primary/10 text-primary",
+                    )}
+                  >
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+              <div className="my-1 border-t" />
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  undo();
+                  setContextMenu(null);
+                }}
+                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs hover:bg-accent"
+              >
+                <Undo2 className="h-4 w-4" /> 元に戻す
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  redo();
+                  setContextMenu(null);
+                }}
+                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs hover:bg-accent"
+              >
+                <Redo2 className="h-4 w-4" /> やり直す
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  fit();
+                  setContextMenu(null);
+                }}
+                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs hover:bg-accent"
+              >
+                <Maximize2 className="h-4 w-4" /> ページを画面に合わせる
+              </button>
+              {!readOnly && (
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    clearPage();
+                    setContextMenu(null);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 className="h-4 w-4" /> ページを消去
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
