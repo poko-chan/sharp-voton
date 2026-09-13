@@ -9,6 +9,7 @@ import {
   TextSelect,
 } from "lucide-react";
 import { useEffect, useState, type MouseEvent as ReactMouseEvent } from "react";
+import logoUrl from "@/assets/logo.png";
 
 type MenuState = {
   x: number;
@@ -100,6 +101,12 @@ export function GlobalContextMenu({ children }: { children: React.ReactNode }) {
             top: Math.min(menu.y, window.innerHeight - 260),
           }}
         >
+          <div className="mb-1 flex items-center gap-2 border-b border-border/60 px-2.5 pb-2">
+            <img src={logoUrl} alt="" className="h-6 w-6 rounded-md shadow-sm" />
+            <span className="font-display text-sm font-extrabold tracking-tight">
+              Study<span className="text-primary">#</span>
+            </span>
+          </div>
           <MenuButton icon={<ArrowLeft />} label="戻る" disabled={!history.length} onClick={() => run(() => history.back())} />
           <MenuButton
             icon={<ArrowRight />}

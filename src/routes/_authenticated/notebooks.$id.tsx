@@ -82,6 +82,7 @@ function NotebookEditor() {
     let list = ((ps as any[]) ?? []).map((p) => ({
       id: p.id,
       page_index: p.page_index,
+      title: p.title || `ページ ${p.page_index + 1}`,
       strokes: (p.strokes ?? []) as Stroke[],
       texts: (p.texts ?? []) as TextBox[],
     })) as NotePage[];
@@ -91,7 +92,16 @@ function NotebookEditor() {
         .insert({ notebook_id: id, page_index: 0 })
         .select()
         .single();
-      if (created) list = [{ id: (created as any).id, page_index: 0, strokes: [], texts: [] }];
+      if (created)
+        list = [
+          {
+            id: (created as any).id,
+            page_index: 0,
+            title: (created as any).title || "ページ 1",
+            strokes: [],
+            texts: [],
+          },
+        ];
     }
     setPages(list);
     const { data: sh } = await supabase.from("notebook_shares").select("*").eq("notebook_id", id);
@@ -136,12 +146,13 @@ function NotebookEditor() {
         while (pendingRef.current) {
           const p = pendingRef.current;
           pendingRef.current = null;
-          const sig = JSON.stringify([p.strokes, p.texts]);
+          const sig = JSON.stringify([p.title, p.strokes, p.texts]);
           if (savedSig.current[p.id] === sig) continue;
           setSaving("saving");
           const { error } = await supabase
             .from("notebook_pages")
             .update({
+              title: p.title,
               strokes: p.strokes as any,
               texts: p.texts as any,
               updated_at: new Date().toISOString(),
@@ -207,11 +218,14 @@ function NotebookEditor() {
     const nextIdx = (pages.at(-1)?.page_index ?? -1) + 1;
     const { data, error } = await supabase
       .from("notebook_pages")
-      .insert({ notebook_id: id, page_index: nextIdx })
+      .insert({ notebook_id: id, page_index: nextIdx, title: `ページ ${nextIdx + 1}` })
       .select()
       .single();
     if (error) return toast.error(error.message);
-    setPages((p) => [...p, { id: (data as any).id, page_index: nextIdx, strokes: [], texts: [] }]);
+    setPages((p) => [
+      ...p,
+      { id: (data as any).id, page_index: nextIdx, title: `ページ ${nextIdx + 1}`, strokes: [], texts: [] },
+    ]);
     setIdx(pages.length);
   };
 
@@ -440,6 +454,26 @@ function NotebookEditor() {
 
         <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t bg-card/90 px-3 py-2.5 shadow-[0_-8px_24px_-20px_var(--foreground)] backdrop-blur">
           <div className="flex items-center gap-2">
+            {page && (
+              <Input
+                value={page.title}
+                readOnly={readOnly}
+                onChange={(e) => {
+                  const title = e.target.value;
+                  setPages((current) => current.map((p) => (p.id === page.id ? { ...p, title } : p)));
+                  pendingRef.current = { ...page, title };
+                  setSaving("dirty");
+                }}
+                onBlur={() => {
+                  const title = page.title.trim() || `ページ ${page.page_index + 1}`;
+                  setPages((current) => current.map((p) => (p.id === page.id ? { ...p, title } : p)));
+                  void savePage({ ...page, title });
+                }}
+                placeholder="ページ名"
+                aria-label="ページ名"
+                className="h-8 w-32 sm:w-44"
+              />
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -460,10 +494,10 @@ function NotebookEditor() {
                     "h-8 min-w-8 rounded-md border px-2 text-xs font-medium transition",
                     i === idx ? "bg-primary text-primary-foreground" : "hover:bg-muted",
                   )}
-                  aria-label={`ページ ${i + 1}`}
+                  aria-label={p.title || `ページ ${i + 1}`}
                   aria-current={i === idx ? "page" : undefined}
                 >
-                  {i + 1}
+                  <span className="max-w-24 truncate">{p.title || `ページ ${i + 1}`}</span>
                 </button>
               ))}
             </div>

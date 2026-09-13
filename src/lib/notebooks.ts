@@ -56,6 +56,7 @@ export type TextBox = {
 export type NotePage = {
   id: string;
   page_index: number;
+  title: string;
   strokes: Stroke[];
   texts: TextBox[];
 };

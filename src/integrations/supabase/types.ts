@@ -3201,6 +3201,7 @@ export type Database = {
           id: string
           notebook_id: string
           page_index: number
+          title: string
           strokes: Json
           texts: Json
           updated_at: string
@@ -3210,6 +3211,7 @@ export type Database = {
           id?: string
           notebook_id: string
           page_index?: number
+          title?: string
           strokes?: Json
           texts?: Json
           updated_at?: string
@@ -3219,6 +3221,7 @@ export type Database = {
           id?: string
           notebook_id?: string
           page_index?: number
+          title?: string
           strokes?: Json
           texts?: Json
           updated_at?: string
