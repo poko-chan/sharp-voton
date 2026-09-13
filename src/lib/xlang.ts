@@ -20,6 +20,10 @@ export type XLangState = {
   nextReviewDate: string;
   intervalDays: number;
   completedLessons: number;
+  hearts: number;
+  dailyGoal: number;
+  dailyProgress: number;
+  dailyProgressDate: string | null;
 };
 
 const DEFAULT_STATE: XLangState = {
@@ -33,6 +37,10 @@ const DEFAULT_STATE: XLangState = {
   nextReviewDate: localDateStr(),
   intervalDays: 1,
   completedLessons: 0,
+  hearts: 5,
+  dailyGoal: 1,
+  dailyProgress: 0,
+  dailyProgressDate: null,
 };
 
 function storageKey(userId: string) {
@@ -55,13 +63,9 @@ export function saveXLangState(userId: string, state: XLangState) {
   }
 }
 
-export function completeXLangLesson(state: XLangState, isCorrect: boolean): XLangState {
+export function answerXLangQuestion(state: XLangState, isCorrect: boolean): XLangState {
   const today = localDateStr();
-  const studiedYesterday = state.lastStudyDate === addDaysStr(new Date(), -1);
-  const sameDay = state.lastStudyDate === today;
-  const nextInterval = isCorrect
-    ? Math.min(30, Math.max(1, Math.round(state.intervalDays * 2.2)))
-    : 1;
+  const progressDate = state.dailyProgressDate === today ? state.dailyProgress : 0;
   const nextAccuracy = Math.round(
     ((state.accuracy * state.reviewedCount + (isCorrect ? 100 : 0)) /
       Math.max(1, state.reviewedCount + 1)) * 10,
@@ -69,15 +73,35 @@ export function completeXLangLesson(state: XLangState, isCorrect: boolean): XLan
 
   return {
     ...state,
-    xp: state.xp + (isCorrect ? 20 : 8),
+    hearts: isCorrect ? state.hearts : Math.max(0, state.hearts - 1),
+    accuracy: nextAccuracy,
+    reviewedCount: state.reviewedCount + 1,
+    dailyProgress: progressDate,
+    dailyProgressDate: today,
+    difficulty: Math.min(5, Math.max(1, nextAccuracy >= 80 ? state.difficulty + 1 : nextAccuracy < 55 ? state.difficulty - 1 : state.difficulty)),
+  };
+}
+
+export function completeXLangLesson(state: XLangState, correctAnswers: number, totalAnswers: number): XLangState {
+  const today = localDateStr();
+  const studiedYesterday = state.lastStudyDate === addDaysStr(new Date(), -1);
+  const sameDay = state.lastStudyDate === today;
+  const isCorrect = correctAnswers >= Math.ceil(totalAnswers * 0.6);
+  const nextInterval = isCorrect
+    ? Math.min(30, Math.max(1, Math.round(state.intervalDays * 2.2)))
+    : 1;
+  const progressDate = state.dailyProgressDate === today ? state.dailyProgress : 0;
+
+  return {
+    ...state,
+    xp: state.xp + correctAnswers * 5 + 10,
     streak: sameDay ? state.streak : studiedYesterday || !state.lastStudyDate ? state.streak + 1 : 1,
     lastStudyDate: today,
     crownLevel: Math.min(5, Math.floor((state.completedLessons + 1) / 3)),
-    difficulty: Math.min(5, Math.max(1, nextAccuracy >= 80 ? state.difficulty + 1 : nextAccuracy < 55 ? state.difficulty - 1 : state.difficulty)),
-    accuracy: nextAccuracy,
-    reviewedCount: state.reviewedCount + 1,
     nextReviewDate: addDaysStr(new Date(), nextInterval),
     intervalDays: nextInterval,
     completedLessons: state.completedLessons + 1,
+    dailyProgress: Math.min(state.dailyGoal, progressDate + 1),
+    dailyProgressDate: today,
   };
 }

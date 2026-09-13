@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { RouteLoading } from "@/components/RouteLoading";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { AmbientSound } from "@/components/AmbientSound";
+import { GlobalContextMenu } from "@/components/GlobalContextMenu";
 import { loadAndApplyUserTheme } from "@/lib/theme";
 
 import { I18nProvider } from "@/lib/i18n";
@@ -200,9 +201,11 @@ function RootComponent() {
           <MaintenanceProvider>
             <RestrictionProvider>
               <MaintenanceGate>
-                <main id="main">
-                  <Outlet />
-                </main>
+                <GlobalContextMenu>
+                  <main id="main">
+                    <Outlet />
+                  </main>
+                </GlobalContextMenu>
               </MaintenanceGate>
             </RestrictionProvider>
             <RouteLoading />
