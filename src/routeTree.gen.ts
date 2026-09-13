@@ -33,11 +33,11 @@ import { Route as FeaturesSlugRouteImport } from './routes/features.$slug'
 import { Route as CatalogKeyRouteImport } from './routes/catalog.$key'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiAiStreamRouteImport } from './routes/api/ai-stream'
+import { Route as AuthenticatedXlangRouteImport } from './routes/_authenticated/xlang'
 import { Route as AuthenticatedUpdatesRouteImport } from './routes/_authenticated/updates'
 import { Route as AuthenticatedTutorRouteImport } from './routes/_authenticated/tutor'
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
 import { Route as AuthenticatedStudyRouteImport } from './routes/_authenticated/study'
-import { Route as AuthenticatedXlangRouteImport } from './routes/_authenticated/xlang'
 import { Route as AuthenticatedShareRouteImport } from './routes/_authenticated/share'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRankRouteImport } from './routes/_authenticated/rank'
@@ -215,6 +215,11 @@ const ApiAiStreamRoute = ApiAiStreamRouteImport.update({
   path: '/api/ai-stream',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedXlangRoute = AuthenticatedXlangRouteImport.update({
+  id: '/xlang',
+  path: '/xlang',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedUpdatesRoute = AuthenticatedUpdatesRouteImport.update({
   id: '/updates',
   path: '/updates',
@@ -233,11 +238,6 @@ const AuthenticatedTimerRoute = AuthenticatedTimerRouteImport.update({
 const AuthenticatedStudyRoute = AuthenticatedStudyRouteImport.update({
   id: '/study',
   path: '/study',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedXlangRoute = AuthenticatedXlangRouteImport.update({
-  id: '/xlang',
-  path: '/xlang',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedShareRoute = AuthenticatedShareRouteImport.update({
@@ -689,6 +689,7 @@ export interface FileRoutesByTo {
   '/timer': typeof AuthenticatedTimerRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/updates': typeof AuthenticatedUpdatesRoute
+  '/xlang': typeof AuthenticatedXlangRoute
   '/api/ai-stream': typeof ApiAiStreamRoute
   '/api/chat': typeof ApiChatRoute
   '/catalog/$key': typeof CatalogKeyRoute
@@ -775,6 +776,7 @@ export interface FileRoutesById {
   '/_authenticated/timer': typeof AuthenticatedTimerRoute
   '/_authenticated/tutor': typeof AuthenticatedTutorRoute
   '/_authenticated/updates': typeof AuthenticatedUpdatesRoute
+  '/_authenticated/xlang': typeof AuthenticatedXlangRoute
   '/api/ai-stream': typeof ApiAiStreamRoute
   '/api/chat': typeof ApiChatRoute
   '/catalog/$key': typeof CatalogKeyRoute
@@ -946,6 +948,7 @@ export interface FileRouteTypes {
     | '/timer'
     | '/tutor'
     | '/updates'
+    | '/xlang'
     | '/api/ai-stream'
     | '/api/chat'
     | '/catalog/$key'
@@ -1266,6 +1269,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAiStreamRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/xlang': {
+      id: '/_authenticated/xlang'
+      path: '/xlang'
+      fullPath: '/xlang'
+      preLoaderRoute: typeof AuthenticatedXlangRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/updates': {
       id: '/_authenticated/updates'
       path: '/updates'
@@ -1292,13 +1302,6 @@ declare module '@tanstack/react-router' {
       path: '/study'
       fullPath: '/study'
       preLoaderRoute: typeof AuthenticatedStudyRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/xlang': {
-      id: '/_authenticated/xlang'
-      path: '/xlang'
-      fullPath: '/xlang'
-      preLoaderRoute: typeof AuthenticatedXlangRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/share': {
