@@ -140,7 +140,9 @@ function NotebooksPage() {
       .select()
       .single();
     if (error) return toast.error(error.message);
-    await supabase.from("notebook_pages").insert({ notebook_id: (data as any).id, page_index: 0 });
+    await supabase
+      .from("notebook_pages")
+      .insert({ notebook_id: (data as any).id, page_index: 0, title: "ページ 1" });
     setTitle("");
     toast.success("ノートを作成しました");
     load();

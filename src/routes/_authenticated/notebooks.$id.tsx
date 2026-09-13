@@ -12,6 +12,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
+  Copy,
+  PanelLeft,
   Share2,
   Save,
   Trash2,
@@ -60,6 +62,7 @@ function NotebookEditor() {
   const [canEditShare, setCanEditShare] = useState(true);
   const [saving, setSaving] = useState<"idle" | "dirty" | "saving" | "saved">("idle");
   const [showSettings, setShowSettings] = useState(false);
+  const [showPageRail, setShowPageRail] = useState(true);
   const [loading, setLoading] = useState(true);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -229,6 +232,30 @@ function NotebookEditor() {
     setIdx(pages.length);
   };
 
+  const duplicatePage = async () => {
+    if (!page || readOnly) return;
+    const nextIdx = (pages.at(-1)?.page_index ?? -1) + 1;
+    const title = `${page.title || `ページ ${page.page_index + 1}`} のコピー`;
+    const { data, error } = await supabase
+      .from("notebook_pages")
+      .insert({
+        notebook_id: id,
+        page_index: nextIdx,
+        title,
+        strokes: page.strokes as any,
+        texts: page.texts as any,
+      })
+      .select()
+      .single();
+    if (error) return toast.error(error.message);
+    setPages((current) => [
+      ...current,
+      { id: (data as any).id, page_index: nextIdx, title, strokes: page.strokes, texts: page.texts },
+    ]);
+    setIdx(pages.length);
+    toast.success("ページを複製しました");
+  };
+
   const deletePage = async () => {
     if (!page || pages.length <= 1) return toast.error("最後のページは削除できません");
     if (!confirm("このページを削除しますか？")) return;
@@ -332,6 +359,15 @@ function NotebookEditor() {
               保存
             </Button>
           )}
+          <Button
+            size="icon"
+            variant={showPageRail ? "secondary" : "outline"}
+            onClick={() => setShowPageRail((value) => !value)}
+            title="ページ一覧を表示"
+            aria-label="ページ一覧を表示"
+          >
+            <PanelLeft className="h-4 w-4" />
+          </Button>
           {isOwner && (
             <Button size="sm" variant="outline" onClick={() => setShowSettings((v) => !v)}>
               <Settings2 className="mr-1 h-4 w-4" />
@@ -437,19 +473,60 @@ function NotebookEditor() {
           </Card>
         )}
 
-        <div className="min-h-0 flex-1">
-          {page && (
-            <NoteCanvas
-              key={page.id}
-              strokes={page.strokes}
-              texts={page.texts}
-              paper={nb.paper_type}
-              paperColor={nb.paper_color}
-              readOnly={readOnly}
-              onChange={onChange}
-              title={nb.title}
-            />
+        <div className="flex min-h-0 flex-1">
+          {showPageRail && (
+            <aside className="hidden w-56 shrink-0 overflow-y-auto border-r bg-card/60 p-2 md:block">
+              <div className="mb-2 flex items-center justify-between px-1">
+                <span className="text-xs font-semibold text-muted-foreground">ページ一覧</span>
+                <span className="text-[11px] tabular-nums text-muted-foreground">
+                  {pages.length}ページ
+                </span>
+              </div>
+              <div className="space-y-1">
+                {pages.map((candidate, pageIndex) => (
+                  <button
+                    key={candidate.id}
+                    type="button"
+                    onClick={() => setIdx(pageIndex)}
+                    className={cn(
+                      "flex w-full items-center gap-2 rounded-lg border px-2 py-2 text-left transition",
+                      pageIndex === idx
+                        ? "border-primary/50 bg-primary/10 text-primary"
+                        : "border-transparent hover:bg-muted",
+                    )}
+                    aria-current={pageIndex === idx ? "page" : undefined}
+                  >
+                    <span className="grid h-8 w-7 shrink-0 place-items-center rounded border bg-background text-[10px] font-bold tabular-nums">
+                      {pageIndex + 1}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-xs font-medium">
+                      {candidate.title || `ページ ${pageIndex + 1}`}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              {!readOnly && page && (
+                <Button variant="outline" size="sm" className="mt-3 w-full" onClick={duplicatePage}>
+                  <Copy className="mr-1 h-3.5 w-3.5" />
+                  このページを複製
+                </Button>
+              )}
+            </aside>
           )}
+          <div className="min-h-0 min-w-0 flex-1">
+            {page && (
+              <NoteCanvas
+                key={page.id}
+                strokes={page.strokes}
+                texts={page.texts}
+                paper={nb.paper_type}
+                paperColor={nb.paper_color}
+                readOnly={readOnly}
+                onChange={onChange}
+                title={nb.title}
+              />
+            )}
+          </div>
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t bg-card/90 px-3 py-2.5 shadow-[0_-8px_24px_-20px_var(--foreground)] backdrop-blur">
