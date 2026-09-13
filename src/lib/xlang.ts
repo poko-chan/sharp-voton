@@ -30,6 +30,8 @@ export type XLangState = {
   dailyGoal: number;
   dailyXp: number;
   dailyDate: string;
+  dailyProgress: number;
+  dailyProgressDate: string | null;
   gems: number;
   weakWords: string[];
 };
@@ -51,6 +53,8 @@ const DEFAULT_STATE: XLangState = {
   dailyGoal: 30,
   dailyXp: 0,
   dailyDate: localDateStr(),
+  dailyProgress: 0,
+  dailyProgressDate: null,
   gems: 0,
   weakWords: [],
 };
@@ -97,6 +101,24 @@ export function saveXLangState(userId: string, state: XLangState) {
   } catch {
     /* ignore */
   }
+}
+
+export function answerXLangQuestion(state: XLangState, isCorrect: boolean): XLangState {
+  const today = localDateStr();
+  const nextAccuracy = Math.round(
+    ((state.accuracy * state.reviewedCount + (isCorrect ? 100 : 0)) /
+      Math.max(1, state.reviewedCount + 1)) * 10,
+  ) / 10;
+  return {
+    ...state,
+    hearts: isCorrect ? state.hearts : Math.max(0, state.hearts - 1),
+    heartsUpdatedAt: isCorrect || state.hearts < MAX_HEARTS ? state.heartsUpdatedAt : Date.now(),
+    accuracy: nextAccuracy,
+    reviewedCount: state.reviewedCount + 1,
+    dailyProgress: state.dailyProgressDate === today ? state.dailyProgress : 0,
+    dailyProgressDate: today,
+    difficulty: Math.min(5, Math.max(1, nextAccuracy >= 80 ? state.difficulty + 1 : nextAccuracy < 55 ? state.difficulty - 1 : state.difficulty)),
+  };
 }
 
 export function loseHeart(state: XLangState): XLangState {
@@ -161,12 +183,15 @@ export function finishLesson(
 }
 
 /** 従来API互換（簡易記録） */
-export function completeXLangLesson(state: XLangState, isCorrect: boolean): XLangState {
+export function completeXLangLesson(state: XLangState, isCorrectOrScore: boolean | number, totalAnswers = 1): XLangState {
+  const isCorrect = typeof isCorrectOrScore === "number"
+    ? isCorrectOrScore >= Math.ceil(totalAnswers * 0.6)
+    : isCorrectOrScore;
   return finishLesson(state, {
     lessonId: "quick",
-    correct: isCorrect ? 1 : 0,
-    total: 1,
-    perfect: isCorrect,
+    correct: typeof isCorrectOrScore === "number" ? isCorrectOrScore : isCorrect ? 1 : 0,
+    total: totalAnswers,
+    perfect: typeof isCorrectOrScore === "number" ? isCorrectOrScore === totalAnswers : isCorrect,
   }).state;
 }
 
