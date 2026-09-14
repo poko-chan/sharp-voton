@@ -540,13 +540,6 @@ function Dashboard() {
       <div className="dashboard-bento grid grid-cols-1 gap-5 xl:grid-cols-12 items-start">
         {/* ===== ヒーロー ===== */}
         <Card className="dashboard-hero study-focus-stage relative overflow-hidden p-0 xl:col-span-8">
-          <div
-            className="absolute inset-0 opacity-[0.18] pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(1000px 320px at 12% -10%, oklch(0.7 0.2 150), transparent 60%), radial-gradient(800px 320px at 92% 0%, oklch(0.62 0.22 275), transparent 60%)",
-            }}
-          />
           <div className="study-focus-grid relative p-5 md:p-8 grid gap-6 md:grid-cols-[auto_1fr] items-center">
             {/* 今日のリング */}
             <div className="flex items-center gap-5 justify-center lg:justify-start">
@@ -634,23 +627,6 @@ function Dashboard() {
               </div>
             </div>
 
-            <div className="flex md:col-span-2 gap-2 flex-wrap justify-center md:justify-start">
-              <DailyGoalDialog
-                value={dailyGoal}
-                onChange={(v) => {
-                  setDailyGoal(v);
-                  localStorage.setItem(DAILY_GOAL_KEY, String(v));
-                }}
-              />
-              <WeeklyGoalDialog
-                value={weeklyGoal}
-                onChange={(v) => {
-                  setWeeklyGoal(v);
-                  localStorage.setItem(WEEKLY_GOAL_KEY, String(v));
-                }}
-              />
-              <NotificationBell />
-            </div>
           </div>
 
           {/* クイックアクション */}
@@ -699,23 +675,7 @@ function Dashboard() {
       <RecentNotifications />
 
       {/* ===== タイマー & 学習時間の集約 ===== */}
-      <div className="dashboard-bento grid grid-cols-1 gap-5 xl:grid-cols-12">
-        <div className="xl:col-span-8"><FocusPanel dailyGoal={dailyGoal} /></div>
-        <div className="xl:col-span-4 grid gap-5 content-start">
-          <Card className="study-surface relative overflow-hidden p-5 border-primary/20">
-            <div className="relative flex h-full flex-col justify-between gap-5">
-              <div>
-                <p className="text-[11px] font-bold uppercase text-primary/80">NEXT MOVE</p>
-                <h2 className="mt-1 flex items-center gap-2 text-lg font-bold"><Sparkles className="h-5 w-5 text-primary" />今日の次の一手</h2>
-                <p className="mt-4 text-base font-semibold">{nextAction.title}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{nextAction.detail}</p>
-              </div>
-              <Button asChild className="w-full"><Link to={nextAction.to}><nextAction.icon className="mr-2 h-4 w-4" />{nextAction.label}</Link></Button>
-            </div>
-          </Card>
-          <QuickLogCard subjects={subjects} />
-        </div>
-      </div>
+      <QuickLogCard subjects={subjects} />
 
       {/* ===== インサイト ===== */}
       {insights.length > 0 && (
