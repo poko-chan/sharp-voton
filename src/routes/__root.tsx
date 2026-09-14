@@ -209,6 +209,7 @@ function RootComponent() {
                 </GlobalContextMenu>
               </MaintenanceGate>
             </RestrictionProvider>
+            <GlobalFeedbackDock />
             <RouteLoading />
             <PWAInstallPrompt />
             <AmbientSound />
