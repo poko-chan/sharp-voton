@@ -51,6 +51,8 @@ export const Route = createFileRoute("/")({
       },
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESC },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: TITLE },
       { name: "twitter:description", content: DESC },
       {
@@ -112,7 +114,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
               height={36}
               className="h-9 w-9 rounded-lg shadow-sm"
             />
-            <span className="font-display text-lg font-extrabold tracking-tight">
+            <span className="font-display text-lg font-extrabold">
               Study<span className="text-gradient">#</span>
             </span>
           </div>
@@ -192,10 +194,10 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
               記録、集中、演習、AI、計画をひとつに。Study#は、毎日の学習を整理し、次にやるべきことへ迷わず進める総合学習プラットフォームです。
             </p>
             <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-              <Button asChild size="lg" className="h-13 rounded-lg px-8 text-base shadow-lg">
+              <Button asChild size="lg" className="h-12 rounded-lg px-8 text-base shadow-lg">
                 {isAuthed ? <Link to="/dashboard">{t("landing.dashboard")} <ArrowRight /></Link> : <Link to="/login">{t("landing.start")} <ArrowRight /></Link>}
               </Button>
-              <Button asChild variant="outline" size="lg" className="h-13 rounded-lg px-8 text-base">
+              <Button asChild variant="outline" size="lg" className="h-12 rounded-lg px-8 text-base">
                 <Link to="/all-services">サービス詳細を見る</Link>
               </Button>
             </div>
