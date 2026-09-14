@@ -825,6 +825,93 @@
     color: color-mix(in oklab, var(--foreground) 55%, transparent);
   }
 
+  /* ===== Public landing: editorial academic system ===== */
+  .landing-premium {
+    --primary: oklch(0.45 0.16 251);
+    --primary-foreground: oklch(0.99 0.002 250);
+    --signal: oklch(0.69 0.16 160);
+    --ring: oklch(0.55 0.14 251);
+  }
+
+  .landing-header {
+    border-color: color-mix(in oklab, var(--border) 76%, transparent);
+    background-color: color-mix(in oklab, var(--background) 92%, transparent);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+  }
+
+  .landing-grid-fade {
+    background-image:
+      linear-gradient(to right, color-mix(in oklab, var(--border) 42%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--border) 42%, transparent) 1px, transparent 1px);
+    background-size: 46px 46px;
+    mask-image: linear-gradient(to bottom, transparent, black 14%, transparent 88%);
+    opacity: 0.62;
+  }
+
+  .landing-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    border: 1px solid color-mix(in oklab, var(--primary) 22%, var(--border));
+    border-radius: 9999px;
+    background-color: color-mix(in oklab, var(--card) 88%, transparent);
+    padding: 0.4rem 0.85rem;
+    color: var(--primary);
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    box-shadow: 0 8px 24px -18px color-mix(in oklab, var(--primary) 70%, transparent);
+  }
+
+  .landing-title-accent {
+    color: var(--primary);
+  }
+
+  .landing-value {
+    min-height: 12.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background-color: var(--card);
+    box-shadow: 0 16px 42px -34px color-mix(in oklab, var(--foreground) 40%, transparent);
+    transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+  }
+
+  .landing-value:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in oklab, var(--primary) 38%, var(--border));
+    box-shadow: 0 22px 48px -32px color-mix(in oklab, var(--primary) 34%, transparent);
+  }
+
+  .landing-rise {
+    animation: landing-rise 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .landing-rise:nth-of-type(2) {
+    animation-delay: 120ms;
+  }
+
+  @keyframes landing-rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .landing-rise {
+      animation: none;
+    }
+    .landing-value {
+      transition: none;
+    }
+  }
+
   .hairline {
     border-top: 1px solid color-mix(in oklab, var(--border) 85%, transparent);
   }
