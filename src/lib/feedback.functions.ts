@@ -21,13 +21,31 @@ export const submitFeedback = createServerFn({ method: "POST" })
         body: z.string().trim().min(3, "3文字以上で入力してください").max(4000),
         route: z.string().max(500).optional().nullable(),
         userAgent: z.string().max(500).optional().nullable(),
-        userId: z.string().uuid().optional().nullable(),
       })
       .parse(d),
   )
   .handler(async ({ data }) => {
+    // クライアント送信の userId は一切信用しない。
+    // 認証トークンが有効な場合のみ、検証済みセッションからユーザーIDを取得する。
+    let verifiedUserId: string | null = null;
+    const authHeader = getRequest()?.headers?.get("authorization");
+    const token =
+      authHeader && authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+    if (token) {
+      try {
+        const anon = createClient(
+          process.env.SUPABASE_URL!,
+          process.env.SUPABASE_PUBLISHABLE_KEY!,
+          { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
+        );
+        const { data: claims, error } = await anon.auth.getClaims(token);
+        if (!error && claims?.claims?.sub) verifiedUserId = String(claims.claims.sub);
+      } catch {
+        verifiedUserId = null;
+      }
+    }
     const { error } = await supabaseAdmin.from("feedback").insert({
-      user_id: data.userId ?? null,
+      user_id: verifiedUserId,
       email: data.email ?? null,
       category: data.category,
       body: data.body,
