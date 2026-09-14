@@ -266,6 +266,72 @@ function extractReadable(html: string): { title: string; text: string } {
   return { title, text };
 }
 
+/** IPv4の各種表記（10進/16進/8進、分割数省略形）を32bit数値に正規化する。 */
+function parseIpv4(host: string): number | null {
+  const parts = host.split(".");
+  if (parts.length > 4 || parts.some((p) => p === "")) return null;
+  const nums: number[] = [];
+  for (const p of parts) {
+    let n: number;
+    if (/^0x[0-9a-f]+$/i.test(p)) n = parseInt(p, 16);
+    else if (/^0[0-7]+$/.test(p) && p.length > 1) n = parseInt(p, 8);
+    else if (/^\d+$/.test(p)) n = parseInt(p, 10);
+    else return null;
+    if (!Number.isFinite(n) || n < 0 || n > 0xffffffff) return null;
+    nums.push(n);
+  }
+  // 最後のパートが残りビット全体を表す（例: 127.1, 2130706433）
+  const last = nums[nums.length - 1];
+  const restBits = (4 - nums.length) * 8;
+  if (nums.length < 4 && last >= 1 << restBits) return null;
+  let out = 0;
+  for (let i = 0; i < nums.length - 1; i++) {
+    if (nums[i] > 255) return null;
+    out = (out << 8) | nums[i];
+  }
+  out = (out << restBits) | last;
+  return out >>> 0;
+}
+
+function isPrivateIpv4(ip: number): boolean {
+  const b = (ip >>> 24) & 0xff;
+  const b2 = (ip >>> 16) & 0xff;
+  return (
+    b === 0 || // 0.0.0.0/8
+    b === 10 || // 10.0.0.0/8
+    b === 127 || // 127.0.0.0/8
+    (b === 169 && b2 === 254) || // link-local
+    (b === 172 && b2 >= 16 && b2 <= 31) || // 172.16.0.0/12
+    (b === 192 && b2 === 168) || // 192.168.0.0/16
+    (b === 100 && b2 >= 64 && b2 <= 127) || // CGNAT 100.64.0.0/10
+    (b === 198 && (b2 === 18 || b2 === 19)) || // benchmark
+    b >= 224 // マルチキャスト/予約済み
+  );
+}
+
+/** ホスト名が内部・ループバック・リンクローカル等のアドレスなら true。 */
+function isBlockedHost(hostname: string): boolean {
+  let h = hostname.toLowerCase().replace(/\.$/, "");
+  if (h === "localhost" || h.endsWith(".localhost") || h.endsWith(".local") || h.endsWith(".internal"))
+    return true;
+  // IPv6（[...] 表記を剥がす）
+  if (h.startsWith("[") && h.endsWith("]")) h = h.slice(1, -1);
+  if (h.includes(":")) {
+    const v6 = h.replace(/^0+/, "0");
+    if (v6 === "::1" || v6 === "::" || h === "0:0:0:0:0:0:0:1") return true;
+    if (/^(fe[89ab]|f[cd])/i.test(h.replace(/:/g, ""))) return true; // link-local / ULA
+    const mapped = /::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(h);
+    if (mapped) {
+      const ip = parseIpv4(mapped[1]);
+      return ip === null || isPrivateIpv4(ip);
+    }
+    return false;
+  }
+  const ip = parseIpv4(h);
+  if (ip !== null) return isPrivateIpv4(ip);
+  return false;
+}
+
 /**
  * どのサイトでも本文を読み取る汎用ページ取得。
  * チャットにURLを貼ると、AIがその内容を根拠に答えられるようになる。
