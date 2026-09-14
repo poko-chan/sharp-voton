@@ -514,11 +514,11 @@ function Dashboard() {
   }, [stats, dailyGoal, dailyPct, diff, diffPct, byDow, topSubjects]);
 
   return (
-    <div className="dashboard-page p-4 md:p-8 lg:p-10 space-y-8 max-w-[1480px] mx-auto">
+    <div className="dashboard-page p-3 pb-24 md:p-6 lg:p-8 space-y-5 max-w-[1520px] mx-auto">
       {/* ===== 一番上: 左=1日の目標 / 右=あなたの街 ===== */}
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.12fr)_minmax(360px,0.88fr)] items-start">
+      <div className="dashboard-bento grid grid-cols-1 gap-5 xl:grid-cols-12 items-start">
         {/* ===== ヒーロー ===== */}
-        <Card className="dashboard-hero relative overflow-hidden liquid-card p-0 border-primary/15 shadow-[0_24px_60px_-36px_color-mix(in_oklab,var(--primary)_55%,transparent)]">
+        <Card className="dashboard-hero study-surface relative overflow-hidden p-0 border-primary/20 xl:col-span-8">
           <div
             className="absolute inset-0 opacity-[0.18] pointer-events-none"
             style={{
@@ -611,7 +611,7 @@ function Dashboard() {
               </div>
             </div>
 
-            <div className="flex lg:flex-col gap-2 flex-wrap justify-center">
+            <div className="flex md:col-span-2 gap-2 flex-wrap justify-center md:justify-start">
               <DailyGoalDialog
                 value={dailyGoal}
                 onChange={(v) => {
@@ -631,7 +631,7 @@ function Dashboard() {
           </div>
 
           {/* クイックアクション */}
-          <div className="relative border-t border-border/60 bg-background/25 grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/60">
+          <div className="relative border-t border-border/60 bg-background/35 grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/60">
             <QuickAction to="/timer" icon={Timer} label="タイマー開始" />
             <QuickAction to="/study" icon={BookOpen} label="学習を記録" />
             <QuickAction to="/makron" icon={Brain} label="Makron 演習" />
@@ -640,45 +640,39 @@ function Dashboard() {
         </Card>
 
         {/* ===== あなたの街（右上） ===== */}
-        <div className="dashboard-town xl:sticky xl:top-4">
+        <div className="dashboard-town xl:col-span-4 xl:sticky xl:top-20">
           <Town />
         </div>
       </div>
 
+      <LearningPath todayPct={dailyPct} hasLogs={stats.sessions > 0} gradingCount={stats.gradingCount} />
+
       {/* ===== はじめかた & 最近の利用状況 ===== */}
-      <div className="grid gap-5 lg:grid-cols-2 items-start">
-        <GettingStartedCard />
-        <RecentActivityCard />
+      <div className="dashboard-bento grid grid-cols-1 gap-5 lg:grid-cols-12 items-start">
+        <div className="lg:col-span-5"><GettingStartedCard /></div>
+        <div className="lg:col-span-7"><RecentActivityCard /></div>
       </div>
 
       {/* ===== 最近の通知 ===== */}
       <RecentNotifications />
 
       {/* ===== タイマー & 学習時間の集約 ===== */}
-      <FocusPanel dailyGoal={dailyGoal} />
-
-      <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
-        <QuickLogCard subjects={subjects} />
-        <Card className="relative overflow-hidden p-5 liquid-card border-primary/20">
-          <div className="absolute -right-8 -top-10 h-32 w-32 rounded-full bg-primary/10 blur-2xl" />
-          <div className="relative flex h-full flex-col justify-between gap-5">
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary/80">NEXT MOVE</p>
-              <h2 className="mt-1 flex items-center gap-2 text-lg font-bold">
-                <Sparkles className="h-5 w-5 text-primary" />
-                今日の次の一手
-              </h2>
-              <p className="mt-4 text-base font-semibold">{nextAction.title}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{nextAction.detail}</p>
+      <div className="dashboard-bento grid grid-cols-1 gap-5 xl:grid-cols-12">
+        <div className="xl:col-span-8"><FocusPanel dailyGoal={dailyGoal} /></div>
+        <div className="xl:col-span-4 grid gap-5 content-start">
+          <Card className="study-surface relative overflow-hidden p-5 border-primary/20">
+            <div className="relative flex h-full flex-col justify-between gap-5">
+              <div>
+                <p className="text-[11px] font-bold uppercase text-primary/80">NEXT MOVE</p>
+                <h2 className="mt-1 flex items-center gap-2 text-lg font-bold"><Sparkles className="h-5 w-5 text-primary" />今日の次の一手</h2>
+                <p className="mt-4 text-base font-semibold">{nextAction.title}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{nextAction.detail}</p>
+              </div>
+              <Button asChild className="w-full"><Link to={nextAction.to}><nextAction.icon className="mr-2 h-4 w-4" />{nextAction.label}</Link></Button>
             </div>
-            <Button asChild className="w-full sm:w-fit">
-              <Link to={nextAction.to}>
-                <nextAction.icon className="mr-2 h-4 w-4" />
-                {nextAction.label}
-              </Link>
-            </Button>
-          </div>
-        </Card>
+          </Card>
+          <QuickLogCard subjects={subjects} />
+        </div>
       </div>
 
       {/* ===== インサイト ===== */}
@@ -704,7 +698,7 @@ function Dashboard() {
       )}
 
       {/* ===== KPI: 詳細指標 ===== */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+      <div className="dashboard-bento grid grid-cols-2 gap-3 md:grid-cols-5">
         <StatCard
           icon={CalendarDays}
           label="今月 (30日)"
@@ -738,7 +732,7 @@ function Dashboard() {
       </div>
 
       {/* ===== グラフ（タブ） ===== */}
-      <Card className="p-4 md:p-6">
+      <Card className="study-surface p-4 md:p-6">
         <Tabs defaultValue="week">
           <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
             <h3 className="font-bold flex items-center gap-2">

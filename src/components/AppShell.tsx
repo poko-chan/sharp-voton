@@ -417,25 +417,25 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const sidebarContent = (
     <>
-      <div className="p-5 flex items-center gap-3">
+      <div className="p-5 pb-4 flex items-center gap-3">
         <img
           src={logoUrl}
           alt="Study# ロゴ"
-          className="h-12 w-12 rounded-2xl object-cover shadow-sm"
+          className="h-12 w-12 rounded-[1.1rem] object-cover shadow-[0_6px_0_-3px_color-mix(in_oklab,var(--primary)_45%,transparent)] ring-1 ring-primary/15"
         />
         <div className="min-w-0">
           <ClockHeader version={version} />
         </div>
       </div>
       <div className="mx-5 border-t border-border/60" />
-      <div className="px-5 py-4 flex items-center gap-3">
+      <div className="mx-3 my-3 rounded-2xl border border-sidebar-border/70 bg-card/65 px-3 py-3 flex items-center gap-3 shadow-sm">
         <Avatar className="h-11 w-11">
           {profile?.avatar_url ? <AvatarImage src={profile.avatar_url} alt={displayName} /> : null}
           <AvatarFallback>{initial}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <div className="text-sm font-medium leading-tight truncate">{displayName}</div>
+            <div className="font-display text-sm font-bold leading-tight truncate">{displayName}</div>
             <span
               title={`レベル ${level}`}
               className="shrink-0 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-primary/15 text-primary border border-primary/30"
@@ -465,7 +465,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 key={"q-" + n.to}
                 to={n.to}
                 title={renderLabel(n)}
-                className={`h-9 w-9 inline-flex items-center justify-center rounded-xl transition ${active ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-sidebar-accent/70 text-sidebar-foreground"}`}
+                className={`h-9 w-9 inline-flex items-center justify-center rounded-xl transition ${active ? "bg-primary text-primary-foreground shadow-[0_4px_0_-2px_color-mix(in_oklab,var(--primary)_55%,var(--foreground))]" : "hover:bg-sidebar-accent text-sidebar-foreground"}`}
               >
                 {renderIcon(n, "h-4 w-4")}
               </Link>
@@ -482,7 +482,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Link
                   key={n.to}
                   to={n.to as any}
-                  className={`nav-pill flex items-center gap-3 px-3 py-2.5 text-sm ${active ? "nav-pill-active bg-primary/12 text-primary font-semibold" : "hover:bg-sidebar-accent/70 text-sidebar-foreground"}`}
+                  className={`nav-pill flex items-center gap-3 rounded-xl px-3 py-2.5 font-display text-sm ${active ? "nav-pill-active bg-primary/15 text-foreground font-bold shadow-sm" : "hover:bg-sidebar-accent text-sidebar-foreground"}`}
                 >
                   <Icon className="h-4 w-4" /> {n.label}
                 </Link>
@@ -494,10 +494,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Link
                   key={n.to}
                   to={n.to}
-                  className={`nav-pill flex items-center gap-3 px-3 py-2.5 text-sm ${
+                  className={`nav-pill flex items-center gap-3 rounded-xl px-3 py-2.5 font-display text-sm ${
                     active
-                      ? "nav-pill-active bg-primary/12 text-primary font-semibold"
-                      : "hover:bg-sidebar-accent/70 text-sidebar-foreground"
+                       ? "nav-pill-active bg-primary/15 text-foreground font-bold shadow-sm"
+                       : "hover:bg-sidebar-accent text-sidebar-foreground"
                   }`}
                 >
                   {renderIcon(n)}
@@ -567,7 +567,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Desktop sidebar */}
       {!isMobile && navOpen && (
-        <aside className="app-sidebar w-64 shrink-0 border-r liquid-bar text-sidebar-foreground flex flex-col sticky top-0 h-screen self-start">
+        <aside className="app-sidebar w-[17rem] shrink-0 border-r liquid-bar text-sidebar-foreground flex flex-col sticky top-0 h-screen self-start">
           {sidebarContent}
         </aside>
       )}
@@ -576,7 +576,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <TimerIndicator />
         {/* Desktop top bar */}
         {!isMobile && (
-          <div className="app-topbar sticky top-0 z-30 flex h-12 items-center gap-2 px-4 border-b liquid-bar">
+          <div className="app-topbar sticky top-0 z-30 flex h-14 items-center gap-2 px-4 border-b liquid-bar">
             <button
               onClick={toggleNav}
               title={navOpen ? "メニューを閉じる" : "メニューを開く"}
