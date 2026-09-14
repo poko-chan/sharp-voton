@@ -382,15 +382,38 @@ export const fetchPage = createServerFn({ method: "POST" })
     if (hit && Date.now() - hit.at < TTL) return hit.value;
 
     try {
-      const res = await fetch(url, {
-        headers: {
-          "user-agent": UA,
-          "accept-language": "ja,en;q=0.8",
-          accept: "text/html,application/xhtml+xml",
-        },
-        redirect: "follow",
-      });
-      const finalUrl = res.url || url;
+      // リダイレクトは自動で追わず、各ホップのURLを毎回検証してから辿る
+      // （外部URL経由で内部アドレスに飛ばされるSSRFを防ぐ）
+      let current = url;
+      let res: Response | null = null;
+      for (let hop = 0; hop <= 5; hop++) {
+        res = await fetch(current, {
+          headers: {
+            "user-agent": UA,
+            "accept-language": "ja,en;q=0.8",
+            accept: "text/html,application/xhtml+xml",
+          },
+          redirect: "manual",
+        });
+        if (res.status >= 300 && res.status < 400) {
+          const loc = res.headers.get("location");
+          if (!loc) break;
+          let next: URL;
+          try {
+            next = new URL(loc, current);
+          } catch {
+            return { url, finalUrl: current, title: "", text: "", ok: false, error: "リダイレクト先のURLが不正です" };
+          }
+          if (!/^https?:$/.test(next.protocol) || isBlockedHost(next.hostname)) {
+            return { url, finalUrl: next.toString(), title: "", text: "", ok: false, error: "このアドレスにはアクセスできません" };
+          }
+          current = next.toString();
+          continue;
+        }
+        break;
+      }
+      if (!res) throw new Error("fetch failed");
+      const finalUrl = current;
       const ct = res.headers.get("content-type") ?? "";
       if (!res.ok) {
         return {
