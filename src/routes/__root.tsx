@@ -23,6 +23,7 @@ import { RouteLoading } from "@/components/RouteLoading";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { AmbientSound } from "@/components/AmbientSound";
 import { GlobalContextMenu } from "@/components/GlobalContextMenu";
+import { GlobalFeedbackDock } from "@/components/FeedbackWidget";
 import { loadAndApplyUserTheme } from "@/lib/theme";
 
 import { I18nProvider } from "@/lib/i18n";
