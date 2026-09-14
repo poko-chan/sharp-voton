@@ -310,6 +310,69 @@
     backdrop-filter: blur(18px) saturate(130%);
   }
 
+  .study-os-kicker {
+    color: var(--primary);
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+  }
+
+  .study-status-module {
+    display: flex;
+    min-width: 8.5rem;
+    align-items: center;
+    gap: .7rem;
+    border: 1px solid var(--border);
+    border-radius: .8rem;
+    background: color-mix(in oklab, var(--card) 88%, transparent);
+    padding: .65rem .8rem;
+    box-shadow: 0 10px 24px -20px var(--ink);
+    backdrop-filter: blur(16px) saturate(140%);
+  }
+  .study-status-module small { display: block; color: var(--muted-foreground); font-size: .6rem; font-weight: 800; }
+  .study-status-module strong { display: block; font-family: var(--font-display); font-size: 1rem; line-height: 1.1; }
+  .study-status-icon { display: grid; height: 2rem; width: 2rem; place-items: center; border-radius: 999px; }
+  .study-status-module.warm .study-status-icon { background: color-mix(in oklab, var(--warning) 20%, transparent); color: var(--warning); }
+  .study-status-module.strong { border-color: color-mix(in oklab, var(--primary) 42%, var(--border)); background: var(--ink); color: var(--primary-foreground); }
+  .study-status-module.strong small { color: color-mix(in oklab, var(--primary-foreground) 62%, transparent); }
+  .study-status-module.strong .study-status-icon { background: color-mix(in oklab, var(--primary) 28%, transparent); color: var(--primary); }
+
+  .study-focus-stage {
+    border: 1px solid color-mix(in oklab, var(--primary) 35%, var(--border));
+    border-radius: 1.25rem;
+    background: color-mix(in oklab, var(--card) 94%, transparent);
+    box-shadow: 0 1px 0 color-mix(in oklab, white 80%, transparent) inset, 0 24px 54px -38px var(--ink);
+    backdrop-filter: blur(18px) saturate(140%);
+  }
+  .study-focus-stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(125deg, color-mix(in oklab, var(--primary) 12%, transparent), transparent 45%, color-mix(in oklab, var(--accent) 12%, transparent));
+  }
+  .study-primary-action { box-shadow: 0 7px 0 -3px color-mix(in oklab, var(--primary) 42%, var(--ink)); }
+  .study-primary-action:active { transform: translateY(2px); box-shadow: 0 3px 0 -2px color-mix(in oklab, var(--primary) 42%, var(--ink)); }
+  .study-action-rail { background: color-mix(in oklab, var(--background) 54%, transparent); backdrop-filter: blur(14px); }
+
+  .study-activity-console {
+    border: 1px solid color-mix(in oklab, var(--primary) 20%, var(--ink));
+    border-radius: 1.25rem;
+    background: var(--ink);
+    color: var(--primary-foreground);
+    box-shadow: 0 18px 36px -24px var(--ink);
+  }
+  .study-rhythm-track { background: color-mix(in oklab, var(--primary-foreground) 8%, transparent); }
+  .study-rhythm-bar { background: linear-gradient(to top, var(--primary), var(--accent)); transition: height 420ms cubic-bezier(.22,1,.36,1); }
+
+  .study-cycle {
+    border: 1px solid color-mix(in oklab, var(--primary) 24%, var(--border));
+    border-radius: 1.1rem;
+    background: color-mix(in oklab, var(--card) 90%, transparent);
+    box-shadow: 0 14px 34px -28px var(--ink);
+    backdrop-filter: blur(18px);
+  }
+
   .study-action-tile {
     min-height: 4.25rem;
     transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;

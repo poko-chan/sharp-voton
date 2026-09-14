@@ -341,7 +341,10 @@ function Dashboard() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard", user?.id],
-    queryFn: () => loadDashboard(user!.id),
+    queryFn: () => {
+      if (!user?.id) throw new Error("ログインが必要です");
+      return loadDashboard(user.id);
+    },
     enabled: !!user,
     staleTime: 15_000,
     refetchOnWindowFocus: true,
@@ -514,19 +517,30 @@ function Dashboard() {
   }, [stats, dailyGoal, dailyPct, diff, diffPct, byDow, topSubjects]);
 
   return (
-    <div className="dashboard-page p-3 pb-24 md:p-6 lg:p-8 space-y-5 max-w-[1520px] mx-auto">
+    <div className="dashboard-page study-os p-3 pb-24 md:p-6 lg:p-8 space-y-6 max-w-[1520px] mx-auto">
+      <header className="study-os-header flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="study-os-kicker">STUDY# / LEARNING OPERATING SYSTEM</p>
+          <h1 className="font-display text-3xl font-extrabold md:text-4xl">{greeting()}。学びの現在地</h1>
+          <p className="mt-2 text-sm font-medium text-muted-foreground">
+            {new Date().toLocaleDateString("ja-JP", { month: "long", day: "numeric", weekday: "long" })}
+            ・今週の目標まであと {fmt(Math.max(0, weeklyTarget - stats.weekMin))}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusModule icon={Flame} label="連続記録" value={`${stats.streak}日`} tone="warm" />
+          <StatusModule icon={Award} label="学習レベル" value={`Lv ${lvl.level}`} tone="strong" />
+          <DailyGoalDialog value={dailyGoal} onChange={(v) => { setDailyGoal(v); localStorage.setItem(DAILY_GOAL_KEY, String(v)); }} />
+          <WeeklyGoalDialog value={weeklyGoal} onChange={(v) => { setWeeklyGoal(v); localStorage.setItem(WEEKLY_GOAL_KEY, String(v)); }} />
+          <NotificationBell />
+        </div>
+      </header>
+
       {/* ===== 一番上: 左=1日の目標 / 右=あなたの街 ===== */}
       <div className="dashboard-bento grid grid-cols-1 gap-5 xl:grid-cols-12 items-start">
         {/* ===== ヒーロー ===== */}
-        <Card className="dashboard-hero study-surface relative overflow-hidden p-0 border-primary/20 xl:col-span-8">
-          <div
-            className="absolute inset-0 opacity-[0.18] pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(1000px 320px at 12% -10%, oklch(0.7 0.2 150), transparent 60%), radial-gradient(800px 320px at 92% 0%, oklch(0.62 0.22 275), transparent 60%)",
-            }}
-          />
-          <div className="relative p-5 md:p-7 grid gap-6 md:grid-cols-[auto_1fr] items-center">
+        <Card className="dashboard-hero study-focus-stage relative overflow-hidden p-0 xl:col-span-8">
+          <div className="study-focus-grid relative p-5 md:p-8 grid gap-6 md:grid-cols-[auto_1fr] items-center">
             {/* 今日のリング */}
             <div className="flex items-center gap-5 justify-center lg:justify-start">
               <RadialGauge
@@ -547,8 +561,8 @@ function Dashboard() {
 
             <div className="min-w-0 space-y-3">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary/80 mb-2">
-                  TODAY / 学習ダッシュボード
+                <p className="text-[11px] font-bold uppercase text-primary mb-2">
+                  CURRENT FOCUS / 今日の焦点
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {new Date().toLocaleDateString("ja-JP", {
@@ -557,10 +571,8 @@ function Dashboard() {
                     weekday: "long",
                   })}
                 </p>
-                <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-                  {greeting()}
-                  {isLoading ? "" : "、今日も積み上げよう"}
-                </h1>
+                <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">{isLoading ? "学習状況を読み込み中" : nextAction.title}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">{nextAction.detail}</p>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
@@ -569,6 +581,10 @@ function Dashboard() {
                 <Chip icon={Trophy} tone="emerald" label={rank.title} />
                 <Chip icon={BookOpen} tone="slate" label={`累計 ${fmt(stats.totalMin)}`} />
               </div>
+
+              <Button asChild size="lg" className="study-primary-action mt-1 w-full sm:w-auto">
+                <Link to={nextAction.to}><nextAction.icon className="mr-2 h-4 w-4" />{nextAction.label}<ChevronRight className="ml-2 h-4 w-4" /></Link>
+              </Button>
 
               {/* レベルゲージ */}
               <div>
@@ -611,41 +627,43 @@ function Dashboard() {
               </div>
             </div>
 
-            <div className="flex md:col-span-2 gap-2 flex-wrap justify-center md:justify-start">
-              <DailyGoalDialog
-                value={dailyGoal}
-                onChange={(v) => {
-                  setDailyGoal(v);
-                  localStorage.setItem(DAILY_GOAL_KEY, String(v));
-                }}
-              />
-              <WeeklyGoalDialog
-                value={weeklyGoal}
-                onChange={(v) => {
-                  setWeeklyGoal(v);
-                  localStorage.setItem(WEEKLY_GOAL_KEY, String(v));
-                }}
-              />
-              <NotificationBell />
-            </div>
           </div>
 
           {/* クイックアクション */}
-          <div className="relative border-t border-border/60 bg-background/35 grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/60">
-            <QuickAction to="/timer" icon={Timer} label="タイマー開始" />
-            <QuickAction to="/study" icon={BookOpen} label="学習を記録" />
-            <QuickAction to="/makron" icon={Brain} label="Makron 演習" />
-            <QuickAction to="/flashcards" icon={Layers} label="暗記カード" />
+          <div className="study-action-rail relative border-t grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/60">
+            <QuickAction to="/timer" icon={Timer} label="集中する" />
+            <QuickAction to="/study" icon={BookOpen} label="記録する" />
+            <QuickAction to="/makron" icon={Brain} label="定着させる" />
+            <QuickAction to="/flashcards" icon={Layers} label="思い出す" />
           </div>
         </Card>
 
         {/* ===== あなたの街（右上） ===== */}
-        <div className="dashboard-town xl:col-span-4 xl:sticky xl:top-20">
-          <Town />
-        </div>
+        <Card className="study-activity-console overflow-hidden p-6 xl:col-span-4">
+          <div className="flex items-start justify-between gap-3">
+            <div><p className="text-[10px] font-bold uppercase text-primary-foreground/60">ACTIVITY SIGNAL</p><h2 className="mt-1 text-lg font-bold">今週の学習リズム</h2></div>
+            <span className="rounded-full bg-primary-foreground/10 px-2.5 py-1 text-xs font-bold">{fmt(stats.weekMin)}</span>
+          </div>
+          <div className="mt-7 flex h-24 items-end gap-2" aria-label="今週の学習時間">
+            {weekly.map((day) => {
+              const max = Math.max(1, ...weekly.map((item) => item.minutes));
+              return <div key={day.day} className="flex min-w-0 flex-1 flex-col items-center gap-2"><div className="study-rhythm-track flex h-20 w-full items-end overflow-hidden rounded-md"><span className="study-rhythm-bar block w-full rounded-md" style={{ height: `${Math.max(8, day.minutes / max * 100)}%` }} /></div><span className="text-[10px] font-bold text-primary-foreground/50">{day.day}</span></div>;
+            })}
+          </div>
+          <div className="mt-6 grid grid-cols-3 gap-3 border-t border-primary-foreground/10 pt-5">
+            <SignalStat label="先週比" value={diffPct === null ? "—" : `${diff >= 0 ? "+" : ""}${diffPct}%`} />
+            <SignalStat label="累計" value={fmt(stats.totalMin)} />
+            <SignalStat label="段位" value={rank.title} />
+          </div>
+        </Card>
       </div>
 
       <LearningPath todayPct={dailyPct} hasLogs={stats.sessions > 0} gradingCount={stats.gradingCount} />
+
+      <div className="dashboard-bento grid grid-cols-1 gap-5 xl:grid-cols-12 items-start">
+        <div className="dashboard-town xl:col-span-4"><Town /></div>
+        <div className="xl:col-span-8"><FocusPanel dailyGoal={dailyGoal} /></div>
+      </div>
 
       {/* ===== はじめかた & 最近の利用状況 ===== */}
       <div className="dashboard-bento grid grid-cols-1 gap-5 lg:grid-cols-12 items-start">
@@ -657,23 +675,7 @@ function Dashboard() {
       <RecentNotifications />
 
       {/* ===== タイマー & 学習時間の集約 ===== */}
-      <div className="dashboard-bento grid grid-cols-1 gap-5 xl:grid-cols-12">
-        <div className="xl:col-span-8"><FocusPanel dailyGoal={dailyGoal} /></div>
-        <div className="xl:col-span-4 grid gap-5 content-start">
-          <Card className="study-surface relative overflow-hidden p-5 border-primary/20">
-            <div className="relative flex h-full flex-col justify-between gap-5">
-              <div>
-                <p className="text-[11px] font-bold uppercase text-primary/80">NEXT MOVE</p>
-                <h2 className="mt-1 flex items-center gap-2 text-lg font-bold"><Sparkles className="h-5 w-5 text-primary" />今日の次の一手</h2>
-                <p className="mt-4 text-base font-semibold">{nextAction.title}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{nextAction.detail}</p>
-              </div>
-              <Button asChild className="w-full"><Link to={nextAction.to}><nextAction.icon className="mr-2 h-4 w-4" />{nextAction.label}</Link></Button>
-            </div>
-          </Card>
-          <QuickLogCard subjects={subjects} />
-        </div>
-      </div>
+      <QuickLogCard subjects={subjects} />
 
       {/* ===== インサイト ===== */}
       {insights.length > 0 && (
@@ -1283,6 +1285,19 @@ function Chip({ icon: Icon, label, tone }: { icon: any; label: string; tone: str
   );
 }
 
+function StatusModule({ icon: Icon, label, value, tone }: { icon: any; label: string; value: string; tone: "warm" | "strong" }) {
+  return (
+    <div className={`study-status-module ${tone}`}>
+      <span className="study-status-icon"><Icon className="h-4 w-4" /></span>
+      <span><small>{label}</small><strong>{value}</strong></span>
+    </div>
+  );
+}
+
+function SignalStat({ label, value }: { label: string; value: string }) {
+  return <div><p className="text-[9px] font-bold uppercase text-primary-foreground/45">{label}</p><p className="mt-1 truncate text-base font-extrabold tabular-nums">{value}</p></div>;
+}
+
 function LearningPath({
   todayPct,
   hasLogs,
@@ -1293,21 +1308,21 @@ function LearningPath({
   gradingCount: number;
 }) {
   const steps = [
-    { label: "目標", icon: Target, done: todayPct > 0 },
-    { label: "集中", icon: Timer, done: todayPct >= 25 },
-    { label: "記録", icon: BookOpen, done: hasLogs },
-    { label: "演習", icon: Brain, done: gradingCount > 0 },
-    { label: "振り返り", icon: CheckCircle2, done: todayPct >= 100 },
+    { label: "観測", detail: "現在地を知る", icon: BarChart3, done: todayPct > 0 },
+    { label: "選択", detail: "今日を決める", icon: Target, done: todayPct > 0 },
+    { label: "集中", detail: "深く取り組む", icon: Timer, done: todayPct >= 25 },
+    { label: "定着", detail: "思い出して解く", icon: Brain, done: gradingCount > 0 },
+    { label: "振り返り", detail: "次へつなげる", icon: CheckCircle2, done: todayPct >= 100 && hasLogs },
   ];
   const completed = steps.filter((step) => step.done).length;
   const progress = Math.max(4, (completed / steps.length) * 100);
 
   return (
-    <Card className="study-surface overflow-hidden px-4 py-5 md:px-7">
+    <Card className="study-cycle overflow-hidden px-4 py-5 md:px-7">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <p className="text-[11px] font-bold uppercase text-primary">STUDY ROUTE</p>
-          <h2 className="font-display text-lg font-bold">今日の学習ルート</h2>
+          <p className="text-[11px] font-bold uppercase text-primary">LEARNING CYCLE</p>
+          <h2 className="font-display text-lg font-bold">学びを前へ動かす5つの工程</h2>
         </div>
         <span className="rounded-full bg-primary/12 px-3 py-1 text-xs font-bold text-primary">
           {completed} / {steps.length}
@@ -1333,9 +1348,8 @@ function LearningPath({
               >
                 <Icon className="h-4 w-4" />
               </div>
-              <span className={`truncate text-[10px] font-bold sm:text-xs ${current ? "text-foreground" : "text-muted-foreground"}`}>
-                {step.label}
-              </span>
+              <span className={`truncate text-[10px] font-bold sm:text-xs ${current ? "text-foreground" : "text-muted-foreground"}`}>{step.label}</span>
+              <span className="hidden text-[9px] text-muted-foreground md:block">{step.detail}</span>
             </div>
           );
         })}
