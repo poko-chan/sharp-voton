@@ -365,12 +365,8 @@ export const fetchPage = createServerFn({ method: "POST" })
       };
     }
     // ローカル・内部アドレスへのアクセスは拒否（安全のため）
-    if (
-      !/^https?:$/.test(parsed.protocol) ||
-      /^(localhost|127\.|0\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|\[?::1)/.test(
-        parsed.hostname,
-      )
-    ) {
+    // 10進/16進/8進表記や IPv6  mapped 形式もすべて正規化して判定する
+    if (!/^https?:$/.test(parsed.protocol) || isBlockedHost(parsed.hostname)) {
       return {
         url,
         finalUrl: url,
