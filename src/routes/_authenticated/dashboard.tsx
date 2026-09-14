@@ -1283,11 +1283,72 @@ function Chip({ icon: Icon, label, tone }: { icon: any; label: string; tone: str
   );
 }
 
+function LearningPath({
+  todayPct,
+  hasLogs,
+  gradingCount,
+}: {
+  todayPct: number;
+  hasLogs: boolean;
+  gradingCount: number;
+}) {
+  const steps = [
+    { label: "目標", icon: Target, done: todayPct > 0 },
+    { label: "集中", icon: Timer, done: todayPct >= 25 },
+    { label: "記録", icon: BookOpen, done: hasLogs },
+    { label: "演習", icon: Brain, done: gradingCount > 0 },
+    { label: "振り返り", icon: CheckCircle2, done: todayPct >= 100 },
+  ];
+  const completed = steps.filter((step) => step.done).length;
+  const progress = Math.max(4, (completed / steps.length) * 100);
+
+  return (
+    <Card className="study-surface overflow-hidden px-4 py-5 md:px-7">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-bold uppercase text-primary">STUDY ROUTE</p>
+          <h2 className="font-display text-lg font-bold">今日の学習ルート</h2>
+        </div>
+        <span className="rounded-full bg-primary/12 px-3 py-1 text-xs font-bold text-primary">
+          {completed} / {steps.length}
+        </span>
+      </div>
+      <div
+        className="learning-path grid grid-cols-5 gap-1 text-center"
+        style={{ "--path-progress": `${progress}%` } as React.CSSProperties}
+      >
+        {steps.map((step, index) => {
+          const Icon = step.icon;
+          const current = !step.done && index === steps.findIndex((item) => !item.done);
+          return (
+            <div key={step.label} className="flex min-w-0 flex-col items-center gap-2">
+              <div
+                className={`learning-path-node grid h-11 w-11 place-items-center rounded-full border-2 ${
+                  step.done
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : current
+                      ? "border-warning bg-accent text-accent-foreground"
+                      : "border-border bg-card text-muted-foreground"
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+              </div>
+              <span className={`truncate text-[10px] font-bold sm:text-xs ${current ? "text-foreground" : "text-muted-foreground"}`}>
+                {step.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
 function QuickAction({ to, icon: Icon, label }: { to: string; icon: any; label: string }) {
   return (
     <Link
       to={to}
-      className="group flex items-center justify-center gap-2 px-3 py-3.5 text-sm font-semibold hover:bg-accent/60 transition"
+      className="study-action-tile group flex items-center justify-center gap-2 px-3 py-3.5 text-sm font-bold hover:bg-accent/60"
     >
       <Icon className="h-4 w-4 text-primary group-hover:scale-110 transition" />
       <span className="truncate">{label}</span>
