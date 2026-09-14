@@ -29,7 +29,8 @@ import { MaterialsReviewTab } from "@/components/admin/materials";
 import { NotificationsAdminTab } from "@/components/admin/notifications";
 
 export const Route = createFileRoute("/_authenticated/admin")({
-  validateSearch: (s: Record<string, unknown>) => ({ tab: (s.tab as string) || undefined }),
+  validateSearch: (s: Record<string, unknown>): { tab?: string } =>
+    s.tab ? { tab: String(s.tab) } : {},
   component: AdminPage,
 });
 

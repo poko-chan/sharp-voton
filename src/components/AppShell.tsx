@@ -268,8 +268,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             duration: 3200,
             icon: <BellRing className="h-4 w-4 text-primary" />,
             className: "app-notification-toast cursor-pointer",
-            onClick: () => {
-              void navigate({ to: notificationPath });
+            action: {
+              label: "開く",
+              onClick: () => {
+                void navigate({ to: notificationPath });
+              },
             },
           });
           try {

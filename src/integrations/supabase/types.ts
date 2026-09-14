@@ -3201,9 +3201,9 @@ export type Database = {
           id: string
           notebook_id: string
           page_index: number
-          title: string
           strokes: Json
           texts: Json
+          title: string
           updated_at: string
           updated_by: string | null
         }
@@ -3211,9 +3211,9 @@ export type Database = {
           id?: string
           notebook_id: string
           page_index?: number
-          title?: string
           strokes?: Json
           texts?: Json
+          title?: string
           updated_at?: string
           updated_by?: string | null
         }
@@ -3221,9 +3221,9 @@ export type Database = {
           id?: string
           notebook_id?: string
           page_index?: number
-          title?: string
           strokes?: Json
           texts?: Json
+          title?: string
           updated_at?: string
           updated_by?: string | null
         }

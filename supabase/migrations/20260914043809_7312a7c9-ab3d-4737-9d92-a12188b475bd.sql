@@ -1,0 +1,1 @@
+ALTER TABLE public.notebook_pages ADD COLUMN IF NOT EXISTS title text NOT NULL DEFAULT '';
