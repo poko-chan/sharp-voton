@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useRouterState } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -48,8 +48,40 @@ const CAT_LABEL: Record<string, string> = {
   other: "📝 その他",
 };
 
+// シェル内(コンパクト表示)のサポートボタンが存在するかを共有し、
+// 公開ページや全画面ページでは浮遊ボタンを出す。
+let shellMounted = 0;
+const shellSubs = new Set<() => void>();
+const notifyShell = () => shellSubs.forEach((f) => f());
+function subscribeShell(cb: () => void) {
+  shellSubs.add(cb);
+  return () => {
+    shellSubs.delete(cb);
+  };
+}
+
+/** シェルのサポートボタンが無いページだけ浮遊サポートボタンを表示する。 */
+export function GlobalFeedbackDock() {
+  const hasShellButton = useSyncExternalStore(
+    subscribeShell,
+    () => shellMounted > 0,
+    () => true,
+  );
+  if (hasShellButton) return null;
+  return <FeedbackWidget />;
+}
+
 export function FeedbackWidget({ compact = false }: { compact?: boolean }) {
   const { user } = useAuth();
+  useEffect(() => {
+    if (!compact) return;
+    shellMounted += 1;
+    notifyShell();
+    return () => {
+      shellMounted -= 1;
+      notifyShell();
+    };
+  }, [compact]);
   const [open, setOpen] = useState(false);
   const unreadFn = useServerFn(myThreadsUnreadCount);
   const path = useRouterState({ select: (s) => s.location.pathname });
