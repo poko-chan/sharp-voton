@@ -10,19 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  unreadCount as nUnreadCount,
-  listNotifications,
-  markNotificationRead,
-} from "@/lib/notifications.functions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { unreadCount as nUnreadCount, listNotifications, markNotificationRead } from "@/lib/notifications.functions";
 import { useQueryClient } from "@tanstack/react-query";
 import { RadialGauge, PowerBar } from "@/components/RadialGauge";
 import {
@@ -156,18 +145,12 @@ function Dashboard() {
     const [logsRes, goalsAllRes, annRes, gradesRes, subsRes, examsRes] = await Promise.all([
       supabase
         .from("study_logs")
-        .select(
-          "id, date, duration_minutes, subject_id, start_time, content, materials(title), subjects(name, color)",
-        )
+        .select("id, date, duration_minutes, subject_id, start_time, content, materials(title), subjects(name, color)")
 
         .eq("user_id", uid)
         .order("date", { ascending: false })
         .limit(2000),
-      supabase
-        .from("goals")
-        .select("*")
-        .eq("user_id", uid)
-        .order("created_at", { ascending: false }),
+      supabase.from("goals").select("*").eq("user_id", uid).order("created_at", { ascending: false }),
       supabase
         .from("announcements")
         .select("id, title, body, publish_at, tag")
@@ -190,9 +173,7 @@ function Dashboard() {
 
     const today = localDateStr();
     const totalMin = logs.reduce((s, l) => s + (l.duration_minutes ?? 0), 0);
-    const todayMin = logs
-      .filter((l) => l.date === today)
-      .reduce((s, l) => s + (l.duration_minutes ?? 0), 0);
+    const todayMin = logs.filter((l) => l.date === today).reduce((s, l) => s + (l.duration_minutes ?? 0), 0);
     const dayMap = new Map<string, number>();
     logs.forEach((l) => dayMap.set(l.date, (dayMap.get(l.date) ?? 0) + (l.duration_minutes ?? 0)));
     const base = new Date();
@@ -295,9 +276,7 @@ function Dashboard() {
 
     const grades = gradesRes.data ?? [];
     const gradingCount = grades.length;
-    const gradingAvg = gradingCount
-      ? Math.round(grades.reduce((s, g) => s + (g.score ?? 0), 0) / gradingCount)
-      : 0;
+    const gradingAvg = gradingCount ? Math.round(grades.reduce((s, g) => s + (g.score ?? 0), 0) / gradingCount) : 0;
     const gradingPass = grades.filter((g) => g.correct).length;
     const activeDays = Array.from(dayMap.values()).filter((v) => v > 0).length;
     const avgPerActiveDay = activeDays ? Math.round(totalMin / activeDays) : 0;
@@ -404,8 +383,7 @@ function Dashboard() {
     : 999;
   const lvl = levelInfo(stats.totalMin + classroomXp, daysSinceLast);
   const peakLabel = stats.peakHour >= 0 ? `${stats.peakHour}時台` : "—";
-  const goalRate =
-    stats.goalsTotal > 0 ? Math.round((stats.goalsDone / stats.goalsTotal) * 100) : 0;
+  const goalRate = stats.goalsTotal > 0 ? Math.round((stats.goalsDone / stats.goalsTotal) * 100) : 0;
 
   const dailyPct = dailyGoal > 0 ? Math.min(100, (stats.todayMin / dailyGoal) * 100) : 0;
   const weeklyTarget = weeklyGoal;
@@ -520,8 +498,10 @@ function Dashboard() {
     <div className="dashboard-page study-os p-3 pb-24 md:p-6 lg:p-8 space-y-6 max-w-[1520px] mx-auto">
       <header className="study-os-header flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="study-os-kicker">STUDY# / LEARNING OPERATING SYSTEM</p>
-          <h1 className="font-display text-3xl font-extrabold md:text-4xl">{greeting()}。学びの現在地</h1>
+          <p className="study-os-kicker">Study# / LEARNING OPERATING SYSTEM</p>
+          <h1 className="font-display text-3xl font-extrabold md:text-4xl">
+            {greeting()}。学習総合プラットフォーム - Study#
+          </h1>
           <p className="mt-2 text-sm font-medium text-muted-foreground">
             {new Date().toLocaleDateString("ja-JP", { month: "long", day: "numeric", weekday: "long" })}
             ・今週の目標まであと {fmt(Math.max(0, weeklyTarget - stats.weekMin))}
@@ -530,8 +510,20 @@ function Dashboard() {
         <div className="flex flex-wrap items-center gap-2">
           <StatusModule icon={Flame} label="連続記録" value={`${stats.streak}日`} tone="warm" />
           <StatusModule icon={Award} label="学習レベル" value={`Lv ${lvl.level}`} tone="strong" />
-          <DailyGoalDialog value={dailyGoal} onChange={(v) => { setDailyGoal(v); localStorage.setItem(DAILY_GOAL_KEY, String(v)); }} />
-          <WeeklyGoalDialog value={weeklyGoal} onChange={(v) => { setWeeklyGoal(v); localStorage.setItem(WEEKLY_GOAL_KEY, String(v)); }} />
+          <DailyGoalDialog
+            value={dailyGoal}
+            onChange={(v) => {
+              setDailyGoal(v);
+              localStorage.setItem(DAILY_GOAL_KEY, String(v));
+            }}
+          />
+          <WeeklyGoalDialog
+            value={weeklyGoal}
+            onChange={(v) => {
+              setWeeklyGoal(v);
+              localStorage.setItem(WEEKLY_GOAL_KEY, String(v));
+            }}
+          />
           <NotificationBell />
         </div>
       </header>
@@ -561,9 +553,7 @@ function Dashboard() {
 
             <div className="min-w-0 space-y-3">
               <div>
-                <p className="text-[11px] font-bold uppercase text-primary mb-2">
-                  CURRENT FOCUS / 今日の焦点
-                </p>
+                <p className="text-[11px] font-bold uppercase text-primary mb-2">CURRENT FOCUS / 今日の焦点</p>
                 <p className="text-xs text-muted-foreground">
                   {new Date().toLocaleDateString("ja-JP", {
                     month: "long",
@@ -571,7 +561,9 @@ function Dashboard() {
                     weekday: "long",
                   })}
                 </p>
-                <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">{isLoading ? "学習状況を読み込み中" : nextAction.title}</h2>
+                <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+                  {isLoading ? "学習状況を読み込み中" : nextAction.title}
+                </h2>
                 <p className="mt-1 text-sm text-muted-foreground">{nextAction.detail}</p>
               </div>
 
@@ -583,24 +575,22 @@ function Dashboard() {
               </div>
 
               <Button asChild size="lg" className="study-primary-action mt-1 w-full sm:w-auto">
-                <Link to={nextAction.to}><nextAction.icon className="mr-2 h-4 w-4" />{nextAction.label}<ChevronRight className="ml-2 h-4 w-4" /></Link>
+                <Link to={nextAction.to}>
+                  <nextAction.icon className="mr-2 h-4 w-4" />
+                  {nextAction.label}
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Link>
               </Button>
 
               {/* レベルゲージ */}
               <div>
                 <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
                   <span>
-                    次のレベルまで{" "}
-                    <b className="text-foreground">{Math.ceil(lvl.remainingHours * 60)} 分</b>
+                    次のレベルまで <b className="text-foreground">{Math.ceil(lvl.remainingHours * 60)} 分</b>
                   </span>
                   <span className="tabular-nums">{Math.round(lvl.progressPct)}%</span>
                 </div>
-                <PowerBar
-                  value={lvl.progressPct}
-                  height={14}
-                  from="oklch(0.78 0.17 85)"
-                  to="oklch(0.62 0.22 275)"
-                />
+                <PowerBar value={lvl.progressPct} height={14} from="oklch(0.78 0.17 85)" to="oklch(0.62 0.22 275)" />
                 {lvl.inactivityFactor < 1 && (
                   <p className="text-[10px] text-amber-600 mt-1">
                     ⚠ 停滞中: レベル上昇が ×{lvl.inactivityFactor.toFixed(2)} に減速しています
@@ -612,8 +602,7 @@ function Dashboard() {
               <div>
                 <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
                   <span>
-                    今週のペース <b className="text-foreground">{fmt(stats.weekMin)}</b> /{" "}
-                    {fmt(weeklyTarget)}
+                    今週のペース <b className="text-foreground">{fmt(stats.weekMin)}</b> / {fmt(weeklyTarget)}
                   </span>
                   <span className="tabular-nums">{Math.round(weekPct)}%</span>
                 </div>
@@ -626,7 +615,6 @@ function Dashboard() {
                 />
               </div>
             </div>
-
           </div>
 
           {/* クイックアクション */}
@@ -641,13 +629,28 @@ function Dashboard() {
         {/* ===== あなたの街（右上） ===== */}
         <Card className="study-activity-console overflow-hidden p-6 xl:col-span-4">
           <div className="flex items-start justify-between gap-3">
-            <div><p className="text-[10px] font-bold uppercase text-primary-foreground/60">ACTIVITY SIGNAL</p><h2 className="mt-1 text-lg font-bold">今週の学習リズム</h2></div>
-            <span className="rounded-full bg-primary-foreground/10 px-2.5 py-1 text-xs font-bold">{fmt(stats.weekMin)}</span>
+            <div>
+              <p className="text-[10px] font-bold uppercase text-primary-foreground/60">ACTIVITY SIGNAL</p>
+              <h2 className="mt-1 text-lg font-bold">今週の学習リズム</h2>
+            </div>
+            <span className="rounded-full bg-primary-foreground/10 px-2.5 py-1 text-xs font-bold">
+              {fmt(stats.weekMin)}
+            </span>
           </div>
           <div className="mt-7 flex h-24 items-end gap-2" aria-label="今週の学習時間">
             {weekly.map((day) => {
               const max = Math.max(1, ...weekly.map((item) => item.minutes));
-              return <div key={day.day} className="flex min-w-0 flex-1 flex-col items-center gap-2"><div className="study-rhythm-track flex h-20 w-full items-end overflow-hidden rounded-md"><span className="study-rhythm-bar block w-full rounded-md" style={{ height: `${Math.max(8, day.minutes / max * 100)}%` }} /></div><span className="text-[10px] font-bold text-primary-foreground/50">{day.day}</span></div>;
+              return (
+                <div key={day.day} className="flex min-w-0 flex-1 flex-col items-center gap-2">
+                  <div className="study-rhythm-track flex h-20 w-full items-end overflow-hidden rounded-md">
+                    <span
+                      className="study-rhythm-bar block w-full rounded-md"
+                      style={{ height: `${Math.max(8, (day.minutes / max) * 100)}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold text-primary-foreground/50">{day.day}</span>
+                </div>
+              );
             })}
           </div>
           <div className="mt-6 grid grid-cols-3 gap-3 border-t border-primary-foreground/10 pt-5">
@@ -661,14 +664,22 @@ function Dashboard() {
       <LearningPath todayPct={dailyPct} hasLogs={stats.sessions > 0} gradingCount={stats.gradingCount} />
 
       <div className="dashboard-bento grid grid-cols-1 gap-5 xl:grid-cols-12 items-start">
-        <div className="dashboard-town xl:col-span-4"><Town /></div>
-        <div className="xl:col-span-8"><FocusPanel dailyGoal={dailyGoal} /></div>
+        <div className="dashboard-town xl:col-span-4">
+          <Town />
+        </div>
+        <div className="xl:col-span-8">
+          <FocusPanel dailyGoal={dailyGoal} />
+        </div>
       </div>
 
       {/* ===== はじめかた & 最近の利用状況 ===== */}
       <div className="dashboard-bento grid grid-cols-1 gap-5 lg:grid-cols-12 items-start">
-        <div className="lg:col-span-5"><GettingStartedCard /></div>
-        <div className="lg:col-span-7"><RecentActivityCard /></div>
+        <div className="lg:col-span-5">
+          <GettingStartedCard />
+        </div>
+        <div className="lg:col-span-7">
+          <RecentActivityCard />
+        </div>
       </div>
 
       {/* ===== 最近の通知 ===== */}
@@ -752,18 +763,8 @@ function Dashboard() {
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={weekly}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis
-                  dataKey="day"
-                  stroke="var(--muted-foreground)"
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="var(--muted-foreground)"
-                  tickLine={false}
-                  axisLine={false}
-                  width={36}
-                />
+                <XAxis dataKey="day" stroke="var(--muted-foreground)" tickLine={false} axisLine={false} />
+                <YAxis stroke="var(--muted-foreground)" tickLine={false} axisLine={false} width={36} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v}分`, "学習"]} />
                 <Bar dataKey="minutes" fill="oklch(0.65 0.19 150)" radius={[10, 10, 0, 0]} />
               </BarChart>
@@ -779,19 +780,8 @@ function Dashboard() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis
-                  dataKey="date"
-                  stroke="var(--muted-foreground)"
-                  interval={4}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="var(--muted-foreground)"
-                  tickLine={false}
-                  axisLine={false}
-                  width={36}
-                />
+                <XAxis dataKey="date" stroke="var(--muted-foreground)" interval={4} tickLine={false} axisLine={false} />
+                <YAxis stroke="var(--muted-foreground)" tickLine={false} axisLine={false} width={36} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v}分`, "学習"]} />
                 <Area
                   type="monotone"
@@ -807,25 +797,13 @@ function Dashboard() {
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={byDow}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis
-                  dataKey="day"
-                  stroke="var(--muted-foreground)"
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="var(--muted-foreground)"
-                  tickLine={false}
-                  axisLine={false}
-                  width={36}
-                />
+                <XAxis dataKey="day" stroke="var(--muted-foreground)" tickLine={false} axisLine={false} />
+                <YAxis stroke="var(--muted-foreground)" tickLine={false} axisLine={false} width={36} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v}分`, "平均"]} />
                 <Bar dataKey="minutes" fill="oklch(0.68 0.17 200)" radius={[10, 10, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
-            <p className="text-[11px] text-muted-foreground mt-2">
-              直近12週間の曜日ごとの平均学習時間
-            </p>
+            <p className="text-[11px] text-muted-foreground mt-2">直近12週間の曜日ごとの平均学習時間</p>
           </TabsContent>
           <TabsContent value="hour">
             <ResponsiveContainer width="100%" height={260}>
@@ -839,12 +817,7 @@ function Dashboard() {
                   tickLine={false}
                   axisLine={false}
                 />
-                <YAxis
-                  stroke="var(--muted-foreground)"
-                  tickLine={false}
-                  axisLine={false}
-                  width={36}
-                />
+                <YAxis stroke="var(--muted-foreground)" tickLine={false} axisLine={false} width={36} />
                 <Tooltip
                   contentStyle={tooltipStyle}
                   formatter={(v: any) => [`${v}分`, "学習"]}
@@ -868,11 +841,7 @@ function Dashboard() {
             <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
               少ない
               {[0, 0.25, 0.5, 0.75, 1].map((i) => (
-                <span
-                  key={i}
-                  className="h-3 w-3 rounded-[3px]"
-                  style={{ background: heatColor(i * 120) }}
-                />
+                <span key={i} className="h-3 w-3 rounded-[3px]" style={{ background: heatColor(i * 120) }} />
               ))}
               多い
             </div>
@@ -880,7 +849,10 @@ function Dashboard() {
           <div className="mb-4 grid grid-cols-3 gap-2">
             <div className="rounded-xl bg-muted/60 px-3 py-2">
               <div className="text-[10px] text-muted-foreground">学習日数</div>
-              <div className="mt-0.5 text-lg font-bold tabular-nums">{heatActiveDays}<span className="ml-0.5 text-xs font-normal">日</span></div>
+              <div className="mt-0.5 text-lg font-bold tabular-nums">
+                {heatActiveDays}
+                <span className="ml-0.5 text-xs font-normal">日</span>
+              </div>
             </div>
             <div className="rounded-xl bg-muted/60 px-3 py-2">
               <div className="text-[10px] text-muted-foreground">合計時間</div>
@@ -953,10 +925,7 @@ function Dashboard() {
                       <Cell key={i} fill={s.color} stroke="none" />
                     ))}
                   </Pie>
-                  <Tooltip
-                    contentStyle={tooltipStyle}
-                    formatter={(v: any, n: any) => [`${v}分`, n]}
-                  />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: any, n: any) => [`${v}分`, n]} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="space-y-2.5 mt-3">
@@ -972,13 +941,7 @@ function Dashboard() {
                           {fmt(s.value)}・{Math.round(pct)}%
                         </span>
                       </div>
-                      <PowerBar
-                        value={pct}
-                        height={8}
-                        striped={false}
-                        from={s.color}
-                        to={s.color}
-                      />
+                      <PowerBar value={pct} height={8} striped={false} from={s.color} to={s.color} />
                     </div>
                   );
                 })}
@@ -1013,20 +976,11 @@ function Dashboard() {
             <div className="space-y-3">
               {exams.map((e) => {
                 const days = e.start_date
-                  ? Math.max(
-                      0,
-                      Math.ceil(
-                        (new Date(e.start_date + "T00:00:00").getTime() - Date.now()) / 86400000,
-                      ),
-                    )
+                  ? Math.max(0, Math.ceil((new Date(e.start_date + "T00:00:00").getTime() - Date.now()) / 86400000))
                   : null;
-                const urgency =
-                  days === null ? "slate" : days <= 3 ? "rose" : days <= 14 ? "amber" : "primary";
+                const urgency = days === null ? "slate" : days <= 3 ? "rose" : days <= 14 ? "amber" : "primary";
                 return (
-                  <div
-                    key={e.id}
-                    className="flex items-center gap-3 p-3 rounded-xl border bg-muted/20"
-                  >
+                  <div key={e.id} className="flex items-center gap-3 p-3 rounded-xl border bg-muted/20">
                     <div
                       className={`h-12 w-12 rounded-xl grid place-items-center shrink-0 font-extrabold tabular-nums ${
                         urgency === "rose"
@@ -1074,9 +1028,7 @@ function Dashboard() {
                     <span className="font-semibold truncate pr-2">
                       {i + 1}. {m.name}
                     </span>
-                    <span className="text-muted-foreground tabular-nums shrink-0">
-                      {fmt(m.value)}
-                    </span>
+                    <span className="text-muted-foreground tabular-nums shrink-0">{fmt(m.value)}</span>
                   </div>
                   <PowerBar
                     value={(m.value / maxMaterialMin) * 100}
@@ -1116,17 +1068,12 @@ function Dashboard() {
           ) : (
             <div className="space-y-4">
               {goals.slice(0, 4).map((g) => {
-                const pct =
-                  g.target_minutes > 0
-                    ? Math.min(100, (g.progress_minutes / g.target_minutes) * 100)
-                    : 0;
+                const pct = g.target_minutes > 0 ? Math.min(100, (g.progress_minutes / g.target_minutes) * 100) : 0;
                 return (
                   <div key={g.id}>
                     <div className="flex justify-between text-sm mb-1.5">
                       <span className="font-semibold truncate pr-2">{g.title}</span>
-                      <span className="text-xs text-muted-foreground shrink-0 tabular-nums">
-                        {Math.round(pct)}%
-                      </span>
+                      <span className="text-xs text-muted-foreground shrink-0 tabular-nums">{Math.round(pct)}%</span>
                     </div>
                     <PowerBar value={pct} height={12} />
                     <div className="text-[10px] text-muted-foreground mt-1">
@@ -1163,18 +1110,14 @@ function Dashboard() {
                     style={{ background: r.subjects?.color ?? "#94a3b8" }}
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium truncate">
-                      {r.subjects?.name ?? "その他"}
-                    </div>
+                    <div className="text-sm font-medium truncate">{r.subjects?.name ?? "その他"}</div>
                     <div className="text-[10px] text-muted-foreground truncate">
                       {r.date}
                       {r.materials?.title ? ` ・ 📗${r.materials.title}` : ""}
                       {r.content ? ` ・ ${r.content}` : ""}
                     </div>
                   </div>
-                  <div className="text-sm font-bold tabular-nums shrink-0">
-                    {fmt(r.duration_minutes ?? 0)}
-                  </div>
+                  <div className="text-sm font-bold tabular-nums shrink-0">{fmt(r.duration_minutes ?? 0)}</div>
                 </div>
               ))}
             </div>
@@ -1201,9 +1144,7 @@ function Dashboard() {
                 <div key={a.id} className="p-3 rounded-xl border bg-muted/20">
                   <div className="flex justify-between items-baseline gap-2 flex-wrap">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span
-                        className={`text-[10px] px-1.5 py-0.5 rounded border shrink-0 ${t.className}`}
-                      >
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded border shrink-0 ${t.className}`}>
                         {t.label}
                       </span>
                       <p className="font-medium text-sm truncate">{a.title}</p>
@@ -1212,9 +1153,7 @@ function Dashboard() {
                       {new Date(a.publish_at).toLocaleString("ja-JP")}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2 mt-1 whitespace-pre-wrap">
-                    {a.body}
-                  </p>
+                  <p className="text-xs text-muted-foreground line-clamp-2 mt-1 whitespace-pre-wrap">{a.body}</p>
                 </div>
               );
             })}
@@ -1285,17 +1224,37 @@ function Chip({ icon: Icon, label, tone }: { icon: any; label: string; tone: str
   );
 }
 
-function StatusModule({ icon: Icon, label, value, tone }: { icon: any; label: string; value: string; tone: "warm" | "strong" }) {
+function StatusModule({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: any;
+  label: string;
+  value: string;
+  tone: "warm" | "strong";
+}) {
   return (
     <div className={`study-status-module ${tone}`}>
-      <span className="study-status-icon"><Icon className="h-4 w-4" /></span>
-      <span><small>{label}</small><strong>{value}</strong></span>
+      <span className="study-status-icon">
+        <Icon className="h-4 w-4" />
+      </span>
+      <span>
+        <small>{label}</small>
+        <strong>{value}</strong>
+      </span>
     </div>
   );
 }
 
 function SignalStat({ label, value }: { label: string; value: string }) {
-  return <div><p className="text-[9px] font-bold uppercase text-primary-foreground/45">{label}</p><p className="mt-1 truncate text-base font-extrabold tabular-nums">{value}</p></div>;
+  return (
+    <div>
+      <p className="text-[9px] font-bold uppercase text-primary-foreground/45">{label}</p>
+      <p className="mt-1 truncate text-base font-extrabold tabular-nums">{value}</p>
+    </div>
+  );
 }
 
 function LearningPath({
@@ -1348,7 +1307,11 @@ function LearningPath({
               >
                 <Icon className="h-4 w-4" />
               </div>
-              <span className={`truncate text-[10px] font-bold sm:text-xs ${current ? "text-foreground" : "text-muted-foreground"}`}>{step.label}</span>
+              <span
+                className={`truncate text-[10px] font-bold sm:text-xs ${current ? "text-foreground" : "text-muted-foreground"}`}
+              >
+                {step.label}
+              </span>
               <span className="hidden text-[9px] text-muted-foreground md:block">{step.detail}</span>
             </div>
           );
@@ -1494,12 +1457,7 @@ function DailyGoalDialog({ value, onChange }: { value: number; onChange: (v: num
           </div>
           <div className="flex gap-2 flex-wrap">
             {[30, 60, 90, 120, 180, 240].map((m) => (
-              <Button
-                key={m}
-                size="sm"
-                variant={draft === m ? "default" : "outline"}
-                onClick={() => setDraft(m)}
-              >
+              <Button key={m} size="sm" variant={draft === m ? "default" : "outline"} onClick={() => setDraft(m)}>
                 {fmt(m)}
               </Button>
             ))}
@@ -1593,9 +1551,7 @@ function StatCard({ icon: Icon, label, value, sub, accent }: any) {
           <Icon className="h-5 w-5" />
         </div>
         <div className="min-w-0">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide truncate">
-            {label}
-          </p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wide truncate">{label}</p>
           <p className="text-xl font-extrabold leading-tight tabular-nums">{value}</p>
           {sub && <p className="text-[10px] mt-0.5 text-muted-foreground">{sub}</p>}
         </div>
@@ -1714,10 +1670,7 @@ function RecentNotifications() {
       ) : (
         <div className="divide-y">
           {recent.map((n: any) => (
-            <div
-              key={n.id}
-              className={`py-2 flex items-start gap-2 ${n.read_at ? "opacity-60" : ""}`}
-            >
+            <div key={n.id} className={`py-2 flex items-start gap-2 ${n.read_at ? "opacity-60" : ""}`}>
               <span
                 className={`mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 ${n.read_at ? "bg-muted-foreground/40" : "bg-primary"}`}
               />
