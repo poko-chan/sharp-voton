@@ -18,9 +18,20 @@ type Signal =
 
 const ICE: RTCConfiguration = {
   iceServers: [
-    { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
+    {
+      urls: [
+        "stun:stun.l.google.com:19302",
+        "stun:stun1.l.google.com:19302",
+        "stun:stun2.l.google.com:19302",
+        "stun:global.stun.twilio.com:3478",
+      ],
+    },
   ],
+  iceCandidatePoolSize: 4,
+  bundlePolicy: "max-bundle",
+  rtcpMuxPolicy: "require",
 };
+
 
 const pairName = (a: string, b: string) => `call-pair-${[a, b].sort().join("_")}`;
 
@@ -159,17 +170,47 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
 
   const getMedia = useCallback(async (k: CallKind) => {
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: k === "video" ? { width: 1280, height: 720 } : false,
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        channelCount: 1,
+        sampleRate: 48000,
+      },
+      video:
+        k === "video"
+          ? {
+              width: { ideal: 1280, max: 1280 },
+              height: { ideal: 720, max: 720 },
+              frameRate: { ideal: 30, max: 30 },
+              facingMode: "user",
+            }
+          : false,
     });
     setLocalStream(stream);
     return stream;
   }, []);
 
+
   const buildPc = useCallback(
     (stream: MediaStream, otherId: string) => {
       const pc = new RTCPeerConnection(ICE);
-      stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+      stream.getTracks().forEach((t) => {
+        const sender = pc.addTrack(t, stream);
+        try {
+          const p = sender.getParameters();
+          p.encodings = [
+            t.kind === "video"
+              ? { maxBitrate: 1_500_000, maxFramerate: 30, networkPriority: "high", priority: "high" }
+              : { maxBitrate: 64_000, networkPriority: "high", priority: "high" },
+          ];
+          if (t.kind === "video") p.degradationPreference = "balanced";
+          void sender.setParameters(p).catch(() => {});
+        } catch {
+          /* 一部ブラウザは未対応 */
+        }
+      });
+
       const remote = new MediaStream();
       setRemoteStream(remote);
       pc.ontrack = (ev) => {
@@ -186,10 +227,18 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
           setStatus("active");
           setStartedAt((s) => s ?? Date.now());
         }
+        if (pc.connectionState === "disconnected" && callerRef.current) {
+          try {
+            pc.restartIce();
+          } catch {
+            /* noop */
+          }
+        }
         if (pc.connectionState === "failed") {
           toast.error("通話に接続できませんでした");
           cleanup({ record: "done" });
         }
+
       };
       pcRef.current = pc;
       void otherId;
