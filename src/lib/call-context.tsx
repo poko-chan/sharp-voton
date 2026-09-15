@@ -18,9 +18,20 @@ type Signal =
 
 const ICE: RTCConfiguration = {
   iceServers: [
-    { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
+    {
+      urls: [
+        "stun:stun.l.google.com:19302",
+        "stun:stun1.l.google.com:19302",
+        "stun:stun2.l.google.com:19302",
+        "stun:global.stun.twilio.com:3478",
+      ],
+    },
   ],
+  iceCandidatePoolSize: 4,
+  bundlePolicy: "max-bundle",
+  rtcpMuxPolicy: "require",
 };
+
 
 const pairName = (a: string, b: string) => `call-pair-${[a, b].sort().join("_")}`;
 
