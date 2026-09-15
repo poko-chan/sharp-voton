@@ -195,7 +195,22 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const buildPc = useCallback(
     (stream: MediaStream, otherId: string) => {
       const pc = new RTCPeerConnection(ICE);
-      stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+      stream.getTracks().forEach((t) => {
+        const sender = pc.addTrack(t, stream);
+        try {
+          const p = sender.getParameters();
+          p.encodings = [
+            t.kind === "video"
+              ? { maxBitrate: 1_500_000, maxFramerate: 30, networkPriority: "high", priority: "high" }
+              : { maxBitrate: 64_000, networkPriority: "high", priority: "high" },
+          ];
+          if (t.kind === "video") p.degradationPreference = "balanced";
+          void sender.setParameters(p).catch(() => {});
+        } catch {
+          /* 一部ブラウザは未対応 */
+        }
+      });
+
       const remote = new MediaStream();
       setRemoteStream(remote);
       pc.ontrack = (ev) => {
