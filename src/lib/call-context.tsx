@@ -443,6 +443,58 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sharing, localStream]);
 
+  const toggleSpeaker = useCallback(() => {
+    setSpeakerOff((v) => !v);
+  }, []);
+
+  const upgradeToVideo = useCallback(async () => {
+    const pc = pcRef.current;
+    if (!pc || !localStream || kind !== "audio") return;
+    try {
+      const vs = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1280, max: 1280 },
+          height: { ideal: 720, max: 720 },
+          frameRate: { ideal: 30, max: 30 },
+          facingMode: "user",
+        },
+      });
+      const track = vs.getVideoTracks()[0];
+      if (!track) return;
+      localStream.addTrack(track);
+      pc.addTrack(track, localStream);
+      setLocalStream(new MediaStream(localStream.getTracks()));
+      setKind("video");
+      setCamOff(false);
+    } catch {
+      toast.error("カメラを利用できません");
+    }
+  }, [localStream, kind]);
+
+  // 接続品質の定期計測（3秒ごと・通話中のみ）
+  useEffect(() => {
+    if (status !== "active") return;
+    const id = setInterval(async () => {
+      const pc = pcRef.current;
+      if (!pc) return;
+      try {
+        const stats = await pc.getStats();
+        let rtt: number | null = null;
+        stats.forEach((r) => {
+          if (r.type === "candidate-pair" && (r as any).state === "succeeded") {
+            const v = (r as any).currentRoundTripTime;
+            if (typeof v === "number") rtt = rtt == null ? v : Math.min(rtt, v);
+          }
+        });
+        if (rtt == null) return;
+        setQuality(rtt < 0.15 ? "good" : rtt < 0.4 ? "fair" : "poor");
+      } catch {
+        /* noop */
+      }
+    }, 3000);
+    return () => clearInterval(id);
+  }, [status]);
+
   return (
     <CallCtx.Provider
       value={{
