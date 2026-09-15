@@ -9,6 +9,11 @@ import {
   VideoOff,
   MonitorUp,
   MonitorX,
+  Volume2,
+  VolumeX,
+  Signal,
+  SignalLow,
+  SignalMedium,
 } from "lucide-react";
 import { useCall } from "@/lib/call-context";
 
@@ -22,6 +27,43 @@ function useElapsed(startedAt: number | null) {
   if (!startedAt) return "";
   const s = Math.max(0, Math.floor((now - startedAt) / 1000));
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+}
+
+// 端末内で生成する簡易呼び出し音（外部ファイル不要）
+function useRingtone(active: boolean, kind: "incoming" | "outgoing") {
+  useEffect(() => {
+    if (!active) return;
+    const ctx = new AudioContext();
+    const gain = ctx.createGain();
+    gain.gain.value = 0.06;
+    gain.connect(ctx.destination);
+    let stopped = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const beep = (freq: number, delay: number, len: number) => {
+      const o = ctx.createOscillator();
+      o.type = "sine";
+      o.frequency.value = freq;
+      o.connect(gain);
+      o.start(ctx.currentTime + delay);
+      o.stop(ctx.currentTime + delay + len);
+    };
+    const loop = () => {
+      if (stopped) return;
+      if (kind === "incoming") {
+        beep(880, 0, 0.25);
+        beep(660, 0.3, 0.25);
+      } else {
+        beep(440, 0, 0.5);
+      }
+      timer = setTimeout(loop, kind === "incoming" ? 1500 : 2500);
+    };
+    loop();
+    return () => {
+      stopped = true;
+      if (timer) clearTimeout(timer);
+      void ctx.close().catch(() => {});
+    };
+  }, [active, kind]);
 }
 
 export function CallOverlay() {
