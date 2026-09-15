@@ -229,6 +229,16 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         if (ev.candidate && callIdRef.current)
           sendPair({ t: "ice", callId: callIdRef.current, candidate: ev.candidate.toJSON() });
       };
+      pc.onnegotiationneeded = async () => {
+        if (!callerRef.current || !callIdRef.current) return;
+        try {
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          sendPair({ t: "offer", callId: callIdRef.current, sdp: offer });
+        } catch {
+          /* noop */
+        }
+      };
       pc.onconnectionstatechange = () => {
         if (pc.connectionState === "connected") {
           connectedRef.current = true;
