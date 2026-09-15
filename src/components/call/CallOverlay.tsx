@@ -71,13 +71,18 @@ export function CallOverlay() {
   const localRef = useRef<HTMLVideoElement>(null);
   const remoteRef = useRef<HTMLVideoElement>(null);
   const elapsed = useElapsed(call.startedAt);
+  useRingtone(call.status === "incoming", "incoming");
+  useRingtone(call.status === "outgoing", "outgoing");
 
   useEffect(() => {
     if (localRef.current) localRef.current.srcObject = call.localStream;
   }, [call.localStream]);
   useEffect(() => {
-    if (remoteRef.current) remoteRef.current.srcObject = call.remoteStream;
-  }, [call.remoteStream]);
+    if (remoteRef.current) {
+      remoteRef.current.srcObject = call.remoteStream;
+      remoteRef.current.muted = call.speakerOff;
+    }
+  }, [call.remoteStream, call.speakerOff]);
 
   if (call.status === "idle") return null;
 
@@ -113,7 +118,23 @@ export function CallOverlay() {
           <p className="text-sm opacity-70">{isVideo ? "ビデオ通話" : "音声通話"}</p>
           <h2 className="text-lg font-bold">{call.peerName}</h2>
         </div>
-        <span className="tabular-nums text-sm opacity-80">
+        <span className="flex items-center gap-2 tabular-nums text-sm opacity-80">
+          {call.status === "active" && call.quality && (
+            <span
+              className="flex items-center gap-1"
+              title={
+                call.quality === "good" ? "接続: 良好" : call.quality === "fair" ? "接続: 普通" : "接続: 不安定"
+              }
+            >
+              {call.quality === "good" ? (
+                <Signal className="h-4 w-4 text-emerald-400" />
+              ) : call.quality === "fair" ? (
+                <SignalMedium className="h-4 w-4 text-yellow-400" />
+              ) : (
+                <SignalLow className="h-4 w-4 text-red-400" />
+              )}
+            </span>
+          )}
           {call.status === "outgoing" ? "呼び出し中…" : elapsed}
         </span>
       </div>
@@ -153,6 +174,15 @@ export function CallOverlay() {
         >
           {call.muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
         </Button>
+        <Button
+          size="icon"
+          variant={call.speakerOff ? "secondary" : "outline"}
+          className="h-12 w-12 rounded-full"
+          onClick={call.toggleSpeaker}
+          title="スピーカー"
+        >
+          {call.speakerOff ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+        </Button>
         {isVideo && (
           <Button
             size="icon"
@@ -162,6 +192,17 @@ export function CallOverlay() {
             title="カメラ"
           >
             {call.camOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
+          </Button>
+        )}
+        {!isVideo && call.status === "active" && (
+          <Button
+            size="icon"
+            variant="outline"
+            className="h-12 w-12 rounded-full"
+            onClick={() => void call.upgradeToVideo()}
+            title="ビデオに切り替え"
+          >
+            <Video className="h-5 w-5" />
           </Button>
         )}
         <Button
