@@ -45,6 +45,8 @@ type Ctx = {
   muted: boolean;
   camOff: boolean;
   sharing: boolean;
+  speakerOff: boolean;
+  quality: "good" | "fair" | "poor" | null;
   startedAt: number | null;
   startCall: (peerId: string, peerName: string, kind: CallKind) => Promise<void>;
   accept: () => Promise<void>;
@@ -53,6 +55,8 @@ type Ctx = {
   toggleMute: () => void;
   toggleCam: () => void;
   toggleShare: () => Promise<void>;
+  toggleSpeaker: () => void;
+  upgradeToVideo: () => Promise<void>;
 };
 
 const CallCtx = createContext<Ctx | null>(null);
