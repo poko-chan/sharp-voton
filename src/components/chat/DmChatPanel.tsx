@@ -18,6 +18,7 @@ import { ReactionBar, ReactionPicker } from "./MessageReactions";
 import { ChatComposer, ChatSearchBar } from "./ChatComposer";
 import { playSendSound } from "@/lib/chat-sound";
 import { useLocalPrefs } from "@/lib/user-prefs";
+import { CallButtons } from "@/components/call/CallOverlay";
 
 export function DmChatPanel({
   userId,
@@ -168,6 +169,7 @@ export function DmChatPanel({
       <div className="border-b p-3 font-medium flex items-center gap-2">
         <span className="truncate flex-1 min-w-0">{partnerName}</span>
         <ChatSearchBar value={query} onChange={setQuery} />
+        <CallButtons peerId={partnerId} peerName={partnerName} size="icon" />
         {headerExtra}
       </div>
       <div

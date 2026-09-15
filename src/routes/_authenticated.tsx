@@ -8,6 +8,8 @@ import { LoginWelcomeOverlay } from "@/components/LoginWelcomeOverlay";
 import { useOnboarding } from "@/lib/onboarding";
 import { ProfileSetup } from "@/components/onboarding/ProfileSetup";
 import { TutorialOverlay } from "@/components/onboarding/TutorialOverlay";
+import { CallProvider } from "@/lib/call-context";
+import { CallOverlay } from "@/components/call/CallOverlay";
 
 // Map URL prefix -> service key (must match SERVICES in restriction-context).
 const ROUTE_SERVICE: Array<[string, string]> = [
@@ -100,17 +102,23 @@ function AuthLayout() {
   if (isMakron) {
     return (
       <TimerProvider>
-        {content}
-        {tutorial}
-        <LoginWelcomeOverlay />
+        <CallProvider>
+          {content}
+          {tutorial}
+          <LoginWelcomeOverlay />
+          <CallOverlay />
+        </CallProvider>
       </TimerProvider>
     );
   }
   return (
     <TimerProvider>
-      <AppShell>{content}</AppShell>
-      {tutorial}
-      <LoginWelcomeOverlay />
+      <CallProvider>
+        <AppShell>{content}</AppShell>
+        {tutorial}
+        <LoginWelcomeOverlay />
+        <CallOverlay />
+      </CallProvider>
     </TimerProvider>
   );
 }

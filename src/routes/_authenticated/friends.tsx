@@ -295,6 +295,7 @@ function FriendsPage() {
             <Gift className="h-4 w-4 mr-1" />
             コイン
           </Button>
+          <CallButtons peerId={p.id} peerName={p.display_name ?? "フレンド"} size="icon" />
         </>
       )}
       <Button size="sm" variant="ghost" onClick={() => setProfileTarget(p)}>
