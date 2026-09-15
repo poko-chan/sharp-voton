@@ -170,12 +170,27 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
 
   const getMedia = useCallback(async (k: CallKind) => {
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: k === "video" ? { width: 1280, height: 720 } : false,
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        channelCount: 1,
+        sampleRate: 48000,
+      },
+      video:
+        k === "video"
+          ? {
+              width: { ideal: 1280, max: 1280 },
+              height: { ideal: 720, max: 720 },
+              frameRate: { ideal: 30, max: 30 },
+              facingMode: "user",
+            }
+          : false,
     });
     setLocalStream(stream);
     return stream;
   }, []);
+
 
   const buildPc = useCallback(
     (stream: MediaStream, otherId: string) => {
