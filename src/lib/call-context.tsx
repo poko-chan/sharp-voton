@@ -158,6 +158,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       setMuted(false);
       setCamOff(false);
       setSharing(false);
+      setSpeakerOff(false);
+      setQuality(null);
       setStartedAt(null);
       // チャットに記録（発信者側のみ）
       if (wasCaller && partner && opts?.record) {
