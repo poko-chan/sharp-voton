@@ -103,6 +103,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const [muted, setMuted] = useState(false);
   const [camOff, setCamOff] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [speakerOff, setSpeakerOff] = useState(false);
+  const [quality, setQuality] = useState<"good" | "fair" | "poor" | null>(null);
   const [startedAt, setStartedAt] = useState<number | null>(null);
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
