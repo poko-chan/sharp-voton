@@ -507,6 +507,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         muted,
         camOff,
         sharing,
+        speakerOff,
+        quality,
         startedAt,
         startCall,
         accept,
@@ -515,6 +517,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         toggleMute,
         toggleCam,
         toggleShare,
+        toggleSpeaker,
+        upgradeToVideo,
       }}
     >
       {children}
