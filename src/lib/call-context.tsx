@@ -227,10 +227,18 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
           setStatus("active");
           setStartedAt((s) => s ?? Date.now());
         }
+        if (pc.connectionState === "disconnected" && callerRef.current) {
+          try {
+            pc.restartIce();
+          } catch {
+            /* noop */
+          }
+        }
         if (pc.connectionState === "failed") {
           toast.error("通話に接続できませんでした");
           cleanup({ record: "done" });
         }
+
       };
       pcRef.current = pc;
       void otherId;
