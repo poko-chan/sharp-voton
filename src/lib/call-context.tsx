@@ -545,6 +545,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         peerName,
         localStream,
         remoteStream,
+        localScreen,
+        remoteScreen,
         muted,
         camOff,
         sharing,
