@@ -164,6 +164,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       callerRef.current = false;
       setLocalStream(null);
       setRemoteStream(null);
+      setLocalScreen(null);
+      setRemoteScreen(null);
       setStatus("idle");
       setPeerId(null);
       setPeerName("");
