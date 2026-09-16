@@ -80,6 +80,12 @@ export function CallOverlay() {
     if (localRef.current) localRef.current.srcObject = call.localStream;
   }, [call.localStream]);
   useEffect(() => {
+    if (screenRef.current) screenRef.current.srcObject = call.remoteScreen;
+  }, [call.remoteScreen]);
+  useEffect(() => {
+    if (localScreenRef.current) localScreenRef.current.srcObject = call.localScreen;
+  }, [call.localScreen]);
+  useEffect(() => {
     if (remoteRef.current) {
       remoteRef.current.srcObject = call.remoteStream;
       remoteRef.current.muted = call.speakerOff;
