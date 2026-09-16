@@ -251,7 +251,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
           sendPair({ t: "ice", callId: callIdRef.current, candidate: ev.candidate.toJSON() });
       };
       pc.onnegotiationneeded = async () => {
-        if (!callerRef.current || !callIdRef.current) return;
+        if (!callIdRef.current) return;
+        if (pc.signalingState !== "stable") return;
         try {
           const offer = await pc.createOffer();
           await pc.setLocalDescription(offer);
