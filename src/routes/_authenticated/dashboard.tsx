@@ -66,6 +66,7 @@ import { GettingStartedCard } from "@/components/dashboard/GettingStartedCard";
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { useOrderedSubjects } from "@/lib/subjects";
 import { toast } from "sonner";
+import { useMaintenance } from "@/lib/maintenance-context";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -129,6 +130,67 @@ function greeting() {
 }
 
 function Dashboard() {
+  const { isAdmin } = useAuth();
+  const { lowDataMode } = useMaintenance();
+  if (lowDataMode && !isAdmin) return <LowDataDashboard />;
+  return <FullDashboard />;
+}
+
+function LowDataDashboard() {
+  const { user } = useAuth();
+  const [dailyGoal, setDailyGoal] = useState(120);
+  const [days, setDays] = useState<{ date: string; minutes: number }[]>([]);
+
+  useEffect(() => {
+    const saved = Number(localStorage.getItem(DAILY_GOAL_KEY));
+    if (saved > 0) setDailyGoal(saved);
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    const from = addDaysStr(new Date(), -13);
+    supabase
+      .from("study_logs")
+      .select("date, duration_minutes")
+      .eq("user_id", user.id)
+      .gte("date", from)
+      .then(({ data }) => {
+        const totals = new Map<string, number>();
+        for (const row of data ?? []) {
+          totals.set(row.date, (totals.get(row.date) ?? 0) + (row.duration_minutes ?? 0));
+        }
+        setDays(
+          Array.from({ length: 14 }, (_, index) => {
+            const date = addDaysStr(new Date(), -(13 - index));
+            return { date: date.slice(5), minutes: totals.get(date) ?? 0 };
+          }),
+        );
+      });
+  }, [user?.id]);
+
+  return (
+    <div className="mx-auto max-w-5xl space-y-5 p-6 md:p-8">
+      <div>
+        <h1 className="text-2xl font-bold">学習時間</h1>
+        <p className="text-sm text-muted-foreground">目標 {dailyGoal} 分 / 日</p>
+      </div>
+      <Card className="p-5">
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={days}>
+              <XAxis dataKey="date" fontSize={11} />
+              <YAxis unit="分" fontSize={11} />
+              <Tooltip formatter={(value: number) => `${value} 分`} />
+              <Bar dataKey="minutes" name="学習時間" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function FullDashboard() {
   const { user } = useAuth();
   const { subjects } = useOrderedSubjects();
   const [dailyGoal, setDailyGoal] = useState(120);

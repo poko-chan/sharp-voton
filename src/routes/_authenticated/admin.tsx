@@ -9,6 +9,7 @@ import {
   BookOpen,
   Building2,
   Coins,
+  Database,
   ExternalLink,
   FileText,
   Flag,
@@ -22,7 +23,7 @@ import {
 import { UsersTab } from "@/components/admin/users";
 import { RestrictionsHub } from "@/components/admin/restrictions";
 import { AnnouncementsTab, FaqTab, LoginBoardsTab } from "@/components/admin/content";
-import { CoinGrantAllTab, MaintenanceTab, VersionTab } from "@/components/admin/system";
+import { CoinGrantAllTab, LowDataModeTab, MaintenanceTab, VersionTab } from "@/components/admin/system";
 import { FeedbackTab } from "@/components/admin/feedback";
 import { OrgsAdminTab } from "@/components/admin/commerce";
 import { MaterialsReviewTab } from "@/components/admin/materials";
@@ -46,7 +47,8 @@ type AdminTab =
   | "feedback"
   | "coingrant"
   | "boards"
-  | "notifications";
+  | "notifications"
+  | "lowdata";
 
 type AdminItem = {
   tab: AdminTab;
@@ -79,6 +81,7 @@ const groups: { title: string; items: AdminItem[] }[] = [
     title: "システム",
     items: [
       { tab: "maintenance", label: "メンテナンス", description: "停止状態と案内文を設定", icon: Wrench },
+      { tab: "lowdata", label: "低データモード", description: "一般ユーザーの利用機能を最小限に制限", icon: Database },
       { tab: "version", label: "バージョン", description: "アプリのバージョン情報", icon: Settings },
       { tab: "coingrant", label: "コイン一括配布", description: "全ユーザーへコインを付与", icon: Coins },
     ],
@@ -163,6 +166,7 @@ function renderTab(tab: AdminTab) {
   switch (tab) {
     case "users": return <UsersTab />;
     case "maintenance": return <MaintenanceTab />;
+    case "lowdata": return <LowDataModeTab />;
     case "restrictions": return <RestrictionsHub />;
     case "orgs": return <OrgsAdminTab />;
     case "materials": return <MaterialsReviewTab />;

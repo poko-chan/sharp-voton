@@ -10,6 +10,7 @@ import { ProfileSetup } from "@/components/onboarding/ProfileSetup";
 import { TutorialOverlay } from "@/components/onboarding/TutorialOverlay";
 import { CallProvider } from "@/lib/call-context";
 import { CallOverlay } from "@/components/call/CallOverlay";
+import { useMaintenance } from "@/lib/maintenance-context";
 
 // Map URL prefix -> service key (must match SERVICES in restriction-context).
 const ROUTE_SERVICE: Array<[string, string]> = [
@@ -39,7 +40,8 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 function AuthLayout() {
-  const { user, loading, accountKind } = useAuth();
+  const { user, loading, accountKind, isAdmin } = useAuth();
+  const { loaded: settingsLoaded, lowDataMode } = useMaintenance();
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const onboarding = useOnboarding();
@@ -60,6 +62,12 @@ function AuthLayout() {
     const ok = allowed.some((p) => path === p || path.startsWith(p + "/"));
     if (!ok) navigate({ to: "/parent" });
   }, [accountKind, path, user, loading, navigate]);
+  useEffect(() => {
+    if (loading || !user || isAdmin || !lowDataMode || accountKind === "parent" || accountKind === "org") return;
+    const allowed = ["/dashboard", "/study", "/timer", "/chat", "/settings", "/announcements"];
+    const ok = allowed.some((p) => path === p || path.startsWith(p + "/"));
+    if (!ok) navigate({ to: "/dashboard" });
+  }, [accountKind, isAdmin, loading, lowDataMode, navigate, path, user]);
   // 組織アカウントは組織管理まわりのみ。学習機能は使えない。
   useEffect(() => {
     if (loading || !user || accountKind !== "org") return;
@@ -82,6 +90,13 @@ function AuthLayout() {
     );
   }
   if (!user) return null;
+  if (!settingsLoaded) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-muted-foreground">
+        読み込み中...
+      </div>
+    );
+  }
   if (!onboarding.loading && onboarding.needsProfile) {
     return <ProfileSetup onDone={() => onboarding.reload()} />;
   }

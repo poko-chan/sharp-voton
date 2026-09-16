@@ -1,0 +1,2 @@
+ALTER TABLE public.app_settings
+  ADD COLUMN IF NOT EXISTS low_data_mode BOOLEAN NOT NULL DEFAULT FALSE;

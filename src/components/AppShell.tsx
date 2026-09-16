@@ -54,6 +54,7 @@ import { CommandPalette } from "@/components/CommandPalette";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { recordVisit } from "@/lib/recent-activity";
 import { toast } from "sonner";
+import { useMaintenance } from "@/lib/maintenance-context";
 
 export const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
@@ -121,6 +122,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { prefs } = useUserPrefs(); // apply font scale / contrast on mount
   const supportDock = (prefs as { right_dock?: string[] }).right_dock;
   const restriction = useRestriction();
+  const { lowDataMode } = useMaintenance();
   const { map: navCfg } = useAdminNavConfig();
   const [version, setVersion] = useState<string>("");
   const [profile, setProfile] = useState<{
@@ -175,7 +177,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [user]);
 
   const loadLevel = useCallback(async () => {
-    if (!user) return;
+    if (!user || (lowDataMode && !isAdmin)) return;
     const { data } = await supabase
       .from("study_logs")
       .select("duration_minutes, date")
@@ -196,7 +198,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         )
       : 999;
     setLevel(levelFromMinutes(total + xp, days));
-  }, [user]);
+  }, [isAdmin, lowDataMode, user]);
 
   useEffect(() => {
     loadProfile();
@@ -301,9 +303,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   // 当日のカレンダー予定を通知に流し込む（1日1回・重複なし）
   useEffect(() => {
-    if (!user) return;
+    if (!user || (lowDataMode && !isAdmin)) return;
     syncCalendarNotifications(user.id).catch(() => {});
-  }, [user?.id]);
+  }, [isAdmin, lowDataMode, user?.id]);
 
   // 最近つかった機能を端末内に記録（アクティビティ履歴）
   useEffect(() => {
@@ -361,6 +363,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (bypass) return false;
     return !!restriction.global[svc] || !!restriction.forMe[svc];
   };
+  const isLowDataAllowed = (to: string) =>
+    ["/dashboard", "/study", "/timer", "/chat", "/settings", "/announcements"].some(
+      (prefix) => to === prefix || to.startsWith(prefix + "/"),
+    );
   // apply admin config: hidden by admin -> show only via "その他", rename / reorder
   const decorated = NAV.map((n) => {
     const cfg = navCfg[n.to];
@@ -375,14 +381,24 @@ export function AppShell({ children }: { children: ReactNode }) {
   });
   decorated.sort((a, b) => a.adminOrder - b.adminOrder);
   const navVisible = decorated.filter(
-    (n) => !isRestricted(n.to) && !hiddenByUser.has(n.to) && !n.adminHidden,
+    (n) =>
+      !isRestricted(n.to) &&
+      !hiddenByUser.has(n.to) &&
+      !n.adminHidden &&
+      (isAdmin || !lowDataMode || isLowDataAllowed(n.to)),
   );
   const navRestricted = decorated.filter((n) => isRestricted(n.to));
   const navHiddenByUser = decorated.filter(
-    (n) => !isRestricted(n.to) && (hiddenByUser.has(n.to) || n.adminHidden),
+    (n) =>
+      !isRestricted(n.to) &&
+      (hiddenByUser.has(n.to) || n.adminHidden || (lowDataMode && !isAdmin && !isLowDataAllowed(n.to))),
   );
   const quickbarItems = decorated.filter(
-    (n) => n.adminQuickbar && !isRestricted(n.to) && !n.adminHidden,
+    (n) =>
+      n.adminQuickbar &&
+      !isRestricted(n.to) &&
+      !n.adminHidden &&
+      (isAdmin || !lowDataMode || isLowDataAllowed(n.to)),
   );
 
   // 保護者アカウントは学習系ナビを一切見せない。保護者専用リンクのみ表示。
@@ -405,7 +421,10 @@ export function AppShell({ children }: { children: ReactNode }) {
       ];
   const mobileNav = isParent
     ? parentNav.slice(0, 4).map((n) => ({ ...n, labelKey: null }))
-    : BOTTOM_NAV.map((n) => ({ ...n, label: null }));
+    : (lowDataMode && !isAdmin
+        ? NAV.filter((n) => isLowDataAllowed(n.to))
+        : BOTTOM_NAV
+      ).map((n) => ({ ...n, label: null }));
 
   const renderLabel = (n: any) => n.adminLabel || n.override || t(n.labelKey);
   const renderIcon = (n: any, cls = "h-4 w-4") =>

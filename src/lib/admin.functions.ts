@@ -235,6 +235,17 @@ export const adminUpdateMaintenance = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const adminUpdateLowDataMode = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ enabled: z.boolean() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    await supabaseAdmin
+      .from("app_settings")
+      .upsert({ id: 1, low_data_mode: data.enabled, updated_at: new Date().toISOString() });
+    return { ok: true };
+  });
+
 export const adminListUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
