@@ -327,6 +327,9 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       } else if (s.t === "ice" && pc) {
         if (pc.remoteDescription) await pc.addIceCandidate(s.candidate).catch(() => {});
         else pendingIce.current.push(s.candidate);
+      } else if (s.t === "share") {
+        remoteScreenIdRef.current = s.on ? s.streamId : null;
+        if (!s.on) setRemoteScreen(null);
       } else if (s.t === "decline") {
         toast.info("相手が応答しませんでした");
         cleanup({ record: "declined" });
