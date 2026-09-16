@@ -444,34 +444,45 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     setCamOff(!t.enabled);
   }, [localStream]);
 
+  const stopShare = useCallback(() => {
+    const pc = pcRef.current;
+    screenStreamRef.current?.getTracks().forEach((t) => t.stop());
+    screenStreamRef.current = null;
+    if (pc && screenSenderRef.current) {
+      try {
+        pc.removeTrack(screenSenderRef.current);
+      } catch {
+        /* noop */
+      }
+    }
+    screenSenderRef.current = null;
+    setLocalScreen(null);
+    setSharing(false);
+    if (callIdRef.current) sendPair({ t: "share", callId: callIdRef.current, streamId: "", on: false });
+  }, [sendPair]);
+
   const toggleShare = useCallback(async () => {
     const pc = pcRef.current;
-    if (!pc || !localStream) return;
-    const sender = pc.getSenders().find((s) => s.track?.kind === "video");
+    if (!pc || !callIdRef.current) return;
     if (sharing) {
-      const cam = camTrackRef.current;
-      if (sender && cam) await sender.replaceTrack(cam);
-      localStream.getVideoTracks().forEach((t) => t.stop());
-      setSharing(false);
+      stopShare();
       return;
     }
     try {
       const disp = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
       const track = disp.getVideoTracks()[0];
       if (!track) return;
-      const current = localStream.getVideoTracks()[0] ?? null;
-      if (current) camTrackRef.current = current;
-      if (sender) await sender.replaceTrack(track);
-      else pc.addTrack(track, localStream);
-      track.onended = () => {
-        void toggleShare();
-      };
+      // カメラ映像は止めず、画面共有を別トラックとして追加する
+      sendPair({ t: "share", callId: callIdRef.current, streamId: disp.id, on: true });
+      screenStreamRef.current = disp;
+      screenSenderRef.current = pc.addTrack(track, disp);
+      setLocalScreen(disp);
       setSharing(true);
+      track.onended = () => stopShare();
     } catch {
       /* ユーザーがキャンセル */
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sharing, localStream]);
+  }, [sharing, sendPair, stopShare]);
 
   const toggleSpeaker = useCallback(() => {
     setSpeakerOff((v) => !v);
