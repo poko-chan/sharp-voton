@@ -20,9 +20,11 @@ const MaintenanceContext = createContext<MaintenanceState>({
 export function MaintenanceProvider({ children }: { children: ReactNode }) {
   const [loaded, setLoaded] = useState(false);
   const [state, setState] = useState<MaintenanceState>({
+    loaded: false,
     enabled: false,
     message: null,
     until: null,
+    lowDataMode: false,
   });
 
   const load = async () => {
