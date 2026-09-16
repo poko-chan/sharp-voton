@@ -135,6 +135,7 @@ function AuthLayout() {
     <TimerProvider>
       <CallProvider>
         <AppShell>{content}</AppShell>
+        {lowDataNotice}
         {tutorial}
         <LoginWelcomeOverlay />
         <CallOverlay />
