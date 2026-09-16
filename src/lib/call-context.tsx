@@ -43,6 +43,8 @@ type Ctx = {
   peerName: string;
   localStream: MediaStream | null;
   remoteStream: MediaStream | null;
+  localScreen: MediaStream | null;
+  remoteScreen: MediaStream | null;
   muted: boolean;
   camOff: boolean;
   sharing: boolean;
