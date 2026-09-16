@@ -70,6 +70,8 @@ export function CallOverlay() {
   const call = useCall();
   const localRef = useRef<HTMLVideoElement>(null);
   const remoteRef = useRef<HTMLVideoElement>(null);
+  const screenRef = useRef<HTMLVideoElement>(null);
+  const localScreenRef = useRef<HTMLVideoElement>(null);
   const elapsed = useElapsed(call.startedAt);
   useRingtone(call.status === "incoming", "incoming");
   useRingtone(call.status === "outgoing", "outgoing");
