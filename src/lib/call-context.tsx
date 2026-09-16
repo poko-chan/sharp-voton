@@ -117,6 +117,9 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const callIdRef = useRef<string | null>(null);
   const callerRef = useRef(false);
   const camTrackRef = useRef<MediaStreamTrack | null>(null);
+  const screenStreamRef = useRef<MediaStream | null>(null);
+  const screenSenderRef = useRef<RTCRtpSender | null>(null);
+  const remoteScreenIdRef = useRef<string | null>(null);
   const pendingIce = useRef<any[]>([]);
   const connectedRef = useRef(false);
 
