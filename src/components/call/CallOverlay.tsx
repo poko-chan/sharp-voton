@@ -70,6 +70,8 @@ export function CallOverlay() {
   const call = useCall();
   const localRef = useRef<HTMLVideoElement>(null);
   const remoteRef = useRef<HTMLVideoElement>(null);
+  const screenRef = useRef<HTMLVideoElement>(null);
+  const localScreenRef = useRef<HTMLVideoElement>(null);
   const elapsed = useElapsed(call.startedAt);
   useRingtone(call.status === "incoming", "incoming");
   useRingtone(call.status === "outgoing", "outgoing");
@@ -77,6 +79,12 @@ export function CallOverlay() {
   useEffect(() => {
     if (localRef.current) localRef.current.srcObject = call.localStream;
   }, [call.localStream]);
+  useEffect(() => {
+    if (screenRef.current) screenRef.current.srcObject = call.remoteScreen;
+  }, [call.remoteScreen]);
+  useEffect(() => {
+    if (localScreenRef.current) localScreenRef.current.srcObject = call.localScreen;
+  }, [call.localScreen]);
   useEffect(() => {
     if (remoteRef.current) {
       remoteRef.current.srcObject = call.remoteStream;
@@ -140,28 +148,53 @@ export function CallOverlay() {
       </div>
 
       <div className="relative flex-1 overflow-hidden">
+        {/* メイン表示: 共有画面があればそれ、無ければ相手のカメラ */}
+        <video
+          ref={screenRef}
+          autoPlay
+          playsInline
+          muted
+          className={`h-full w-full object-contain ${call.remoteScreen ? "" : "hidden"}`}
+        />
+        <video
+          ref={localScreenRef}
+          autoPlay
+          playsInline
+          muted
+          className={`h-full w-full object-contain ${!call.remoteScreen && call.localScreen ? "" : "hidden"}`}
+        />
         <video
           ref={remoteRef}
           autoPlay
           playsInline
-          className={`h-full w-full object-contain ${isVideo || call.sharing ? "" : "hidden"}`}
+          className={
+            call.remoteScreen || call.localScreen
+              ? "absolute bottom-4 right-4 w-32 rounded-lg border border-white/20 sm:w-44"
+              : `h-full w-full object-contain ${isVideo ? "" : "hidden"}`
+          }
         />
-        {!isVideo && !call.sharing && (
+        {!isVideo && !call.remoteScreen && !call.localScreen && (
           <div className="grid h-full place-items-center">
             <div className="grid h-28 w-28 place-items-center rounded-full bg-white/10 text-4xl font-bold">
               {call.peerName.slice(0, 1)}
             </div>
           </div>
         )}
+        {/* 自分のカメラ */}
         <video
           ref={localRef}
           autoPlay
           playsInline
           muted
-          className={`absolute bottom-4 right-4 w-32 rounded-lg border border-white/20 sm:w-44 ${
-            isVideo || call.sharing ? "" : "hidden"
-          }`}
+          className={`absolute w-24 rounded-lg border border-white/20 sm:w-36 ${
+            call.remoteScreen || call.localScreen ? "bottom-4 right-40 sm:right-52" : "bottom-4 right-4 w-32 sm:w-44"
+          } ${isVideo ? "" : "hidden"}`}
         />
+        {(call.remoteScreen || call.localScreen) && (
+          <span className="absolute left-4 top-4 rounded-full bg-white/15 px-3 py-1 text-xs">
+            {call.remoteScreen ? `${call.peerName} の画面` : "あなたの画面を共有中"}
+          </span>
+        )}
       </div>
 
       <div className="flex items-center justify-center gap-3 p-5">

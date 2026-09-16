@@ -14,6 +14,7 @@ type Signal =
   | { t: "offer"; callId: string; sdp: any }
   | { t: "answer"; callId: string; sdp: any }
   | { t: "ice"; callId: string; candidate: any }
+  | { t: "share"; callId: string; streamId: string; on: boolean }
   | { t: "bye"; callId: string };
 
 const ICE: RTCConfiguration = {
@@ -42,6 +43,8 @@ type Ctx = {
   peerName: string;
   localStream: MediaStream | null;
   remoteStream: MediaStream | null;
+  localScreen: MediaStream | null;
+  remoteScreen: MediaStream | null;
   muted: boolean;
   camOff: boolean;
   sharing: boolean;
@@ -100,6 +103,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const [peerName, setPeerName] = useState("");
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [localScreen, setLocalScreen] = useState<MediaStream | null>(null);
+  const [remoteScreen, setRemoteScreen] = useState<MediaStream | null>(null);
   const [muted, setMuted] = useState(false);
   const [camOff, setCamOff] = useState(false);
   const [sharing, setSharing] = useState(false);
@@ -112,6 +117,9 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const callIdRef = useRef<string | null>(null);
   const callerRef = useRef(false);
   const camTrackRef = useRef<MediaStreamTrack | null>(null);
+  const screenStreamRef = useRef<MediaStream | null>(null);
+  const screenSenderRef = useRef<RTCRtpSender | null>(null);
+  const remoteScreenIdRef = useRef<string | null>(null);
   const pendingIce = useRef<any[]>([]);
   const connectedRef = useRef(false);
 
@@ -142,6 +150,10 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       localStream?.getTracks().forEach((t) => t.stop());
       camTrackRef.current?.stop();
       camTrackRef.current = null;
+      screenStreamRef.current?.getTracks().forEach((t) => t.stop());
+      screenStreamRef.current = null;
+      screenSenderRef.current = null;
+      remoteScreenIdRef.current = null;
       if (pairChRef.current) {
         supabase.removeChannel(pairChRef.current);
         pairChRef.current = null;
@@ -152,6 +164,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       callerRef.current = false;
       setLocalStream(null);
       setRemoteStream(null);
+      setLocalScreen(null);
+      setRemoteScreen(null);
       setStatus("idle");
       setPeerId(null);
       setPeerName("");
@@ -222,7 +236,14 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       const remote = new MediaStream();
       setRemoteStream(remote);
       pc.ontrack = (ev) => {
-        ev.streams[0]?.getTracks().forEach((t) => remote.addTrack(t));
+        const st = ev.streams[0];
+        // 画面共有用ストリームはカメラ映像と分けて保持する
+        if (st && remoteScreenIdRef.current && st.id === remoteScreenIdRef.current) {
+          setRemoteScreen(new MediaStream(st.getTracks()));
+          ev.track.onended = () => setRemoteScreen(null);
+          return;
+        }
+        st?.getTracks().forEach((t) => remote.addTrack(t));
         setRemoteStream(new MediaStream(remote.getTracks()));
       };
       pc.onicecandidate = (ev) => {
@@ -230,7 +251,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
           sendPair({ t: "ice", callId: callIdRef.current, candidate: ev.candidate.toJSON() });
       };
       pc.onnegotiationneeded = async () => {
-        if (!callerRef.current || !callIdRef.current) return;
+        if (!callIdRef.current) return;
+        if (pc.signalingState !== "stable") return;
         try {
           const offer = await pc.createOffer();
           await pc.setLocalDescription(offer);
@@ -287,6 +309,11 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         await pc.setLocalDescription(offer);
         sendPair({ t: "offer", callId: s.callId, sdp: offer });
       } else if (s.t === "offer" && pc) {
+        // 同時交渉（グレア）対策: 発信者側を優先し、受信側はロールバックして受け入れる
+        if (pc.signalingState !== "stable") {
+          if (callerRef.current) return;
+          await pc.setLocalDescription({ type: "rollback" } as any).catch(() => {});
+        }
         await pc.setRemoteDescription(new RTCSessionDescription(s.sdp));
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
@@ -300,6 +327,9 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       } else if (s.t === "ice" && pc) {
         if (pc.remoteDescription) await pc.addIceCandidate(s.candidate).catch(() => {});
         else pendingIce.current.push(s.candidate);
+      } else if (s.t === "share") {
+        remoteScreenIdRef.current = s.on ? s.streamId : null;
+        if (!s.on) setRemoteScreen(null);
       } else if (s.t === "decline") {
         toast.info("相手が応答しませんでした");
         cleanup({ record: "declined" });
@@ -414,34 +444,45 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     setCamOff(!t.enabled);
   }, [localStream]);
 
+  const stopShare = useCallback(() => {
+    const pc = pcRef.current;
+    screenStreamRef.current?.getTracks().forEach((t) => t.stop());
+    screenStreamRef.current = null;
+    if (pc && screenSenderRef.current) {
+      try {
+        pc.removeTrack(screenSenderRef.current);
+      } catch {
+        /* noop */
+      }
+    }
+    screenSenderRef.current = null;
+    setLocalScreen(null);
+    setSharing(false);
+    if (callIdRef.current) sendPair({ t: "share", callId: callIdRef.current, streamId: "", on: false });
+  }, [sendPair]);
+
   const toggleShare = useCallback(async () => {
     const pc = pcRef.current;
-    if (!pc || !localStream) return;
-    const sender = pc.getSenders().find((s) => s.track?.kind === "video");
+    if (!pc || !callIdRef.current) return;
     if (sharing) {
-      const cam = camTrackRef.current;
-      if (sender && cam) await sender.replaceTrack(cam);
-      localStream.getVideoTracks().forEach((t) => t.stop());
-      setSharing(false);
+      stopShare();
       return;
     }
     try {
       const disp = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
       const track = disp.getVideoTracks()[0];
       if (!track) return;
-      const current = localStream.getVideoTracks()[0] ?? null;
-      if (current) camTrackRef.current = current;
-      if (sender) await sender.replaceTrack(track);
-      else pc.addTrack(track, localStream);
-      track.onended = () => {
-        void toggleShare();
-      };
+      // カメラ映像は止めず、画面共有を別トラックとして追加する
+      sendPair({ t: "share", callId: callIdRef.current, streamId: disp.id, on: true });
+      screenStreamRef.current = disp;
+      screenSenderRef.current = pc.addTrack(track, disp);
+      setLocalScreen(disp);
       setSharing(true);
+      track.onended = () => stopShare();
     } catch {
       /* ユーザーがキャンセル */
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sharing, localStream]);
+  }, [sharing, sendPair, stopShare]);
 
   const toggleSpeaker = useCallback(() => {
     setSpeakerOff((v) => !v);
@@ -504,6 +545,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         peerName,
         localStream,
         remoteStream,
+        localScreen,
+        remoteScreen,
         muted,
         camOff,
         sharing,

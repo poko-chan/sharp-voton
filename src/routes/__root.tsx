@@ -24,6 +24,7 @@ import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { AmbientSound } from "@/components/AmbientSound";
 import { GlobalContextMenu } from "@/components/GlobalContextMenu";
 import { GlobalFeedbackDock } from "@/components/FeedbackWidget";
+import { NetworkStatusBanner } from "@/components/NetworkStatusBanner";
 import { loadAndApplyUserTheme } from "@/lib/theme";
 
 import { I18nProvider } from "@/lib/i18n";
@@ -210,6 +211,7 @@ function RootComponent() {
               </MaintenanceGate>
             </RestrictionProvider>
             <GlobalFeedbackDock />
+            <NetworkStatusBanner />
             <RouteLoading />
             <PWAInstallPrompt />
             <AmbientSound />
