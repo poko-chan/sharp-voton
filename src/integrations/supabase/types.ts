@@ -263,6 +263,7 @@ export type Database = {
           app_version: string
           id: number
           login_overlay_enabled: boolean
+          low_data_mode: boolean
           maintenance_message: string | null
           maintenance_mode: boolean
           maintenance_until: string | null
@@ -274,6 +275,7 @@ export type Database = {
           app_version?: string
           id?: number
           login_overlay_enabled?: boolean
+          low_data_mode?: boolean
           maintenance_message?: string | null
           maintenance_mode?: boolean
           maintenance_until?: string | null
@@ -285,6 +287,7 @@ export type Database = {
           app_version?: string
           id?: number
           login_overlay_enabled?: boolean
+          low_data_mode?: boolean
           maintenance_message?: string | null
           maintenance_mode?: boolean
           maintenance_until?: string | null
