@@ -150,6 +150,10 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       localStream?.getTracks().forEach((t) => t.stop());
       camTrackRef.current?.stop();
       camTrackRef.current = null;
+      screenStreamRef.current?.getTracks().forEach((t) => t.stop());
+      screenStreamRef.current = null;
+      screenSenderRef.current = null;
+      remoteScreenIdRef.current = null;
       if (pairChRef.current) {
         supabase.removeChannel(pairChRef.current);
         pairChRef.current = null;
