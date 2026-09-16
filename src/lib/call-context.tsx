@@ -309,6 +309,11 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         await pc.setLocalDescription(offer);
         sendPair({ t: "offer", callId: s.callId, sdp: offer });
       } else if (s.t === "offer" && pc) {
+        // 同時交渉（グレア）対策: 発信者側を優先し、受信側はロールバックして受け入れる
+        if (pc.signalingState !== "stable") {
+          if (callerRef.current) return;
+          await pc.setLocalDescription({ type: "rollback" } as any).catch(() => {});
+        }
         await pc.setRemoteDescription(new RTCSessionDescription(s.sdp));
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
