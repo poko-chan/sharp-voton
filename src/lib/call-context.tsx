@@ -14,6 +14,7 @@ type Signal =
   | { t: "offer"; callId: string; sdp: any }
   | { t: "answer"; callId: string; sdp: any }
   | { t: "ice"; callId: string; candidate: any }
+  | { t: "share"; callId: string; streamId: string; on: boolean }
   | { t: "bye"; callId: string };
 
 const ICE: RTCConfiguration = {
