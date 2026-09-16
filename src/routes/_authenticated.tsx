@@ -11,6 +11,7 @@ import { TutorialOverlay } from "@/components/onboarding/TutorialOverlay";
 import { CallProvider } from "@/lib/call-context";
 import { CallOverlay } from "@/components/call/CallOverlay";
 import { useMaintenance } from "@/lib/maintenance-context";
+import { LowDataNotice } from "@/components/LowDataNotice";
 
 // Map URL prefix -> service key (must match SERVICES in restriction-context).
 const ROUTE_SERVICE: Array<[string, string]> = [
@@ -103,6 +104,10 @@ function AuthLayout() {
   const tutorial =
     !onboarding.loading && onboarding.needsTutorial ? (
       <TutorialOverlay onDone={() => onboarding.reload()} />
+    ) : null;
+  const lowDataNotice =
+    lowDataMode && !isAdmin && accountKind !== "parent" && accountKind !== "org" ? (
+      <LowDataNotice />
     ) : null;
   const match = ROUTE_SERVICE.find(([prefix]) => path === prefix || path.startsWith(prefix + "/"));
   const content = match ? (
