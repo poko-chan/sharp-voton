@@ -236,7 +236,14 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       const remote = new MediaStream();
       setRemoteStream(remote);
       pc.ontrack = (ev) => {
-        ev.streams[0]?.getTracks().forEach((t) => remote.addTrack(t));
+        const st = ev.streams[0];
+        // 画面共有用ストリームはカメラ映像と分けて保持する
+        if (st && remoteScreenIdRef.current && st.id === remoteScreenIdRef.current) {
+          setRemoteScreen(new MediaStream(st.getTracks()));
+          ev.track.onended = () => setRemoteScreen(null);
+          return;
+        }
+        st?.getTracks().forEach((t) => remote.addTrack(t));
         setRemoteStream(new MediaStream(remote.getTracks()));
       };
       pc.onicecandidate = (ev) => {
