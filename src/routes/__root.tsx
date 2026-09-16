@@ -210,6 +210,7 @@ function RootComponent() {
               </MaintenanceGate>
             </RestrictionProvider>
             <GlobalFeedbackDock />
+            <NetworkStatusBanner />
             <RouteLoading />
             <PWAInstallPrompt />
             <AmbientSound />
