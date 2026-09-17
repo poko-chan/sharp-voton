@@ -12,8 +12,10 @@ import {
   setReplyTo,
   fetchReactions,
   toggleReaction,
+  uploadChatImage,
   type DmMessage,
 } from "@/lib/chat.functions";
+import { ChatImage, isImageMessage } from "./ChatImage";
 import { ReactionBar, ReactionPicker } from "./MessageReactions";
 import { ChatComposer, ChatSearchBar } from "./ChatComposer";
 import { playSendSound } from "@/lib/chat-sound";
