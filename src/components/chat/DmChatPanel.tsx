@@ -243,12 +243,16 @@ export function DmChatPanel({
                       </div>
                     ) : (
                       <div className="flex items-end gap-2">
-                        <span className="text-[1em] leading-relaxed whitespace-pre-wrap break-words">
-                          {m.content
-                            .replace(/[ \t]+\n/g, "\n")
-                            .replace(/\n{3,}/g, "\n\n")
-                            .trim()}
-                        </span>
+                        {isImageMessage(m.content) && !isDeleted ? (
+                          <ChatImage content={m.content} />
+                        ) : (
+                          <span className="text-[1em] leading-relaxed whitespace-pre-wrap break-words">
+                            {m.content
+                              .replace(/[ \t]+\n/g, "\n")
+                              .replace(/\n{3,}/g, "\n\n")
+                              .trim()}
+                          </span>
+                        )}
                         {!isDeleted && (
                           <div className="flex gap-1.5 shrink-0 items-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                             <ReactionPicker onPick={(e) => onToggleReaction(m.id, e)} />
@@ -337,7 +341,21 @@ export function DmChatPanel({
           </Button>
         </div>
       )}
-      <ChatComposer value={text} onChange={setText} onSend={send} />
+      <ChatComposer
+        value={text}
+        onChange={setText}
+        onSend={send}
+        onSendImage={async (file) => {
+          try {
+            const body = await uploadChatImage(file, userId);
+            await sendDm(partnerId, body);
+            qc.invalidateQueries({ queryKey: ["chat-dm", partnerId] });
+            qc.invalidateQueries({ queryKey: ["chat-conversations"] });
+          } catch (e: any) {
+            toast.error(e.message ?? "画像の送信に失敗しました");
+          }
+        }}
+      />
     </>
   );
 }
