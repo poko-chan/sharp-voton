@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
+import { ImagePlus, Send } from "lucide-react";
 import { useLocalPrefs } from "@/lib/user-prefs";
 
 /** 複数行入力・Enter送信切替に対応した共通コンポーザー */
@@ -8,15 +8,19 @@ export function ChatComposer({
   value,
   onChange,
   onSend,
+  onSendImage,
   placeholder = "メッセージを入力",
 }: {
   value: string;
   onChange: (v: string) => void;
   onSend: () => void;
+  onSendImage?: (file: File) => Promise<void> | void;
   placeholder?: string;
 }) {
   const { prefs } = useLocalPrefs();
   const ref = useRef<HTMLTextAreaElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
