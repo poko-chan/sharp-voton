@@ -163,6 +163,19 @@ export type ChatReaction = {
 
 export const REACTION_EMOJIS = ["👍", "❤️", "😂", "🎉", "😢", "🙏"];
 
+/** チャット用の画像をアップロードし、本文に埋め込む文字列を返す */
+export async function uploadChatImage(file: File, userId: string): Promise<string> {
+  if (!file.type.startsWith("image/")) throw new Error("画像ファイルを選んでください");
+  if (file.size > 10 * 1024 * 1024) throw new Error("画像は10MBまでです");
+  const ext = (file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const { error } = await supabase.storage
+    .from("chat-images")
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (error) throw new Error(error.message ?? "画像のアップロードに失敗しました");
+  return `[img]${path}`;
+}
+
 export async function setReplyTo(scope: ChatScope, messageId: string, replyToId: string) {
   const table = scope === "dm" ? "chat_messages" : "chat_group_messages";
   const { error } = await (supabase as any)
