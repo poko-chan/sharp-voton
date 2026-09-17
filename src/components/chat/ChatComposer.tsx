@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
+import { ImagePlus, Send } from "lucide-react";
 import { useLocalPrefs } from "@/lib/user-prefs";
 
 /** 複数行入力・Enter送信切替に対応した共通コンポーザー */
@@ -8,15 +8,19 @@ export function ChatComposer({
   value,
   onChange,
   onSend,
+  onSendImage,
   placeholder = "メッセージを入力",
 }: {
   value: string;
   onChange: (v: string) => void;
   onSend: () => void;
+  onSendImage?: (file: File) => Promise<void> | void;
   placeholder?: string;
 }) {
   const { prefs } = useLocalPrefs();
   const ref = useRef<HTMLTextAreaElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
@@ -34,8 +38,40 @@ export function ChatComposer({
     }
   };
 
+  const pickImage = async (file: File | undefined) => {
+    if (!file || !onSendImage) return;
+    setUploading(true);
+    try {
+      await onSendImage(file);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
   return (
     <div className="border-t p-2 sm:p-3 flex gap-2 items-end">
+      {onSendImage && (
+        <>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => pickImage(e.target.files?.[0])}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label="画像を送る"
+            disabled={uploading}
+            onClick={() => fileRef.current?.click()}
+          >
+            <ImagePlus className="h-4 w-4" />
+          </Button>
+        </>
+      )}
       <textarea
         ref={ref}
         rows={1}
