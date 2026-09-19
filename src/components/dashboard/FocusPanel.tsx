@@ -143,10 +143,10 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
     : null;
 
   return (
-    <Card className="study-surface p-4 md:p-6 space-y-5 border-primary/15">
+    <Card className="p-4 md:p-6 space-y-5 liquid-card border-primary/15 shadow-[0_20px_55px_-38px_color-mix(in_oklab,var(--primary)_60%,transparent)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="h-10 w-10 rounded-xl bg-primary/15 text-primary grid place-items-center ring-1 ring-primary/20 shadow-[0_5px_0_-3px_color-mix(in_oklab,var(--primary)_55%,transparent)]">
+          <div className="h-10 w-10 rounded-2xl bg-primary/12 text-primary grid place-items-center ring-1 ring-primary/15">
             <Timer className="h-4.5 w-4.5" />
           </div>
           <div>
@@ -329,7 +329,7 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
 
 function Mini({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
   return (
-    <div className="rounded-xl border bg-muted/45 px-3 py-2">
+    <div className="rounded-xl border bg-card/60 px-3 py-2">
       <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
         <Icon className="h-3 w-3" />
         {label}
@@ -356,7 +356,7 @@ function Metric({
   const tone =
     delta === 0 ? "text-muted-foreground" : positive ? "text-emerald-600" : "text-amber-600";
   return (
-    <div className="rounded-xl border bg-muted/45 px-3 py-2">
+    <div className="rounded-xl border bg-card/60 px-3 py-2">
       <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
         <Icon className="h-3 w-3" />
         {label}
