@@ -12,6 +12,7 @@ import {
   Languages,
   Accessibility,
   Database,
+  CreditCard,
   AlertTriangle,
   MessageSquare,
   Building2,
@@ -32,6 +33,7 @@ import { AiSection } from "@/components/settings/AiSection";
 import { LanguageSection } from "@/components/settings/LanguageSection";
 import { AccessibilitySection } from "@/components/settings/AccessibilitySection";
 import { DataSection } from "@/components/settings/DataSection";
+import { PaymentSection } from "@/components/settings/PaymentSection";
 import { DangerSection } from "@/components/settings/DangerSection";
 
 const CATEGORIES: SettingsCategory[] = [
@@ -148,6 +150,12 @@ const CATEGORIES: SettingsCategory[] = [
     keywords: ["データ", "エクスポート", "バックアップ", "キャッシュ", "data", "export"],
   },
   {
+    id: "payment",
+    label: "お支払い",
+    icon: CreditCard,
+    keywords: ["お支払い", "決済", "料金", "プラン", "購入", "payment", "billing"],
+  },
+  {
     id: "danger",
     label: "危険な操作",
     icon: AlertTriangle,
@@ -169,6 +177,7 @@ const SECTIONS: Record<SettingsCategoryId, React.ComponentType> = {
   language: LanguageSection,
   accessibility: AccessibilitySection,
   data: DataSection,
+  payment: PaymentSection,
   danger: DangerSection,
 };
 
