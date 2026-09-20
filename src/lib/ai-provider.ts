@@ -29,6 +29,8 @@ import {
   type WebLlmTag,
 } from "@/lib/web-llm";
 import { ollamaModels, ollamaDiagnostics, createOllamaSession } from "@/lib/ollama";
+import { CLOUD_MODELS, DEFAULT_CLOUD_MODEL, SPEED_LABELS, findCloudModel } from "@/lib/cloud-models";
+import { createCloudSession } from "@/lib/cloud-ai";
 import {
   aiRunStart,
   aiRunChars,
@@ -38,9 +40,10 @@ import {
   aiRunIdle,
 } from "@/lib/ai-status";
 
-export type AiEngine = "nano" | "webllm" | "ollama" | "none";
+export type AiEngine = "cloud" | "nano" | "webllm" | "ollama" | "none";
 
 export const AI_ENGINE_LABELS: Record<AiEngine, string> = {
+  cloud: "クラウドAI (サーバー)",
   nano: "Gemini Nano (Chrome内蔵)",
   webllm: "WebLLM (ブラウザ内)",
   ollama: "Ollama (パソコン内)",
@@ -106,6 +109,23 @@ export async function listAiModels(): Promise<AiModelEntry[]> {
   const gpu = hasWebGpuSupport();
   const out: AiModelEntry[] = [];
 
+  // クラウド（サーバー）で動く LLM。ダウンロード不要で、どの端末でもすぐ使える。
+  for (const m of CLOUD_MODELS) {
+    out.push({
+      key: `cloud:${m.id}`,
+      engine: "cloud",
+      modelId: m.id,
+      name: m.name,
+      engineLabel: m.vendor === "openai" ? "クラウド / OpenAI" : "クラウド / Google",
+      sizeLabel: `ダウンロード不要 ・ ${SPEED_LABELS[m.speed]}`,
+      note: m.note,
+      ready: true,
+      installable: false,
+      score: m.score,
+      tags: m.tags as any,
+    });
+  }
+
   out.push({
     key: "nano",
     engine: "nano",
@@ -156,6 +176,7 @@ export async function listAiModels(): Promise<AiModelEntry[]> {
 }
 
 function labelFor(engine: AiEngine, modelId: string): string {
+  if (engine === "cloud") return findCloudModel(modelId)?.name ?? modelId;
   if (engine === "nano") return "Gemini Nano";
   if (engine === "ollama") return modelId;
   return WEBLLM_MODELS.find((m) => m.id === modelId)?.label ?? modelId;
@@ -176,7 +197,13 @@ export async function resolveAiTarget(): Promise<AiTarget> {
     if (exact && (exact.ready || exact.installable)) return pick(exact);
   }
 
-  // オート: すぐ使えるものの中でおすすめ順
+  // オート: まずクラウドAI（ダウンロード不要で確実に動く）
+  const cloud =
+    models.find((m) => m.key === `cloud:${DEFAULT_CLOUD_MODEL}`) ??
+    models.find((m) => m.engine === "cloud");
+  if (cloud) return pick(cloud);
+
+  // 次に、すぐ使える端末内AIのおすすめ順
   const ready = models.filter((m) => m.ready).sort((a, b) => b.score - a.score);
   if (ready[0]) return pick(ready[0]);
 
