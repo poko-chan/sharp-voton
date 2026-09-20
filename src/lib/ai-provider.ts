@@ -109,6 +109,23 @@ export async function listAiModels(): Promise<AiModelEntry[]> {
   const gpu = hasWebGpuSupport();
   const out: AiModelEntry[] = [];
 
+  // クラウド（サーバー）で動く LLM。ダウンロード不要で、どの端末でもすぐ使える。
+  for (const m of CLOUD_MODELS) {
+    out.push({
+      key: `cloud:${m.id}`,
+      engine: "cloud",
+      modelId: m.id,
+      name: m.name,
+      engineLabel: m.vendor === "openai" ? "クラウド / OpenAI" : "クラウド / Google",
+      sizeLabel: `ダウンロード不要 ・ ${SPEED_LABELS[m.speed]}`,
+      note: m.note,
+      ready: true,
+      installable: false,
+      score: m.score,
+      tags: m.tags as any,
+    });
+  }
+
   out.push({
     key: "nano",
     engine: "nano",
