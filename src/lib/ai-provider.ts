@@ -176,6 +176,7 @@ export async function listAiModels(): Promise<AiModelEntry[]> {
 }
 
 function labelFor(engine: AiEngine, modelId: string): string {
+  if (engine === "cloud") return findCloudModel(modelId)?.name ?? modelId;
   if (engine === "nano") return "Gemini Nano";
   if (engine === "ollama") return modelId;
   return WEBLLM_MODELS.find((m) => m.id === modelId)?.label ?? modelId;
