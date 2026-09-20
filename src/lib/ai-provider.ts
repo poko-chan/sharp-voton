@@ -29,6 +29,8 @@ import {
   type WebLlmTag,
 } from "@/lib/web-llm";
 import { ollamaModels, ollamaDiagnostics, createOllamaSession } from "@/lib/ollama";
+import { CLOUD_MODELS, DEFAULT_CLOUD_MODEL, SPEED_LABELS, findCloudModel } from "@/lib/cloud-models";
+import { createCloudSession } from "@/lib/cloud-ai";
 import {
   aiRunStart,
   aiRunChars,
@@ -38,9 +40,10 @@ import {
   aiRunIdle,
 } from "@/lib/ai-status";
 
-export type AiEngine = "nano" | "webllm" | "ollama" | "none";
+export type AiEngine = "cloud" | "nano" | "webllm" | "ollama" | "none";
 
 export const AI_ENGINE_LABELS: Record<AiEngine, string> = {
+  cloud: "クラウドAI (サーバー)",
   nano: "Gemini Nano (Chrome内蔵)",
   webllm: "WebLLM (ブラウザ内)",
   ollama: "Ollama (パソコン内)",
