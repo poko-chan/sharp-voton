@@ -11,7 +11,7 @@ export const Route = createFileRoute("/instatus-check/datebase")({
             .from("profiles")
             .select("id", { head: true, count: "exact" });
 
-          const status = error ? 200 : 100;
+          const status = error ? 100 : 400;
           return new Response(String(status), {
             status: 200,
             headers: {
@@ -20,11 +20,11 @@ export const Route = createFileRoute("/instatus-check/datebase")({
             },
           });
         } catch {
-          return new Response("200", {
+          return new Response("100", {
             status: 200,
             headers: {
               "Content-Type": "text/plain; charset=utf-8",
-              "X-Database-Status": "200",
+              "X-Database-Status": "100",
             },
           });
         }
