@@ -29,6 +29,7 @@ import { Route as FeaturesIndexRouteImport } from './routes/features.index'
 import { Route as CatalogIndexRouteImport } from './routes/catalog.index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as RCodeRouteImport } from './routes/r.$code'
+import { Route as InstatusCheckDatebaseRouteImport } from './routes/instatus-check.datebase'
 import { Route as FeaturesSlugRouteImport } from './routes/features.$slug'
 import { Route as CatalogKeyRouteImport } from './routes/catalog.$key'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -193,6 +194,11 @@ const ShareTokenRoute = ShareTokenRouteImport.update({
 const RCodeRoute = RCodeRouteImport.update({
   id: '/r/$code',
   path: '/r/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstatusCheckDatebaseRoute = InstatusCheckDatebaseRouteImport.update({
+  id: '/instatus-check/datebase',
+  path: '/instatus-check/datebase',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeaturesSlugRoute = FeaturesSlugRouteImport.update({
@@ -611,6 +617,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/catalog/$key': typeof CatalogKeyRoute
   '/features/$slug': typeof FeaturesSlugRoute
+  '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/catalog/': typeof CatalogIndexRoute
@@ -694,6 +701,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/catalog/$key': typeof CatalogKeyRoute
   '/features/$slug': typeof FeaturesSlugRoute
+  '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/catalog': typeof CatalogIndexRoute
@@ -781,6 +789,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/catalog/$key': typeof CatalogKeyRoute
   '/features/$slug': typeof FeaturesSlugRoute
+  '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/catalog/': typeof CatalogIndexRoute
@@ -870,6 +879,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/catalog/$key'
     | '/features/$slug'
+    | '/instatus-check/datebase'
     | '/r/$code'
     | '/share/$token'
     | '/catalog/'
@@ -953,6 +963,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/catalog/$key'
     | '/features/$slug'
+    | '/instatus-check/datebase'
     | '/r/$code'
     | '/share/$token'
     | '/catalog'
@@ -1039,6 +1050,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/catalog/$key'
     | '/features/$slug'
+    | '/instatus-check/datebase'
     | '/r/$code'
     | '/share/$token'
     | '/catalog/'
@@ -1093,6 +1105,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   CatalogKeyRoute: typeof CatalogKeyRoute
   FeaturesSlugRoute: typeof FeaturesSlugRoute
+  InstatusCheckDatebaseRoute: typeof InstatusCheckDatebaseRoute
   RCodeRoute: typeof RCodeRoute
   ShareTokenRoute: typeof ShareTokenRoute
   CatalogIndexRoute: typeof CatalogIndexRoute
@@ -1239,6 +1252,13 @@ declare module '@tanstack/react-router' {
       path: '/r/$code'
       fullPath: '/r/$code'
       preLoaderRoute: typeof RCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/instatus-check/datebase': {
+      id: '/instatus-check/datebase'
+      path: '/instatus-check/datebase'
+      fullPath: '/instatus-check/datebase'
+      preLoaderRoute: typeof InstatusCheckDatebaseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/features/$slug': {
@@ -1938,6 +1958,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   CatalogKeyRoute: CatalogKeyRoute,
   FeaturesSlugRoute: FeaturesSlugRoute,
+  InstatusCheckDatebaseRoute: InstatusCheckDatebaseRoute,
   RCodeRoute: RCodeRoute,
   ShareTokenRoute: ShareTokenRoute,
   CatalogIndexRoute: CatalogIndexRoute,
