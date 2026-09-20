@@ -197,7 +197,13 @@ export async function resolveAiTarget(): Promise<AiTarget> {
     if (exact && (exact.ready || exact.installable)) return pick(exact);
   }
 
-  // オート: すぐ使えるものの中でおすすめ順
+  // オート: まずクラウドAI（ダウンロード不要で確実に動く）
+  const cloud =
+    models.find((m) => m.key === `cloud:${DEFAULT_CLOUD_MODEL}`) ??
+    models.find((m) => m.engine === "cloud");
+  if (cloud) return pick(cloud);
+
+  // 次に、すぐ使える端末内AIのおすすめ順
   const ready = models.filter((m) => m.ready).sort((a, b) => b.score - a.score);
   if (ready[0]) return pick(ready[0]);
 
