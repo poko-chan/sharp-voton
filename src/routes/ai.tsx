@@ -71,6 +71,10 @@ function AiPage() {
           AIチャットは現在ベータ版です。回答内容は必ず自分で確かめてから使ってください。
         </p>
 
+        <section className="mt-8">
+          <AiTrialChat />
+        </section>
+
         <section className="mt-10">
           <h2 className="font-display text-2xl font-black tracking-tight">3つのエンジン</h2>
           <div className="mt-4 space-y-3">
