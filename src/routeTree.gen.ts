@@ -29,6 +29,7 @@ import { Route as FeaturesIndexRouteImport } from './routes/features.index'
 import { Route as CatalogIndexRouteImport } from './routes/catalog.index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as RCodeRouteImport } from './routes/r.$code'
+import { Route as InstatusCheckLoginRouteImport } from './routes/instatus-check.login'
 import { Route as InstatusCheckDatebaseRouteImport } from './routes/instatus-check.datebase'
 import { Route as FeaturesSlugRouteImport } from './routes/features.$slug'
 import { Route as CatalogKeyRouteImport } from './routes/catalog.$key'
@@ -194,6 +195,11 @@ const ShareTokenRoute = ShareTokenRouteImport.update({
 const RCodeRoute = RCodeRouteImport.update({
   id: '/r/$code',
   path: '/r/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstatusCheckLoginRoute = InstatusCheckLoginRouteImport.update({
+  id: '/instatus-check/login',
+  path: '/instatus-check/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InstatusCheckDatebaseRoute = InstatusCheckDatebaseRouteImport.update({
@@ -618,6 +624,7 @@ export interface FileRoutesByFullPath {
   '/catalog/$key': typeof CatalogKeyRoute
   '/features/$slug': typeof FeaturesSlugRoute
   '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
+  '/instatus-check/login': typeof InstatusCheckLoginRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/catalog/': typeof CatalogIndexRoute
@@ -702,6 +709,7 @@ export interface FileRoutesByTo {
   '/catalog/$key': typeof CatalogKeyRoute
   '/features/$slug': typeof FeaturesSlugRoute
   '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
+  '/instatus-check/login': typeof InstatusCheckLoginRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/catalog': typeof CatalogIndexRoute
@@ -790,6 +798,7 @@ export interface FileRoutesById {
   '/catalog/$key': typeof CatalogKeyRoute
   '/features/$slug': typeof FeaturesSlugRoute
   '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
+  '/instatus-check/login': typeof InstatusCheckLoginRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/catalog/': typeof CatalogIndexRoute
@@ -880,6 +889,7 @@ export interface FileRouteTypes {
     | '/catalog/$key'
     | '/features/$slug'
     | '/instatus-check/datebase'
+    | '/instatus-check/login'
     | '/r/$code'
     | '/share/$token'
     | '/catalog/'
@@ -964,6 +974,7 @@ export interface FileRouteTypes {
     | '/catalog/$key'
     | '/features/$slug'
     | '/instatus-check/datebase'
+    | '/instatus-check/login'
     | '/r/$code'
     | '/share/$token'
     | '/catalog'
@@ -1051,6 +1062,7 @@ export interface FileRouteTypes {
     | '/catalog/$key'
     | '/features/$slug'
     | '/instatus-check/datebase'
+    | '/instatus-check/login'
     | '/r/$code'
     | '/share/$token'
     | '/catalog/'
@@ -1106,6 +1118,7 @@ export interface RootRouteChildren {
   CatalogKeyRoute: typeof CatalogKeyRoute
   FeaturesSlugRoute: typeof FeaturesSlugRoute
   InstatusCheckDatebaseRoute: typeof InstatusCheckDatebaseRoute
+  InstatusCheckLoginRoute: typeof InstatusCheckLoginRoute
   RCodeRoute: typeof RCodeRoute
   ShareTokenRoute: typeof ShareTokenRoute
   CatalogIndexRoute: typeof CatalogIndexRoute
@@ -1252,6 +1265,13 @@ declare module '@tanstack/react-router' {
       path: '/r/$code'
       fullPath: '/r/$code'
       preLoaderRoute: typeof RCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/instatus-check/login': {
+      id: '/instatus-check/login'
+      path: '/instatus-check/login'
+      fullPath: '/instatus-check/login'
+      preLoaderRoute: typeof InstatusCheckLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/instatus-check/datebase': {
@@ -1959,6 +1979,7 @@ const rootRouteChildren: RootRouteChildren = {
   CatalogKeyRoute: CatalogKeyRoute,
   FeaturesSlugRoute: FeaturesSlugRoute,
   InstatusCheckDatebaseRoute: InstatusCheckDatebaseRoute,
+  InstatusCheckLoginRoute: InstatusCheckLoginRoute,
   RCodeRoute: RCodeRoute,
   ShareTokenRoute: ShareTokenRoute,
   CatalogIndexRoute: CatalogIndexRoute,
