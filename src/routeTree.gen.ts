@@ -77,6 +77,7 @@ import { Route as AuthenticatedMaterialsIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedMakronIndexRouteImport } from './routes/_authenticated/makron.index'
 import { Route as AuthenticatedExamsIndexRouteImport } from './routes/_authenticated/exams.index'
 import { Route as AuthenticatedClassroomIndexRouteImport } from './routes/_authenticated/classroom.index'
+import { Route as ApiPublicAiTrialRouteImport } from './routes/api/public/ai-trial'
 import { Route as AuthenticatedOrganizationsOrgIdRouteImport } from './routes/_authenticated/organizations.$orgId'
 import { Route as AuthenticatedNotebooksIdRouteImport } from './routes/_authenticated/notebooks.$id'
 import { Route as AuthenticatedMaterialsIdRouteImport } from './routes/_authenticated/materials.$id'
@@ -447,6 +448,11 @@ const AuthenticatedClassroomIndexRoute =
     path: '/classroom/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const ApiPublicAiTrialRoute = ApiPublicAiTrialRouteImport.update({
+  id: '/api/public/ai-trial',
+  path: '/api/public/ai-trial',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedOrganizationsOrgIdRoute =
   AuthenticatedOrganizationsOrgIdRouteImport.update({
     id: '/$orgId',
@@ -645,6 +651,7 @@ export interface FileRoutesByFullPath {
   '/materials/$id': typeof AuthenticatedMaterialsIdRoute
   '/notebooks/$id': typeof AuthenticatedNotebooksIdRoute
   '/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdRouteWithChildren
+  '/api/public/ai-trial': typeof ApiPublicAiTrialRoute
   '/classroom/': typeof AuthenticatedClassroomIndexRoute
   '/exams/': typeof AuthenticatedExamsIndexRoute
   '/makron/': typeof AuthenticatedMakronIndexRoute
@@ -730,6 +737,7 @@ export interface FileRoutesByTo {
   '/makron/units': typeof AuthenticatedMakronUnitsRoute
   '/materials/$id': typeof AuthenticatedMaterialsIdRoute
   '/notebooks/$id': typeof AuthenticatedNotebooksIdRoute
+  '/api/public/ai-trial': typeof ApiPublicAiTrialRoute
   '/classroom': typeof AuthenticatedClassroomIndexRoute
   '/exams': typeof AuthenticatedExamsIndexRoute
   '/makron': typeof AuthenticatedMakronIndexRoute
@@ -821,6 +829,7 @@ export interface FileRoutesById {
   '/_authenticated/materials/$id': typeof AuthenticatedMaterialsIdRoute
   '/_authenticated/notebooks/$id': typeof AuthenticatedNotebooksIdRoute
   '/_authenticated/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdRouteWithChildren
+  '/api/public/ai-trial': typeof ApiPublicAiTrialRoute
   '/_authenticated/classroom/': typeof AuthenticatedClassroomIndexRoute
   '/_authenticated/exams/': typeof AuthenticatedExamsIndexRoute
   '/_authenticated/makron/': typeof AuthenticatedMakronIndexRoute
@@ -913,6 +922,7 @@ export interface FileRouteTypes {
     | '/materials/$id'
     | '/notebooks/$id'
     | '/organizations/$orgId'
+    | '/api/public/ai-trial'
     | '/classroom/'
     | '/exams/'
     | '/makron/'
@@ -998,6 +1008,7 @@ export interface FileRouteTypes {
     | '/makron/units'
     | '/materials/$id'
     | '/notebooks/$id'
+    | '/api/public/ai-trial'
     | '/classroom'
     | '/exams'
     | '/makron'
@@ -1088,6 +1099,7 @@ export interface FileRouteTypes {
     | '/_authenticated/materials/$id'
     | '/_authenticated/notebooks/$id'
     | '/_authenticated/organizations/$orgId'
+    | '/api/public/ai-trial'
     | '/_authenticated/classroom/'
     | '/_authenticated/exams/'
     | '/_authenticated/makron/'
@@ -1136,6 +1148,7 @@ export interface RootRouteChildren {
   ShareTokenRoute: typeof ShareTokenRoute
   CatalogIndexRoute: typeof CatalogIndexRoute
   FeaturesIndexRoute: typeof FeaturesIndexRoute
+  ApiPublicAiTrialRoute: typeof ApiPublicAiTrialRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1616,6 +1629,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClassroomIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/public/ai-trial': {
+      id: '/api/public/ai-trial'
+      path: '/api/public/ai-trial'
+      fullPath: '/api/public/ai-trial'
+      preLoaderRoute: typeof ApiPublicAiTrialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/organizations/$orgId': {
       id: '/_authenticated/organizations/$orgId'
       path: '/$orgId'
@@ -2005,6 +2025,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShareTokenRoute: ShareTokenRoute,
   CatalogIndexRoute: CatalogIndexRoute,
   FeaturesIndexRoute: FeaturesIndexRoute,
+  ApiPublicAiTrialRoute: ApiPublicAiTrialRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

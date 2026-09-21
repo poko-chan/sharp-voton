@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PublicAmbient, PublicFooter, PublicHeader } from "@/components/public/PublicShell";
+import { AiTrialChat } from "@/components/public/AiTrialChat";
 
 const URL = "https://sharp-voton.lovable.app/ai";
 const TITLE = "AIの仕組み｜Study#";
@@ -69,6 +70,10 @@ function AiPage() {
         <p className="mt-3 rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm leading-relaxed">
           AIチャットは現在ベータ版です。回答内容は必ず自分で確かめてから使ってください。
         </p>
+
+        <section className="mt-8">
+          <AiTrialChat />
+        </section>
 
         <section className="mt-10">
           <h2 className="font-display text-2xl font-black tracking-tight">3つのエンジン</h2>
