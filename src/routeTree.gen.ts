@@ -31,6 +31,7 @@ import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as InstatusCheckLoginRouteImport } from './routes/instatus-check.login'
 import { Route as InstatusCheckDatebaseRouteImport } from './routes/instatus-check.datebase'
+import { Route as InstatusCheckAiBackRouteImport } from './routes/instatus-check.ai-back'
 import { Route as FeaturesSlugRouteImport } from './routes/features.$slug'
 import { Route as CatalogKeyRouteImport } from './routes/catalog.$key'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -205,6 +206,11 @@ const InstatusCheckLoginRoute = InstatusCheckLoginRouteImport.update({
 const InstatusCheckDatebaseRoute = InstatusCheckDatebaseRouteImport.update({
   id: '/instatus-check/datebase',
   path: '/instatus-check/datebase',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstatusCheckAiBackRoute = InstatusCheckAiBackRouteImport.update({
+  id: '/instatus-check/ai-back',
+  path: '/instatus-check/ai-back',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeaturesSlugRoute = FeaturesSlugRouteImport.update({
@@ -623,6 +629,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/catalog/$key': typeof CatalogKeyRoute
   '/features/$slug': typeof FeaturesSlugRoute
+  '/instatus-check/ai-back': typeof InstatusCheckAiBackRoute
   '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
   '/instatus-check/login': typeof InstatusCheckLoginRoute
   '/r/$code': typeof RCodeRoute
@@ -708,6 +715,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/catalog/$key': typeof CatalogKeyRoute
   '/features/$slug': typeof FeaturesSlugRoute
+  '/instatus-check/ai-back': typeof InstatusCheckAiBackRoute
   '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
   '/instatus-check/login': typeof InstatusCheckLoginRoute
   '/r/$code': typeof RCodeRoute
@@ -797,6 +805,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/catalog/$key': typeof CatalogKeyRoute
   '/features/$slug': typeof FeaturesSlugRoute
+  '/instatus-check/ai-back': typeof InstatusCheckAiBackRoute
   '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
   '/instatus-check/login': typeof InstatusCheckLoginRoute
   '/r/$code': typeof RCodeRoute
@@ -888,6 +897,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/catalog/$key'
     | '/features/$slug'
+    | '/instatus-check/ai-back'
     | '/instatus-check/datebase'
     | '/instatus-check/login'
     | '/r/$code'
@@ -973,6 +983,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/catalog/$key'
     | '/features/$slug'
+    | '/instatus-check/ai-back'
     | '/instatus-check/datebase'
     | '/instatus-check/login'
     | '/r/$code'
@@ -1061,6 +1072,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/catalog/$key'
     | '/features/$slug'
+    | '/instatus-check/ai-back'
     | '/instatus-check/datebase'
     | '/instatus-check/login'
     | '/r/$code'
@@ -1117,6 +1129,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   CatalogKeyRoute: typeof CatalogKeyRoute
   FeaturesSlugRoute: typeof FeaturesSlugRoute
+  InstatusCheckAiBackRoute: typeof InstatusCheckAiBackRoute
   InstatusCheckDatebaseRoute: typeof InstatusCheckDatebaseRoute
   InstatusCheckLoginRoute: typeof InstatusCheckLoginRoute
   RCodeRoute: typeof RCodeRoute
@@ -1279,6 +1292,13 @@ declare module '@tanstack/react-router' {
       path: '/instatus-check/datebase'
       fullPath: '/instatus-check/datebase'
       preLoaderRoute: typeof InstatusCheckDatebaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/instatus-check/ai-back': {
+      id: '/instatus-check/ai-back'
+      path: '/instatus-check/ai-back'
+      fullPath: '/instatus-check/ai-back'
+      preLoaderRoute: typeof InstatusCheckAiBackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/features/$slug': {
@@ -1978,6 +1998,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   CatalogKeyRoute: CatalogKeyRoute,
   FeaturesSlugRoute: FeaturesSlugRoute,
+  InstatusCheckAiBackRoute: InstatusCheckAiBackRoute,
   InstatusCheckDatebaseRoute: InstatusCheckDatebaseRoute,
   InstatusCheckLoginRoute: InstatusCheckLoginRoute,
   RCodeRoute: RCodeRoute,
