@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PublicAmbient, PublicFooter, PublicHeader } from "@/components/public/PublicShell";
+import { AiTrialChat } from "@/components/public/AiTrialChat";
 
 const URL = "https://sharp-voton.lovable.app/ai";
 const TITLE = "AIの仕組み｜Study#";
