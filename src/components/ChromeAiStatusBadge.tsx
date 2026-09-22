@@ -376,7 +376,7 @@ export function AiStatusBadge({ compact = false }: { compact?: boolean }) {
             AIの設定
           </DialogTitle>
           <DialogDescription>
-            AIはこの端末の中だけで動きます（無料・通信なし）。使うAIを選ぶか、新しいAIをダウンロードしてください。
+            AIはサーバー側で動くものと、この端末の中だけで動くもの（無料・通信なし）から選べます。
           </DialogDescription>
         </DialogHeader>
 
