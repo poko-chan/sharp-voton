@@ -1,6 +1,8 @@
 import { useI18n } from "@/lib/i18n";
 import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import { PublicFooter, PublicMobileNav } from "@/components/public/PublicShell";
+import { AiTrialChat } from "@/components/public/AiTrialChat";
+
 
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
@@ -198,8 +200,12 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
                 {isAuthed ? <Link to="/dashboard">{t("landing.dashboard")} <ArrowRight /></Link> : <Link to="/login">{t("landing.start")} <ArrowRight /></Link>}
               </Button>
               <Button asChild variant="outline" size="lg" className="h-12 rounded-lg px-8 text-base">
+                <a href="#ai-trial">AI機能を試してみる</a>
+              </Button>
+              <Button asChild variant="ghost" size="lg" className="h-12 rounded-lg px-8 text-base">
                 <Link to="/all-services">サービス詳細を見る</Link>
               </Button>
+
             </div>
           </div>
           <dl className="landing-rise mx-auto mt-14 grid max-w-4xl grid-cols-2 border-y border-border/70 sm:grid-cols-4">
@@ -238,6 +244,21 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
             </article>
           </div>
         </section>
+
+        <section id="ai-trial" className="mx-auto max-w-3xl scroll-mt-20 px-4 pb-16 sm:pb-24">
+          <p className="section-eyebrow">AI</p>
+          <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">
+            Study# のAIを、いま試す
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            AIはサーバー側で動くので、ダウンロードも設定も不要。登録しなくてもそのまま会話できます。
+          </p>
+          <div className="mt-6">
+            <AiTrialChat />
+          </div>
+        </section>
+
+
 
         {/* Before / After */}
         <section className="border-y border-border/60 bg-muted/30"><div className="mx-auto max-w-6xl px-4 py-16 sm:py-24">

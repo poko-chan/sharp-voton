@@ -13,9 +13,10 @@ export function AiSection() {
           <Sparkles className="h-4 w-4 text-primary" /> 使用するAI
         </div>
         <p className="text-sm text-muted-foreground">
-          AIはこの端末の中だけで動きます。使いたいAIを選んだり、新しいAIをダウンロードできます。
+          AIはサーバー側で動くので、ダウンロードや設定なしですぐ使えます。端末内で動くAIを選ぶこともできます。
           はじめての方は「使い方」ボタンから読んでみてください。
         </p>
+
         <AiStatusBadge />
       </Card>
 
@@ -24,8 +25,9 @@ export function AiSection() {
           <ShieldCheck className="h-4 w-4 text-primary" /> プライバシー
         </div>
         <p className="text-sm text-muted-foreground">
-          AIとの会話や学習データは端末の外に送信されません。AIチャットで「AIが参照できる情報」を種類ごとにオン・オフできます。
+          端末内AIを選んだ場合、会話は端末の外に送信されません。サーバー側のAIを使う場合は、回答の生成のためだけに送信され、学習には使われません。AIチャットで「AIが参照できる情報」を種類ごとにオン・オフできます。
         </p>
+
       </Card>
     </div>
   );

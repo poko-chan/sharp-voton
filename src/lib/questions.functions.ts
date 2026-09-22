@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { paidAiDisabled } from "@/lib/paid-ai-disabled.server";
 
 const InputSchema = z.object({
   topic: z.string().min(1).max(500),
@@ -38,11 +37,10 @@ async function callAI(
   prompt: string,
   opts?: { model?: string; jsonMode?: boolean },
 ): Promise<string> {
-  paidAiDisabled();
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("LOVABLE_API_KEY が設定されていません");
   const body: any = {
-    model: opts?.model ?? "google/gemini-2.5-flash",
+    model: opts?.model ?? "google/gemini-3.8-flash",
     messages: [
       {
         role: "system",
@@ -352,7 +350,7 @@ ${RULES}
 以下のJSON形式で**それのみ**返答:
 { "questions": [ { "format": "...", "question": "...", "options": ["A","B","C","D"], "answer": "...", "explanation": "..." } ] }`;
 
-    const text = await callAI(prompt, { model: "google/gemini-2.5-pro", jsonMode: true });
+    const text = await callAI(prompt, { model: "google/gemini-3.1-pro-preview", jsonMode: true });
     let parsed: { questions: (GenQ & { format?: string })[] };
     try {
       parsed = extractJson(text);
@@ -435,7 +433,7 @@ ${items}
   ]
 }`;
 
-    const text = await callAI(prompt, { model: "google/gemini-2.5-pro", jsonMode: true });
+    const text = await callAI(prompt, { model: "google/gemini-3.1-pro-preview", jsonMode: true });
     let parsed: { results: { id: string; score: number; correct: boolean; feedback: string }[] };
     try {
       parsed = extractJson(text);
