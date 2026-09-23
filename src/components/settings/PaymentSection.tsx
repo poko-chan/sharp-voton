@@ -214,7 +214,7 @@ export function PaymentSection() {
                   </thead>
                   <tbody>
                     {labelGroups.map((g) => (
-                      <>
+                      <Fragment key={g.group || "ungrouped"}>
                         {g.group && (
                           <tr key={`g-${g.group}`} className="border-t bg-muted/40">
                             <td
@@ -257,7 +257,7 @@ export function PaymentSection() {
                             })}
                           </tr>
                         ))}
-                      </>
+                      </Fragment>
                     ))}
                   </tbody>
                 </table>
