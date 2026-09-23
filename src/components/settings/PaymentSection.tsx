@@ -178,10 +178,8 @@ export function PaymentSection() {
                                 <Button
                                   size="sm"
                                   disabled
-                                  className={`mt-1 w-full justify-center rounded-full font-extrabold uppercase tracking-wide ${
-                                    p.highlight ? "" : "variant-outline"
-                                  }`}
                                   variant={p.highlight ? "default" : "outline"}
+                                  className="mt-1 w-full justify-center rounded-full font-extrabold uppercase tracking-wide"
                                 >
                                   近日提供予定
                                 </Button>
