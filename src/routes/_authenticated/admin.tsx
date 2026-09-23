@@ -9,6 +9,7 @@ import {
   BookOpen,
   Building2,
   Coins,
+  CreditCard,
   Database,
   ExternalLink,
   FileText,
@@ -28,6 +29,7 @@ import { FeedbackTab } from "@/components/admin/feedback";
 import { OrgsAdminTab } from "@/components/admin/commerce";
 import { MaterialsReviewTab } from "@/components/admin/materials";
 import { NotificationsAdminTab } from "@/components/admin/notifications";
+import { PlansAdminTab } from "@/components/admin/plans";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   validateSearch: (s: Record<string, unknown>): { tab?: string } =>
@@ -48,7 +50,8 @@ type AdminTab =
   | "coingrant"
   | "boards"
   | "notifications"
-  | "lowdata";
+  | "lowdata"
+  | "plans";
 
 type AdminItem = {
   tab: AdminTab;
@@ -84,6 +87,7 @@ const groups: { title: string; items: AdminItem[] }[] = [
       { tab: "lowdata", label: "低データモード", description: "一般ユーザーの利用機能を最小限に制限", icon: Database },
       { tab: "version", label: "バージョン", description: "アプリのバージョン情報", icon: Settings },
       { tab: "coingrant", label: "コイン一括配布", description: "全ユーザーへコインを付与", icon: Coins },
+      { tab: "plans", label: "プラン管理", description: "プラン・料金・内容・追加パック", icon: CreditCard },
     ],
   },
 ];
@@ -177,5 +181,6 @@ function renderTab(tab: AdminTab) {
     case "coingrant": return <CoinGrantAllTab />;
     case "boards": return <LoginBoardsTab />;
     case "notifications": return <NotificationsAdminTab />;
+    case "plans": return <PlansAdminTab />;
   }
 }
