@@ -34,6 +34,8 @@ type Feature = {
   bool_value: boolean;
   text_value: string | null;
   sort_order: number;
+  description: string | null;
+  group_label: string | null;
 };
 type Pack = {
   id: string;
@@ -307,14 +309,28 @@ function GroupTable({
   const groupFeatures = features.filter((f) => planIds.includes(f.plan_id));
 
   const rows = useMemo(() => {
-    const map = new Map<string, { label: string; kind: "bool" | "text"; sort: number }>();
+    const map = new Map<
+      string,
+      { label: string; kind: "bool" | "text"; sort: number; description: string | null; group_label: string | null }
+    >();
     for (const f of groupFeatures) {
       const cur = map.get(f.label);
       if (!cur || f.sort_order < cur.sort) {
-        map.set(f.label, { label: f.label, kind: f.kind, sort: f.sort_order });
+        map.set(f.label, {
+          label: f.label,
+          kind: f.kind,
+          sort: f.sort_order,
+          description: f.description,
+          group_label: f.group_label,
+        });
       }
     }
-    return [...map.values()].sort((a, b) => a.sort - b.sort);
+    return [...map.values()].sort((a, b) => {
+      const ga = a.group_label ?? "";
+      const gb = b.group_label ?? "";
+      if (ga !== gb) return ga.localeCompare(gb, "ja");
+      return a.sort - b.sort;
+    });
   }, [groupFeatures]);
 
   const cell = (label: string, planId: string) =>
@@ -361,6 +377,12 @@ function GroupTable({
       await onPatch("plan_features", f.id, { kind });
     }
     await reload();
+  };
+
+  const setRowMeta = async (label: string, values: Record<string, unknown>) => {
+    for (const f of groupFeatures.filter((x) => x.label === label)) {
+      await onPatch("plan_features", f.id, values);
+    }
   };
 
   const deleteRow = async (label: string) => {
@@ -505,14 +527,32 @@ function GroupTable({
                     defaultValue={row.label}
                     onBlur={(e) => renameRow(row.label, e.target.value)}
                   />
-                  <select
-                    className="h-7 rounded-md border bg-background px-2 text-xs"
-                    value={row.kind}
-                    onChange={(e) => setRowKind(row.label, e.target.value as "bool" | "text")}
-                  >
-                    <option value="bool">◯×</option>
-                    <option value="text">短答</option>
-                  </select>
+                  <Input
+                    className="h-7 text-xs"
+                    placeholder="説明（任意）"
+                    defaultValue={row.description ?? ""}
+                    onBlur={(e) =>
+                      setRowMeta(row.label, { description: e.target.value || null })
+                    }
+                  />
+                  <div className="flex items-center gap-1">
+                    <Input
+                      className="h-7 w-24 text-xs"
+                      placeholder="グループ"
+                      defaultValue={row.group_label ?? ""}
+                      onBlur={(e) =>
+                        setRowMeta(row.label, { group_label: e.target.value || null })
+                      }
+                    />
+                    <select
+                      className="h-7 rounded-md border bg-background px-2 text-xs"
+                      value={row.kind}
+                      onChange={(e) => setRowKind(row.label, e.target.value as "bool" | "text")}
+                    >
+                      <option value="bool">◯×</option>
+                      <option value="text">短答</option>
+                    </select>
+                  </div>
                 </td>
                 {plans.map((p) => {
                   const f = cell(row.label, p.id);

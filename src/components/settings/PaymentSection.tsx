@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { BadgeCheck, Check, ChevronRight, CreditCard, Package, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -24,6 +24,8 @@ type Feature = {
   bool_value: boolean;
   text_value: string | null;
   sort_order: number;
+  description: string | null;
+  group_label: string | null;
 };
 type Pack = { id: string; name: string; description: string | null; price: number };
 type PackItem = {
@@ -108,9 +110,22 @@ export function PaymentSection() {
       {groups.map((g) => {
         const list = plans.filter((p) => p.group_id === g.id);
         if (list.length === 0) return null;
-        const labels: { label: string; kind: "bool" | "text" }[] = [];
+        const labels: { label: string; kind: "bool" | "text"; group: string; desc: string | null }[] = [];
         for (const f of features.filter((f) => list.some((p) => p.id === f.plan_id))) {
-          if (!labels.some((l) => l.label === f.label)) labels.push({ label: f.label, kind: f.kind });
+          if (!labels.some((l) => l.label === f.label))
+            labels.push({
+              label: f.label,
+              kind: f.kind,
+              group: f.group_label ?? "",
+              desc: f.description,
+            });
+        }
+        labels.sort((a, b) => a.group.localeCompare(b.group, "ja"));
+        const labelGroups: { group: string; rows: typeof labels }[] = [];
+        for (const l of labels) {
+          const g = labelGroups.find((x) => x.group === l.group);
+          if (g) g.rows.push(l);
+          else labelGroups.push({ group: l.group, rows: [l] });
         }
         return (
           <section key={g.id} className="space-y-5">
@@ -170,6 +185,11 @@ export function PaymentSection() {
                           >
                             {f.label}
                             {f.kind === "text" && f.text_value ? `：${f.text_value}` : ""}
+                            {f.description && (
+                              <span className="block text-xs text-muted-foreground/80">
+                                {f.description}
+                              </span>
+                            )}
                           </span>
                         </li>
                       ))}
@@ -193,30 +213,51 @@ export function PaymentSection() {
                     </tr>
                   </thead>
                   <tbody>
-                    {labels.map((l) => (
-                      <tr key={l.label} className="border-t">
-                        <td className="p-3">{l.label}</td>
-                        {list.map((p) => {
-                          const f = features.find(
-                            (x) => x.plan_id === p.id && x.label === l.label,
-                          );
-                          return (
-                            <td key={p.id} className="p-3 text-center">
-                              {l.kind === "bool" ? (
-                                f?.bool_value ? (
-                                  <Check className="mx-auto h-4 w-4 text-primary" />
-                                ) : (
-                                  <X className="mx-auto h-4 w-4 text-muted-foreground/50" />
-                                )
-                              ) : (
-                                <span className="text-muted-foreground">
-                                  {f?.text_value || "—"}
+                    {labelGroups.map((g) => (
+                      <Fragment key={g.group || "ungrouped"}>
+                        {g.group && (
+                          <tr key={`g-${g.group}`} className="border-t bg-muted/40">
+                            <td
+                              colSpan={list.length + 1}
+                              className="p-2 text-xs font-semibold text-muted-foreground"
+                            >
+                              {g.group}
+                            </td>
+                          </tr>
+                        )}
+                        {g.rows.map((l) => (
+                          <tr key={l.label} className="border-t">
+                            <td className="p-3">
+                              {l.label}
+                              {l.desc && (
+                                <span className="block text-xs text-muted-foreground/80">
+                                  {l.desc}
                                 </span>
                               )}
                             </td>
-                          );
-                        })}
-                      </tr>
+                            {list.map((p) => {
+                              const f = features.find(
+                                (x) => x.plan_id === p.id && x.label === l.label,
+                              );
+                              return (
+                                <td key={p.id} className="p-3 text-center">
+                                  {l.kind === "bool" ? (
+                                    f?.bool_value ? (
+                                      <Check className="mx-auto h-4 w-4 text-primary" />
+                                    ) : (
+                                      <X className="mx-auto h-4 w-4 text-muted-foreground/50" />
+                                    )
+                                  ) : (
+                                    <span className="text-muted-foreground">
+                                      {f?.text_value || "—"}
+                                    </span>
+                                  )}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </Fragment>
                     ))}
                   </tbody>
                 </table>
