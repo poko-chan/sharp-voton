@@ -5,11 +5,10 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 function maskEmail(email: string): string {
   const [local, domain] = email.split("@");
   if (!domain) return "***";
-  const head = local.slice(0, Math.min(2, local.length));
-  const tail = local.length > 3 ? local.slice(-1) : "";
+  // 先頭1文字とドメイン先頭1文字だけを残す（本人が思い出せる最小限）
+  const head = local.slice(0, 1);
   const [d1, ...rest] = domain.split(".");
-  const dHead = d1.slice(0, 1);
-  return `${head}***${tail}@${dHead}***.${rest.join(".") || "com"}`;
+  return `${head}***@${d1.slice(0, 1)}***.${rest.join(".") || "com"}`;
 }
 
 export const getMaskedEmailByUsername = createServerFn({ method: "POST" })
@@ -20,6 +19,7 @@ export const getMaskedEmailByUsername = createServerFn({ method: "POST" })
       .select("email")
       .ilike("username", data.username)
       .maybeSingle();
-    if (!row?.email) throw new Error("ユーザー名が見つかりません");
-    return { masked: maskEmail(row.email as string) };
+    // ユーザー名の存在有無が分からないよう、見つからない場合も同じ形式で返す
+    if (!row?.email) return { masked: "*@*.***", found: false as const };
+    return { masked: maskEmail(row.email as string), found: true as const };
   });
