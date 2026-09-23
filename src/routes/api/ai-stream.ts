@@ -112,10 +112,15 @@ export const Route = createFileRoute("/api/ai-stream")({
           body.model && CLOUD_MODELS.some((m) => m.id === body.model)
             ? body.model
             : DEFAULT_CLOUD_MODEL;
-        const turns =
+        // 役割はサーバーが決める（system 等の指定は user 扱いにする）
+        const turns = (
           body.messages && body.messages.length
             ? body.messages
-            : [{ role: "user" as const, content: String(body.prompt ?? "") }];
+            : [{ role: "user" as const, content: String(body.prompt ?? "") }]
+        ).map((t) => ({
+          role: t.role === "assistant" ? ("assistant" as const) : ("user" as const),
+          content: String(t.content ?? ""),
+        }));
         if (!turns.some((t) => t.content.trim())) return textResponse("入力が空です", 400);
 
         const headers = {
