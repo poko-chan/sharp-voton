@@ -379,6 +379,12 @@ function GroupTable({
     await reload();
   };
 
+  const setRowMeta = async (label: string, values: Record<string, unknown>) => {
+    for (const f of groupFeatures.filter((x) => x.label === label)) {
+      await onPatch("plan_features", f.id, values);
+    }
+  };
+
   const deleteRow = async (label: string) => {
     for (const f of groupFeatures.filter((x) => x.label === label)) {
       await (supabase as any).from("plan_features").delete().eq("id", f.id);
