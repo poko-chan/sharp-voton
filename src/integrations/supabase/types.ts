@@ -5718,6 +5718,53 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_pack_items: {
+        Row: {
+          active: boolean
+          amount_label: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          name: string
+          pack_id: string
+          price: number
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          amount_label?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          name?: string
+          pack_id: string
+          price?: number
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          amount_label?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          name?: string
+          pack_id?: string
+          price?: number
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_pack_items_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "plan_packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plan_packs: {
         Row: {
           active: boolean
