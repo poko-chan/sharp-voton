@@ -309,14 +309,28 @@ function GroupTable({
   const groupFeatures = features.filter((f) => planIds.includes(f.plan_id));
 
   const rows = useMemo(() => {
-    const map = new Map<string, { label: string; kind: "bool" | "text"; sort: number }>();
+    const map = new Map<
+      string,
+      { label: string; kind: "bool" | "text"; sort: number; description: string | null; group_label: string | null }
+    >();
     for (const f of groupFeatures) {
       const cur = map.get(f.label);
       if (!cur || f.sort_order < cur.sort) {
-        map.set(f.label, { label: f.label, kind: f.kind, sort: f.sort_order });
+        map.set(f.label, {
+          label: f.label,
+          kind: f.kind,
+          sort: f.sort_order,
+          description: f.description,
+          group_label: f.group_label,
+        });
       }
     }
-    return [...map.values()].sort((a, b) => a.sort - b.sort);
+    return [...map.values()].sort((a, b) => {
+      const ga = a.group_label ?? "";
+      const gb = b.group_label ?? "";
+      if (ga !== gb) return ga.localeCompare(gb, "ja");
+      return a.sort - b.sort;
+    });
   }, [groupFeatures]);
 
   const cell = (label: string, planId: string) =>
