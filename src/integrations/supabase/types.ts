@@ -5656,6 +5656,8 @@ export type Database = {
       plan_features: {
         Row: {
           bool_value: boolean
+          description: string | null
+          group_label: string | null
           id: string
           kind: string
           label: string
@@ -5665,6 +5667,8 @@ export type Database = {
         }
         Insert: {
           bool_value?: boolean
+          description?: string | null
+          group_label?: string | null
           id?: string
           kind?: string
           label: string
@@ -5674,6 +5678,8 @@ export type Database = {
         }
         Update: {
           bool_value?: boolean
+          description?: string | null
+          group_label?: string | null
           id?: string
           kind?: string
           label?: string

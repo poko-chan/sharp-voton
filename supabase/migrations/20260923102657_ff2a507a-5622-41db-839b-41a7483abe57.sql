@@ -1,0 +1,1 @@
+ALTER TABLE public.plan_features ADD COLUMN IF NOT EXISTS description text; ALTER TABLE public.plan_features ADD COLUMN IF NOT EXISTS group_label text;
