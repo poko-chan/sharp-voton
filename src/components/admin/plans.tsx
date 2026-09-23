@@ -78,8 +78,11 @@ export function PlansAdminTab() {
   };
   const remove = async (table: string, id: string) => {
     const { error } = await db.from(table).delete().eq("id", id);
-    if (error) return toast.error(error.message);
-    load();
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    await load();
   };
 
   if (loading) return <div className="p-4 text-sm text-muted-foreground">読み込み中…</div>;
