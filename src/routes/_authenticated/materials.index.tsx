@@ -447,6 +447,34 @@ function AddDialog({ onSaved }: { onSaved: () => void }) {
     language: "ja",
   });
   const upd = (k: string, v: any) => setF((p: any) => ({ ...p, [k]: v }));
+  const [looking, setLooking] = useState(false);
+  /** ISBN/JANから書影・タイトル・出版社などを自動取得（openBD・無料API） */
+  const lookupIsbn = async () => {
+    const code = String(f.isbn || f.barcode || "").replace(/[^0-9Xx]/g, "");
+    if (code.length < 10) return toast.error("ISBN（10桁/13桁）を入力してください");
+    setLooking(true);
+    try {
+      const res = await fetch(`https://api.openbd.jp/v1/get?isbn=${code}`);
+      const json = await res.json();
+      const rec = json?.[0];
+      if (!rec) return toast.error("該当する書籍が見つかりませんでした");
+      const s = rec.summary ?? {};
+      setF((p: any) => ({
+        ...p,
+        title: p.title || s.title || "",
+        publisher: p.publisher || s.publisher || "",
+        author: p.author || s.author || "",
+        isbn: s.isbn || code,
+        cover_url: p.cover_url || s.cover || "",
+        year: p.year || (s.pubdate ? String(s.pubdate).slice(0, 4) : ""),
+      }));
+      toast.success("書籍情報を自動入力しました");
+    } catch {
+      toast.error("取得に失敗しました");
+    } finally {
+      setLooking(false);
+    }
+  };
   const save = async () => {
     if (!f.title) return toast.error("タイトル必須");
     const payload: any = { ...f, created_by: user!.id };
@@ -469,6 +497,24 @@ function AddDialog({ onSaved }: { onSaved: () => void }) {
       <DialogHeader>
         <DialogTitle>教材を追加</DialogTitle>
       </DialogHeader>
+      <div className="flex flex-wrap items-end gap-2 rounded-lg border bg-muted/30 p-3">
+        <div className="flex-1 min-w-[180px]">
+          <Label className="text-xs">ISBN / バーコードから自動入力</Label>
+          <Input
+            placeholder="9784XXXXXXXXX"
+            value={f.isbn ?? ""}
+            onChange={(e) => upd("isbn", e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && lookupIsbn()}
+          />
+        </div>
+        <Button size="sm" onClick={lookupIsbn} disabled={looking}>
+          <ScanLine className="h-4 w-4 mr-1" />
+          {looking ? "取得中..." : "自動入力"}
+        </Button>
+        {f.cover_url && (
+          <img src={f.cover_url} alt="" className="h-16 w-12 rounded object-cover border" />
+        )}
+      </div>
       <div className="grid grid-cols-2 gap-2 text-sm">
         {[
           ["title", "タイトル*"],

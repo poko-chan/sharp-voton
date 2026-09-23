@@ -36,7 +36,7 @@ import { useOrderedSubjects } from "@/lib/subjects";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { localDateStr } from "@/lib/date";
+import { localDateStr, addDaysStr } from "@/lib/date";
 import { PowerBar } from "@/components/RadialGauge";
 
 export const Route = createFileRoute("/_authenticated/timer")({
@@ -167,15 +167,28 @@ function TodaySummary() {
     enabled: !!user?.id,
     staleTime: 30_000,
     queryFn: async () => {
+      const today = localDateStr();
+      const from = addDaysStr(new Date(), -6);
       const { data } = await supabase
         .from("study_logs")
-        .select("duration_minutes")
+        .select("duration_minutes,date")
         .eq("user_id", user!.id)
-        .eq("date", localDateStr());
+        .gte("date", from)
+        .lte("date", today);
       const rows = data ?? [];
+      const todayRows = rows.filter((r: any) => r.date === today);
+      const done = new Set(rows.filter((r: any) => (r.duration_minutes ?? 0) > 0).map((r: any) => r.date));
+      let streak = 0;
+      for (let i = 0; i < 7; i++) {
+        const d = addDaysStr(new Date(), -i);
+        if (done.has(d)) streak++;
+        else if (i > 0 || !done.has(today)) break;
+      }
       return {
-        minutes: rows.reduce((s, r) => s + (r.duration_minutes ?? 0), 0),
-        sessions: rows.length,
+        minutes: todayRows.reduce((s, r: any) => s + (r.duration_minutes ?? 0), 0),
+        sessions: todayRows.length,
+        week: rows.reduce((s, r: any) => s + (r.duration_minutes ?? 0), 0),
+        streak,
       };
     },
   });
@@ -193,6 +206,17 @@ function TodaySummary() {
         <span className="text-muted-foreground tabular-nums">{data?.sessions ?? 0} セッション</span>
       </div>
       <PowerBar value={Math.min(100, (min / goal) * 100)} height={10} striped={false} />
+      <div className="mt-2 flex items-center gap-3 text-[11px] text-muted-foreground">
+        <span>
+          直近7日 <b className="text-foreground tabular-nums">{data?.week ?? 0}分</b>
+        </span>
+        <span>
+          連続 <b className="text-foreground tabular-nums">{data?.streak ?? 0}日</b>
+        </span>
+        <span className="ml-auto">
+          {min >= goal ? "今日の目標達成🎉" : `あと ${Math.max(0, goal - min)}分`}
+        </span>
+      </div>
     </Card>
   );
 }

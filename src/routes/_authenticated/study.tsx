@@ -36,6 +36,7 @@ import { Download, Upload } from "lucide-react";
 import { VoiceMicButton } from "@/components/VoiceMicButton";
 import { MaterialPicker } from "@/components/MaterialPicker";
 import { useOrderedSubjects, type SubjectLite } from "@/lib/subjects";
+import { StudyStats } from "@/components/study/StudyStats";
 
 export const Route = createFileRoute("/_authenticated/study")({
   component: StudyPage,
@@ -295,6 +296,8 @@ function StudyPage() {
           />
         </div>
       </div>
+
+      <StudyStats logs={logs} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="p-6 space-y-3">
