@@ -5653,6 +5653,104 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_features: {
+        Row: {
+          bool_value: boolean
+          id: string
+          kind: string
+          label: string
+          plan_id: string
+          sort_order: number
+          text_value: string | null
+        }
+        Insert: {
+          bool_value?: boolean
+          id?: string
+          kind?: string
+          label: string
+          plan_id: string
+          sort_order?: number
+          text_value?: string | null
+        }
+        Update: {
+          bool_value?: boolean
+          id?: string
+          kind?: string
+          label?: string
+          plan_id?: string
+          sort_order?: number
+          text_value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_features_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_groups: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      plan_packs: {
+        Row: {
+          active: boolean
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          name: string
+          price: number
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          name: string
+          price?: number
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          name?: string
+          price?: number
+          sort_order?: number
+        }
+        Relationships: []
+      }
       plan_template_marketplace: {
         Row: {
           author_id: string
@@ -5682,6 +5780,56 @@ export type Database = {
           title?: string
         }
         Relationships: []
+      }
+      plans: {
+        Row: {
+          active: boolean
+          created_at: string
+          currency: string
+          description: string | null
+          group_id: string
+          highlight: boolean
+          id: string
+          name: string
+          price_monthly: number
+          price_yearly: number
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          currency?: string
+          description?: string | null
+          group_id: string
+          highlight?: boolean
+          id?: string
+          name: string
+          price_monthly?: number
+          price_yearly?: number
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          currency?: string
+          description?: string | null
+          group_id?: string
+          highlight?: boolean
+          id?: string
+          name?: string
+          price_monthly?: number
+          price_yearly?: number
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plans_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "plan_groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       poll_votes: {
         Row: {
