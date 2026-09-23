@@ -35,6 +35,7 @@ import { AccessibilitySection } from "@/components/settings/AccessibilitySection
 import { DataSection } from "@/components/settings/DataSection";
 import { PaymentSection } from "@/components/settings/PaymentSection";
 import { DangerSection } from "@/components/settings/DangerSection";
+import { AdvancedSection } from "@/components/settings/AdvancedSection";
 
 const CATEGORIES: SettingsCategory[] = [
   {
