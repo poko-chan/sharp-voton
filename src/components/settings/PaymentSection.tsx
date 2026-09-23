@@ -110,9 +110,22 @@ export function PaymentSection() {
       {groups.map((g) => {
         const list = plans.filter((p) => p.group_id === g.id);
         if (list.length === 0) return null;
-        const labels: { label: string; kind: "bool" | "text" }[] = [];
+        const labels: { label: string; kind: "bool" | "text"; group: string; desc: string | null }[] = [];
         for (const f of features.filter((f) => list.some((p) => p.id === f.plan_id))) {
-          if (!labels.some((l) => l.label === f.label)) labels.push({ label: f.label, kind: f.kind });
+          if (!labels.some((l) => l.label === f.label))
+            labels.push({
+              label: f.label,
+              kind: f.kind,
+              group: f.group_label ?? "",
+              desc: f.description,
+            });
+        }
+        labels.sort((a, b) => a.group.localeCompare(b.group, "ja"));
+        const labelGroups: { group: string; rows: typeof labels }[] = [];
+        for (const l of labels) {
+          const g = labelGroups.find((x) => x.group === l.group);
+          if (g) g.rows.push(l);
+          else labelGroups.push({ group: l.group, rows: [l] });
         }
         return (
           <section key={g.id} className="space-y-5">
@@ -172,6 +185,11 @@ export function PaymentSection() {
                           >
                             {f.label}
                             {f.kind === "text" && f.text_value ? `：${f.text_value}` : ""}
+                            {f.description && (
+                              <span className="block text-xs text-muted-foreground/80">
+                                {f.description}
+                              </span>
+                            )}
                           </span>
                         </li>
                       ))}
