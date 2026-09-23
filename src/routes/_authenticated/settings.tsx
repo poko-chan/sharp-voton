@@ -193,6 +193,7 @@ const SECTIONS: Record<SettingsCategoryId, React.ComponentType> = {
   accessibility: AccessibilitySection,
   data: DataSection,
   payment: PaymentSection,
+  advanced: AdvancedSection,
   danger: DangerSection,
 };
 
