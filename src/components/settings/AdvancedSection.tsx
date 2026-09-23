@@ -100,13 +100,14 @@ export function AdvancedSection() {
 
       <Group title="学習">
         <div className="space-y-2">
-          <Label className="text-sm">1日の目標時間: {prefs.daily_goal_minutes}分</Label>
-          <Slider
-            value={[prefs.daily_goal_minutes]}
+          <Label className="text-sm">1日の目標時間（分）</Label>
+          <Input
+            type="number"
             min={10}
             max={600}
             step={10}
-            onValueChange={([v]) => set("daily_goal_minutes", v)}
+            value={prefs.daily_goal_minutes}
+            onChange={(e) => set("daily_goal_minutes", Number(e.target.value) || 10)}
           />
         </div>
         <div className="grid grid-cols-2 gap-3">
