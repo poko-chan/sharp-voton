@@ -136,133 +136,120 @@ export function PaymentSection() {
               )}
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {list.map((p) => {
-                const price = cycle === "monthly" ? p.price_monthly : p.price_yearly;
-                const mine = features.filter((f) => f.plan_id === p.id);
-                return (
-                  <Card
-                    key={p.id}
-                    className={`flex flex-col p-5 ${
-                      p.highlight ? "border-primary ring-2 ring-primary/25" : ""
-                    }`}
-                  >
-                    {p.highlight && (
-                      <span className="mb-2 inline-block w-fit rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
-                        おすすめ
-                      </span>
-                    )}
-                    <div className="text-2xl font-bold tracking-tight">{p.name}</div>
-                    {p.description && (
-                      <p className="mt-1 text-sm text-muted-foreground">{p.description}</p>
-                    )}
-                    <div className="mt-5 flex items-end gap-1">
-                      <span className="text-3xl font-bold">{yen(price)}</span>
-                      <span className="pb-1 text-sm text-muted-foreground">
-                        / {cycle === "monthly" ? "月" : "年"}
-                      </span>
-                    </div>
-                    <Button className="mt-4 w-full justify-center" variant="outline" disabled>
-                      近日提供予定
-                      <ChevronRight className="ml-1 h-4 w-4" />
-                    </Button>
-                    <ul className="mt-5 space-y-2 text-sm">
-                      {mine.map((f) => (
-                        <li key={f.id} className="flex items-start gap-2">
-                          {f.kind === "bool" ? (
-                            f.bool_value ? (
-                              <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                            ) : (
-                              <X className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/60" />
-                            )
-                          ) : (
-                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                          )}
-                          <span
-                            className={
-                              f.kind === "bool" && !f.bool_value ? "text-muted-foreground" : ""
-                            }
-                          >
-                            {f.label}
-                            {f.kind === "text" && f.text_value ? `：${f.text_value}` : ""}
-                            {f.description && (
-                              <span className="block text-xs text-muted-foreground/80">
-                                {f.description}
-                              </span>
-                            )}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </Card>
-                );
-              })}
-            </div>
-
-            {labels.length > 0 && (
-              <div className="overflow-x-auto rounded-xl border">
-                <table className="w-full min-w-[520px] text-sm">
-                  <thead className="bg-muted/50 text-xs text-muted-foreground">
-                    <tr>
-                      <th className="p-3 text-left font-medium">機能</th>
-                      {list.map((p) => (
-                        <th key={p.id} className="p-3 text-center font-medium">
-                          {p.name}
+            {(() => {
+              const featured = list.find((p) => p.highlight) ?? list[0];
+              return (
+                <div className="overflow-x-auto rounded-2xl border-2 border-primary/20 bg-card shadow-lg shadow-primary/5">
+                  <table className="w-full min-w-[560px] border-separate border-spacing-0 text-sm">
+                    <thead>
+                      <tr>
+                        <th className="sticky left-0 z-10 bg-card p-4 align-bottom text-left text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                          使える機能やメリット
                         </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {labelGroups.map((g) => (
-                      <Fragment key={g.group || "ungrouped"}>
-                        {g.group && (
-                          <tr key={`g-${g.group}`} className="border-t bg-muted/40">
-                            <td
-                              colSpan={list.length + 1}
-                              className="p-2 text-xs font-semibold text-muted-foreground"
+                        {list.map((p) => {
+                          const price = cycle === "monthly" ? p.price_monthly : p.price_yearly;
+                          return (
+                            <th
+                              key={p.id}
+                              className={`min-w-[150px] p-4 align-bottom ${
+                                p.id === featured?.id
+                                  ? "border-x-2 border-t-2 border-primary/30 bg-primary/5"
+                                  : ""
+                              }`}
                             >
-                              {g.group}
-                            </td>
-                          </tr>
-                        )}
-                        {g.rows.map((l) => (
-                          <tr key={l.label} className="border-t">
-                            <td className="p-3">
-                              {l.label}
-                              {l.desc && (
-                                <span className="block text-xs text-muted-foreground/80">
-                                  {l.desc}
+                              <div className="flex flex-col items-center gap-1.5 text-center">
+                                {p.highlight && (
+                                  <span className="rounded-full bg-primary px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wide text-primary-foreground">
+                                    おすすめ
+                                  </span>
+                                )}
+                                <span className="text-lg font-extrabold tracking-tight">{p.name}</span>
+                                {p.description && (
+                                  <span className="text-xs font-normal text-muted-foreground">
+                                    {p.description}
+                                  </span>
+                                )}
+                                <span className="mt-1 flex items-baseline gap-0.5">
+                                  <span className="text-2xl font-extrabold">{yen(price)}</span>
+                                  <span className="text-xs font-medium text-muted-foreground">
+                                    /{cycle === "monthly" ? "月" : "年"}
+                                  </span>
                                 </span>
-                              )}
-                            </td>
-                            {list.map((p) => {
-                              const f = features.find(
-                                (x) => x.plan_id === p.id && x.label === l.label,
-                              );
-                              return (
-                                <td key={p.id} className="p-3 text-center">
-                                  {l.kind === "bool" ? (
-                                    f?.bool_value ? (
-                                      <Check className="mx-auto h-4 w-4 text-primary" />
+                                <Button
+                                  size="sm"
+                                  disabled
+                                  variant={p.highlight ? "default" : "outline"}
+                                  className="mt-1 w-full justify-center rounded-full font-extrabold uppercase tracking-wide"
+                                >
+                                  近日提供予定
+                                </Button>
+                              </div>
+                            </th>
+                          );
+                        })}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {labelGroups.map((lg) => (
+                        <Fragment key={lg.group || "ungrouped"}>
+                          {lg.group && (
+                            <tr key={`g-${lg.group}`}>
+                              <td
+                                colSpan={list.length + 1}
+                                className="border-t-2 border-primary/10 bg-primary/5 px-4 py-2 text-xs font-extrabold uppercase tracking-wide text-primary"
+                              >
+                                {lg.group}
+                              </td>
+                            </tr>
+                          )}
+                          {lg.rows.map((l) => (
+                            <tr key={l.label} className="group transition-colors hover:bg-muted/40">
+                              <td className="border-t bg-card p-4 align-top group-hover:bg-transparent">
+                                <span className="font-semibold">{l.label}</span>
+                                {l.desc && (
+                                  <span className="block text-xs text-muted-foreground/80">
+                                    {l.desc}
+                                  </span>
+                                )}
+                              </td>
+                              {list.map((p) => {
+                                const f = features.find(
+                                  (x) => x.plan_id === p.id && x.label === l.label,
+                                );
+                                return (
+                                  <td
+                                    key={p.id}
+                                    className={`border-t p-4 text-center ${
+                                      p.id === featured?.id
+                                        ? "border-x bg-primary/5"
+                                        : ""
+                                    } ${l === lg.rows[lg.rows.length - 1] ? "border-b" : ""}`}
+                                  >
+                                    {l.kind === "bool" ? (
+                                      f?.bool_value ? (
+                                        <span className="mx-auto flex h-7 w-7 items-center justify-center rounded-full bg-primary/15">
+                                          <Check className="h-4 w-4 font-black text-primary" strokeWidth={3} />
+                                        </span>
+                                      ) : (
+                                        <X className="mx-auto h-4 w-4 text-muted-foreground/40" />
+                                      )
                                     ) : (
-                                      <X className="mx-auto h-4 w-4 text-muted-foreground/50" />
-                                    )
-                                  ) : (
-                                    <span className="text-muted-foreground">
-                                      {f?.text_value || "—"}
-                                    </span>
-                                  )}
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        ))}
-                      </Fragment>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                                      <span className="font-semibold text-muted-foreground">
+                                        {f?.text_value || "—"}
+                                      </span>
+                                    )}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </Fragment>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
           </section>
         );
       })}
