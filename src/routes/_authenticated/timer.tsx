@@ -36,7 +36,7 @@ import { useOrderedSubjects } from "@/lib/subjects";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { localDateStr } from "@/lib/date";
+import { localDateStr, addDaysStr } from "@/lib/date";
 import { PowerBar } from "@/components/RadialGauge";
 
 export const Route = createFileRoute("/_authenticated/timer")({
