@@ -213,30 +213,51 @@ export function PaymentSection() {
                     </tr>
                   </thead>
                   <tbody>
-                    {labels.map((l) => (
-                      <tr key={l.label} className="border-t">
-                        <td className="p-3">{l.label}</td>
-                        {list.map((p) => {
-                          const f = features.find(
-                            (x) => x.plan_id === p.id && x.label === l.label,
-                          );
-                          return (
-                            <td key={p.id} className="p-3 text-center">
-                              {l.kind === "bool" ? (
-                                f?.bool_value ? (
-                                  <Check className="mx-auto h-4 w-4 text-primary" />
-                                ) : (
-                                  <X className="mx-auto h-4 w-4 text-muted-foreground/50" />
-                                )
-                              ) : (
-                                <span className="text-muted-foreground">
-                                  {f?.text_value || "—"}
+                    {labelGroups.map((g) => (
+                      <>
+                        {g.group && (
+                          <tr key={`g-${g.group}`} className="border-t bg-muted/40">
+                            <td
+                              colSpan={list.length + 1}
+                              className="p-2 text-xs font-semibold text-muted-foreground"
+                            >
+                              {g.group}
+                            </td>
+                          </tr>
+                        )}
+                        {g.rows.map((l) => (
+                          <tr key={l.label} className="border-t">
+                            <td className="p-3">
+                              {l.label}
+                              {l.desc && (
+                                <span className="block text-xs text-muted-foreground/80">
+                                  {l.desc}
                                 </span>
                               )}
                             </td>
-                          );
-                        })}
-                      </tr>
+                            {list.map((p) => {
+                              const f = features.find(
+                                (x) => x.plan_id === p.id && x.label === l.label,
+                              );
+                              return (
+                                <td key={p.id} className="p-3 text-center">
+                                  {l.kind === "bool" ? (
+                                    f?.bool_value ? (
+                                      <Check className="mx-auto h-4 w-4 text-primary" />
+                                    ) : (
+                                      <X className="mx-auto h-4 w-4 text-muted-foreground/50" />
+                                    )
+                                  ) : (
+                                    <span className="text-muted-foreground">
+                                      {f?.text_value || "—"}
+                                    </span>
+                                  )}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </>
                     ))}
                   </tbody>
                 </table>
