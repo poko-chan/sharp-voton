@@ -497,6 +497,24 @@ function AddDialog({ onSaved }: { onSaved: () => void }) {
       <DialogHeader>
         <DialogTitle>教材を追加</DialogTitle>
       </DialogHeader>
+      <div className="flex flex-wrap items-end gap-2 rounded-lg border bg-muted/30 p-3">
+        <div className="flex-1 min-w-[180px]">
+          <Label className="text-xs">ISBN / バーコードから自動入力</Label>
+          <Input
+            placeholder="9784XXXXXXXXX"
+            value={f.isbn ?? ""}
+            onChange={(e) => upd("isbn", e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && lookupIsbn()}
+          />
+        </div>
+        <Button size="sm" onClick={lookupIsbn} disabled={looking}>
+          <ScanLine className="h-4 w-4 mr-1" />
+          {looking ? "取得中..." : "自動入力"}
+        </Button>
+        {f.cover_url && (
+          <img src={f.cover_url} alt="" className="h-16 w-12 rounded object-cover border" />
+        )}
+      </div>
       <div className="grid grid-cols-2 gap-2 text-sm">
         {[
           ["title", "タイトル*"],
