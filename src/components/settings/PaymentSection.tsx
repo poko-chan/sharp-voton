@@ -1,47 +1,168 @@
-import { BadgeCheck, CreditCard, LockKeyhole, ReceiptText } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BadgeCheck, Check, CreditCard, Package, X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { SectionHeading } from "./shared";
 
-const FEATURES = [
-  { icon: CreditCard, title: "かんたんなお支払い", desc: "安全な決済画面から手続きできるようになります。" },
-  { icon: ReceiptText, title: "契約内容をまとめて確認", desc: "利用中のプランやお支払い履歴をここで確認できます。" },
-  { icon: LockKeyhole, title: "安全性を重視", desc: "カード情報をStudy#内に保存しない仕組みを予定しています。" },
-];
+type Group = { id: string; name: string; description: string | null };
+type Plan = {
+  id: string;
+  group_id: string;
+  name: string;
+  description: string | null;
+  price_monthly: number;
+  price_yearly: number;
+  currency: string;
+  highlight: boolean;
+};
+type Feature = {
+  id: string;
+  plan_id: string;
+  kind: "bool" | "text";
+  label: string;
+  bool_value: boolean;
+  text_value: string | null;
+};
+type Pack = { id: string; name: string; description: string | null; price: number };
+
+const db = supabase as any;
+
+function yen(n: number) {
+  return n === 0 ? "無料" : `¥${n.toLocaleString("ja-JP")}`;
+}
 
 export function PaymentSection() {
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [features, setFeatures] = useState<Feature[]>([]);
+  const [packs, setPacks] = useState<Pack[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const [g, p, f, k] = await Promise.all([
+        db.from("plan_groups").select("*").eq("active", true).order("sort_order"),
+        db.from("plans").select("*").eq("active", true).order("sort_order"),
+        db.from("plan_features").select("*").order("sort_order"),
+        db.from("plan_packs").select("*").eq("active", true).order("sort_order"),
+      ]);
+      setGroups(g.data ?? []);
+      setPlans(p.data ?? []);
+      setFeatures(f.data ?? []);
+      setPacks(k.data ?? []);
+    })();
+  }, []);
+
+  const hasPlans = plans.length > 0;
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <SectionHeading title="お支払い" desc="Study#のプランとお支払いを管理します。" />
 
-      <Card className="overflow-hidden border-primary/20">
-        <div className="border-b bg-muted/40 p-5 sm:p-6">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <span className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs font-semibold text-primary">
-              <BadgeCheck className="h-3.5 w-3.5" />
-              近日提供予定
-            </span>
-            <CreditCard className="h-6 w-6 text-muted-foreground" />
-          </div>
-          <h3 className="text-xl font-semibold">お支払い機能を準備しています</h3>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-            より便利にStudy#をご利用いただけるプランを準備中です。提供開始後、この画面から内容の確認と手続きができるようになります。
+      <div className="flex items-center gap-2 rounded-xl border bg-muted/40 p-4 text-sm">
+        <BadgeCheck className="h-4 w-4 shrink-0 text-primary" />
+        近日提供予定です。現在は料金の請求や購入手続きは行われません。
+      </div>
+
+      {!hasPlans && (
+        <Card className="p-6">
+          <CreditCard className="mb-3 h-6 w-6 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
+            プランは現在準備中です。すべての機能を無料でご利用いただけます。
           </p>
-        </div>
+        </Card>
+      )}
 
-        <div className="grid gap-px bg-border sm:grid-cols-3">
-          {FEATURES.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="bg-card p-5">
-              <Icon className="mb-3 h-5 w-5 text-primary" />
-              <p className="text-sm font-semibold">{title}</p>
-              <p className="mt-1 text-xs leading-5 text-muted-foreground">{desc}</p>
+      {groups.map((g) => {
+        const list = plans.filter((p) => p.group_id === g.id);
+        if (list.length === 0) return null;
+        return (
+          <section key={g.id} className="space-y-3">
+            <div>
+              <h3 className="font-semibold">{g.name}</h3>
+              {g.description && (
+                <p className="text-xs text-muted-foreground">{g.description}</p>
+              )}
             </div>
-          ))}
-        </div>
-      </Card>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {list.map((p) => (
+                <Card
+                  key={p.id}
+                  className={`p-5 ${p.highlight ? "border-primary ring-1 ring-primary/30" : ""}`}
+                >
+                  {p.highlight && (
+                    <span className="mb-2 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                      おすすめ
+                    </span>
+                  )}
+                  <div className="font-semibold">{p.name}</div>
+                  {p.description && (
+                    <p className="mt-1 text-xs text-muted-foreground">{p.description}</p>
+                  )}
+                  <div className="mt-3 text-2xl font-bold">
+                    {yen(p.price_monthly)}
+                    {p.price_monthly > 0 && (
+                      <span className="text-sm font-normal text-muted-foreground"> / 月</span>
+                    )}
+                  </div>
+                  {p.price_yearly > 0 && (
+                    <div className="text-xs text-muted-foreground">
+                      年額 {yen(p.price_yearly)}
+                    </div>
+                  )}
+                  <ul className="mt-4 space-y-1.5 text-sm">
+                    {features
+                      .filter((f) => f.plan_id === p.id)
+                      .map((f) => (
+                        <li key={f.id} className="flex items-start gap-2">
+                          {f.kind === "bool" ? (
+                            f.bool_value ? (
+                              <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                            ) : (
+                              <X className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                            )
+                          ) : (
+                            <span className="mt-0.5 text-xs text-muted-foreground">•</span>
+                          )}
+                          <span
+                            className={
+                              f.kind === "bool" && !f.bool_value
+                                ? "text-muted-foreground line-through"
+                                : ""
+                            }
+                          >
+                            {f.label}
+                            {f.kind === "text" && f.text_value ? `：${f.text_value}` : ""}
+                          </span>
+                        </li>
+                      ))}
+                  </ul>
+                </Card>
+              ))}
+            </div>
+          </section>
+        );
+      })}
 
-      <p className="text-xs text-muted-foreground">
-        現在は料金の請求や購入手続きは行われません。提供内容と開始時期は、決まり次第お知らせします。
-      </p>
+      {packs.length > 0 && (
+        <section className="space-y-3">
+          <h3 className="flex items-center gap-2 font-semibold">
+            <Package className="h-4 w-4" /> 追加パック
+          </h3>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {packs.map((k) => (
+              <Card key={k.id} className="flex items-center justify-between gap-3 p-4">
+                <div>
+                  <div className="text-sm font-semibold">{k.name}</div>
+                  {k.description && (
+                    <p className="text-xs text-muted-foreground">{k.description}</p>
+                  )}
+                </div>
+                <div className="shrink-0 text-lg font-bold">{yen(k.price)}</div>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
