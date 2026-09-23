@@ -7962,6 +7962,7 @@ export type Database = {
         Args: { _thread: string; _user: string }
         Returns: boolean
       }
+      can_read_chat_image: { Args: { _path: string }; Returns: boolean }
       can_see_chat_message: {
         Args: { _message_id: string; _scope: string }
         Returns: boolean
