@@ -557,44 +557,19 @@ function FullDashboard() {
   }, [stats, dailyGoal, dailyPct, diff, diffPct, byDow, topSubjects]);
 
   return (
-    <div className="dashboard-page study-os p-3 pb-24 md:p-6 lg:p-8 space-y-6 max-w-[1520px] mx-auto">
-      <header className="study-os-header flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="study-os-kicker">Study# / LEARNING OPERATING SYSTEM</p>
-          <h1 className="font-display text-3xl font-extrabold md:text-4xl">
-            {greeting()}。学習総合プラットフォーム - Study#
-          </h1>
-          <p className="mt-2 text-sm font-medium text-muted-foreground">
-            {new Date().toLocaleDateString("ja-JP", { month: "long", day: "numeric", weekday: "long" })}
-            ・今週の目標まであと {fmt(Math.max(0, weeklyTarget - stats.weekMin))}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <StatusModule icon={Flame} label="連続記録" value={`${stats.streak}日`} tone="warm" />
-          <StatusModule icon={Award} label="学習レベル" value={`Lv ${lvl.level}`} tone="strong" />
-          <DailyGoalDialog
-            value={dailyGoal}
-            onChange={(v) => {
-              setDailyGoal(v);
-              localStorage.setItem(DAILY_GOAL_KEY, String(v));
-            }}
-          />
-          <WeeklyGoalDialog
-            value={weeklyGoal}
-            onChange={(v) => {
-              setWeeklyGoal(v);
-              localStorage.setItem(WEEKLY_GOAL_KEY, String(v));
-            }}
-          />
-          <NotificationBell />
-        </div>
-      </header>
-
+    <div className="dashboard-page p-4 md:p-8 lg:p-10 space-y-8 max-w-[1480px] mx-auto">
       {/* ===== 一番上: 左=1日の目標 / 右=あなたの街 ===== */}
-      <div className="dashboard-bento grid grid-cols-1 gap-5 xl:grid-cols-12 items-start">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.12fr)_minmax(360px,0.88fr)] items-start">
         {/* ===== ヒーロー ===== */}
-        <Card className="dashboard-hero study-focus-stage relative overflow-hidden p-0 xl:col-span-8">
-          <div className="study-focus-grid relative p-5 md:p-8 grid gap-6 md:grid-cols-[auto_1fr] items-center">
+        <Card className="dashboard-hero relative overflow-hidden liquid-card p-0 border-primary/15 shadow-[0_24px_60px_-36px_color-mix(in_oklab,var(--primary)_55%,transparent)]">
+          <div
+            className="absolute inset-0 opacity-[0.18] pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(1000px 320px at 12% -10%, oklch(0.7 0.2 150), transparent 60%), radial-gradient(800px 320px at 92% 0%, oklch(0.62 0.22 275), transparent 60%)",
+            }}
+          />
+          <div className="relative p-5 md:p-7 grid gap-6 md:grid-cols-[auto_1fr] items-center">
             {/* 今日のリング */}
             <div className="flex items-center gap-5 justify-center lg:justify-start">
               <RadialGauge
@@ -615,7 +590,9 @@ function FullDashboard() {
 
             <div className="min-w-0 space-y-3">
               <div>
-                <p className="text-[11px] font-bold uppercase text-primary mb-2">CURRENT FOCUS / 今日の焦点</p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary/80 mb-2">
+                  TODAY / 学習ダッシュボード
+                </p>
                 <p className="text-xs text-muted-foreground">
                   {new Date().toLocaleDateString("ja-JP", {
                     month: "long",
@@ -623,10 +600,10 @@ function FullDashboard() {
                     weekday: "long",
                   })}
                 </p>
-                <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-                  {isLoading ? "学習状況を読み込み中" : nextAction.title}
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">{nextAction.detail}</p>
+                <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+                  {greeting()}
+                  {isLoading ? "" : "、今日も積み上げよう"}
+                </h1>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
@@ -636,23 +613,21 @@ function FullDashboard() {
                 <Chip icon={BookOpen} tone="slate" label={`累計 ${fmt(stats.totalMin)}`} />
               </div>
 
-              <Button asChild size="lg" className="study-primary-action mt-1 w-full sm:w-auto">
-                <Link to={nextAction.to}>
-                  <nextAction.icon className="mr-2 h-4 w-4" />
-                  {nextAction.label}
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-
               {/* レベルゲージ */}
               <div>
                 <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
                   <span>
-                    次のレベルまで <b className="text-foreground">{Math.ceil(lvl.remainingHours * 60)} 分</b>
+                    次のレベルまで{" "}
+                    <b className="text-foreground">{Math.ceil(lvl.remainingHours * 60)} 分</b>
                   </span>
                   <span className="tabular-nums">{Math.round(lvl.progressPct)}%</span>
                 </div>
-                <PowerBar value={lvl.progressPct} height={14} from="oklch(0.78 0.17 85)" to="oklch(0.62 0.22 275)" />
+                <PowerBar
+                  value={lvl.progressPct}
+                  height={14}
+                  from="oklch(0.78 0.17 85)"
+                  to="oklch(0.62 0.22 275)"
+                />
                 {lvl.inactivityFactor < 1 && (
                   <p className="text-[10px] text-amber-600 mt-1">
                     ⚠ 停滞中: レベル上昇が ×{lvl.inactivityFactor.toFixed(2)} に減速しています
@@ -664,7 +639,8 @@ function FullDashboard() {
               <div>
                 <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
                   <span>
-                    今週のペース <b className="text-foreground">{fmt(stats.weekMin)}</b> / {fmt(weeklyTarget)}
+                    今週のペース <b className="text-foreground">{fmt(stats.weekMin)}</b> /{" "}
+                    {fmt(weeklyTarget)}
                   </span>
                   <span className="tabular-nums">{Math.round(weekPct)}%</span>
                 </div>
@@ -677,78 +653,76 @@ function FullDashboard() {
                 />
               </div>
             </div>
+
+            <div className="flex lg:flex-col gap-2 flex-wrap justify-center">
+              <DailyGoalDialog
+                value={dailyGoal}
+                onChange={(v) => {
+                  setDailyGoal(v);
+                  localStorage.setItem(DAILY_GOAL_KEY, String(v));
+                }}
+              />
+              <WeeklyGoalDialog
+                value={weeklyGoal}
+                onChange={(v) => {
+                  setWeeklyGoal(v);
+                  localStorage.setItem(WEEKLY_GOAL_KEY, String(v));
+                }}
+              />
+              <NotificationBell />
+            </div>
           </div>
 
           {/* クイックアクション */}
-          <div className="study-action-rail relative border-t grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/60">
-            <QuickAction to="/timer" icon={Timer} label="集中する" />
-            <QuickAction to="/study" icon={BookOpen} label="記録する" />
-            <QuickAction to="/makron" icon={Brain} label="定着させる" />
-            <QuickAction to="/flashcards" icon={Layers} label="思い出す" />
+          <div className="relative border-t border-border/60 bg-background/25 grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/60">
+            <QuickAction to="/timer" icon={Timer} label="タイマー開始" />
+            <QuickAction to="/study" icon={BookOpen} label="学習を記録" />
+            <QuickAction to="/makron" icon={Brain} label="Makron 演習" />
+            <QuickAction to="/flashcards" icon={Layers} label="暗記カード" />
           </div>
         </Card>
 
         {/* ===== あなたの街（右上） ===== */}
-        <Card className="study-activity-console overflow-hidden p-6 xl:col-span-4">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-[10px] font-bold uppercase text-primary-foreground/60">ACTIVITY SIGNAL</p>
-              <h2 className="mt-1 text-lg font-bold">今週の学習リズム</h2>
-            </div>
-            <span className="rounded-full bg-primary-foreground/10 px-2.5 py-1 text-xs font-bold">
-              {fmt(stats.weekMin)}
-            </span>
-          </div>
-          <div className="mt-7 flex h-24 items-end gap-2" aria-label="今週の学習時間">
-            {weekly.map((day) => {
-              const max = Math.max(1, ...weekly.map((item) => item.minutes));
-              return (
-                <div key={day.day} className="flex min-w-0 flex-1 flex-col items-center gap-2">
-                  <div className="study-rhythm-track flex h-20 w-full items-end overflow-hidden rounded-md">
-                    <span
-                      className="study-rhythm-bar block w-full rounded-md"
-                      style={{ height: `${Math.max(8, (day.minutes / max) * 100)}%` }}
-                    />
-                  </div>
-                  <span className="text-[10px] font-bold text-primary-foreground/50">{day.day}</span>
-                </div>
-              );
-            })}
-          </div>
-          <div className="mt-6 grid grid-cols-3 gap-3 border-t border-primary-foreground/10 pt-5">
-            <SignalStat label="先週比" value={diffPct === null ? "—" : `${diff >= 0 ? "+" : ""}${diffPct}%`} />
-            <SignalStat label="累計" value={fmt(stats.totalMin)} />
-            <SignalStat label="段位" value={rank.title} />
-          </div>
-        </Card>
-      </div>
-
-      <LearningPath todayPct={dailyPct} hasLogs={stats.sessions > 0} gradingCount={stats.gradingCount} />
-
-      <div className="dashboard-bento grid grid-cols-1 gap-5 xl:grid-cols-12 items-start">
-        <div className="dashboard-town xl:col-span-4">
+        <div className="dashboard-town xl:sticky xl:top-4">
           <Town />
-        </div>
-        <div className="xl:col-span-8">
-          <FocusPanel dailyGoal={dailyGoal} />
         </div>
       </div>
 
       {/* ===== はじめかた & 最近の利用状況 ===== */}
-      <div className="dashboard-bento grid grid-cols-1 gap-5 lg:grid-cols-12 items-start">
-        <div className="lg:col-span-5">
-          <GettingStartedCard />
-        </div>
-        <div className="lg:col-span-7">
-          <RecentActivityCard />
-        </div>
+      <div className="grid gap-5 lg:grid-cols-2 items-start">
+        <GettingStartedCard />
+        <RecentActivityCard />
       </div>
 
       {/* ===== 最近の通知 ===== */}
       <RecentNotifications />
 
       {/* ===== タイマー & 学習時間の集約 ===== */}
-      <QuickLogCard subjects={subjects} />
+      <FocusPanel dailyGoal={dailyGoal} />
+
+      <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+        <QuickLogCard subjects={subjects} />
+        <Card className="relative overflow-hidden p-5 liquid-card border-primary/20">
+          <div className="absolute -right-8 -top-10 h-32 w-32 rounded-full bg-primary/10 blur-2xl" />
+          <div className="relative flex h-full flex-col justify-between gap-5">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary/80">NEXT MOVE</p>
+              <h2 className="mt-1 flex items-center gap-2 text-lg font-bold">
+                <Sparkles className="h-5 w-5 text-primary" />
+                今日の次の一手
+              </h2>
+              <p className="mt-4 text-base font-semibold">{nextAction.title}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{nextAction.detail}</p>
+            </div>
+            <Button asChild className="w-full sm:w-fit">
+              <Link to={nextAction.to}>
+                <nextAction.icon className="mr-2 h-4 w-4" />
+                {nextAction.label}
+              </Link>
+            </Button>
+          </div>
+        </Card>
+      </div>
 
       {/* ===== インサイト ===== */}
       {insights.length > 0 && (
