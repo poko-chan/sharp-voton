@@ -14,6 +14,7 @@ export type SettingsCategoryId =
   | "accessibility"
   | "data"
   | "payment"
+  | "advanced"
   | "danger";
 
 export type SettingsCategory = {

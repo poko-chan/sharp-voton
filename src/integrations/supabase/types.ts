@@ -1888,6 +1888,134 @@ export type Database = {
         }
         Relationships: []
       }
+      fr_cheers: {
+        Row: {
+          created_at: string
+          emoji: string
+          from_user: string
+          id: string
+          message: string | null
+          to_user: string
+        }
+        Insert: {
+          created_at?: string
+          emoji?: string
+          from_user: string
+          id?: string
+          message?: string | null
+          to_user: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          from_user?: string
+          id?: string
+          message?: string | null
+          to_user?: string
+        }
+        Relationships: []
+      }
+      fr_pledges: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          shared: boolean
+          target_minutes: number
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          shared?: boolean
+          target_minutes?: number
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          shared?: boolean
+          target_minutes?: number
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
+      fr_room_members: {
+        Row: {
+          focus_until: string | null
+          id: string
+          joined_at: string
+          minutes: number
+          room_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          focus_until?: string | null
+          id?: string
+          joined_at?: string
+          minutes?: number
+          room_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          focus_until?: string | null
+          id?: string
+          joined_at?: string
+          minutes?: number
+          room_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fr_room_members_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "fr_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fr_rooms: {
+        Row: {
+          created_at: string
+          host_id: string
+          id: string
+          join_code: string
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          host_id: string
+          id?: string
+          join_code: string
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          host_id?: string
+          id?: string
+          join_code?: string
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       goals: {
         Row: {
           count_from: string | null
@@ -7872,6 +8000,13 @@ export type Database = {
           xp_awarded: number
         }[]
       }
+      friend_weekly_ranking: {
+        Args: { _week_start: string }
+        Returns: {
+          minutes: number
+          user_id: string
+        }[]
+      }
       gen_org_join_code: { Args: never; Returns: string }
       get_leaderboard: {
         Args: { _limit?: number }
@@ -7965,6 +8100,10 @@ export type Database = {
       }
       is_class_teacher: {
         Args: { _class_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_fr_room_member: {
+        Args: { _room: string; _user: string }
         Returns: boolean
       }
       is_group_leader: {

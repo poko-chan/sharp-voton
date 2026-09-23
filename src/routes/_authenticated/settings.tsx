@@ -35,6 +35,7 @@ import { AccessibilitySection } from "@/components/settings/AccessibilitySection
 import { DataSection } from "@/components/settings/DataSection";
 import { PaymentSection } from "@/components/settings/PaymentSection";
 import { DangerSection } from "@/components/settings/DangerSection";
+import { AdvancedSection } from "@/components/settings/AdvancedSection";
 
 const CATEGORIES: SettingsCategory[] = [
   {
@@ -156,6 +157,20 @@ const CATEGORIES: SettingsCategory[] = [
     keywords: ["お支払い", "決済", "料金", "プラン", "購入", "payment", "billing"],
   },
   {
+    id: "advanced",
+    label: "詳細設定",
+    icon: Search,
+    keywords: [
+      "詳細",
+      "おやすみ",
+      "ポモドーロ",
+      "公開範囲",
+      "ショートカット",
+      "目標時間",
+      "advanced",
+    ],
+  },
+  {
     id: "danger",
     label: "危険な操作",
     icon: AlertTriangle,
@@ -178,6 +193,7 @@ const SECTIONS: Record<SettingsCategoryId, React.ComponentType> = {
   accessibility: AccessibilitySection,
   data: DataSection,
   payment: PaymentSection,
+  advanced: AdvancedSection,
   danger: DangerSection,
 };
 

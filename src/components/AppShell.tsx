@@ -72,6 +72,12 @@ export const NAV = [
   { to: "/flashcards", labelKey: "nav.flashcards" as const, icon: Brain },
   { to: "/feed", labelKey: "nav.dashboard" as const, icon: Users, override: "タイムライン" },
   { to: "/friends", labelKey: "nav.friends" as const, icon: Users },
+  {
+    to: "/together",
+    labelKey: "nav.friends" as const,
+    icon: Users,
+    override: "みんなで勉強",
+  },
   { to: "/ai-chat", labelKey: "nav.tutor" as const, icon: Sparkles },
   { to: "/classroom", labelKey: "nav.classroom" as const, icon: GraduationCap },
   { to: "/chat", labelKey: "nav.chat" as const, icon: MessagesSquare },
