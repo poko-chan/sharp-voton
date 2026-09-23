@@ -167,15 +167,28 @@ function TodaySummary() {
     enabled: !!user?.id,
     staleTime: 30_000,
     queryFn: async () => {
+      const today = localDateStr();
+      const from = addDaysStr(new Date(), -6);
       const { data } = await supabase
         .from("study_logs")
-        .select("duration_minutes")
+        .select("duration_minutes,date")
         .eq("user_id", user!.id)
-        .eq("date", localDateStr());
+        .gte("date", from)
+        .lte("date", today);
       const rows = data ?? [];
+      const todayRows = rows.filter((r: any) => r.date === today);
+      const done = new Set(rows.filter((r: any) => (r.duration_minutes ?? 0) > 0).map((r: any) => r.date));
+      let streak = 0;
+      for (let i = 0; i < 7; i++) {
+        const d = addDaysStr(new Date(), -i);
+        if (done.has(d)) streak++;
+        else if (i > 0 || !done.has(today)) break;
+      }
       return {
-        minutes: rows.reduce((s, r) => s + (r.duration_minutes ?? 0), 0),
-        sessions: rows.length,
+        minutes: todayRows.reduce((s, r: any) => s + (r.duration_minutes ?? 0), 0),
+        sessions: todayRows.length,
+        week: rows.reduce((s, r: any) => s + (r.duration_minutes ?? 0), 0),
+        streak,
       };
     },
   });
