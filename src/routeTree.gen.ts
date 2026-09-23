@@ -39,6 +39,7 @@ import { Route as ApiAiStreamRouteImport } from './routes/api/ai-stream'
 import { Route as AuthenticatedXlangRouteImport } from './routes/_authenticated/xlang'
 import { Route as AuthenticatedUpdatesRouteImport } from './routes/_authenticated/updates'
 import { Route as AuthenticatedTutorRouteImport } from './routes/_authenticated/tutor'
+import { Route as AuthenticatedTogetherRouteImport } from './routes/_authenticated/together'
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
 import { Route as AuthenticatedStudyRouteImport } from './routes/_authenticated/study'
 import { Route as AuthenticatedShareRouteImport } from './routes/_authenticated/share'
@@ -247,6 +248,11 @@ const AuthenticatedUpdatesRoute = AuthenticatedUpdatesRouteImport.update({
 const AuthenticatedTutorRoute = AuthenticatedTutorRouteImport.update({
   id: '/tutor',
   path: '/tutor',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTogetherRoute = AuthenticatedTogetherRouteImport.update({
+  id: '/together',
+  path: '/together',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTimerRoute = AuthenticatedTimerRouteImport.update({
@@ -628,6 +634,7 @@ export interface FileRoutesByFullPath {
   '/share': typeof AuthenticatedShareRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
+  '/together': typeof AuthenticatedTogetherRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/updates': typeof AuthenticatedUpdatesRoute
   '/xlang': typeof AuthenticatedXlangRoute
@@ -715,6 +722,7 @@ export interface FileRoutesByTo {
   '/share': typeof AuthenticatedShareRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
+  '/together': typeof AuthenticatedTogetherRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/updates': typeof AuthenticatedUpdatesRoute
   '/xlang': typeof AuthenticatedXlangRoute
@@ -806,6 +814,7 @@ export interface FileRoutesById {
   '/_authenticated/share': typeof AuthenticatedShareRoute
   '/_authenticated/study': typeof AuthenticatedStudyRoute
   '/_authenticated/timer': typeof AuthenticatedTimerRoute
+  '/_authenticated/together': typeof AuthenticatedTogetherRoute
   '/_authenticated/tutor': typeof AuthenticatedTutorRoute
   '/_authenticated/updates': typeof AuthenticatedUpdatesRoute
   '/_authenticated/xlang': typeof AuthenticatedXlangRoute
@@ -899,6 +908,7 @@ export interface FileRouteTypes {
     | '/share'
     | '/study'
     | '/timer'
+    | '/together'
     | '/tutor'
     | '/updates'
     | '/xlang'
@@ -986,6 +996,7 @@ export interface FileRouteTypes {
     | '/share'
     | '/study'
     | '/timer'
+    | '/together'
     | '/tutor'
     | '/updates'
     | '/xlang'
@@ -1076,6 +1087,7 @@ export interface FileRouteTypes {
     | '/_authenticated/share'
     | '/_authenticated/study'
     | '/_authenticated/timer'
+    | '/_authenticated/together'
     | '/_authenticated/tutor'
     | '/_authenticated/updates'
     | '/_authenticated/xlang'
@@ -1361,6 +1373,13 @@ declare module '@tanstack/react-router' {
       path: '/tutor'
       fullPath: '/tutor'
       preLoaderRoute: typeof AuthenticatedTutorRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/together': {
+      id: '/_authenticated/together'
+      path: '/together'
+      fullPath: '/together'
+      preLoaderRoute: typeof AuthenticatedTogetherRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/timer': {
@@ -1942,6 +1961,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedShareRoute: typeof AuthenticatedShareRoute
   AuthenticatedStudyRoute: typeof AuthenticatedStudyRoute
   AuthenticatedTimerRoute: typeof AuthenticatedTimerRoute
+  AuthenticatedTogetherRoute: typeof AuthenticatedTogetherRoute
   AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
   AuthenticatedUpdatesRoute: typeof AuthenticatedUpdatesRoute
   AuthenticatedXlangRoute: typeof AuthenticatedXlangRoute
@@ -1984,6 +2004,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedShareRoute: AuthenticatedShareRoute,
   AuthenticatedStudyRoute: AuthenticatedStudyRoute,
   AuthenticatedTimerRoute: AuthenticatedTimerRoute,
+  AuthenticatedTogetherRoute: AuthenticatedTogetherRoute,
   AuthenticatedTutorRoute: AuthenticatedTutorRoute,
   AuthenticatedUpdatesRoute: AuthenticatedUpdatesRoute,
   AuthenticatedXlangRoute: AuthenticatedXlangRoute,
