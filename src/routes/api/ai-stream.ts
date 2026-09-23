@@ -135,7 +135,7 @@ export const Route = createFileRoute("/api/ai-stream")({
             body: JSON.stringify({
               model,
               stream: true,
-              ...(body.system ? { instructions: body.system } : {}),
+              instructions: buildSystem(body.system),
               input: turns.map((t) => ({
                 role: t.role,
                 content: [
@@ -155,7 +155,7 @@ export const Route = createFileRoute("/api/ai-stream")({
               model,
               stream: true,
               messages: [
-                ...(body.system ? [{ role: "system", content: body.system }] : []),
+                { role: "system", content: buildSystem(body.system) },
                 ...turns,
               ],
               ...(typeof body.temperature === "number" ? { temperature: body.temperature } : {}),
