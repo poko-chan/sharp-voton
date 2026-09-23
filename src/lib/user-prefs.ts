@@ -233,6 +233,42 @@ export type LocalPrefs = {
   town_auto_rotate: boolean; // 3Dの自動回転
   town_show_labels: boolean; // 建物名ラベル
   town_default_tab: "economy" | "policy" | "build" | "map" | "info";
+  // 表示・操作
+  home_start_page: "dashboard" | "study" | "timer" | "makron" | "chat";
+  sticky_header: boolean;
+  card_shadows: boolean;
+  colorful_subjects: boolean;
+  show_tips: boolean;
+  confirm_before_delete: boolean;
+  keyboard_shortcuts: boolean;
+  quick_actions: boolean;
+  number_format_hours: boolean;
+  // 学習
+  daily_goal_minutes: number;
+  pomodoro_rounds: number;
+  pomodoro_long_break_minutes: number;
+  auto_log_timer: boolean;
+  min_session_minutes: number;
+  focus_mode_strict: boolean;
+  review_reminder_days: number;
+  streak_warning: boolean;
+  // 通知
+  quiet_hours_enabled: boolean;
+  quiet_start: string;
+  quiet_end: string;
+  notif_digest: "instant" | "daily" | "off";
+  notif_cheers: boolean;
+  notif_room_invites: boolean;
+  notif_weekly_report: boolean;
+  notif_goal_reminder: boolean;
+  // プライバシー・フレンド
+  profile_visibility: "public" | "friends" | "private";
+  show_online_status: boolean;
+  show_study_time: boolean;
+  allow_friend_requests: boolean;
+  allow_room_invites: "all" | "friends" | "none";
+  allow_cheers: boolean;
+  hide_from_ranking: boolean;
 };
 
 export const DASHBOARD_CARD_OPTIONS: { value: string; label: string }[] = [
