@@ -267,7 +267,8 @@ export const adminListUsers = createServerFn({ method: "POST" })
       .from("profiles")
       .select("id, email, username, display_name, avatar_url, created_at", { count: "exact" })
       .order("created_at", { ascending: false });
-    const search = data.search?.trim();
+    // フィルタ式を壊す文字を除去してから検索に使う
+    const search = data.search?.trim().replace(/[%_,.()\\"']/g, " ").slice(0, 60).trim();
     if (search) {
       q = q.or(`username.ilike.%${search}%,display_name.ilike.%${search}%,email.ilike.%${search}%`);
     }

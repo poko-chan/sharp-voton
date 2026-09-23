@@ -4,8 +4,11 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 function genCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  // 推測されないよう暗号論的乱数で十分な長さのコードを作る
+  const bytes = new Uint8Array(10);
+  crypto.getRandomValues(bytes);
   let s = "";
-  for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  for (const b of bytes) s += chars[b % chars.length];
   return s;
 }
 
