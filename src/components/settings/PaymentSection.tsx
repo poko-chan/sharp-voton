@@ -24,6 +24,8 @@ type Feature = {
   bool_value: boolean;
   text_value: string | null;
   sort_order: number;
+  description: string | null;
+  group_label: string | null;
 };
 type Pack = { id: string; name: string; description: string | null; price: number };
 type PackItem = {
