@@ -206,6 +206,17 @@ function TodaySummary() {
         <span className="text-muted-foreground tabular-nums">{data?.sessions ?? 0} セッション</span>
       </div>
       <PowerBar value={Math.min(100, (min / goal) * 100)} height={10} striped={false} />
+      <div className="mt-2 flex items-center gap-3 text-[11px] text-muted-foreground">
+        <span>
+          直近7日 <b className="text-foreground tabular-nums">{data?.week ?? 0}分</b>
+        </span>
+        <span>
+          連続 <b className="text-foreground tabular-nums">{data?.streak ?? 0}日</b>
+        </span>
+        <span className="ml-auto">
+          {min >= goal ? "今日の目標達成🎉" : `あと ${Math.max(0, goal - min)}分`}
+        </span>
+      </div>
     </Card>
   );
 }
