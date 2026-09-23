@@ -527,14 +527,32 @@ function GroupTable({
                     defaultValue={row.label}
                     onBlur={(e) => renameRow(row.label, e.target.value)}
                   />
-                  <select
-                    className="h-7 rounded-md border bg-background px-2 text-xs"
-                    value={row.kind}
-                    onChange={(e) => setRowKind(row.label, e.target.value as "bool" | "text")}
-                  >
-                    <option value="bool">◯×</option>
-                    <option value="text">短答</option>
-                  </select>
+                  <Input
+                    className="h-7 text-xs"
+                    placeholder="説明（任意）"
+                    defaultValue={row.description ?? ""}
+                    onBlur={(e) =>
+                      setRowMeta(row.label, { description: e.target.value || null })
+                    }
+                  />
+                  <div className="flex items-center gap-1">
+                    <Input
+                      className="h-7 w-24 text-xs"
+                      placeholder="グループ"
+                      defaultValue={row.group_label ?? ""}
+                      onBlur={(e) =>
+                        setRowMeta(row.label, { group_label: e.target.value || null })
+                      }
+                    />
+                    <select
+                      className="h-7 rounded-md border bg-background px-2 text-xs"
+                      value={row.kind}
+                      onChange={(e) => setRowKind(row.label, e.target.value as "bool" | "text")}
+                    >
+                      <option value="bool">◯×</option>
+                      <option value="text">短答</option>
+                    </select>
+                  </div>
                 </td>
                 {plans.map((p) => {
                   const f = cell(row.label, p.id);
