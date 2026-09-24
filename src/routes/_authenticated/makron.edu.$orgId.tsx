@@ -58,7 +58,7 @@ function EduOrgPage() {
               </Button>
             ))}
         </div>
-        {tab === "learn" && <OrgEdu orgId={orgId} ctx={ctx} />}
+        {tab === "learn" && <OrgEdu orgId={orgId} ctx={{ ...ctx, isStaff: ctx.eduAuthor }} />}
         {tab === "tasks" && <OrgMakron orgId={orgId} ctx={ctx} />}
         {tab === "rank" && <Ranking orgId={orgId} />}
         {tab === "grades" && ctx.isStaff && <Grades orgId={orgId} />}
