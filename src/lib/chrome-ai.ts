@@ -252,13 +252,20 @@ export async function createChromeAiSession(opts?: {
 /** モデル出力から JSON を取り出す（```json ブロックや前後の文字列を許容） */
 export function extractJSON<T = unknown>(raw: string): T {
   if (!raw) throw new Error("AI 応答が空です");
-  let s = raw.trim();
+  let s = raw
+    .trim()
+    .replace(/[\uFF5B]/g, "{")
+    .replace(/[\uFF5D]/g, "}")
+    .replace(/[\uFF3B]/g, "[")
+    .replace(/[\uFF3D]/g, "]")
+    .replace(/[\u201C\u201D\uFF02]/g, '"')
+    .replace(/^\uFEFF/, "");
   // ```json ... ``` を剥がす
   const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
   if (fence) s = fence[1].trim();
   // 最初の { または [ から末尾の対応する括弧まで切り出す
   const start = s.search(/[[]{/);
-  if (start === -1) throw new Error("JSON が見つかりません");
+  if (start === -1) throw new Error("JSON が見つかりません。AIの返答の { から } までをそのまま貼り付けてください");
   const open = s[start];
   const close = open === "{" ? "}" : "]";
   let depth = 0;

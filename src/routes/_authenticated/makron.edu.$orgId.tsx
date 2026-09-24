@@ -5,6 +5,8 @@ import { useOrg, loadOrgProfiles } from "@/lib/org-apps";
 import { MakronShell } from "@/components/makron/MakronShell";
 import { OrgEdu } from "@/components/org/OrgEdu";
 import { OrgMakron } from "@/components/org/OrgMakron";
+import { EduWorkspace } from "@/components/org/EduWorkspace";
+import { EduTeacherPortal } from "@/components/org/EduTeacherPortal";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BookOpen, ClipboardList, Trophy, BarChart3, Settings2, Users, ShieldCheck, Send, LayoutGrid } from "lucide-react";
@@ -19,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/makron/edu/$orgId")({
   component: EduOrgPage,
 });
 
-type Tab = "learn" | "tasks" | "rank" | "grades" | "admin";
+type Tab = "learn" | "portal" | "manageq" | "tasks" | "rank" | "grades" | "admin";
 
 function EduOrgPage() {
   const { orgId } = Route.useParams();
@@ -32,6 +34,8 @@ function EduOrgPage() {
 
   const tabs: { k: Tab; label: string; icon: any; staff?: boolean }[] = [
     { k: "learn", label: "学習", icon: BookOpen },
+    { k: "portal", label: "先生用ポータル", icon: Users, staff: true },
+    { k: "manageq", label: "問題管理", icon: ShieldCheck, staff: true },
     { k: "tasks", label: "課題", icon: ClipboardList },
     { k: "rank", label: "ランキング", icon: Trophy },
     { k: "grades", label: "成績一覧", icon: BarChart3, staff: true },
@@ -59,7 +63,9 @@ function EduOrgPage() {
               </Button>
             ))}
         </div>
-        {tab === "learn" && <OrgEdu orgId={orgId} ctx={{ ...ctx, isStaff: ctx.eduAuthor }} />}
+        {tab === "learn" && <EduWorkspace orgId={orgId} />}
+        {tab === "portal" && ctx.isStaff && <EduTeacherPortal orgId={orgId} />}
+        {tab === "manageq" && <OrgEdu orgId={orgId} ctx={{ ...ctx, isStaff: ctx.eduAuthor }} />}
         {tab === "tasks" && <OrgMakron orgId={orgId} ctx={ctx} />}
         {tab === "rank" && <Ranking orgId={orgId} />}
         {tab === "grades" && ctx.isStaff && <Grades orgId={orgId} />}
@@ -169,7 +175,7 @@ function Grades({ orgId }: { orgId: string }) {
 
 function AdminLinks({ orgId, onTab }: { orgId: string; onTab: (t: Tab) => void }) {
   const items: { label: string; desc: string; icon: any; tab?: Tab; section?: string }[] = [
-    { label: "問題集をつくる・編集", desc: "組織専用の問題集と問題を作成", icon: BookOpen, tab: "learn" },
+    { label: "問題集をつくる・編集", desc: "組織専用の問題集と問題を作成", icon: BookOpen, tab: "manageq" },
     { label: "課題を配る", desc: "問題集を期限つきで配布", icon: Send, tab: "tasks" },
     { label: "成績を見る", desc: "生徒ごとの解答数・正答率", icon: BarChart3, tab: "grades" },
     { label: "メンバー", desc: "生徒・先生の管理", icon: Users, section: "members" },
