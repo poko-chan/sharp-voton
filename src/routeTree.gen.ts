@@ -51,8 +51,6 @@ import { Route as AuthenticatedParentRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedOrganizationsRouteImport } from './routes/_authenticated/organizations'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
-import { Route as AuthenticatedMistakesRouteImport } from './routes/_authenticated/mistakes'
-import { Route as AuthenticatedMissionsRouteImport } from './routes/_authenticated/missions'
 import { Route as AuthenticatedMentorRouteImport } from './routes/_authenticated/mentor'
 import { Route as AuthenticatedMaterialsRouteImport } from './routes/_authenticated/materials'
 import { Route as AuthenticatedMakronRouteImport } from './routes/_authenticated/makron'
@@ -312,16 +310,6 @@ const AuthenticatedNotificationsRoute =
 const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
   id: '/notes',
   path: '/notes',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedMistakesRoute = AuthenticatedMistakesRouteImport.update({
-  id: '/mistakes',
-  path: '/mistakes',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedMissionsRoute = AuthenticatedMissionsRouteImport.update({
-  id: '/missions',
-  path: '/missions',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedMentorRoute = AuthenticatedMentorRouteImport.update({
@@ -635,8 +623,6 @@ export interface FileRoutesByFullPath {
   '/makron': typeof AuthenticatedMakronRouteWithChildren
   '/materials': typeof AuthenticatedMaterialsRouteWithChildren
   '/mentor': typeof AuthenticatedMentorRoute
-  '/missions': typeof AuthenticatedMissionsRoute
-  '/mistakes': typeof AuthenticatedMistakesRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
@@ -726,8 +712,6 @@ export interface FileRoutesByTo {
   '/inventory': typeof AuthenticatedInventoryRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/mentor': typeof AuthenticatedMentorRoute
-  '/missions': typeof AuthenticatedMissionsRoute
-  '/mistakes': typeof AuthenticatedMistakesRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/parent': typeof AuthenticatedParentRoute
@@ -819,8 +803,6 @@ export interface FileRoutesById {
   '/_authenticated/makron': typeof AuthenticatedMakronRouteWithChildren
   '/_authenticated/materials': typeof AuthenticatedMaterialsRouteWithChildren
   '/_authenticated/mentor': typeof AuthenticatedMentorRoute
-  '/_authenticated/missions': typeof AuthenticatedMissionsRoute
-  '/_authenticated/mistakes': typeof AuthenticatedMistakesRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
@@ -915,8 +897,6 @@ export interface FileRouteTypes {
     | '/makron'
     | '/materials'
     | '/mentor'
-    | '/missions'
-    | '/mistakes'
     | '/notes'
     | '/notifications'
     | '/organizations'
@@ -1006,8 +986,6 @@ export interface FileRouteTypes {
     | '/inventory'
     | '/leaderboard'
     | '/mentor'
-    | '/missions'
-    | '/mistakes'
     | '/notes'
     | '/notifications'
     | '/parent'
@@ -1098,8 +1076,6 @@ export interface FileRouteTypes {
     | '/_authenticated/makron'
     | '/_authenticated/materials'
     | '/_authenticated/mentor'
-    | '/_authenticated/missions'
-    | '/_authenticated/mistakes'
     | '/_authenticated/notes'
     | '/_authenticated/notifications'
     | '/_authenticated/organizations'
@@ -1483,20 +1459,6 @@ declare module '@tanstack/react-router' {
       path: '/notes'
       fullPath: '/notes'
       preLoaderRoute: typeof AuthenticatedNotesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/mistakes': {
-      id: '/_authenticated/mistakes'
-      path: '/mistakes'
-      fullPath: '/mistakes'
-      preLoaderRoute: typeof AuthenticatedMistakesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/missions': {
-      id: '/_authenticated/missions'
-      path: '/missions'
-      fullPath: '/missions'
-      preLoaderRoute: typeof AuthenticatedMissionsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/mentor': {
@@ -1992,8 +1954,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMakronRoute: typeof AuthenticatedMakronRouteWithChildren
   AuthenticatedMaterialsRoute: typeof AuthenticatedMaterialsRouteWithChildren
   AuthenticatedMentorRoute: typeof AuthenticatedMentorRoute
-  AuthenticatedMissionsRoute: typeof AuthenticatedMissionsRoute
-  AuthenticatedMistakesRoute: typeof AuthenticatedMistakesRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRouteWithChildren
@@ -2035,8 +1995,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMakronRoute: AuthenticatedMakronRouteWithChildren,
   AuthenticatedMaterialsRoute: AuthenticatedMaterialsRouteWithChildren,
   AuthenticatedMentorRoute: AuthenticatedMentorRoute,
-  AuthenticatedMissionsRoute: AuthenticatedMissionsRoute,
-  AuthenticatedMistakesRoute: AuthenticatedMistakesRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRouteWithChildren,

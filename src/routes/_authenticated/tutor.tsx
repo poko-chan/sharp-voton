@@ -379,6 +379,15 @@ function ThinkingBlock({
 }
 
 export function TutorPage() {
+  return (
+    <div className="max-w-xl mx-auto p-10 text-center space-y-2">
+      <div className="text-xl font-bold">AI家庭教師は一時停止中です</div>
+      <p className="text-sm text-muted-foreground">再開までしばらくお待ちください。</p>
+    </div>
+  );
+}
+
+export function TutorPageInner() {
   const { user } = useAuth();
   const listFn = useServerFn(listTutorThreads);
   const createFn = useServerFn(createTutorThread);

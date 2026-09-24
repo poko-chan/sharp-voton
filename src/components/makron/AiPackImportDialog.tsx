@@ -29,7 +29,7 @@ type Mode = "new" | "add";
 type Unit = { id: string; title?: string; subject?: string; field?: string; unit?: string };
 
 type GeneratedQuestion = {
-  type?: "single" | "multi" | "text";
+  type?: string;
   prompt: string;
   options?: string[];
   correct_options?: string[];
@@ -362,7 +362,7 @@ function buildPrompt(args: {
         ? '全問 type は "multi"（複数選択）。'
         : args.qType === "text"
           ? '全問 type は "text"（短答記述）。'
-          : 'type は "single" / "multi" / "text" を適度に混在。';
+          : 'type は下の【type一覧】から問題に合うものを幅広く混在させる。';
 
   const schema =
     args.mode === "new"
@@ -405,7 +405,17 @@ ${args.packTitleHint ? `【希望パック名】${args.packTitleHint}\n` : ""}�
 ${args.extra ? `【追加指示】${args.extra}\n` : ""}
 【ルール】
 - 出力は厳密な JSON のみ。前置き・コードブロック・補足文は禁止。
-- type "single" は correct_options に1つだけ、"multi" は2つ以上、"text" は options と correct_options を空配列にして accepted_answers に許容解（複数可）を入れる。
+【type一覧】
+- "single": 4択。options に選択肢、correct_options に正解1つ。
+- "multi": 複数選択。correct_options に正解2つ以上。
+- "true_false": ○×。correct_options に "○" か "×"。options は ["○","×"]。
+- "text": 短答。options/correct_options は空、accepted_answers に許容解（複数可）。
+- "numeric": 数値。accepted_answers に数値文字列。
+- "tiles": 単語タイルで文を作る。correct_options に正解の語を順番に、options に正解の語＋ひっかけ語をシャッフルして入れる。
+- "ordering": 並べ替え。correct_options に正しい順、options に同じ要素をシャッフル。
+- "matching": ペア合わせ。accepted_answers に "左 => 右" 形式、options に左側の語。
+- "fill_blank": 穴埋め。prompt の空欄を "___" で書き、accepted_answers に空欄の順で答え。
+- "listen": 聞いて答える。options[0] に読み上げ文、accepted_answers に正答。
 - explanation は1〜3文。hint_text は1文の短いヒント。
 - points は 5〜20 の整数。
 
@@ -415,7 +425,11 @@ ${schema}
 上記のフォーマットに従って JSON のみを返してください。`;
 }
 
-const ALLOWED_TYPES = new Set(["single", "multi", "text"]);
+const ALLOWED_TYPES = new Set([
+  "single", "multi", "text", "true_false", "tiles", "ordering", "matching", "fill_blank", "listen", "numeric",
+]);
+const USES_ACCEPTED = new Set(["text", "matching", "fill_blank", "listen", "numeric"]);
+const USES_CORRECT = new Set(["single", "multi", "true_false", "tiles", "ordering"]);
 
 function normalizeQuestion(q: GeneratedQuestion, packId: string, unitId: string, idx: number) {
   const type = ALLOWED_TYPES.has(q.type as string) ? q.type! : "single";
@@ -433,9 +447,20 @@ function normalizeQuestion(q: GeneratedQuestion, packId: string, unitId: string,
     unit_id: unitId,
     prompt: String(q.prompt ?? "").slice(0, 2000),
     type,
-    options: type === "text" ? [] : options,
-    correct_options: type === "text" ? [] : correct,
-    accepted_answers: type === "text" ? accepted : [],
+    options:
+      type === "true_false"
+        ? ["○", "×"]
+        : type === "matching" && !options.length
+          ? accepted.map((a) => a.split("=>")[0].trim())
+          : type === "text" || type === "numeric" || type === "fill_blank"
+            ? []
+            : options,
+    correct_options: USES_CORRECT.has(type) ? correct : [],
+    accepted_answers: USES_ACCEPTED.has(type)
+      ? type === "listen" && !accepted.length && options[0]
+        ? [options[0]]
+        : accepted
+      : [],
     explanation: q.explanation ? String(q.explanation).slice(0, 2000) : null,
     hint_text: q.hint_text ? String(q.hint_text).slice(0, 500) : null,
     points: Number.isFinite(q.points) ? Math.max(0, Math.min(100, Number(q.points))) : 10,

@@ -65,12 +65,14 @@ const MANAGE_ITEMS = [
   { section: "restrictions", label: "アプリ制限", icon: Ban },
   { section: "apps", label: "アプリ管理", icon: LayoutGrid },
   { section: "settings", label: "組織設定", icon: Settings },
+  { section: "roles", label: "権限（役職）", icon: ShieldAlert },
 ];
 
 function OrgHome() {
   const { orgId } = Route.useParams();
-  const { org, myRole, canAdmin, isStaff, leadGroups, loading, appEnabled, appLabel } =
+  const { org, myRole, isStaff, leadGroups, loading, appEnabled, appLabel, canManage, manageSections, isOwner } =
     useOrg(orgId);
+  const canAdmin = isOwner || manageSections.length > 0;
 
   if (loading) return <div className="p-6 text-sm text-muted-foreground">読み込み中…</div>;
   if (!myRole && !canAdmin)
@@ -136,7 +138,7 @@ function OrgHome() {
             管理メニュー
           </h2>
           <div className="grid gap-2 grid-cols-2 md:grid-cols-3">
-            {MANAGE_ITEMS.map((m) => (
+            {MANAGE_ITEMS.filter((m) => canManage(m.section)).map((m) => (
               <Link
                 key={m.section}
                 to="/organizations/$orgId/manage/$section"

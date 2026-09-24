@@ -248,7 +248,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
         <section id="ai-trial" className="mx-auto max-w-3xl scroll-mt-20 px-4 pb-16 sm:pb-24">
           <p className="section-eyebrow">AI</p>
           <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">
-            Study# のAIを、いま試す
+            Study# のAI（一時停止中）
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
             AIはサーバー側で動くので、ダウンロードも設定も不要。登録しなくてもそのまま会話できます。

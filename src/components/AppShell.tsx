@@ -89,13 +89,11 @@ export const NAV = [
   },
   { to: "/notes", labelKey: "nav.notes" as const, icon: StickyNote },
   { to: "/announcements", labelKey: "nav.announcements" as const, icon: Megaphone },
-  { to: "/missions", labelKey: "nav.dashboard" as const, icon: Target, override: "ミッション" },
   { to: "/makron", labelKey: "nav.dashboard" as const, icon: Target, override: "Makron" },
   { to: "/xlang", labelKey: "nav.dashboard" as const, icon: Languages, override: "Xlang" },
   { to: "/organizations", labelKey: "nav.dashboard" as const, icon: Users, override: "組織" },
   { to: "/settings", labelKey: "nav.settings" as const, icon: Settings, override: "設定" },
   { to: "/help", labelKey: "nav.dashboard" as const, icon: HelpCircle, override: "ヘルプ" },
-  { to: "/mistakes", labelKey: "nav.dashboard" as const, icon: Brain, override: "間違い直し" },
 ] as const;
 
 // Map prefix -> service key (for filtering hidden services)

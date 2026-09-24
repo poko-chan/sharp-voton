@@ -166,6 +166,7 @@ export function useOrg(orgId: string) {
   const [groups, setGroups] = useState<any[]>([]);
   const [leadGroups, setLeadGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [customRole, setCustomRole] = useState<any>(null);
 
   const reload = useCallback(async () => {
     if (!user) return;
@@ -173,7 +174,7 @@ export function useOrg(orgId: string) {
       (supabase as any).from("organizations").select("*").eq("id", orgId).maybeSingle(),
       (supabase as any)
         .from("organization_members")
-        .select("role, suspended")
+        .select("role, suspended, custom_role_id")
         .eq("organization_id", orgId)
         .eq("user_id", user.id)
         .maybeSingle(),
@@ -186,6 +187,14 @@ export function useOrg(orgId: string) {
     ]);
     setOrg(o);
     setMyRole(me?.role ?? null);
+    if (me?.custom_role_id) {
+      const { data: cr } = await (supabase as any)
+        .from("org_custom_roles")
+        .select("*")
+        .eq("id", me.custom_role_id)
+        .maybeSingle();
+      setCustomRole(cr ?? null);
+    } else setCustomRole(null);
     setApps(a ?? []);
     setGroups(g ?? []);
     const role = me?.role ?? null;
@@ -198,12 +207,28 @@ export function useOrg(orgId: string) {
     reload();
   }, [reload]);
 
+  const isOwner = isAdmin || myRole === "owner";
+  const perms: OrgRolePerms = customRole?.permissions ?? {};
   const canAdmin = isAdmin || ["owner", "admin"].includes(myRole ?? "");
   const isStaff = canAdmin || myRole === "teacher";
   const appEnabled = (key: string) => {
     const row = apps.find((x) => x.app_key === key);
-    return row ? row.enabled : true;
+    if (row && !row.enabled) return false;
+    if (!isOwner && customRole && perms.apps?.[key] === "none") return false;
+    return true;
   };
+  const appCanEdit = (key: string) =>
+    isOwner || !customRole || (perms.apps?.[key] ?? "edit") === "edit";
+  const manageSections: string[] = isOwner
+    ? ["*"]
+    : customRole
+      ? (perms.manage ?? (canAdmin ? ["*"] : []))
+      : canAdmin
+        ? ["*"]
+        : [];
+  const canManage = (section: string) =>
+    section === "roles" ? isOwner : manageSections.includes("*") || manageSections.includes(section);
+  const eduAuthor = isOwner || (customRole ? !!perms.edu_author || isStaff : isStaff);
   const appLabel = (key: string) =>
     apps.find((x) => x.app_key === key)?.label || ORG_APPS.find((a) => a.key === key)?.label || key;
 
@@ -213,7 +238,13 @@ export function useOrg(orgId: string) {
     myRole,
     canAdmin,
     isStaff,
-    isOwner: isAdmin || myRole === "owner",
+    isOwner,
+    customRole,
+    perms,
+    appCanEdit,
+    canManage,
+    manageSections,
+    eduAuthor,
     apps,
     groups,
     leadGroups,
@@ -255,3 +286,9 @@ export async function loadOrgProfiles(orgId: string, ids: string[]) {
 }
 
 export const nameOf = (p: any, fallback = "メンバー") => p?.display_name || p?.username || fallback;
+
+export type OrgRolePerms = {
+  apps?: Record<string, "none" | "view" | "edit">;
+  manage?: string[];
+  edu_author?: boolean;
+};

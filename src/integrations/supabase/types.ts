@@ -3949,6 +3949,50 @@ export type Database = {
           },
         ]
       }
+      org_custom_roles: {
+        Row: {
+          base_role: Database["public"]["Enums"]["org_role"]
+          color: string
+          created_at: string
+          id: string
+          name: string
+          organization_id: string
+          permissions: Json
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          base_role?: Database["public"]["Enums"]["org_role"]
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          organization_id: string
+          permissions?: Json
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          base_role?: Database["public"]["Enums"]["org_role"]
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          organization_id?: string
+          permissions?: Json
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_custom_roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       org_digital_ids: {
         Row: {
           affiliation: string | null
@@ -5578,6 +5622,7 @@ export type Database = {
       }
       organization_members: {
         Row: {
+          custom_role_id: string | null
           id: string
           joined_at: string
           organization_id: string
@@ -5586,6 +5631,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          custom_role_id?: string | null
           id?: string
           joined_at?: string
           organization_id: string
@@ -5594,6 +5640,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          custom_role_id?: string | null
           id?: string
           joined_at?: string
           organization_id?: string
@@ -5602,6 +5649,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "organization_members_custom_role_id_fkey"
+            columns: ["custom_role_id"]
+            isOneToOne: false
+            referencedRelation: "org_custom_roles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "organization_members_organization_id_fkey"
             columns: ["organization_id"]
@@ -8317,6 +8371,10 @@ export type Database = {
       notebook_can_edit: { Args: { _nb: string }; Returns: boolean }
       notebook_can_view: { Args: { _nb: string }; Returns: boolean }
       org_application_submit: { Args: { _payload: Json }; Returns: string }
+      org_assign_custom_role: {
+        Args: { _org: string; _role: string; _user: string }
+        Returns: undefined
+      }
       org_assignment_progress: {
         Args: { _assignment: string }
         Returns: {
