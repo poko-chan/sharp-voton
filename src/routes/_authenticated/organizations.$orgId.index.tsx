@@ -109,6 +109,48 @@ function OrgHome() {
         </Link>
       </div>
 
+      {isOwner && (
+        <Card className="p-4 space-y-3 border-primary/40">
+          <div className="font-bold text-sm">はじめの設定</div>
+          {org?.join_code && (
+            <div className="flex items-center gap-2 text-sm flex-wrap">
+              <span className="text-muted-foreground">参加コード</span>
+              <code className="px-2 py-1 rounded bg-muted font-mono font-bold tracking-widest">{org.join_code}</code>
+              <Button size="sm" variant="outline" onClick={() => navigator.clipboard?.writeText(org.join_code)}>
+                コピー
+              </Button>
+              <span className="text-[11px] text-muted-foreground">生徒・先生にこのコードを伝えると参加申請できます</span>
+            </div>
+          )}
+          <ol className="grid sm:grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+            {[
+              ["1. 使うアプリを選ぶ", "apps"],
+              ["2. 権限（役職）を作る", "roles"],
+              ["3. 名簿・学年を整える", "roster"],
+              ["4. 参加申請を承認", "requests"],
+            ].map(([l, sec]) => (
+              <li key={sec}>
+                <Link to="/organizations/$orgId/manage/$section" params={{ orgId, section: sec }}>
+                  <div className="rounded-lg border p-2 hover:border-primary transition">{l}</div>
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </Card>
+      )}
+
+      {appEnabled("edu") && (
+        <Link to="/makron/edu/$orgId" params={{ orgId }}>
+          <Card className="p-4 flex items-center gap-3 hover:border-primary transition">
+            <GraduationCap className="h-6 w-6 text-primary" />
+            <div className="flex-1">
+              <div className="font-bold text-sm">Makron for education を開く</div>
+              <div className="text-[11px] text-muted-foreground">問題演習・課題・ランキング・成績</div>
+            </div>
+          </Card>
+        </Link>
+      )}
+
       <section className="space-y-2">
         <h2 className="text-sm font-bold text-muted-foreground">アプリ</h2>
         <div className="grid gap-3 grid-cols-2 md:grid-cols-3">

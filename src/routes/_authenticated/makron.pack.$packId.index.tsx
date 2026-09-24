@@ -48,6 +48,12 @@ const TYPES = [
   { v: "ocr", l: "手書き(OCR読み取り)" },
 ] as const;
 
+const TYPE_JA: Record<string, string> = {
+  single: "択一", multi: "複数選択", text: "記述(短)", ocr: "手書き", written: "記述", file: "ファイル",
+  true_false: "○×", tiles: "単語タイル", ordering: "並べ替え", matching: "ペア合わせ",
+  fill_blank: "穴埋め", listen: "聞き取り", numeric: "数値",
+};
+
 function PackPage() {
   const { packId } = Route.useParams();
   const { user, isAdmin } = useAuth();
@@ -129,7 +135,8 @@ function PackPage() {
     setDraft((d: any) => ({ ...d, image_url: data?.signedUrl ?? path }));
   };
 
-  const saveQuestion = async () => {
+  const [qFilter, setQFilter] = useState("");
+  const saveQuestion = async (next = false) => {
     if (!draft || !draft.prompt.trim()) return toast.error("問題文を入力してください");
     const {
       id,
@@ -152,9 +159,10 @@ function PackPage() {
       ? await (supabase as any).from("makron_questions").update(payload).eq("id", id)
       : await (supabase as any).from("makron_questions").insert(payload);
     if (error) return toast.error(error.message);
-    setDraft(null);
+    // 「保存して次へ」: 答え方・配点を引き継いで空の問題を用意
+    setDraft(next ? { ...blank(), type: draft.type, points: draft.points } : null);
     load();
-    toast.success("保存しました");
+    toast.success(next ? "保存しました。次の問題をどうぞ" : "保存しました");
   };
 
   const delQuestion = async (id: string) => {
@@ -256,13 +264,21 @@ function PackPage() {
                   </Button>
                 </div>
               </div>
+              {questions.length > 5 && (
+                <input
+                  className="w-full h-8 rounded-md border bg-background px-2 text-sm"
+                  placeholder="問題文で絞り込み"
+                  value={qFilter}
+                  onChange={(e) => setQFilter(e.target.value)}
+                />
+              )}
               <div className="space-y-1 max-h-96 overflow-auto">
-                {questions.map((q) => (
+                {questions.filter((q) => !qFilter || (q.prompt ?? "").includes(qFilter)).map((q) => (
                   <div
                     key={q.id}
                     className={`flex items-center gap-1 border rounded p-2 text-sm ${q.is_active === false ? "opacity-50" : ""}`}
                   >
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">{q.type}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">{TYPE_JA[q.type] ?? q.type}</span>
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10">
                       {q.points}点
                     </span>
@@ -510,10 +526,16 @@ function PackPage() {
                     この問題を有効にする
                   </label>
                   <div className="flex gap-2">
-                    <Button onClick={saveQuestion}>
+                    <Button onClick={() => saveQuestion()}>
                       <Save className="h-4 w-4 mr-1" />
                       {draft.id ? "更新" : "作成"}
                     </Button>
+                    {!draft.id && (
+                      <Button variant="outline" onClick={() => saveQuestion(true)}>
+                        <Plus className="h-4 w-4 mr-1" />
+                        保存して次の問題
+                      </Button>
+                    )}
                     <Button variant="ghost" onClick={() => setDraft(null)}>
                       キャンセル
                     </Button>
