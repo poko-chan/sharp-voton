@@ -17,7 +17,7 @@ export const Route = createFileRoute("/api/public/ai-trial")({
   server: {
     handlers: {
       POST: async ({ request }: { request: Request }) => {
-        if (request) return new Response(JSON.stringify({ error: "AIは一時停止中です" }), { status: 503, headers: { "Content-Type": "application/json" } });
+        if (Date.now() > 0) return new Response(JSON.stringify({ error: "AIは一時停止中です" }), { status: 503, headers: { "Content-Type": "application/json" } });
         const apiKey = process.env.LOVABLE_API_KEY;
         if (!apiKey) return text("AIの設定が未完了です", 500);
 
