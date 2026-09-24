@@ -41,6 +41,7 @@ const TYPES = [
   { v: "single", l: "単一選択" },
   { v: "multi", l: "複数選択" },
   { v: "text", l: "言葉での回答" },
+  ...EXTRA_TYPES,
   { v: "written", l: "記述" },
   { v: "file", l: "ファイル提出" },
   { v: "ocr", l: "手書き(OCR読み取り)" },
@@ -371,7 +372,7 @@ function PackPage() {
                         <SelectContent>
                           <SelectItem
                             value="auto"
-                            disabled={!["single", "multi", "text", "ocr"].includes(draft.type)}
+                            disabled={!AUTO_TYPES.includes(draft.type)}
                           >
                             自動
                           </SelectItem>
@@ -458,6 +459,7 @@ function PackPage() {
                       </Button>
                     </div>
                   )}
+                  <QuestionTypeEditor key={draft.id ?? draft.type} draft={draft} setDraft={setDraft} />
                   {(draft.type === "text" || draft.type === "ocr") && (
                     <div>
                       <label className="text-xs">
