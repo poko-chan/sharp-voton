@@ -141,7 +141,7 @@ function PackPage() {
       reviewed_at,
       reviewed_by,
       ...rest
-    } = draft;
+    } = finalizeDraft(draft);
     const payload = {
       ...rest,
       options: (rest.options ?? []).filter((o: string) => o && o.trim()),
