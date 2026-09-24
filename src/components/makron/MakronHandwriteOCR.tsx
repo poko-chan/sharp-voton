@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Maximize2, Minimize2, Plus, Trash2, Eraser, Loader2 } from "lucide-react";
-import { ocrLocal } from "@/lib/ocr-local";
+import { ocrHandwrite } from "@/lib/ocr-handwrite";
 import { toast } from "sonner";
 
 type Page = { id: string; dataUrl?: string; text: string };
@@ -33,7 +33,7 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
     const ctx = c.getContext("2d")!;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 6;
     ctx.strokeStyle = "#111";
     ctx.fillStyle = "#fff";
 
@@ -97,18 +97,11 @@ export function MakronHandwriteOCR({ onChange }: { onChange?: (combined: string)
     setProgress(0);
     try {
       // OCR品質向上のためのクロップ処理
-      const croppedCanvas = getCroppedCanvas(c);
-      const blob: Blob = await new Promise((r) => croppedCanvas.toBlob((b) => r(b!), "image/png")!);
 
       // 保存用には全体の状態を保持
       const fullDataUrl = c.toDataURL("image/png");
 
-      const res = await ocrLocal(blob, {
-        lang: "jpn",
-        onProgress: (_s, p) => setProgress(Math.round(p * 100)),
-      });
-
-      const cleaned = (res.text ?? "").replace(/\s+/g, "");
+      const cleaned = await ocrHandwrite(c, (p) => setProgress(Math.round(p * 100)));
       setPages((prev) =>
         prev.map((p, i) => (i === active ? { ...p, dataUrl: fullDataUrl, text: cleaned } : p)),
       );
