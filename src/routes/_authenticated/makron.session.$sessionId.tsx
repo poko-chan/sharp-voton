@@ -955,6 +955,12 @@ function SessionPage() {
           </>
         )}
 
+        <div className="h-2 rounded-full bg-muted overflow-hidden" aria-label="進み具合">
+          <div
+            className="h-full bg-primary transition-all duration-500"
+            style={{ width: `${((idx + (currentLocked ? 1 : 0)) / Math.max(1, questions.length)) * 100}%` }}
+          />
+        </div>
         <div className="flex items-center justify-between gap-2">
           <Button variant="outline" disabled={perQMode || idx === 0} onClick={() => goto(idx - 1)}>
             <ChevronLeft className="h-4 w-4 mr-1" />
