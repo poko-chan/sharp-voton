@@ -1,3 +1,4 @@
+import { QuestionTypeEditor, EXTRA_TYPES, AUTO_TYPES, finalizeDraft } from "@/components/makron/QuestionTypeEditor";
 import { QUESTION_COLUMNS, loadQuestionKeys } from "@/lib/makron-questions";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
