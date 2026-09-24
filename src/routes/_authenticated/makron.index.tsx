@@ -9,6 +9,11 @@ export const Route = createFileRoute("/_authenticated/makron/")({ component: Mak
 function MakronHub() {
   return (
     <MakronShell title="Makron" subtitle="学習モードを選択">
+      <div className="max-w-4xl mx-auto px-6 pt-6 flex flex-wrap gap-2">
+        <Link to="/makron/units"><Button size="sm" variant="outline">教科・単元から探す</Button></Link>
+        <Link to="/makron/history"><Button size="sm" variant="outline">解いた履歴</Button></Link>
+        <Link to="/makron/edu"><Button size="sm" variant="outline">学校・組織の問題</Button></Link>
+      </div>
       <div className="max-w-4xl mx-auto p-6 grid md:grid-cols-2 gap-4">
         <Link to="/makron/units" className="block">
           <Card className="p-6 h-full hover:border-primary transition space-y-3">

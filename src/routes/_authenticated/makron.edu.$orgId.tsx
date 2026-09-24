@@ -1,13 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useOrg } from "@/lib/org-apps";
+import { useOrg, loadOrgProfiles } from "@/lib/org-apps";
 import { MakronShell } from "@/components/makron/MakronShell";
 import { OrgEdu } from "@/components/org/OrgEdu";
 import { OrgMakron } from "@/components/org/OrgMakron";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, ClipboardList, Trophy, BarChart3 } from "lucide-react";
+import { BookOpen, ClipboardList, Trophy, BarChart3, Settings2, Users, ShieldCheck, Send, LayoutGrid } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/makron/edu/$orgId")({
   head: () => ({
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/makron/edu/$orgId")({
   component: EduOrgPage,
 });
 
-type Tab = "learn" | "tasks" | "rank" | "grades";
+type Tab = "learn" | "tasks" | "rank" | "grades" | "admin";
 
 function EduOrgPage() {
   const { orgId } = Route.useParams();
@@ -35,6 +35,7 @@ function EduOrgPage() {
     { k: "tasks", label: "課題", icon: ClipboardList },
     { k: "rank", label: "ランキング", icon: Trophy },
     { k: "grades", label: "成績一覧", icon: BarChart3, staff: true },
+    { k: "admin", label: "管理", icon: Settings2, staff: true },
   ];
 
   return (
@@ -62,6 +63,7 @@ function EduOrgPage() {
         {tab === "tasks" && <OrgMakron orgId={orgId} ctx={ctx} />}
         {tab === "rank" && <Ranking orgId={orgId} />}
         {tab === "grades" && ctx.isStaff && <Grades orgId={orgId} />}
+        {tab === "admin" && ctx.isStaff && <AdminLinks orgId={orgId} onTab={setTab} />}
       </div>
     </MakronShell>
   );
@@ -109,12 +111,9 @@ function Grades({ orgId }: { orgId: string }) {
       setAttempts(data ?? []);
       const ids = [...new Set((data ?? []).map((a: any) => a.user_id))];
       if (ids.length) {
-        const { data: p } = await (supabase as any)
-          .from("profiles")
-          .select("id, display_name")
-          .in("id", ids);
+        const p = await loadOrgProfiles(orgId, ids as string[]);
         const m: Record<string, string> = {};
-        for (const x of p ?? []) m[x.id] = x.display_name ?? "ユーザー";
+        for (const id of ids as string[]) m[id] = p[id]?.display_name ?? p[id]?.username ?? "ユーザー";
         setNames(m);
       }
     })();
@@ -165,5 +164,46 @@ function Grades({ orgId }: { orgId: string }) {
         </tbody>
       </table>
     </Card>
+  );
+}
+
+function AdminLinks({ orgId, onTab }: { orgId: string; onTab: (t: Tab) => void }) {
+  const items: { label: string; desc: string; icon: any; tab?: Tab; section?: string }[] = [
+    { label: "問題集をつくる・編集", desc: "組織専用の問題集と問題を作成", icon: BookOpen, tab: "learn" },
+    { label: "課題を配る", desc: "問題集を期限つきで配布", icon: Send, tab: "tasks" },
+    { label: "成績を見る", desc: "生徒ごとの解答数・正答率", icon: BarChart3, tab: "grades" },
+    { label: "メンバー", desc: "生徒・先生の管理", icon: Users, section: "members" },
+    { label: "権限（役職）", desc: "問題作成・配布できる人を決める", icon: ShieldCheck, section: "roles" },
+    { label: "アプリ管理", desc: "Makron for education のON/OFF", icon: LayoutGrid, section: "apps" },
+  ];
+  return (
+    <div className="grid sm:grid-cols-2 gap-3">
+      {items.map((it) => {
+        const body = (
+          <Card className="p-4 flex items-center gap-3 hover:border-primary transition h-full">
+            <div className="h-10 w-10 rounded-xl bg-primary/15 grid place-items-center">
+              <it.icon className="h-5 w-5 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <div className="font-bold text-sm">{it.label}</div>
+              <div className="text-xs text-muted-foreground">{it.desc}</div>
+            </div>
+          </Card>
+        );
+        return it.tab ? (
+          <button key={it.label} className="text-left" onClick={() => onTab(it.tab!)}>
+            {body}
+          </button>
+        ) : (
+          <Link
+            key={it.label}
+            to="/organizations/$orgId/manage/$section"
+            params={{ orgId, section: it.section! }}
+          >
+            {body}
+          </Link>
+        );
+      })}
+    </div>
   );
 }

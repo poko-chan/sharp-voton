@@ -36,11 +36,16 @@ function EduHub() {
           .from("org_app_settings")
           .select("organization_id, enabled")
           .eq("app_key", "edu")
-          .eq("enabled", true)
           .in("organization_id", ids),
       ]);
-      const on = new Set((s ?? []).map((r: any) => r.organization_id));
-      setOrgs((o ?? []).filter((x: any) => on.has(x.id) && x.status === "approved"));
+      // 設定が無い組織は「ON」とみなす（組織ホームのアプリ一覧と同じ扱い）
+      const off = new Set((s ?? []).filter((r: any) => r.enabled === false).map((r: any) => r.organization_id));
+      const role = new Map((mem ?? []).map((m: any) => [m.organization_id, m.role]));
+      setOrgs(
+        (o ?? [])
+          .filter((x: any) => !off.has(x.id) && x.status === "approved")
+          .map((x: any) => ({ ...x, role: role.get(x.id) })),
+      );
     })();
   }, [user?.id]);
 
@@ -53,7 +58,7 @@ function EduHub() {
             <Building2 className="h-8 w-8 mx-auto text-muted-foreground" />
             <div className="font-bold">利用できる組織がありません</div>
             <p className="text-xs text-muted-foreground">
-              所属する組織の管理者が「アプリ管理」で Makron for education を ON にすると表示されます。
+              承認済みの組織に参加すると表示されます。組織の「アプリ管理」でOFFにされている場合は表示されません。
             </p>
           </Card>
         )}
@@ -69,6 +74,11 @@ function EduHub() {
                   <div className="text-xs text-muted-foreground truncate">{o.description}</div>
                 )}
               </div>
+              {o.role && o.role !== "member" && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary font-bold">
+                  {o.role === "owner" ? "所有者" : o.role === "admin" ? "管理者" : "先生"}
+                </span>
+              )}
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </Card>
           </Link>
