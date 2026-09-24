@@ -61,6 +61,9 @@ type Q = {
     | "long_text"
     | "fill_blank"
     | "ordering"
+    | "tiles"
+    | "listen"
+    | "true_false"
     | "matching";
   options: string[];
   explanation: string | null;
