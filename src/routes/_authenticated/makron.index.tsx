@@ -40,20 +40,20 @@ function MakronHub() {
           </Button>
         </Card>
 
-        <Card className="p-6 h-full space-y-3 opacity-70" aria-disabled="true">
-          <div className="flex items-center gap-2">
-            <GraduationCap className="h-6 w-6 text-muted-foreground" />
-            <div className="text-xl font-bold">Makron for education</div>
-            <span className="ml-auto text-[10px] px-2 py-0.5 rounded bg-muted">準備中</span>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            学校・塾向けの教材配信と学習管理。近日公開予定です。
-          </p>
-          <Button size="sm" className="w-full" variant="outline" disabled>
-            <Lock className="h-4 w-4 mr-1" />
-            準備中
-          </Button>
-        </Card>
+        <Link to="/makron/edu" className="block">
+          <Card className="p-6 h-full hover:border-primary transition space-y-3">
+            <div className="flex items-center gap-2">
+              <GraduationCap className="h-6 w-6 text-primary" />
+              <div className="text-xl font-bold">Makron for education</div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              所属する学校・組織の専用問題集、課題、成績、組織内ランキング。
+            </p>
+            <Button size="sm" className="w-full">
+              組織を選ぶ <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </Card>
+        </Link>
       </div>
     </MakronShell>
   );

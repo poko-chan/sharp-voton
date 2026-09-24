@@ -8359,6 +8359,16 @@ export type Database = {
           id: string
         }[]
       }
+      org_edu_ranking: {
+        Args: { _org: string }
+        Returns: {
+          current_streak: number
+          display_name: string
+          total_correct: number
+          user_id: string
+          xp: number
+        }[]
+      }
       org_edu_record_result: {
         Args: { _correct: number; _org: string; _xp: number }
         Returns: {
