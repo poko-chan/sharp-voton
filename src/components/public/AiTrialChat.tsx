@@ -31,6 +31,14 @@ function writeUsed(count: number) {
 }
 
 export function AiTrialChat() {
+  return (
+    <div className="rounded-xl border border-border bg-muted/40 p-6 text-center text-sm text-muted-foreground">
+      AIのお試しチャットは現在一時停止中です。
+    </div>
+  );
+}
+
+export function AiTrialChatInner() {
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
   const [used, setUsed] = useState(0);
   const [input, setInput] = useState("");

@@ -116,14 +116,7 @@ export const APPS: AppEntry[] = [
     icon: Flame,
     group: "記録・分析",
   },
-  {
-    to: "/mistakes",
-    label: "まちがい直し",
-    keywords: "mistake 復習",
-    icon: LineChart,
-    group: "記録・分析",
-  },
-  {
+    {
     to: "/export",
     label: "データ書き出し",
     keywords: "export csv バックアップ",
@@ -180,14 +173,7 @@ export const APPS: AppEntry[] = [
     icon: Building2,
     group: "組織",
   },
-  {
-    to: "/missions",
-    label: "ミッション",
-    keywords: "mission デイリー クエスト",
-    icon: Target,
-    group: "その他",
-  },
-  {
+    {
     to: "/inventory",
     label: "ショップ・持ち物",
     keywords: "shop coin アイテム",
