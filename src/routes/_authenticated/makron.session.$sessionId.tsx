@@ -28,6 +28,7 @@ import {
 import { toast } from "sonner";
 import { ReportDialog } from "@/components/makron/ReportDialog";
 import { MakronHandwriteOCR } from "@/components/makron/MakronHandwriteOCR";
+import { TilesInput, ListenInput, TrueFalseInput, ResultSheet } from "@/components/makron/AnswerWidgets";
 import { nanoGradeWritten } from "@/lib/nano-tasks";
 import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
 import {
@@ -125,6 +126,7 @@ function SessionPage() {
   const [gradingProgress, setGradingProgress] = useState<string>("");
   // 一問ごと採点モード: 各問の即時判定結果と、確定済みかどうか
   const [locked, setLocked] = useState<Set<string>>(new Set());
+  const [combo, setCombo] = useState(0);
   const [perQResult, setPerQResult] = useState<
     Record<string, { correct: boolean | null; explanation: string | null; correctAnswer: string }>
   >({});
@@ -370,6 +372,7 @@ function SessionPage() {
           return;
         }
       }
+      setCombo((c) => (correct === true ? c + 1 : correct === false ? 0 : c));
       setPerQResult((p) => ({
         ...p,
         [q.id]: {
@@ -811,6 +814,25 @@ function SessionPage() {
                 </div>
               );
             })()}
+          {q.type === "tiles" && (
+            <TilesInput
+              tiles={q.options ?? []}
+              value={answers[q.id]}
+              onChange={setAns}
+              disabled={currentLocked}
+            />
+          )}
+          {q.type === "listen" && (
+            <ListenInput
+              speakText={(q as any).audio_text || q.options?.[0] || q.prompt}
+              value={answers[q.id]}
+              onChange={setAns}
+              disabled={currentLocked}
+            />
+          )}
+          {q.type === "true_false" && (
+            <TrueFalseInput value={answers[q.id]} onChange={setAns} disabled={currentLocked} />
+          )}
           {q.type === "ordering" &&
             (() => {
               const cur: string[] =
@@ -917,27 +939,17 @@ function SessionPage() {
         )}
 
         {perQMode && currentLocked && perQResult[q.id] && (
-          <Card
-            className={`p-4 border-2 ${perQResult[q.id].correct === true ? "border-emerald-500 bg-emerald-500/10" : perQResult[q.id].correct === false ? "border-rose-500 bg-rose-500/10" : "border-muted"}`}
-          >
-            <div className="font-bold mb-1">
-              {perQResult[q.id].correct === true
-                ? "✅ 正解！"
-                : perQResult[q.id].correct === false
-                  ? "❌ 不正解"
-                  : "採点結果"}
-            </div>
-            {perQResult[q.id].correctAnswer && (
-              <div className="text-sm">
-                <span className="font-semibold">正解:</span> {perQResult[q.id].correctAnswer}
-              </div>
-            )}
-            {perQResult[q.id].explanation && (
-              <div className="text-sm mt-1 whitespace-pre-wrap">
-                <span className="font-semibold">解説:</span> {perQResult[q.id].explanation}
-              </div>
-            )}
-          </Card>
+          <>
+            <div className="h-40" />
+            <ResultSheet
+              correct={perQResult[q.id].correct}
+              correctAnswer={perQResult[q.id].correctAnswer}
+              explanation={perQResult[q.id].explanation}
+              combo={combo}
+              nextLabel={idx + 1 < questions.length ? "つづける" : "提出する"}
+              onNext={() => (idx + 1 < questions.length ? goto(idx + 1) : finish())}
+            />
+          </>
         )}
 
         <div className="flex items-center justify-between gap-2">
