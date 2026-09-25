@@ -336,7 +336,12 @@ function Solver({
           {isBasic && (
             <div className="rounded-lg border border-amber-400/50 bg-amber-500/10 px-3 py-2 text-xs font-bold flex items-center gap-2">
               <RotateCcw className="h-4 w-4" />
-              さかのぼり学習中：基礎を確認しよう
+              さかのぼり学習中：基礎を確認しよう（あと{queue.length}問）
+            </div>
+          )}
+          {!result && (
+            <div className="text-[11px] text-muted-foreground">
+              キー操作：数字キーで選択肢を選択 ・ Enterで解答
             </div>
           )}
           <Card className="p-5">
