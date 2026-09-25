@@ -87,19 +87,33 @@ export function EduWorkspace({ orgId }: { orgId: string }) {
             <Card className="p-6 text-center text-sm text-muted-foreground">この教科に単元はありません</Card>
           )}
           <div className="grid sm:grid-cols-2 gap-2">
-            {subjUnits.map((u) => (
-              <Card
-                key={u.id}
-                onClick={() => setUnitId(u.id)}
-                className="p-4 cursor-pointer hover:border-primary transition"
-              >
-                <div className="font-bold">{u.title}</div>
-                <div className="text-xs text-muted-foreground">
-                  レベル {u.level}
-                  {u.description ? ` ・ ${u.description}` : ""}
-                </div>
-              </Card>
-            ))}
+            {subjUnits.map((u) => {
+              let resume: number | null = null;
+              try {
+                const saved = JSON.parse(localStorage.getItem(`edu-resume-${u.id}`) ?? "null");
+                if (saved && saved.idx > 0) resume = saved.idx;
+              } catch {}
+              return (
+                <Card
+                  key={u.id}
+                  onClick={() => setUnitId(u.id)}
+                  className="p-4 cursor-pointer hover:border-primary transition"
+                >
+                  <div className="font-bold flex items-center gap-2">
+                    {u.title}
+                    {resume !== null && (
+                      <span className="rounded-full bg-amber-500/15 text-amber-600 px-2 py-0.5 text-[10px] font-bold">
+                        途中：{resume + 1}問目から
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    レベル {u.level}
+                    {u.description ? ` ・ ${u.description}` : ""}
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}
