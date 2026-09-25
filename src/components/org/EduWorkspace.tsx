@@ -145,7 +145,14 @@ function Solver({
   const [correct, setCorrect] = useState(0);
   const [done, setDone] = useState(false);
   const [padKey, setPadKey] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
   const startedAt = useRef(Date.now());
+
+  // 経過秒タイマー（1秒ごと）
+  useEffect(() => {
+    const t = setInterval(() => setElapsed(Math.round((Date.now() - startedAt.current) / 1000)), 1000);
+    return () => clearInterval(t);
+  }, [padKey]);
   const times = useRef<number[]>([]);
   const channel = useRef<any>(null);
 
