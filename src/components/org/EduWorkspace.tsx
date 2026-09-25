@@ -87,19 +87,33 @@ export function EduWorkspace({ orgId }: { orgId: string }) {
             <Card className="p-6 text-center text-sm text-muted-foreground">この教科に単元はありません</Card>
           )}
           <div className="grid sm:grid-cols-2 gap-2">
-            {subjUnits.map((u) => (
-              <Card
-                key={u.id}
-                onClick={() => setUnitId(u.id)}
-                className="p-4 cursor-pointer hover:border-primary transition"
-              >
-                <div className="font-bold">{u.title}</div>
-                <div className="text-xs text-muted-foreground">
-                  レベル {u.level}
-                  {u.description ? ` ・ ${u.description}` : ""}
-                </div>
-              </Card>
-            ))}
+            {subjUnits.map((u) => {
+              let resume: number | null = null;
+              try {
+                const saved = JSON.parse(localStorage.getItem(`edu-resume-${u.id}`) ?? "null");
+                if (saved && saved.idx > 0) resume = saved.idx;
+              } catch {}
+              return (
+                <Card
+                  key={u.id}
+                  onClick={() => setUnitId(u.id)}
+                  className="p-4 cursor-pointer hover:border-primary transition"
+                >
+                  <div className="font-bold flex items-center gap-2">
+                    {u.title}
+                    {resume !== null && (
+                      <span className="rounded-full bg-amber-500/15 text-amber-600 px-2 py-0.5 text-[10px] font-bold">
+                        途中：{resume + 1}問目から
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    レベル {u.level}
+                    {u.description ? ` ・ ${u.description}` : ""}
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}
@@ -131,7 +145,14 @@ function Solver({
   const [correct, setCorrect] = useState(0);
   const [done, setDone] = useState(false);
   const [padKey, setPadKey] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
   const startedAt = useRef(Date.now());
+
+  // 経過秒タイマー（1秒ごと）
+  useEffect(() => {
+    const t = setInterval(() => setElapsed(Math.round((Date.now() - startedAt.current) / 1000)), 1000);
+    return () => clearInterval(t);
+  }, [padKey]);
   const times = useRef<number[]>([]);
   const channel = useRef<any>(null);
 
@@ -310,7 +331,7 @@ function Solver({
         </span>
       </div>
       <div className="text-xs text-muted-foreground">
-        {unit.title} ・ {Math.min(idx + 1, total)} / {total}
+        {unit.title} ・ {Math.min(idx + 1, total)} / {total} ・ {elapsed}秒
       </div>
 
       {!current ? (
@@ -322,7 +343,12 @@ function Solver({
           {isBasic && (
             <div className="rounded-lg border border-amber-400/50 bg-amber-500/10 px-3 py-2 text-xs font-bold flex items-center gap-2">
               <RotateCcw className="h-4 w-4" />
-              さかのぼり学習中：基礎を確認しよう
+              さかのぼり学習中：基礎を確認しよう（あと{queue.length}問）
+            </div>
+          )}
+          {!result && (
+            <div className="text-[11px] text-muted-foreground">
+              キー操作：数字キーで選択肢を選択 ・ Enterで解答
             </div>
           )}
           <Card className="p-5">
