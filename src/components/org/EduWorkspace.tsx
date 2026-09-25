@@ -331,7 +331,7 @@ function Solver({
         </span>
       </div>
       <div className="text-xs text-muted-foreground">
-        {unit.title} ・ {Math.min(idx + 1, total)} / {total}
+        {unit.title} ・ {Math.min(idx + 1, total)} / {total} ・ {elapsed}秒
       </div>
 
       {!current ? (
