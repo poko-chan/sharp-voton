@@ -51,6 +51,7 @@ function AdminLoginPage() {
       // ユーザー名の場合はサーバー側で解決する（メールアドレスはクライアントに返さない）
       if (!identifier.includes("@")) {
         const tokens = await signInWithUsername({ data: { username: identifier, password } });
+        if (tokens.error) throw new Error(tokens.error);
         const { error } = await supabase.auth.setSession({
           access_token: tokens.access_token,
           refresh_token: tokens.refresh_token,

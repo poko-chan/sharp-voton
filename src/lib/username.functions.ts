@@ -10,13 +10,21 @@ import { z } from "zod";
 
 async function lookupEmail(username: string): Promise<string | null> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const safe = username.trim().replace(/[\\%_]/g, (c) => `\\${c}`);
   const { data } = await supabaseAdmin
     .from("profiles")
-    .select("email")
-    .ilike("username", username)
+    .select("id, email")
+    .ilike("username", safe)
+    .limit(1)
     .maybeSingle();
-  return data?.email ?? null;
+  if (!data) return null;
+  if (data.email) return data.email;
+  // Fallback: profile has no email copy — read it from the auth account.
+  const { data: u } = await supabaseAdmin.auth.admin.getUserById(data.id);
+  return u?.user?.email ?? null;
 }
+
+const BAD_LOGIN = "ユーザー名またはパスワードが正しくありません";
 
 /** Sign in with a username + password. Returns session tokens, never the email. */
 export const signInWithUsername = createServerFn({ method: "POST" })
@@ -31,7 +39,7 @@ export const signInWithUsername = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { createClient } = await import("@supabase/supabase-js");
     const email = await lookupEmail(data.username);
-    if (!email) throw new Error("ユーザー名またはパスワードが正しくありません");
+    if (!email) return { error: BAD_LOGIN, access_token: "", refresh_token: "" };
     const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
     const client = createClient(process.env["SUPABASE_URL"]!, key, {
       auth: { persistSession: false, autoRefreshToken: false },
@@ -49,8 +57,9 @@ export const signInWithUsername = createServerFn({ method: "POST" })
       email,
       password: data.password,
     });
-    if (error || !res.session) throw new Error("ユーザー名またはパスワードが正しくありません");
+    if (error || !res.session) return { error: BAD_LOGIN, access_token: "", refresh_token: "" };
     return {
+      error: null as string | null,
       access_token: res.session.access_token,
       refresh_token: res.session.refresh_token,
     };

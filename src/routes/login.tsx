@@ -165,6 +165,7 @@ function LoginPage() {
         const uname = username.trim();
         if (!uname) throw new Error("ユーザー名を入力してください");
         const tokens = await signInByUsername({ data: { username: uname, password } });
+        if (tokens.error) throw new Error(tokens.error);
         const { error } = await supabase.auth.setSession({
           access_token: tokens.access_token,
           refresh_token: tokens.refresh_token,
