@@ -190,6 +190,44 @@ function Solver({
     () => (Array.isArray(current?.choices) ? (current!.choices as any[]).map(String) : []),
     [current],
   );
+  const resumeKey = `edu-resume-${unit.id}`;
+
+  // 途中から再開
+  useEffect(() => {
+    if (!main.length) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(resumeKey) ?? "null");
+      if (saved && saved.idx > 0 && saved.idx < main.length) {
+        setIdx(saved.idx);
+        setStars(saved.stars ?? 0);
+        setCorrect(saved.correct ?? 0);
+        toast(`前回の続き（${saved.idx + 1}問目）から再開します`);
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [main.length]);
+  useEffect(() => {
+    if (!main.length || done) return;
+    localStorage.setItem(resumeKey, JSON.stringify({ idx, stars, correct }));
+  }, [idx, stars, correct, main.length, done, resumeKey]);
+
+  // キーボード: 数字で選択肢、Enterで次へ
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (result && e.key === "Enter") {
+        e.preventDefault();
+        next();
+        return;
+      }
+      if (tag === "INPUT" || tag === "TEXTAREA" || result) return;
+      const n = Number(e.key);
+      if (n >= 1 && n <= choices.length) setAnswer(choices[n - 1]);
+      else if (e.key === "Enter" && answer.trim()) submit();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   const submit = async () => {
     if (!current || !answer.trim()) return;
@@ -230,6 +268,7 @@ function Solver({
     if (idx + 1 < total) return setIdx(idx + 1);
     setIdx(total);
     setDone(true);
+    localStorage.removeItem(resumeKey);
     await (supabase as any).rpc("org_edu_record_result", {
       _org: orgId,
       _correct: correct,
@@ -297,14 +336,16 @@ function Solver({
           </Card>
           <ScratchPad key={padKey} />
           {choices.length > 0 && (
-            <div className="grid grid-cols-2 gap-2">
-              {choices.map((c) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {choices.map((c, i) => (
                 <Button
                   key={c}
+                  className="h-12 justify-start"
                   variant={answer === c ? "default" : "outline"}
                   disabled={!!result}
                   onClick={() => setAnswer(c)}
                 >
+                  <span className="mr-2 text-xs opacity-60">{i + 1}</span>
                   {c}
                 </Button>
               ))}
