@@ -347,6 +347,16 @@ export const fetchPage = createServerFn({ method: "POST" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ data }): Promise<PageFetchResponse> => {
+    // AI機能の一時停止にあわせ、任意URLの取得は停止中（サーバーから外部へアクセスしない）
+    if (Date.now() > 0)
+      return {
+        url: data.url,
+        finalUrl: data.url,
+        title: "",
+        text: "",
+        ok: false,
+        error: "ページ取得は現在停止中です",
+      };
     let url = data.url.trim();
     if (!/^https?:\/\//i.test(url)) url = `https://${url}`;
     const maxChars = data.maxChars ?? 4000;

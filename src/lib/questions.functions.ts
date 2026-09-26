@@ -159,12 +159,19 @@ ${JSON_SHAPE}`;
 
 export const recordAttempt = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ id: z.string().uuid(), correct: z.boolean() }).parse(i))
+  .inputValidator((i) => z
+      .object({
+        id: z.string().uuid(),
+        answer: z.string().max(5000).optional(),
+        markWrong: z.boolean().optional(),
+      })
+      .parse(i),
+  )
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { data: row, error: fetchErr } = await supabase
       .from("questions")
-      .select("attempts")
+      .select("attempts, answer, was_wrong")
       .eq("id", data.id)
       .single();
     if (fetchErr) throw fetchErr;
@@ -172,7 +179,13 @@ export const recordAttempt = createServerFn({ method: "POST" })
       .from("questions")
       .update({
         attempts: (row?.attempts ?? 0) + 1,
-        was_wrong: !data.correct,
+        // 正誤はサーバー側で判定。自己採点は「不正解」にすることだけ許可
+        was_wrong:
+          data.answer !== undefined
+            ? data.answer.trim().toLowerCase() !== String(row?.answer ?? "").trim().toLowerCase()
+            : data.markWrong
+              ? true
+              : row?.was_wrong ?? null,
       })
       .eq("id", data.id);
     if (error) throw error;

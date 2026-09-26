@@ -88,6 +88,13 @@ export const gradeSubmission = createServerFn({ method: "POST" })
       .eq("id", sub.assignment_id)
       .single();
     if (e2) throw new Error(e2.message);
+    const { data: isTeacher } = await supabase.rpc("is_class_teacher", {
+      _class_id: asg.class_id,
+      _user_id: userId,
+    });
+    if (!isTeacher) throw new Error("採点できるのはクラスの先生だけです");
+    if (asg.max_points != null && data.score > asg.max_points)
+      throw new Error("点数が満点を超えています");
     let xp = 0;
     if (asg.xp_mode === "score") xp = data.score;
     else if (asg.xp_mode === "fixed") xp = asg.fixed_xp;

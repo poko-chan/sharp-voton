@@ -90,7 +90,7 @@ export function PracticeSession({
     const correct = val.trim().toLowerCase() === q.answer.trim().toLowerCase();
     if (correct) setCorrectCount((c) => c + 1);
     try {
-      await record({ data: { id: q.id, correct } });
+      await record({ data: { id: q.id, answer: val } });
     } catch {}
   };
 
@@ -259,7 +259,7 @@ export function PracticeSession({
                 onClick={async () => {
                   setCorrectCount((c) => c + 1);
                   try {
-                    await record({ data: { id: q.id, correct: true } });
+                    await record({ data: { id: q.id } });
                   } catch {}
                   setPicked(q.answer);
                 }}
@@ -272,7 +272,7 @@ export function PracticeSession({
                 variant="outline"
                 onClick={async () => {
                   try {
-                    await record({ data: { id: q.id, correct: false } });
+                    await record({ data: { id: q.id, markWrong: true } });
                   } catch {}
                   setPicked("__wrong__");
                 }}

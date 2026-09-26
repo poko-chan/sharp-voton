@@ -24,6 +24,21 @@ async function lookupEmail(username: string): Promise<string | null> {
   return u?.user?.email ?? null;
 }
 
+/** 再設定リンクの戻り先は自サイトのみ。それ以外は公開URLに固定。 */
+function safeResetRedirect(input: string): string {
+  const fallback = "https://sharp-voton.lovable.app/reset-password";
+  try {
+    const u = new URL(input);
+    const ok =
+      u.protocol === "https:" &&
+      (u.hostname === "sharp-voton.lovable.app" ||
+        /^[a-z0-9-]+--4b897efe-74f1-4b97-8bde-44153babd3fa\.lovable\.app$/.test(u.hostname));
+    return ok ? `${u.origin}/reset-password` : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 const BAD_LOGIN = "ユーザー名またはパスワードが正しくありません";
 
 /** Sign in with a username + password. Returns session tokens, never the email. */
@@ -82,7 +97,9 @@ export const requestPasswordResetByUsername = createServerFn({ method: "POST" })
     const email = await lookupEmail(data.username);
     if (email) {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      await supabaseAdmin.auth.resetPasswordForEmail(email, { redirectTo: data.redirectTo });
+      await supabaseAdmin.auth.resetPasswordForEmail(email, {
+        redirectTo: safeResetRedirect(data.redirectTo),
+      });
     }
     return { ok: true };
   });
