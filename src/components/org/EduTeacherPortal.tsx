@@ -227,6 +227,7 @@ export function EduTeacherPortal({ orgId }: { orgId: string }) {
         </div>
       </Card>
 
+      {view === "table" && (
       <Card className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-xs text-muted-foreground">
@@ -263,6 +264,7 @@ export function EduTeacherPortal({ orgId }: { orgId: string }) {
         </table>
         <div className="p-2 text-[10px] text-muted-foreground">15秒ごとに自動更新</div>
       </Card>
+      )}
     </div>
   );
 }
