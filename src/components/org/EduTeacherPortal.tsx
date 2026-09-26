@@ -1,12 +1,81 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { loadOrgProfiles } from "@/lib/org-apps";
+import { downloadCsv } from "@/lib/org-school";
 import { Card } from "@/components/ui/card";
-import { AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, LayoutGrid, List, Download, Printer } from "lucide-react";
 
 type Att = { user_id: string; correct: boolean; created_at: string };
 
+function esc(s: string) {
+  return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+}
+
+function PrintQuiz({ orgId }: { orgId: string }) {
+  const [units, setUnits] = useState<{ id: string; title: string }[]>([]);
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open || units.length) return;
+    (supabase as any)
+      .from("org_edu_units")
+      .select("id, title")
+      .eq("organization_id", orgId)
+      .order("sort_order")
+      .then(({ data }: any) => setUnits(data ?? []));
+  }, [open, orgId, units.length]);
+  const print = async (u: { id: string; title: string }) => {
+    const { data } = await (supabase as any)
+      .from("org_edu_questions")
+      .select("body, choices")
+      .eq("unit_id", u.id)
+      .order("sort_order")
+      .limit(30);
+    const qs = (data ?? []) as { body: string; choices: string[] | null }[];
+    const w = window.open("", "_blank");
+    if (!w) return;
+    w.document.write(`<html><head><title>${esc(u.title)} 小テスト</title><style>
+      body{font-family:sans-serif;padding:24px;max-width:780px;margin:auto}
+      h1{font-size:20px;border-bottom:2px solid #000;padding-bottom:6px}
+      .q{margin:14px 0;page-break-inside:avoid}.line{border-bottom:1px solid #999;height:28px;margin-top:6px}
+      .meta{display:flex;gap:24px;font-size:13px;margin-bottom:12px}</style></head><body>
+      <h1>${esc(u.title)} 小テスト</h1>
+      <div class="meta"><span>年　組　番</span><span>名前＿＿＿＿＿＿＿＿＿＿</span><span>得点　　／${qs.length}</span></div>
+      ${qs
+        .map(
+          (q, i) =>
+            `<div class="q"><b>問${i + 1}.</b> ${esc(q.body ?? "")}${
+              q.choices?.length
+                ? `<div>${q.choices.map((c, j) => `（${j + 1}）${esc(String(c))}`).join("　")}</div>`
+                : ""
+            }<div class="line"></div></div>`,
+        )
+        .join("")}
+      <script>window.onload=()=>window.print()</script></body></html>`);
+    w.document.close();
+    setOpen(false);
+  };
+  return (
+    <div className="relative">
+      <Button size="sm" variant="outline" onClick={() => setOpen((o) => !o)}>
+        <Printer className="h-4 w-4 mr-1" />小テスト印刷
+      </Button>
+      {open && (
+        <Card className="absolute right-0 z-20 mt-1 w-60 max-h-72 overflow-auto p-1">
+          {units.length === 0 && <div className="p-2 text-xs text-muted-foreground">単元がありません</div>}
+          {units.map((u) => (
+            <button key={u.id} className="block w-full text-left text-sm p-2 rounded hover:bg-muted" onClick={() => print(u)}>
+              {u.title}
+            </button>
+          ))}
+        </Card>
+      )}
+    </div>
+  );
+}
+
 export function EduTeacherPortal({ orgId }: { orgId: string }) {
+  const [view, setView] = useState<"seat" | "table">("seat");
   const [members, setMembers] = useState<string[]>([]);
   const [names, setNames] = useState<Record<string, string>>({});
   const [atts, setAtts] = useState<Att[]>([]);
@@ -92,8 +161,40 @@ export function EduTeacherPortal({ orgId }: { orgId: string }) {
   const dot = { red: "bg-destructive", yellow: "bg-amber-400", green: "bg-emerald-500", idle: "bg-muted" };
   const label = { red: "つまずき中", yellow: "解答中", green: "スムーズ", idle: "未着手" };
 
+  const exportCsv = () =>
+    downloadCsv(`成績_${new Date().toISOString().slice(0, 10)}.csv`, [
+      ["生徒", "状態", "解答数(7日)", "正答率(%)"],
+      ...rows.map((r) => [r.name, label[r.state], r.total, r.rate ?? ""]),
+    ]);
+
   return (
     <div className="space-y-4">
+      <div className="flex flex-wrap gap-2 justify-end">
+        <Button size="sm" variant={view === "seat" ? "default" : "outline"} onClick={() => setView("seat")}>
+          <LayoutGrid className="h-4 w-4 mr-1" />座席タイル
+        </Button>
+        <Button size="sm" variant={view === "table" ? "default" : "outline"} onClick={() => setView("table")}>
+          <List className="h-4 w-4 mr-1" />一覧
+        </Button>
+        <Button size="sm" variant="outline" onClick={exportCsv}>
+          <Download className="h-4 w-4 mr-1" />成績CSV
+        </Button>
+        <PrintQuiz orgId={orgId} />
+      </div>
+      {view === "seat" && (
+        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 gap-2">
+          {rows.length === 0 && <div className="col-span-full text-sm text-muted-foreground">生徒がいません</div>}
+          {rows.map((r) => (
+            <Card key={r.id} className={`p-2 text-center border-2 ${r.state === "red" ? "border-destructive animate-pulse" : ""}`}>
+              <span className={`inline-block h-3 w-3 rounded-full ${dot[r.state]}`} />
+              <div className="text-xs font-bold truncate mt-1">{r.name}</div>
+              <div className="text-[10px] text-muted-foreground">
+                {r.total}問・{r.rate === null ? "-" : `${r.rate}%`}
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
       {alerts.length > 0 && (
         <Card className="p-4 border-destructive/50 bg-destructive/5">
           <div className="font-bold text-sm flex items-center gap-2 text-destructive">
