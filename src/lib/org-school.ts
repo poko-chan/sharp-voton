@@ -76,7 +76,16 @@ export function todayStr() {
 /** 表形式のデータをCSVにして端末にダウンロードする */
 export function downloadCsv(filename: string, rows: (string | number)[][]) {
   const csv = rows
-    .map((r) => r.map((c) => `"${String(c ?? "").replace(/"/g, '""')}"`).join(","))
+    .map((r) =>
+      r
+        .map((c) => {
+          let s = String(c ?? "");
+          // 表計算ソフトで数式として解釈されないよう無害化
+          if (typeof c === "string" && /^[=+\-@\t\r]/.test(s)) s = "'" + s;
+          return `"${s.replace(/"/g, '""')}"`;
+        })
+        .join(","),
+    )
     .join("\n");
   const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
