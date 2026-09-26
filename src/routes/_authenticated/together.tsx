@@ -111,7 +111,9 @@ function TogetherPage() {
 
   const createRoom = async () => {
     if (!roomName.trim()) return;
-    const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+    const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const bytes = crypto.getRandomValues(new Uint8Array(12));
+    const code = Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
     const { data, error } = await db
       .from("fr_rooms")
       .insert({ host_id: uid, name: roomName.trim(), join_code: code })
