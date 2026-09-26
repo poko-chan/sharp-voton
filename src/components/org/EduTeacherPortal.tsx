@@ -1,4 +1,39 @@
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+
+async function exportKanten(orgId: string, names: Record<string, string>) {
+  const since = new Date(Date.now() - 90 * 86400000).toISOString();
+  const { data: at } = await (supabase as any)
+    .from("org_edu_attempts")
+    .select("user_id, question_id, correct, created_at")
+    .eq("organization_id", orgId)
+    .gte("created_at", since)
+    .limit(20000);
+  const { data: qs } = await (supabase as any)
+    .from("org_edu_questions")
+    .select("id, kind")
+    .eq("organization_id", orgId);
+  const kind: Record<string, string> = {};
+  for (const q of qs ?? []) kind[q.id] = q.kind;
+  const m: Record<string, { k: [number, number]; s: [number, number]; days: Set<string> }> = {};
+  for (const a of at ?? []) {
+    const r = (m[a.user_id] ??= { k: [0, 0], s: [0, 0], days: new Set() });
+    const b = kind[a.question_id] === "choice" ? r.k : r.s;
+    b[1]++;
+    if (a.correct) b[0]++;
+    r.days.add(a.created_at.slice(0, 10));
+  }
+  const pct = (x: [number, number]) => (x[1] ? Math.round((x[0] / x[1]) * 100) : "");
+  const abc = (p: number | string) => (p === "" ? "" : +p >= 80 ? "A" : +p >= 50 ? "B" : "C");
+  const rows = Object.entries(m).map(([id, r]) => {
+    const k = pct(r.k), s = pct(r.s), d = r.days.size;
+    return [names[id] ?? "生徒", k, abc(k), s, abc(s), d, d >= 20 ? "A" : d >= 8 ? "B" : "C"];
+  });
+  downloadCsv(`3観点_${new Date().toISOString().slice(0, 10)}.csv`, [
+    ["生徒", "知識・技能(%)", "評定", "思考・判断・表現(%)", "評定", "主体的に取り組む態度(学習日数)", "評定"],
+    ...rows,
+  ]);
+}
 import { supabase } from "@/integrations/supabase/client";
 import { loadOrgProfiles } from "@/lib/org-apps";
 import { downloadCsv } from "@/lib/org-school";
@@ -179,7 +214,21 @@ export function EduTeacherPortal({ orgId }: { orgId: string }) {
         <Button size="sm" variant="outline" onClick={exportCsv}>
           <Download className="h-4 w-4 mr-1" />成績CSV
         </Button>
+        <Button size="sm" variant="outline" onClick={() => exportKanten(orgId, names)}>
+          <Download className="h-4 w-4 mr-1" />3観点CSV
+        </Button>
         <PrintQuiz orgId={orgId} />
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={async () => {
+            const { data, error } = await (supabase as any).rpc("org_edu_seed_starter", { _org: orgId });
+            if (error) return toast.error(error.message);
+            toast.success(data ? `スターター問題を${data}問追加しました` : "スターター問題は追加済みです");
+          }}
+        >
+          スターター問題を追加
+        </Button>
       </div>
       {view === "seat" && (
         <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 gap-2">

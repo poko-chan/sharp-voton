@@ -8462,6 +8462,7 @@ export type Database = {
           user_answer: string
         }[]
       }
+      org_edu_seed_starter: { Args: { _org: string }; Returns: number }
       org_enroll_all: {
         Args: { _class: string; _org: string }
         Returns: number
