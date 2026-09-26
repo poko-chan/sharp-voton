@@ -8409,6 +8409,7 @@ export type Database = {
         Args: { _answer: string; _question: string }
         Returns: Json
       }
+      org_edu_norm: { Args: { _s: string }; Returns: string }
       org_edu_question_keys: {
         Args: { _org: string }
         Returns: {
