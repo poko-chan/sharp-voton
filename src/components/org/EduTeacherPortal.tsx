@@ -214,7 +214,21 @@ export function EduTeacherPortal({ orgId }: { orgId: string }) {
         <Button size="sm" variant="outline" onClick={exportCsv}>
           <Download className="h-4 w-4 mr-1" />成績CSV
         </Button>
+        <Button size="sm" variant="outline" onClick={() => exportKanten(orgId, names)}>
+          <Download className="h-4 w-4 mr-1" />3観点CSV
+        </Button>
         <PrintQuiz orgId={orgId} />
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={async () => {
+            const { data, error } = await (supabase as any).rpc("org_edu_seed_starter", { _org: orgId });
+            if (error) return toast.error(error.message);
+            toast.success(data ? `スターター問題を${data}問追加しました` : "スターター問題は追加済みです");
+          }}
+        >
+          スターター問題を追加
+        </Button>
       </div>
       {view === "seat" && (
         <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 gap-2">
