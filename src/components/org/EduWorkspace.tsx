@@ -250,12 +250,28 @@ function Solver({
     return () => window.removeEventListener("keydown", onKey);
   });
 
+  const [sending, setSending] = useState(false);
   const submit = async () => {
-    if (!current || !answer.trim()) return;
-    const { data, error } = await (supabase as any).rpc("org_edu_check_answer", {
-      _question: current.id,
-      _answer: answer.trim(),
-    });
+    if (!current || !answer.trim() || sending) return;
+    setSending(true);
+    let data: any = null;
+    let error: any = null;
+    // 校内Wi-Fiの瞬断に備えて自動で再送（オフライン中は復帰を待つ）
+    for (let i = 0; i < 6; i++) {
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        toast("通信が切れています。つながったら自動で送信します");
+        await new Promise<void>((r) => window.addEventListener("online", () => r(), { once: true }));
+      }
+      const res = await (supabase as any).rpc("org_edu_check_answer", {
+        _question: current.id,
+        _answer: answer.trim(),
+      });
+      data = res.data;
+      error = res.error;
+      if (!error || !/fetch|network|Failed/i.test(error.message ?? "")) break;
+      await new Promise((r) => setTimeout(r, 1000 * (i + 1)));
+    }
+    setSending(false);
     if (error) return toast.error(error.message);
     times.current.push(Math.round((Date.now() - startedAt.current) / 1000));
     const ok = !!data?.correct;
