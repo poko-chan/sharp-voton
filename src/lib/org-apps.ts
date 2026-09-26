@@ -227,7 +227,8 @@ export function useOrg(orgId: string) {
         ? ["*"]
         : [];
   const canManage = (section: string) =>
-    section === "roles" ? isOwner : manageSections.includes("*") || manageSections.includes(section);
+    isOwner || manageSections.includes("*") || manageSections.includes(section);
+
   const eduAuthor = isOwner || (customRole ? !!perms.edu_author || isStaff : isStaff);
   const appLabel = (key: string) =>
     apps.find((x) => x.app_key === key)?.label || ORG_APPS.find((a) => a.key === key)?.label || key;
