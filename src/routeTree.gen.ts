@@ -13,6 +13,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as QrLoginRouteImport } from './routes/qr-login'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HelpRouteImport } from './routes/help'
@@ -122,6 +123,11 @@ const SecurityRoute = SecurityRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QrLoginRoute = QrLoginRouteImport.update({
+  id: '/qr-login',
+  path: '/qr-login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -618,6 +624,7 @@ export interface FileRoutesByFullPath {
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/qr-login': typeof QrLoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -713,6 +720,7 @@ export interface FileRoutesByTo {
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/qr-login': typeof QrLoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -804,6 +812,7 @@ export interface FileRoutesById {
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/qr-login': typeof QrLoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -901,6 +910,7 @@ export interface FileRouteTypes {
     | '/help'
     | '/login'
     | '/privacy'
+    | '/qr-login'
     | '/reset-password'
     | '/security'
     | '/sitemap.xml'
@@ -996,6 +1006,7 @@ export interface FileRouteTypes {
     | '/help'
     | '/login'
     | '/privacy'
+    | '/qr-login'
     | '/reset-password'
     | '/security'
     | '/sitemap.xml'
@@ -1086,6 +1097,7 @@ export interface FileRouteTypes {
     | '/help'
     | '/login'
     | '/privacy'
+    | '/qr-login'
     | '/reset-password'
     | '/security'
     | '/sitemap.xml'
@@ -1183,6 +1195,7 @@ export interface RootRouteChildren {
   HelpRoute: typeof HelpRoute
   LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
+  QrLoginRoute: typeof QrLoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SecurityRoute: typeof SecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -1231,6 +1244,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/qr-login': {
+      id: '/qr-login'
+      path: '/qr-login'
+      fullPath: '/qr-login'
+      preLoaderRoute: typeof QrLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -2094,6 +2114,7 @@ const rootRouteChildren: RootRouteChildren = {
   HelpRoute: HelpRoute,
   LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
+  QrLoginRoute: QrLoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SecurityRoute: SecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
