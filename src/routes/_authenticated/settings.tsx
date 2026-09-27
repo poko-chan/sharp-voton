@@ -16,6 +16,8 @@ import {
   AlertTriangle,
   MessageSquare,
   Building2,
+  MessageCircle,
+
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { SettingsNav } from "@/components/settings/SettingsNav";
@@ -151,6 +153,13 @@ const CATEGORIES: SettingsCategory[] = [
     keywords: ["データ", "エクスポート", "バックアップ", "キャッシュ", "data", "export"],
   },
   {
+    id: "line",
+    label: "LINE連携・通知",
+    icon: MessageCircle,
+    keywords: ["line", "ライン", "リマインダー", "通知", "レポート", "おやすみ", "連携"],
+  },
+  {
+
     id: "payment",
     label: "お支払い",
     icon: CreditCard,
@@ -182,6 +191,8 @@ const CATEGORIES: SettingsCategory[] = [
 const SECTIONS: Record<SettingsCategoryId, React.ComponentType> = {
   account: AccountSection,
   login: LoginMethodsSection,
+  line: LineSection,
+
   appearance: AppearanceSection,
   notifications: NotificationsSection,
   study: StudySection,
