@@ -86,7 +86,7 @@ export function LineSection() {
 
   return (
     <div className="space-y-4">
-      <SectionHeading title="LINE連携・通知" description="LINEのトークに学習のお知らせを届けます" />
+      <SectionHeading title="LINE連携・通知" desc="LINEのトークに学習のお知らせを届けます" />
 
       <Card className="space-y-3 p-5">
         <div className="flex items-center gap-2 font-semibold">
