@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { KeyRound, Link2, Unlink, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { SectionHeading } from "./shared";
+import { MessageCircle } from "lucide-react";
+import { getMyLineStatus, unlinkLine } from "@/lib/line.functions";
 import googleLogo from "@/assets/google-logo.svg.asset.json";
 
 type Identity = { identity_id: string; id: string; provider: string; identity_data?: any };
@@ -26,9 +28,17 @@ export function LoginMethodsSection() {
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
 
+  const [lineLinked, setLineLinked] = useState(false);
+
   const load = useCallback(async () => {
     const { data, error } = await supabase.auth.getUserIdentities();
     if (!error) setIdentities((data?.identities ?? []) as any[] as Identity[]);
+    try {
+      const st = await getMyLineStatus();
+      setLineLinked(Boolean((st as any)?.linked));
+    } catch {
+      /* ignore */
+    }
     setLoading(false);
   }, []);
 
@@ -150,6 +160,49 @@ export function LoginMethodsSection() {
               )}
             </div>
           ))}
+
+          <div className="flex items-center justify-between rounded-xl border p-3">
+            <div className="flex items-center gap-3">
+              <MessageCircle className="h-5 w-5 text-[#06C755]" />
+              <div>
+                <div className="text-sm font-medium">LINE</div>
+                <div className="text-xs text-muted-foreground">
+                  {lineLinked
+                    ? "連携済み（LINE公式アカウントからそのままログインできます）"
+                    : "未連携"}
+                </div>
+              </div>
+            </div>
+            {lineLinked ? (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={busy === "line"}
+                onClick={async () => {
+                  setBusy("line");
+                  try {
+                    await unlinkLine();
+                    toast.success("LINEの連携を解除しました");
+                    setLineLinked(false);
+                  } catch {
+                    toast.error("解除に失敗しました");
+                  }
+                  setBusy(null);
+                }}
+              >
+                <Unlink className="mr-2 h-4 w-4" /> 解除
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                onClick={() => {
+                  window.location.href = "/line-liff/login?mode=link";
+                }}
+              >
+                <Link2 className="mr-2 h-4 w-4" /> LINE画面からログイン
+              </Button>
+            )}
+          </div>
         </div>
         <p className="text-xs text-muted-foreground">
           安全のため、ログイン方法を最低 1 つは残す必要があります。

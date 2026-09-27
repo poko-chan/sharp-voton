@@ -13,6 +13,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as QrLoginRouteImport } from './routes/qr-login'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HelpRouteImport } from './routes/help'
@@ -29,6 +30,7 @@ import { Route as FeaturesIndexRouteImport } from './routes/features.index'
 import { Route as CatalogIndexRouteImport } from './routes/catalog.index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as RCodeRouteImport } from './routes/r.$code'
+import { Route as LineLiffLoginRouteImport } from './routes/line-liff.login'
 import { Route as InstatusCheckLoginRouteImport } from './routes/instatus-check.login'
 import { Route as InstatusCheckDatebaseRouteImport } from './routes/instatus-check.datebase'
 import { Route as InstatusCheckAiBackRouteImport } from './routes/instatus-check.ai-back'
@@ -86,8 +88,10 @@ import { Route as AuthenticatedMakronHistoryRouteImport } from './routes/_authen
 import { Route as AuthenticatedMakronAdminRouteImport } from './routes/_authenticated/makron.admin'
 import { Route as AuthenticatedExamsExamIdRouteImport } from './routes/_authenticated/exams.$examId'
 import { Route as AuthenticatedClassroomClassIdRouteImport } from './routes/_authenticated/classroom.$classId'
+import { Route as AuthenticatedAdminLineRouteImport } from './routes/_authenticated/admin_.line'
 import { Route as AuthenticatedOrganizationsOrgIdIndexRouteImport } from './routes/_authenticated/organizations.$orgId.index'
 import { Route as AuthenticatedMakronEduIndexRouteImport } from './routes/_authenticated/makron.edu.index'
+import { Route as ApiPublicLineWebhookRouteImport } from './routes/api/public/line/webhook'
 import { Route as AuthenticatedOrganizationsOrgIdProfileRouteImport } from './routes/_authenticated/organizations.$orgId.profile'
 import { Route as AuthenticatedMakronUnitUnitIdRouteImport } from './routes/_authenticated/makron.unit.$unitId'
 import { Route as AuthenticatedMakronSessionSessionIdRouteImport } from './routes/_authenticated/makron.session.$sessionId'
@@ -119,6 +123,11 @@ const SecurityRoute = SecurityRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QrLoginRoute = QrLoginRouteImport.update({
+  id: '/qr-login',
+  path: '/qr-login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -198,6 +207,11 @@ const ShareTokenRoute = ShareTokenRouteImport.update({
 const RCodeRoute = RCodeRouteImport.update({
   id: '/r/$code',
   path: '/r/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LineLiffLoginRoute = LineLiffLoginRouteImport.update({
+  id: '/line-liff/login',
+  path: '/line-liff/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InstatusCheckLoginRoute = InstatusCheckLoginRouteImport.update({
@@ -503,6 +517,11 @@ const AuthenticatedClassroomClassIdRoute =
     path: '/classroom/$classId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAdminLineRoute = AuthenticatedAdminLineRouteImport.update({
+  id: '/admin_/line',
+  path: '/admin/line',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedOrganizationsOrgIdIndexRoute =
   AuthenticatedOrganizationsOrgIdIndexRouteImport.update({
     id: '/',
@@ -515,6 +534,11 @@ const AuthenticatedMakronEduIndexRoute =
     path: '/edu/',
     getParentRoute: () => AuthenticatedMakronRoute,
   } as any)
+const ApiPublicLineWebhookRoute = ApiPublicLineWebhookRouteImport.update({
+  id: '/api/public/line/webhook',
+  path: '/api/public/line/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedOrganizationsOrgIdProfileRoute =
   AuthenticatedOrganizationsOrgIdProfileRouteImport.update({
     id: '/profile',
@@ -600,6 +624,7 @@ export interface FileRoutesByFullPath {
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/qr-login': typeof QrLoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -645,10 +670,12 @@ export interface FileRoutesByFullPath {
   '/instatus-check/ai-back': typeof InstatusCheckAiBackRoute
   '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
   '/instatus-check/login': typeof InstatusCheckLoginRoute
+  '/line-liff/login': typeof LineLiffLoginRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/catalog/': typeof CatalogIndexRoute
   '/features/': typeof FeaturesIndexRoute
+  '/admin/line': typeof AuthenticatedAdminLineRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/exams/$examId': typeof AuthenticatedExamsExamIdRoute
   '/makron/admin': typeof AuthenticatedMakronAdminRoute
@@ -672,6 +699,7 @@ export interface FileRoutesByFullPath {
   '/makron/session/$sessionId': typeof AuthenticatedMakronSessionSessionIdRoute
   '/makron/unit/$unitId': typeof AuthenticatedMakronUnitUnitIdRoute
   '/organizations/$orgId/profile': typeof AuthenticatedOrganizationsOrgIdProfileRoute
+  '/api/public/line/webhook': typeof ApiPublicLineWebhookRoute
   '/makron/edu/': typeof AuthenticatedMakronEduIndexRoute
   '/organizations/$orgId/': typeof AuthenticatedOrganizationsOrgIdIndexRoute
   '/makron/pack/$packId/dashboard': typeof AuthenticatedMakronPackPackIdDashboardRoute
@@ -692,6 +720,7 @@ export interface FileRoutesByTo {
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/qr-login': typeof QrLoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -733,10 +762,12 @@ export interface FileRoutesByTo {
   '/instatus-check/ai-back': typeof InstatusCheckAiBackRoute
   '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
   '/instatus-check/login': typeof InstatusCheckLoginRoute
+  '/line-liff/login': typeof LineLiffLoginRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/catalog': typeof CatalogIndexRoute
   '/features': typeof FeaturesIndexRoute
+  '/admin/line': typeof AuthenticatedAdminLineRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/exams/$examId': typeof AuthenticatedExamsExamIdRoute
   '/makron/admin': typeof AuthenticatedMakronAdminRoute
@@ -758,6 +789,7 @@ export interface FileRoutesByTo {
   '/makron/session/$sessionId': typeof AuthenticatedMakronSessionSessionIdRoute
   '/makron/unit/$unitId': typeof AuthenticatedMakronUnitUnitIdRoute
   '/organizations/$orgId/profile': typeof AuthenticatedOrganizationsOrgIdProfileRoute
+  '/api/public/line/webhook': typeof ApiPublicLineWebhookRoute
   '/makron/edu': typeof AuthenticatedMakronEduIndexRoute
   '/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdIndexRoute
   '/makron/pack/$packId/dashboard': typeof AuthenticatedMakronPackPackIdDashboardRoute
@@ -780,6 +812,7 @@ export interface FileRoutesById {
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/qr-login': typeof QrLoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -825,10 +858,12 @@ export interface FileRoutesById {
   '/instatus-check/ai-back': typeof InstatusCheckAiBackRoute
   '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
   '/instatus-check/login': typeof InstatusCheckLoginRoute
+  '/line-liff/login': typeof LineLiffLoginRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/catalog/': typeof CatalogIndexRoute
   '/features/': typeof FeaturesIndexRoute
+  '/_authenticated/admin_/line': typeof AuthenticatedAdminLineRoute
   '/_authenticated/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/_authenticated/exams/$examId': typeof AuthenticatedExamsExamIdRoute
   '/_authenticated/makron/admin': typeof AuthenticatedMakronAdminRoute
@@ -852,6 +887,7 @@ export interface FileRoutesById {
   '/_authenticated/makron/session/$sessionId': typeof AuthenticatedMakronSessionSessionIdRoute
   '/_authenticated/makron/unit/$unitId': typeof AuthenticatedMakronUnitUnitIdRoute
   '/_authenticated/organizations/$orgId/profile': typeof AuthenticatedOrganizationsOrgIdProfileRoute
+  '/api/public/line/webhook': typeof ApiPublicLineWebhookRoute
   '/_authenticated/makron/edu/': typeof AuthenticatedMakronEduIndexRoute
   '/_authenticated/organizations/$orgId/': typeof AuthenticatedOrganizationsOrgIdIndexRoute
   '/_authenticated/makron/pack/$packId/dashboard': typeof AuthenticatedMakronPackPackIdDashboardRoute
@@ -874,6 +910,7 @@ export interface FileRouteTypes {
     | '/help'
     | '/login'
     | '/privacy'
+    | '/qr-login'
     | '/reset-password'
     | '/security'
     | '/sitemap.xml'
@@ -919,10 +956,12 @@ export interface FileRouteTypes {
     | '/instatus-check/ai-back'
     | '/instatus-check/datebase'
     | '/instatus-check/login'
+    | '/line-liff/login'
     | '/r/$code'
     | '/share/$token'
     | '/catalog/'
     | '/features/'
+    | '/admin/line'
     | '/classroom/$classId'
     | '/exams/$examId'
     | '/makron/admin'
@@ -946,6 +985,7 @@ export interface FileRouteTypes {
     | '/makron/session/$sessionId'
     | '/makron/unit/$unitId'
     | '/organizations/$orgId/profile'
+    | '/api/public/line/webhook'
     | '/makron/edu/'
     | '/organizations/$orgId/'
     | '/makron/pack/$packId/dashboard'
@@ -966,6 +1006,7 @@ export interface FileRouteTypes {
     | '/help'
     | '/login'
     | '/privacy'
+    | '/qr-login'
     | '/reset-password'
     | '/security'
     | '/sitemap.xml'
@@ -1007,10 +1048,12 @@ export interface FileRouteTypes {
     | '/instatus-check/ai-back'
     | '/instatus-check/datebase'
     | '/instatus-check/login'
+    | '/line-liff/login'
     | '/r/$code'
     | '/share/$token'
     | '/catalog'
     | '/features'
+    | '/admin/line'
     | '/classroom/$classId'
     | '/exams/$examId'
     | '/makron/admin'
@@ -1032,6 +1075,7 @@ export interface FileRouteTypes {
     | '/makron/session/$sessionId'
     | '/makron/unit/$unitId'
     | '/organizations/$orgId/profile'
+    | '/api/public/line/webhook'
     | '/makron/edu'
     | '/organizations/$orgId'
     | '/makron/pack/$packId/dashboard'
@@ -1053,6 +1097,7 @@ export interface FileRouteTypes {
     | '/help'
     | '/login'
     | '/privacy'
+    | '/qr-login'
     | '/reset-password'
     | '/security'
     | '/sitemap.xml'
@@ -1098,10 +1143,12 @@ export interface FileRouteTypes {
     | '/instatus-check/ai-back'
     | '/instatus-check/datebase'
     | '/instatus-check/login'
+    | '/line-liff/login'
     | '/r/$code'
     | '/share/$token'
     | '/catalog/'
     | '/features/'
+    | '/_authenticated/admin_/line'
     | '/_authenticated/classroom/$classId'
     | '/_authenticated/exams/$examId'
     | '/_authenticated/makron/admin'
@@ -1125,6 +1172,7 @@ export interface FileRouteTypes {
     | '/_authenticated/makron/session/$sessionId'
     | '/_authenticated/makron/unit/$unitId'
     | '/_authenticated/organizations/$orgId/profile'
+    | '/api/public/line/webhook'
     | '/_authenticated/makron/edu/'
     | '/_authenticated/organizations/$orgId/'
     | '/_authenticated/makron/pack/$packId/dashboard'
@@ -1147,6 +1195,7 @@ export interface RootRouteChildren {
   HelpRoute: typeof HelpRoute
   LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
+  QrLoginRoute: typeof QrLoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SecurityRoute: typeof SecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -1158,11 +1207,13 @@ export interface RootRouteChildren {
   InstatusCheckAiBackRoute: typeof InstatusCheckAiBackRoute
   InstatusCheckDatebaseRoute: typeof InstatusCheckDatebaseRoute
   InstatusCheckLoginRoute: typeof InstatusCheckLoginRoute
+  LineLiffLoginRoute: typeof LineLiffLoginRoute
   RCodeRoute: typeof RCodeRoute
   ShareTokenRoute: typeof ShareTokenRoute
   CatalogIndexRoute: typeof CatalogIndexRoute
   FeaturesIndexRoute: typeof FeaturesIndexRoute
   ApiPublicAiTrialRoute: typeof ApiPublicAiTrialRoute
+  ApiPublicLineWebhookRoute: typeof ApiPublicLineWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1193,6 +1244,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/qr-login': {
+      id: '/qr-login'
+      path: '/qr-login'
+      fullPath: '/qr-login'
+      preLoaderRoute: typeof QrLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -1305,6 +1363,13 @@ declare module '@tanstack/react-router' {
       path: '/r/$code'
       fullPath: '/r/$code'
       preLoaderRoute: typeof RCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/line-liff/login': {
+      id: '/line-liff/login'
+      path: '/line-liff/login'
+      fullPath: '/line-liff/login'
+      preLoaderRoute: typeof LineLiffLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/instatus-check/login': {
@@ -1706,6 +1771,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClassroomClassIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin_/line': {
+      id: '/_authenticated/admin_/line'
+      path: '/admin/line'
+      fullPath: '/admin/line'
+      preLoaderRoute: typeof AuthenticatedAdminLineRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/organizations/$orgId/': {
       id: '/_authenticated/organizations/$orgId/'
       path: '/'
@@ -1719,6 +1791,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/makron/edu/'
       preLoaderRoute: typeof AuthenticatedMakronEduIndexRouteImport
       parentRoute: typeof AuthenticatedMakronRoute
+    }
+    '/api/public/line/webhook': {
+      id: '/api/public/line/webhook'
+      path: '/api/public/line/webhook'
+      fullPath: '/api/public/line/webhook'
+      preLoaderRoute: typeof ApiPublicLineWebhookRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/organizations/$orgId/profile': {
       id: '/_authenticated/organizations/$orgId/profile'
@@ -1969,6 +2048,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
   AuthenticatedUpdatesRoute: typeof AuthenticatedUpdatesRoute
   AuthenticatedXlangRoute: typeof AuthenticatedXlangRoute
+  AuthenticatedAdminLineRoute: typeof AuthenticatedAdminLineRoute
   AuthenticatedClassroomClassIdRoute: typeof AuthenticatedClassroomClassIdRoute
   AuthenticatedNotebooksIdRoute: typeof AuthenticatedNotebooksIdRoute
   AuthenticatedClassroomIndexRoute: typeof AuthenticatedClassroomIndexRoute
@@ -2010,6 +2090,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTutorRoute: AuthenticatedTutorRoute,
   AuthenticatedUpdatesRoute: AuthenticatedUpdatesRoute,
   AuthenticatedXlangRoute: AuthenticatedXlangRoute,
+  AuthenticatedAdminLineRoute: AuthenticatedAdminLineRoute,
   AuthenticatedClassroomClassIdRoute: AuthenticatedClassroomClassIdRoute,
   AuthenticatedNotebooksIdRoute: AuthenticatedNotebooksIdRoute,
   AuthenticatedClassroomIndexRoute: AuthenticatedClassroomIndexRoute,
@@ -2033,6 +2114,7 @@ const rootRouteChildren: RootRouteChildren = {
   HelpRoute: HelpRoute,
   LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
+  QrLoginRoute: QrLoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SecurityRoute: SecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
@@ -2044,11 +2126,13 @@ const rootRouteChildren: RootRouteChildren = {
   InstatusCheckAiBackRoute: InstatusCheckAiBackRoute,
   InstatusCheckDatebaseRoute: InstatusCheckDatebaseRoute,
   InstatusCheckLoginRoute: InstatusCheckLoginRoute,
+  LineLiffLoginRoute: LineLiffLoginRoute,
   RCodeRoute: RCodeRoute,
   ShareTokenRoute: ShareTokenRoute,
   CatalogIndexRoute: CatalogIndexRoute,
   FeaturesIndexRoute: FeaturesIndexRoute,
   ApiPublicAiTrialRoute: ApiPublicAiTrialRoute,
+  ApiPublicLineWebhookRoute: ApiPublicLineWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

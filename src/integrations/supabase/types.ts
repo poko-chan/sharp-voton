@@ -561,6 +561,75 @@ export type Database = {
         }
         Relationships: []
       }
+      child_controls: {
+        Row: {
+          allowed_from: string | null
+          allowed_to: string | null
+          child_id: string
+          created_at: string
+          daily_limit_minutes: number | null
+          homework_first: boolean
+          locked_features: string[]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          allowed_from?: string | null
+          allowed_to?: string | null
+          child_id: string
+          created_at?: string
+          daily_limit_minutes?: number | null
+          homework_first?: boolean
+          locked_features?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          allowed_from?: string | null
+          allowed_to?: string | null
+          child_id?: string
+          created_at?: string
+          daily_limit_minutes?: number | null
+          homework_first?: boolean
+          locked_features?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      child_login_tokens: {
+        Row: {
+          child_id: string
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          last_used_at: string | null
+          parent_id: string
+          revoked: boolean
+        }
+        Insert: {
+          child_id: string
+          code: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          last_used_at?: string | null
+          parent_id: string
+          revoked?: boolean
+        }
+        Update: {
+          child_id?: string
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          last_used_at?: string | null
+          parent_id?: string
+          revoked?: boolean
+        }
+        Relationships: []
+      }
       class_chat_messages: {
         Row: {
           body: string
@@ -2260,6 +2329,78 @@ export type Database = {
           id?: string
           name?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      line_pending_links: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          expires_at: string
+          line_user_id: string
+          picture_url: string | null
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          expires_at?: string
+          line_user_id: string
+          picture_url?: string | null
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          expires_at?: string
+          line_user_id?: string
+          picture_url?: string | null
+          token?: string
+        }
+        Relationships: []
+      }
+      line_settings: {
+        Row: {
+          apps_script_code: string | null
+          created_at: string
+          id: number
+          liff_id: string | null
+          login_channel_id: string | null
+          notes: string | null
+          official_account_id: string | null
+          updated_at: string
+          webhook_enabled: boolean
+          webhook_forward_url: string | null
+          welcome_message: string | null
+        }
+        Insert: {
+          apps_script_code?: string | null
+          created_at?: string
+          id?: number
+          liff_id?: string | null
+          login_channel_id?: string | null
+          notes?: string | null
+          official_account_id?: string | null
+          updated_at?: string
+          webhook_enabled?: boolean
+          webhook_forward_url?: string | null
+          welcome_message?: string | null
+        }
+        Update: {
+          apps_script_code?: string | null
+          created_at?: string
+          id?: number
+          liff_id?: string | null
+          login_channel_id?: string | null
+          notes?: string | null
+          official_account_id?: string | null
+          updated_at?: string
+          webhook_enabled?: boolean
+          webhook_forward_url?: string | null
+          welcome_message?: string | null
         }
         Relationships: []
       }
@@ -6151,6 +6292,7 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          line_user_id: string | null
           notify_announcements: boolean
           notify_chat: boolean
           notify_daily_reminder: boolean
@@ -6178,6 +6320,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id: string
+          line_user_id?: string | null
           notify_announcements?: boolean
           notify_chat?: boolean
           notify_daily_reminder?: boolean
@@ -6205,6 +6348,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          line_user_id?: string | null
           notify_announcements?: boolean
           notify_chat?: boolean
           notify_daily_reminder?: boolean

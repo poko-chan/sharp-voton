@@ -16,6 +16,7 @@ import {
   Flag,
   HelpCircle,
   Megaphone,
+  MessageCircle,
   Settings,
   Shield,
   Users,
@@ -51,7 +52,8 @@ type AdminTab =
   | "boards"
   | "notifications"
   | "lowdata"
-  | "plans";
+  | "plans"
+  | "line";
 
 type AdminItem = {
   tab: AdminTab;
@@ -88,6 +90,7 @@ const groups: { title: string; items: AdminItem[] }[] = [
       { tab: "version", label: "バージョン", description: "アプリのバージョン情報", icon: Settings },
       { tab: "coingrant", label: "コイン一括配布", description: "全ユーザーへコインを付与", icon: Coins },
       { tab: "plans", label: "プラン管理", description: "プラン・料金・内容・追加パック", icon: CreditCard },
+      { tab: "line", label: "LINE連携", description: "Webhook設定とApps Scriptコード", icon: MessageCircle },
     ],
   },
 ];
@@ -103,7 +106,16 @@ function AdminPage() {
   }, [isAdmin, loading, navigate]);
 
   if (!isAdmin) return null;
-  if (!tab) return <AdminOverview onSelect={(next) => navigate({ to: "/admin", search: { tab: next } })} />;
+  if (!tab)
+    return (
+      <AdminOverview
+        onSelect={(next) =>
+          next === "line"
+            ? navigate({ to: "/admin/line" })
+            : navigate({ to: "/admin", search: { tab: next } })
+        }
+      />
+    );
 
   return (
     <div className="mx-auto max-w-7xl space-y-5 p-6 md:p-8">
@@ -182,5 +194,6 @@ function renderTab(tab: AdminTab) {
     case "boards": return <LoginBoardsTab />;
     case "notifications": return <NotificationsAdminTab />;
     case "plans": return <PlansAdminTab />;
+    case "line": return null;
   }
 }

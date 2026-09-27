@@ -1,4 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { ChildGuard } from "@/components/ChildGuard";
 import {
   LayoutDashboard,
   Timer,
@@ -678,6 +679,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
 
         <div className={isMobile ? "pb-24" : ""}>{children}</div>
+        <ChildGuard />
 
         {/* Mobile bottom bar */}
         {isMobile && (

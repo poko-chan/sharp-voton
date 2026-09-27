@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { ParentControls } from "@/components/parent/ParentControls";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -168,6 +169,7 @@ function ChildPanel({ child, onChange, unlink }: any) {
           <TabsTrigger value="restrict">
             <Ban className="h-3 w-3 mr-1" /> 利用制限
           </TabsTrigger>
+          <TabsTrigger value="controls">見守り</TabsTrigger>
           <TabsTrigger value="study">学習状況</TabsTrigger>
           <TabsTrigger value="detail">
             <Activity className="h-3 w-3 mr-1" /> 詳細
@@ -182,6 +184,9 @@ function ChildPanel({ child, onChange, unlink }: any) {
         </TabsContent>
         <TabsContent value="restrict" className="space-y-2 pt-3">
           <ChildRestrictions childId={child.id} />
+        </TabsContent>
+        <TabsContent value="controls" className="pt-3">
+          <ParentControls childId={child.id} />
         </TabsContent>
         <TabsContent value="study" className="space-y-2 pt-3">
           <div className="text-sm">

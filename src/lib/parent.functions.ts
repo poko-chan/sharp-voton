@@ -315,3 +315,158 @@ export const getChildFullDashboard = createServerFn({ method: "POST" })
       reflections: reflections.data ?? [],
     };
   });
+
+/* ---------------- 保護者コントロール（利用制限・QRログイン・フレンド確認） ---------------- */
+
+async function assertLinked(parentId: string, childId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin
+    .from("parent_child_links")
+    .select("id")
+    .eq("parent_id", parentId)
+    .eq("child_id", childId)
+    .maybeSingle();
+  if (!data) throw new Error("子供アカウントとリンクされていません");
+  return supabaseAdmin;
+}
+
+export const getChildControls = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ childId: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    const admin = await assertLinked(context.userId, data.childId);
+    const { data: row } = await admin
+      .from("child_controls")
+      .select("*")
+      .eq("child_id", data.childId)
+      .maybeSingle();
+    const { data: codes } = await admin
+      .from("child_login_tokens")
+      .select("code, created_at, last_used_at, revoked")
+      .eq("child_id", data.childId)
+      .eq("revoked", false)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    return { controls: row ?? null, loginCode: codes?.[0]?.code ?? null };
+  });
+
+export const setChildControls = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z
+      .object({
+        childId: z.string().uuid(),
+        daily_limit_minutes: z.number().int().min(0).max(1440).nullable(),
+        allowed_from: z.string().max(8).nullable(),
+        allowed_to: z.string().max(8).nullable(),
+        locked_features: z.array(z.string().max(40)).max(40),
+        homework_first: z.boolean(),
+      })
+      .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const admin = await assertLinked(context.userId, data.childId);
+    const { childId, ...rest } = data;
+    const { error } = await admin
+      .from("child_controls")
+      .upsert({ child_id: childId, updated_by: context.userId, ...rest }, { onConflict: "child_id" });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const issueChildLoginCode = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ childId: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    const admin = await assertLinked(context.userId, data.childId);
+    await admin
+      .from("child_login_tokens")
+      .update({ revoked: true })
+      .eq("child_id", data.childId)
+      .eq("parent_id", context.userId);
+    const code = (crypto.randomUUID() + crypto.randomUUID()).replace(/-/g, "").slice(0, 40);
+    const { error } = await admin
+      .from("child_login_tokens")
+      .insert({ child_id: data.childId, parent_id: context.userId, code });
+    if (error) throw new Error(error.message);
+    return { code };
+  });
+
+export const revokeChildLoginCode = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ childId: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    const admin = await assertLinked(context.userId, data.childId);
+    await admin
+      .from("child_login_tokens")
+      .update({ revoked: true })
+      .eq("child_id", data.childId)
+      .eq("parent_id", context.userId);
+    return { ok: true };
+  });
+
+export const listChildFriends = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ childId: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    const admin = await assertLinked(context.userId, data.childId);
+    const { data: follows } = await admin
+      .from("follows")
+      .select("following_id, created_at")
+      .eq("follower_id", data.childId)
+      .limit(200);
+    const ids = (follows ?? []).map((f: any) => f.following_id);
+    if (ids.length === 0) return [];
+    const { data: profs } = await admin
+      .from("profiles")
+      .select("id, username, display_name, avatar_url")
+      .in("id", ids);
+    return profs ?? [];
+  });
+
+/** QRカードから子供がログインする（公開・コードのみで認証） */
+export const loginWithChildCode = createServerFn({ method: "POST" })
+  .inputValidator((i) => z.object({ code: z.string().min(10).max(64) }).parse(i))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row } = await supabaseAdmin
+      .from("child_login_tokens")
+      .select("id, child_id, expires_at, revoked")
+      .eq("code", data.code)
+      .maybeSingle();
+    if (!row || row.revoked) throw new Error("このログインカードは使えません");
+    if (new Date(row.expires_at as string).getTime() < Date.now()) {
+      throw new Error("このログインカードは期限切れです");
+    }
+    const { data: prof } = await supabaseAdmin
+      .from("profiles")
+      .select("email, display_name, username")
+      .eq("id", row.child_id)
+      .maybeSingle();
+    if (!prof?.email) throw new Error("アカウントが見つかりません");
+    const { data: link, error } = await supabaseAdmin.auth.admin.generateLink({
+      type: "magiclink",
+      email: prof.email,
+    });
+    if (error || !link?.properties?.hashed_token) throw new Error("ログインに失敗しました");
+    await supabaseAdmin
+      .from("child_login_tokens")
+      .update({ last_used_at: new Date().toISOString() })
+      .eq("id", row.id);
+    return {
+      tokenHash: link.properties.hashed_token,
+      name: (prof as any).display_name ?? (prof as any).username ?? "",
+    };
+  });
+
+/** 子供本人が自分の制限を取得する */
+export const getMyControls = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data } = await context.supabase
+      .from("child_controls")
+      .select("*")
+      .eq("child_id", context.userId)
+      .maybeSingle();
+    return data ?? null;
+  });
