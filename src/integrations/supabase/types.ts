@@ -565,6 +565,10 @@ export type Database = {
         Row: {
           allowed_from: string | null
           allowed_to: string | null
+          always_allowed_features: string[]
+          app_time_limits: Json
+          bonus_date: string | null
+          bonus_minutes: number
           child_id: string
           created_at: string
           daily_limit_minutes: number | null
@@ -576,6 +580,10 @@ export type Database = {
         Insert: {
           allowed_from?: string | null
           allowed_to?: string | null
+          always_allowed_features?: string[]
+          app_time_limits?: Json
+          bonus_date?: string | null
+          bonus_minutes?: number
           child_id: string
           created_at?: string
           daily_limit_minutes?: number | null
@@ -587,6 +595,10 @@ export type Database = {
         Update: {
           allowed_from?: string | null
           allowed_to?: string | null
+          always_allowed_features?: string[]
+          app_time_limits?: Json
+          bonus_date?: string | null
+          bonus_minutes?: number
           child_id?: string
           created_at?: string
           daily_limit_minutes?: number | null
@@ -594,6 +606,45 @@ export type Database = {
           locked_features?: string[]
           updated_at?: string
           updated_by?: string | null
+        }
+        Relationships: []
+      }
+      child_extension_requests: {
+        Row: {
+          child_id: string
+          created_at: string
+          decided_at: string | null
+          granted_minutes: number | null
+          id: string
+          minutes: number
+          parent_id: string
+          reason: string | null
+          scope: string
+          status: string
+        }
+        Insert: {
+          child_id: string
+          created_at?: string
+          decided_at?: string | null
+          granted_minutes?: number | null
+          id?: string
+          minutes: number
+          parent_id: string
+          reason?: string | null
+          scope?: string
+          status?: string
+        }
+        Update: {
+          child_id?: string
+          created_at?: string
+          decided_at?: string | null
+          granted_minutes?: number | null
+          id?: string
+          minutes?: number
+          parent_id?: string
+          reason?: string | null
+          scope?: string
+          status?: string
         }
         Relationships: []
       }
@@ -5919,6 +5970,39 @@ export type Database = {
         }
         Relationships: []
       }
+      parent_child_messages: {
+        Row: {
+          body: string
+          child_id: string
+          created_at: string
+          id: string
+          kind: string
+          parent_id: string
+          read_at: string | null
+          sender_role: string
+        }
+        Insert: {
+          body: string
+          child_id: string
+          created_at?: string
+          id?: string
+          kind?: string
+          parent_id: string
+          read_at?: string | null
+          sender_role: string
+        }
+        Update: {
+          body?: string
+          child_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          parent_id?: string
+          read_at?: string | null
+          sender_role?: string
+        }
+        Relationships: []
+      }
       parent_invite_codes: {
         Row: {
           child_id: string
@@ -7824,6 +7908,87 @@ export type Database = {
           quantity?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_line_preferences: {
+        Row: {
+          created_at: string
+          daily_report_enabled: boolean
+          daily_report_time: string
+          forward_app_notifications: boolean
+          homework_alert_24h: boolean
+          homework_alert_3h: boolean
+          last_daily_report_on: string | null
+          last_reminder_sent_on: string | null
+          last_weekly_report_on: string | null
+          parent_extension_request: boolean
+          parent_finish_report: boolean
+          quiet_enabled: boolean
+          quiet_from: string
+          quiet_to: string
+          reminder_days: number[]
+          reminder_enabled: boolean
+          reminder_tone: string
+          reminder_weekday_time: string
+          reminder_weekend_time: string
+          security_login_alert: boolean
+          test_countdown_enabled: boolean
+          updated_at: string
+          user_id: string
+          weekly_report_enabled: boolean
+        }
+        Insert: {
+          created_at?: string
+          daily_report_enabled?: boolean
+          daily_report_time?: string
+          forward_app_notifications?: boolean
+          homework_alert_24h?: boolean
+          homework_alert_3h?: boolean
+          last_daily_report_on?: string | null
+          last_reminder_sent_on?: string | null
+          last_weekly_report_on?: string | null
+          parent_extension_request?: boolean
+          parent_finish_report?: boolean
+          quiet_enabled?: boolean
+          quiet_from?: string
+          quiet_to?: string
+          reminder_days?: number[]
+          reminder_enabled?: boolean
+          reminder_tone?: string
+          reminder_weekday_time?: string
+          reminder_weekend_time?: string
+          security_login_alert?: boolean
+          test_countdown_enabled?: boolean
+          updated_at?: string
+          user_id: string
+          weekly_report_enabled?: boolean
+        }
+        Update: {
+          created_at?: string
+          daily_report_enabled?: boolean
+          daily_report_time?: string
+          forward_app_notifications?: boolean
+          homework_alert_24h?: boolean
+          homework_alert_3h?: boolean
+          last_daily_report_on?: string | null
+          last_reminder_sent_on?: string | null
+          last_weekly_report_on?: string | null
+          parent_extension_request?: boolean
+          parent_finish_report?: boolean
+          quiet_enabled?: boolean
+          quiet_from?: string
+          quiet_to?: string
+          reminder_days?: number[]
+          reminder_enabled?: boolean
+          reminder_tone?: string
+          reminder_weekday_time?: string
+          reminder_weekend_time?: string
+          security_login_alert?: boolean
+          test_countdown_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+          weekly_report_enabled?: boolean
         }
         Relationships: []
       }

@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Shield, Eye, EyeOff, LoaderCircle } from "lucide-react";
+import { Shield, Eye, EyeOff, LoaderCircle, MessageCircle, QrCode } from "lucide-react";
+import { QrScannerDialog } from "@/components/QrScannerDialog";
+
 import { toast } from "sonner";
 import { signInWithUsername, checkUsernameAvailable } from "@/lib/username.functions";
 import { EmailVerifyNotice } from "@/components/auth/EmailVerifyNotice";
@@ -57,6 +59,8 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
+
   const [agreed, setAgreed] = useState(false);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [announcements, setAnnouncements] = useState<
@@ -346,7 +350,40 @@ function LoginPage() {
                 </svg>
                 Apple
               </Button>
+              <Button
+                variant="outline"
+                disabled={busy}
+                onClick={() => {
+                  window.location.href = "/line-liff/login";
+                }}
+              >
+                <MessageCircle className="mr-2 h-4 w-4 text-[#06C755]" />
+                LINEでログイン
+              </Button>
+              <Button variant="outline" disabled={busy} onClick={() => setQrOpen(true)}>
+                <QrCode className="mr-2 h-4 w-4" />
+                QRコードでログイン
+              </Button>
             </div>
+
+            <QrScannerDialog
+              open={qrOpen}
+              onOpenChange={setQrOpen}
+              title="ログインカードを読み取る"
+              description="おうちの人がつくったログインQRをカメラに向けてください。"
+              onResult={(textValue) => {
+                try {
+                  const u = new URL(textValue, window.location.origin);
+                  const c = u.searchParams.get("c");
+                  if (!c) throw new Error("bad");
+                  window.location.href = `/qr-login?c=${encodeURIComponent(c)}`;
+                } catch {
+                  toast.error("このQRコードではログインできません");
+                }
+              }}
+            />
+
+
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">

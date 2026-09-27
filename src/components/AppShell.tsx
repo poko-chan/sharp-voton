@@ -1,5 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { ChildGuard } from "@/components/ChildGuard";
+import { ParentBarButton } from "@/components/parent/ParentBarButton";
+
 import {
   LayoutDashboard,
   Timer,
@@ -621,7 +623,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <HelpCircle className="h-4 w-4" />
                 <span className="hidden lg:inline">サポート</span>
               </Link>
+              <ParentBarButton />
               <ChromeAiStatusBadge compact />
+
               <div className="mx-2 h-4 w-px bg-border/70" />
               <AppLauncher />
               <GoogleTranslateWidget />
@@ -656,8 +660,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             <img src={logoUrl} alt="" className="h-8 w-8 rounded-lg shadow-sm" />
             <ClockHeader version={version} compact />
             <div className="ml-auto flex items-center gap-1.5">
+              <ParentBarButton compact />
               <AppLauncher />
               <SearchBar />
+
               {supportDock?.includes("feedback") !== false && <FeedbackWidget compact />}
               <Link
                 to="/help"

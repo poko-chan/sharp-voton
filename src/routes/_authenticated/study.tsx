@@ -37,6 +37,8 @@ import { VoiceMicButton } from "@/components/VoiceMicButton";
 import { MaterialPicker } from "@/components/MaterialPicker";
 import { useOrderedSubjects, type SubjectLite } from "@/lib/subjects";
 import { StudyStats } from "@/components/study/StudyStats";
+import { notifyStudyFinished } from "@/lib/parent.functions";
+
 
 export const Route = createFileRoute("/_authenticated/study")({
   component: StudyPage,
@@ -146,6 +148,8 @@ function StudyPage() {
       material_ids: materialIds,
     } as never);
     if (error) return toast.error(error.message);
+    void notifyStudyFinished({ data: { minutes: duration, questions: 0 } }).catch(() => {});
+
     setContent("");
     setDuration(30);
     setStartTime("");
