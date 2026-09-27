@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Shield, Eye, EyeOff, LoaderCircle } from "lucide-react";
+import { Shield, Eye, EyeOff, LoaderCircle, MessageCircle, QrCode } from "lucide-react";
+import { QrScannerDialog } from "@/components/QrScannerDialog";
+
 import { toast } from "sonner";
 import { signInWithUsername, checkUsernameAvailable } from "@/lib/username.functions";
 import { EmailVerifyNotice } from "@/components/auth/EmailVerifyNotice";
