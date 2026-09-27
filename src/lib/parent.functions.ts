@@ -360,7 +360,10 @@ export const setChildControls = createServerFn({ method: "POST" })
         allowed_from: z.string().max(8).nullable(),
         allowed_to: z.string().max(8).nullable(),
         locked_features: z.array(z.string().max(40)).max(40),
+        always_allowed_features: z.array(z.string().max(40)).max(40).optional(),
+        app_time_limits: z.record(z.string().max(40), z.number().int().min(0).max(1440)).optional(),
         homework_first: z.boolean(),
+
       })
       .parse(i),
   )
