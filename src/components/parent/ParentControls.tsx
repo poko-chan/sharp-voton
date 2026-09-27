@@ -15,15 +15,9 @@ import {
   setChildControls,
 } from "@/lib/parent.functions";
 
-export const LOCKABLE_FEATURES: { key: string; label: string }[] = [
-  { key: "chat", label: "チャット" },
-  { key: "feed", label: "みんなの投稿" },
-  { key: "friends", label: "フレンド" },
-  { key: "inventory", label: "ショップ・持ち物" },
-  { key: "town", label: "街づくり" },
-  { key: "together", label: "みんなで勉強" },
-  { key: "leaderboard", label: "ランキング" },
-];
+export { LOCKABLE_FEATURES } from "@/components/parent/lockable-features";
+import { LOCKABLE_FEATURES } from "@/components/parent/lockable-features";
+
 
 type Friend = { id: string; username: string | null; display_name: string | null };
 
