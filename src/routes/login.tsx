@@ -59,6 +59,8 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
+
   const [agreed, setAgreed] = useState(false);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [announcements, setAnnouncements] = useState<
