@@ -29,6 +29,7 @@ import { Route as FeaturesIndexRouteImport } from './routes/features.index'
 import { Route as CatalogIndexRouteImport } from './routes/catalog.index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as RCodeRouteImport } from './routes/r.$code'
+import { Route as LineLiffLoginRouteImport } from './routes/line-liff.login'
 import { Route as InstatusCheckLoginRouteImport } from './routes/instatus-check.login'
 import { Route as InstatusCheckDatebaseRouteImport } from './routes/instatus-check.datebase'
 import { Route as InstatusCheckAiBackRouteImport } from './routes/instatus-check.ai-back'
@@ -198,6 +199,11 @@ const ShareTokenRoute = ShareTokenRouteImport.update({
 const RCodeRoute = RCodeRouteImport.update({
   id: '/r/$code',
   path: '/r/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LineLiffLoginRoute = LineLiffLoginRouteImport.update({
+  id: '/line-liff/login',
+  path: '/line-liff/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InstatusCheckLoginRoute = InstatusCheckLoginRouteImport.update({
@@ -645,6 +651,7 @@ export interface FileRoutesByFullPath {
   '/instatus-check/ai-back': typeof InstatusCheckAiBackRoute
   '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
   '/instatus-check/login': typeof InstatusCheckLoginRoute
+  '/line-liff/login': typeof LineLiffLoginRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/catalog/': typeof CatalogIndexRoute
@@ -733,6 +740,7 @@ export interface FileRoutesByTo {
   '/instatus-check/ai-back': typeof InstatusCheckAiBackRoute
   '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
   '/instatus-check/login': typeof InstatusCheckLoginRoute
+  '/line-liff/login': typeof LineLiffLoginRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/catalog': typeof CatalogIndexRoute
@@ -825,6 +833,7 @@ export interface FileRoutesById {
   '/instatus-check/ai-back': typeof InstatusCheckAiBackRoute
   '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
   '/instatus-check/login': typeof InstatusCheckLoginRoute
+  '/line-liff/login': typeof LineLiffLoginRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/catalog/': typeof CatalogIndexRoute
@@ -919,6 +928,7 @@ export interface FileRouteTypes {
     | '/instatus-check/ai-back'
     | '/instatus-check/datebase'
     | '/instatus-check/login'
+    | '/line-liff/login'
     | '/r/$code'
     | '/share/$token'
     | '/catalog/'
@@ -1007,6 +1017,7 @@ export interface FileRouteTypes {
     | '/instatus-check/ai-back'
     | '/instatus-check/datebase'
     | '/instatus-check/login'
+    | '/line-liff/login'
     | '/r/$code'
     | '/share/$token'
     | '/catalog'
@@ -1098,6 +1109,7 @@ export interface FileRouteTypes {
     | '/instatus-check/ai-back'
     | '/instatus-check/datebase'
     | '/instatus-check/login'
+    | '/line-liff/login'
     | '/r/$code'
     | '/share/$token'
     | '/catalog/'
@@ -1158,6 +1170,7 @@ export interface RootRouteChildren {
   InstatusCheckAiBackRoute: typeof InstatusCheckAiBackRoute
   InstatusCheckDatebaseRoute: typeof InstatusCheckDatebaseRoute
   InstatusCheckLoginRoute: typeof InstatusCheckLoginRoute
+  LineLiffLoginRoute: typeof LineLiffLoginRoute
   RCodeRoute: typeof RCodeRoute
   ShareTokenRoute: typeof ShareTokenRoute
   CatalogIndexRoute: typeof CatalogIndexRoute
@@ -1305,6 +1318,13 @@ declare module '@tanstack/react-router' {
       path: '/r/$code'
       fullPath: '/r/$code'
       preLoaderRoute: typeof RCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/line-liff/login': {
+      id: '/line-liff/login'
+      path: '/line-liff/login'
+      fullPath: '/line-liff/login'
+      preLoaderRoute: typeof LineLiffLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/instatus-check/login': {
@@ -2044,6 +2064,7 @@ const rootRouteChildren: RootRouteChildren = {
   InstatusCheckAiBackRoute: InstatusCheckAiBackRoute,
   InstatusCheckDatebaseRoute: InstatusCheckDatebaseRoute,
   InstatusCheckLoginRoute: InstatusCheckLoginRoute,
+  LineLiffLoginRoute: LineLiffLoginRoute,
   RCodeRoute: RCodeRoute,
   ShareTokenRoute: ShareTokenRoute,
   CatalogIndexRoute: CatalogIndexRoute,
