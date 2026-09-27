@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { KeyRound, Link2, Unlink, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { SectionHeading } from "./shared";
+import { MessageCircle } from "lucide-react";
+import { getMyLineStatus, unlinkLine } from "@/lib/line.functions";
 import googleLogo from "@/assets/google-logo.svg.asset.json";
 
 type Identity = { identity_id: string; id: string; provider: string; identity_data?: any };
