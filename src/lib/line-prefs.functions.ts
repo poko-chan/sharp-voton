@@ -95,11 +95,13 @@ export const sendLineTestMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { pushToLineUser, textMessage } = await import("@/lib/line-messaging.server");
-    const { data } = await context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
       .from("profiles")
       .select("line_user_id")
       .eq("id", context.userId)
       .maybeSingle();
+    if (error) throw new Error("LINEの連携状態を確認できませんでした");
     const lineId = (data as { line_user_id?: string } | null)?.line_user_id;
     if (!lineId) throw new Error("LINEと連携していません");
     const res = await pushToLineUser(lineId, [
