@@ -146,6 +146,8 @@ function StudyPage() {
       material_ids: materialIds,
     } as never);
     if (error) return toast.error(error.message);
+    void notifyStudyFinished({ data: { minutes: duration, questions: 0 } }).catch(() => {});
+
     setContent("");
     setDuration(30);
     setStartTime("");
