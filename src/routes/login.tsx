@@ -366,6 +366,24 @@ function LoginPage() {
               </Button>
             </div>
 
+            <QrScannerDialog
+              open={qrOpen}
+              onOpenChange={setQrOpen}
+              title="ログインカードを読み取る"
+              description="おうちの人がつくったログインQRをカメラに向けてください。"
+              onResult={(textValue) => {
+                try {
+                  const u = new URL(textValue, window.location.origin);
+                  const c = u.searchParams.get("c");
+                  if (!c) throw new Error("bad");
+                  window.location.href = `/qr-login?c=${encodeURIComponent(c)}`;
+                } catch {
+                  toast.error("このQRコードではログインできません");
+                }
+              }}
+            />
+
+
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
