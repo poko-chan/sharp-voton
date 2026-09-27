@@ -26,9 +26,17 @@ export function LoginMethodsSection() {
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
 
+  const [lineLinked, setLineLinked] = useState(false);
+
   const load = useCallback(async () => {
     const { data, error } = await supabase.auth.getUserIdentities();
     if (!error) setIdentities((data?.identities ?? []) as any[] as Identity[]);
+    try {
+      const st = await getMyLineStatus();
+      setLineLinked(Boolean((st as any)?.linked));
+    } catch {
+      /* ignore */
+    }
     setLoading(false);
   }, []);
 

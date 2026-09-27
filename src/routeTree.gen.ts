@@ -87,6 +87,7 @@ import { Route as AuthenticatedMakronHistoryRouteImport } from './routes/_authen
 import { Route as AuthenticatedMakronAdminRouteImport } from './routes/_authenticated/makron.admin'
 import { Route as AuthenticatedExamsExamIdRouteImport } from './routes/_authenticated/exams.$examId'
 import { Route as AuthenticatedClassroomClassIdRouteImport } from './routes/_authenticated/classroom.$classId'
+import { Route as AuthenticatedAdminLineRouteImport } from './routes/_authenticated/admin_.line'
 import { Route as AuthenticatedOrganizationsOrgIdIndexRouteImport } from './routes/_authenticated/organizations.$orgId.index'
 import { Route as AuthenticatedMakronEduIndexRouteImport } from './routes/_authenticated/makron.edu.index'
 import { Route as ApiPublicLineWebhookRouteImport } from './routes/api/public/line/webhook'
@@ -510,6 +511,11 @@ const AuthenticatedClassroomClassIdRoute =
     path: '/classroom/$classId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAdminLineRoute = AuthenticatedAdminLineRouteImport.update({
+  id: '/admin_/line',
+  path: '/admin/line',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedOrganizationsOrgIdIndexRoute =
   AuthenticatedOrganizationsOrgIdIndexRouteImport.update({
     id: '/',
@@ -662,6 +668,7 @@ export interface FileRoutesByFullPath {
   '/share/$token': typeof ShareTokenRoute
   '/catalog/': typeof CatalogIndexRoute
   '/features/': typeof FeaturesIndexRoute
+  '/admin/line': typeof AuthenticatedAdminLineRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/exams/$examId': typeof AuthenticatedExamsExamIdRoute
   '/makron/admin': typeof AuthenticatedMakronAdminRoute
@@ -752,6 +759,7 @@ export interface FileRoutesByTo {
   '/share/$token': typeof ShareTokenRoute
   '/catalog': typeof CatalogIndexRoute
   '/features': typeof FeaturesIndexRoute
+  '/admin/line': typeof AuthenticatedAdminLineRoute
   '/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/exams/$examId': typeof AuthenticatedExamsExamIdRoute
   '/makron/admin': typeof AuthenticatedMakronAdminRoute
@@ -846,6 +854,7 @@ export interface FileRoutesById {
   '/share/$token': typeof ShareTokenRoute
   '/catalog/': typeof CatalogIndexRoute
   '/features/': typeof FeaturesIndexRoute
+  '/_authenticated/admin_/line': typeof AuthenticatedAdminLineRoute
   '/_authenticated/classroom/$classId': typeof AuthenticatedClassroomClassIdRoute
   '/_authenticated/exams/$examId': typeof AuthenticatedExamsExamIdRoute
   '/_authenticated/makron/admin': typeof AuthenticatedMakronAdminRoute
@@ -942,6 +951,7 @@ export interface FileRouteTypes {
     | '/share/$token'
     | '/catalog/'
     | '/features/'
+    | '/admin/line'
     | '/classroom/$classId'
     | '/exams/$examId'
     | '/makron/admin'
@@ -1032,6 +1042,7 @@ export interface FileRouteTypes {
     | '/share/$token'
     | '/catalog'
     | '/features'
+    | '/admin/line'
     | '/classroom/$classId'
     | '/exams/$examId'
     | '/makron/admin'
@@ -1125,6 +1136,7 @@ export interface FileRouteTypes {
     | '/share/$token'
     | '/catalog/'
     | '/features/'
+    | '/_authenticated/admin_/line'
     | '/_authenticated/classroom/$classId'
     | '/_authenticated/exams/$examId'
     | '/_authenticated/makron/admin'
@@ -1739,6 +1751,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClassroomClassIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin_/line': {
+      id: '/_authenticated/admin_/line'
+      path: '/admin/line'
+      fullPath: '/admin/line'
+      preLoaderRoute: typeof AuthenticatedAdminLineRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/organizations/$orgId/': {
       id: '/_authenticated/organizations/$orgId/'
       path: '/'
@@ -2009,6 +2028,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
   AuthenticatedUpdatesRoute: typeof AuthenticatedUpdatesRoute
   AuthenticatedXlangRoute: typeof AuthenticatedXlangRoute
+  AuthenticatedAdminLineRoute: typeof AuthenticatedAdminLineRoute
   AuthenticatedClassroomClassIdRoute: typeof AuthenticatedClassroomClassIdRoute
   AuthenticatedNotebooksIdRoute: typeof AuthenticatedNotebooksIdRoute
   AuthenticatedClassroomIndexRoute: typeof AuthenticatedClassroomIndexRoute
@@ -2050,6 +2070,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTutorRoute: AuthenticatedTutorRoute,
   AuthenticatedUpdatesRoute: AuthenticatedUpdatesRoute,
   AuthenticatedXlangRoute: AuthenticatedXlangRoute,
+  AuthenticatedAdminLineRoute: AuthenticatedAdminLineRoute,
   AuthenticatedClassroomClassIdRoute: AuthenticatedClassroomClassIdRoute,
   AuthenticatedNotebooksIdRoute: AuthenticatedNotebooksIdRoute,
   AuthenticatedClassroomIndexRoute: AuthenticatedClassroomIndexRoute,
