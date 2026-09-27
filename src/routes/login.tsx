@@ -346,7 +346,22 @@ function LoginPage() {
                 </svg>
                 Apple
               </Button>
+              <Button
+                variant="outline"
+                disabled={busy}
+                onClick={() => {
+                  window.location.href = "/line-liff/login";
+                }}
+              >
+                <MessageCircle className="mr-2 h-4 w-4 text-[#06C755]" />
+                LINEでログイン
+              </Button>
+              <Button variant="outline" disabled={busy} onClick={() => setQrOpen(true)}>
+                <QrCode className="mr-2 h-4 w-4" />
+                QRコードでログイン
+              </Button>
             </div>
+
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
