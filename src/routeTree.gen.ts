@@ -89,6 +89,7 @@ import { Route as AuthenticatedExamsExamIdRouteImport } from './routes/_authenti
 import { Route as AuthenticatedClassroomClassIdRouteImport } from './routes/_authenticated/classroom.$classId'
 import { Route as AuthenticatedOrganizationsOrgIdIndexRouteImport } from './routes/_authenticated/organizations.$orgId.index'
 import { Route as AuthenticatedMakronEduIndexRouteImport } from './routes/_authenticated/makron.edu.index'
+import { Route as ApiPublicLineWebhookRouteImport } from './routes/api/public/line/webhook'
 import { Route as AuthenticatedOrganizationsOrgIdProfileRouteImport } from './routes/_authenticated/organizations.$orgId.profile'
 import { Route as AuthenticatedMakronUnitUnitIdRouteImport } from './routes/_authenticated/makron.unit.$unitId'
 import { Route as AuthenticatedMakronSessionSessionIdRouteImport } from './routes/_authenticated/makron.session.$sessionId'
@@ -521,6 +522,11 @@ const AuthenticatedMakronEduIndexRoute =
     path: '/edu/',
     getParentRoute: () => AuthenticatedMakronRoute,
   } as any)
+const ApiPublicLineWebhookRoute = ApiPublicLineWebhookRouteImport.update({
+  id: '/api/public/line/webhook',
+  path: '/api/public/line/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedOrganizationsOrgIdProfileRoute =
   AuthenticatedOrganizationsOrgIdProfileRouteImport.update({
     id: '/profile',
@@ -679,6 +685,7 @@ export interface FileRoutesByFullPath {
   '/makron/session/$sessionId': typeof AuthenticatedMakronSessionSessionIdRoute
   '/makron/unit/$unitId': typeof AuthenticatedMakronUnitUnitIdRoute
   '/organizations/$orgId/profile': typeof AuthenticatedOrganizationsOrgIdProfileRoute
+  '/api/public/line/webhook': typeof ApiPublicLineWebhookRoute
   '/makron/edu/': typeof AuthenticatedMakronEduIndexRoute
   '/organizations/$orgId/': typeof AuthenticatedOrganizationsOrgIdIndexRoute
   '/makron/pack/$packId/dashboard': typeof AuthenticatedMakronPackPackIdDashboardRoute
@@ -766,6 +773,7 @@ export interface FileRoutesByTo {
   '/makron/session/$sessionId': typeof AuthenticatedMakronSessionSessionIdRoute
   '/makron/unit/$unitId': typeof AuthenticatedMakronUnitUnitIdRoute
   '/organizations/$orgId/profile': typeof AuthenticatedOrganizationsOrgIdProfileRoute
+  '/api/public/line/webhook': typeof ApiPublicLineWebhookRoute
   '/makron/edu': typeof AuthenticatedMakronEduIndexRoute
   '/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdIndexRoute
   '/makron/pack/$packId/dashboard': typeof AuthenticatedMakronPackPackIdDashboardRoute
@@ -861,6 +869,7 @@ export interface FileRoutesById {
   '/_authenticated/makron/session/$sessionId': typeof AuthenticatedMakronSessionSessionIdRoute
   '/_authenticated/makron/unit/$unitId': typeof AuthenticatedMakronUnitUnitIdRoute
   '/_authenticated/organizations/$orgId/profile': typeof AuthenticatedOrganizationsOrgIdProfileRoute
+  '/api/public/line/webhook': typeof ApiPublicLineWebhookRoute
   '/_authenticated/makron/edu/': typeof AuthenticatedMakronEduIndexRoute
   '/_authenticated/organizations/$orgId/': typeof AuthenticatedOrganizationsOrgIdIndexRoute
   '/_authenticated/makron/pack/$packId/dashboard': typeof AuthenticatedMakronPackPackIdDashboardRoute
@@ -956,6 +965,7 @@ export interface FileRouteTypes {
     | '/makron/session/$sessionId'
     | '/makron/unit/$unitId'
     | '/organizations/$orgId/profile'
+    | '/api/public/line/webhook'
     | '/makron/edu/'
     | '/organizations/$orgId/'
     | '/makron/pack/$packId/dashboard'
@@ -1043,6 +1053,7 @@ export interface FileRouteTypes {
     | '/makron/session/$sessionId'
     | '/makron/unit/$unitId'
     | '/organizations/$orgId/profile'
+    | '/api/public/line/webhook'
     | '/makron/edu'
     | '/organizations/$orgId'
     | '/makron/pack/$packId/dashboard'
@@ -1137,6 +1148,7 @@ export interface FileRouteTypes {
     | '/_authenticated/makron/session/$sessionId'
     | '/_authenticated/makron/unit/$unitId'
     | '/_authenticated/organizations/$orgId/profile'
+    | '/api/public/line/webhook'
     | '/_authenticated/makron/edu/'
     | '/_authenticated/organizations/$orgId/'
     | '/_authenticated/makron/pack/$packId/dashboard'
@@ -1176,6 +1188,7 @@ export interface RootRouteChildren {
   CatalogIndexRoute: typeof CatalogIndexRoute
   FeaturesIndexRoute: typeof FeaturesIndexRoute
   ApiPublicAiTrialRoute: typeof ApiPublicAiTrialRoute
+  ApiPublicLineWebhookRoute: typeof ApiPublicLineWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1740,6 +1753,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMakronEduIndexRouteImport
       parentRoute: typeof AuthenticatedMakronRoute
     }
+    '/api/public/line/webhook': {
+      id: '/api/public/line/webhook'
+      path: '/api/public/line/webhook'
+      fullPath: '/api/public/line/webhook'
+      preLoaderRoute: typeof ApiPublicLineWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/organizations/$orgId/profile': {
       id: '/_authenticated/organizations/$orgId/profile'
       path: '/profile'
@@ -2070,6 +2090,7 @@ const rootRouteChildren: RootRouteChildren = {
   CatalogIndexRoute: CatalogIndexRoute,
   FeaturesIndexRoute: FeaturesIndexRoute,
   ApiPublicAiTrialRoute: ApiPublicAiTrialRoute,
+  ApiPublicLineWebhookRoute: ApiPublicLineWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
