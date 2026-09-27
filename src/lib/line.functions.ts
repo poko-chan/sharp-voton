@@ -280,11 +280,13 @@ export const unlinkLine = createServerFn({ method: "POST" })
 export const getMyLineStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data } = await context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
       .from("profiles")
       .select("line_user_id")
       .eq("id", context.userId)
       .maybeSingle();
+    if (error) throw new Error("LINEの連携状態を確認できませんでした");
     return { linked: Boolean((data as any)?.line_user_id) };
   });
 

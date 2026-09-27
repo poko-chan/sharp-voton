@@ -68,11 +68,13 @@ const prefsSchema = z.object({
 export const getLinePreferences = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data } = await context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
       .from("user_line_preferences")
       .select("*")
       .eq("user_id", context.userId)
       .maybeSingle();
+    if (error) throw new Error("LINE設定を読み込めませんでした");
     return { ...DEFAULT_LINE_PREFS, ...(data ?? {}) } as LinePrefs;
   });
 
@@ -80,10 +82,11 @@ export const saveLinePreferences = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i) => prefsSchema.parse(i))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
       .from("user_line_preferences")
       .upsert({ user_id: context.userId, ...data }, { onConflict: "user_id" });
-    if (error) throw new Error(error.message);
+    if (error) throw new Error("LINE設定を保存できませんでした");
     return { ok: true };
   });
 

@@ -58,8 +58,8 @@ export function LineSection() {
       const st = (await getMyLineStatus()) as any;
       setLinked(Boolean(st?.linked));
       setPrefs((await getLinePreferences()) as LinePrefs);
-    } catch {
-      /* ignore */
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "LINE設定を読み込めませんでした");
     }
     setLoading(false);
   }, []);
@@ -99,10 +99,12 @@ export function LineSection() {
               size="sm"
               variant="outline"
               onClick={async () => {
-                await sendLineTestMessage().catch((e) =>
-                  toast.error(e instanceof Error ? e.message : "送信できませんでした"),
-                );
-                toast.success("テスト通知を送りました");
+                try {
+                  await sendLineTestMessage();
+                  toast.success("テスト通知を送りました");
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : "送信できませんでした");
+                }
               }}
             >
               <BellRing className="mr-1.5 h-4 w-4" /> テスト通知
