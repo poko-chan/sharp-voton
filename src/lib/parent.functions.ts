@@ -473,3 +473,309 @@ export const getMyControls = createServerFn({ method: "GET" })
       .maybeSingle();
     return data ?? null;
   });
+
+/* ---------------- 親子メッセージ・延長リクエスト ---------------- */
+
+const JST = () => new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);
+
+async function parentOf(childId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin
+    .from("parent_child_links")
+    .select("parent_id")
+    .eq("child_id", childId)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  return (data as { parent_id: string } | null)?.parent_id ?? null;
+}
+
+async function notifyParentOnLine(parentId: string, messages: unknown[]) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { pushToLineUser } = await import("@/lib/line-messaging.server");
+  const { data } = await supabaseAdmin
+    .from("profiles")
+    .select("line_user_id")
+    .eq("id", parentId)
+    .maybeSingle();
+  const lineId = (data as { line_user_id?: string } | null)?.line_user_id;
+  if (!lineId) return;
+  await pushToLineUser(lineId, messages as Record<string, unknown>[]);
+}
+
+/** 子供側：保護者とのつながり・メッセージ・延長申請の状態をまとめて取得 */
+export const getMyParentPanel = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const parentId = await parentOf(context.userId);
+    if (!parentId) return { linked: false as const };
+    const [{ data: prof }, { data: msgs }, { data: reqs }] = await Promise.all([
+      supabaseAdmin
+        .from("profiles")
+        .select("id, display_name, username, avatar_url")
+        .eq("id", parentId)
+        .maybeSingle(),
+      supabaseAdmin
+        .from("parent_child_messages")
+        .select("*")
+        .eq("child_id", context.userId)
+        .order("created_at", { ascending: false })
+        .limit(40),
+      supabaseAdmin
+        .from("child_extension_requests")
+        .select("*")
+        .eq("child_id", context.userId)
+        .order("created_at", { ascending: false })
+        .limit(10),
+    ]);
+    return {
+      linked: true as const,
+      parent: prof ?? null,
+      messages: (msgs ?? []).reverse(),
+      requests: reqs ?? [],
+    };
+  });
+
+/** 子供側：保護者へメッセージ／スタンプを送る */
+export const sendMessageToParent = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z
+      .object({
+        body: z.string().min(1).max(300),
+        kind: z.enum(["text", "sticker"]).default("text"),
+      })
+      .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const parentId = await parentOf(context.userId);
+    if (!parentId) throw new Error("おうちの人とつながっていません");
+    const { error } = await supabaseAdmin.from("parent_child_messages").insert({
+      parent_id: parentId,
+      child_id: context.userId,
+      sender_role: "child",
+      kind: data.kind,
+      body: data.body,
+    });
+    if (error) throw new Error(error.message);
+    const { data: me } = await supabaseAdmin
+      .from("profiles")
+      .select("display_name, username")
+      .eq("id", context.userId)
+      .maybeSingle();
+    const name = (me as any)?.display_name ?? (me as any)?.username ?? "お子様";
+    await notifyParentOnLine(parentId, [{ type: "text", text: `${name}さんから：${data.body}` }]);
+    return { ok: true };
+  });
+
+/** 子供側：利用時間の延長をお願いする */
+export const requestTimeExtension = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z
+      .object({
+        minutes: z.number().int().min(5).max(240),
+        reason: z.string().max(120).optional(),
+        scope: z.string().max(40).default("all"),
+      })
+      .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const parentId = await parentOf(context.userId);
+    if (!parentId) throw new Error("おうちの人とつながっていません");
+    const { error } = await supabaseAdmin.from("child_extension_requests").insert({
+      child_id: context.userId,
+      parent_id: parentId,
+      minutes: data.minutes,
+      reason: data.reason ?? null,
+      scope: data.scope,
+    });
+    if (error) throw new Error(error.message);
+    const { data: me } = await supabaseAdmin
+      .from("profiles")
+      .select("display_name, username")
+      .eq("id", context.userId)
+      .maybeSingle();
+    const name = (me as any)?.display_name ?? (me as any)?.username ?? "お子様";
+    await notifyParentOnLine(parentId, [
+      {
+        type: "text",
+        text: `${name}さんから「あと${data.minutes}分つかいたい」というお願いが届きました。${
+          data.reason ? `\n理由：${data.reason}` : ""
+        }\nStudy#の保護者ページから承認できます。`,
+      },
+    ]);
+    return { ok: true };
+  });
+
+/** 子供側：学習おわりを保護者に知らせる */
+export const notifyStudyFinished = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z
+      .object({
+        minutes: z.number().int().min(0).max(1440),
+        questions: z.number().int().min(0).max(10000).default(0),
+      })
+      .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const parentId = await parentOf(context.userId);
+    if (!parentId) return { ok: false };
+    const { data: pref } = await supabaseAdmin
+      .from("user_line_preferences")
+      .select("parent_finish_report")
+      .eq("user_id", parentId)
+      .maybeSingle();
+    if (pref && (pref as any).parent_finish_report === false) return { ok: false };
+    const { data: me } = await supabaseAdmin
+      .from("profiles")
+      .select("display_name, username")
+      .eq("id", context.userId)
+      .maybeSingle();
+    const name = (me as any)?.display_name ?? (me as any)?.username ?? "お子様";
+    const { cardMessage } = await import("@/lib/line-messaging.server");
+    await notifyParentOnLine(parentId, [
+      cardMessage(`${name}さんの学習がおわりました`, [
+        ["学習時間", `${data.minutes}分`],
+        ["といた問題", `${data.questions}問`],
+      ]),
+    ]);
+    return { ok: true };
+  });
+
+/** 保護者側：やり取りと延長申請の一覧 */
+export const getParentThread = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ childId: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    const admin = await assertLinked(context.userId, data.childId);
+    const [{ data: msgs }, { data: reqs }] = await Promise.all([
+      admin
+        .from("parent_child_messages")
+        .select("*")
+        .eq("child_id", data.childId)
+        .order("created_at", { ascending: false })
+        .limit(50),
+      admin
+        .from("child_extension_requests")
+        .select("*")
+        .eq("child_id", data.childId)
+        .order("created_at", { ascending: false })
+        .limit(20),
+    ]);
+    return { messages: (msgs ?? []).reverse(), requests: reqs ?? [] };
+  });
+
+/** 保護者側：応援スタンプ・メッセージを送る（Study#内のみ） */
+export const sendCheerToChild = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z
+      .object({
+        childId: z.string().uuid(),
+        body: z.string().min(1).max(300),
+        kind: z.enum(["text", "sticker"]).default("text"),
+      })
+      .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const admin = await assertLinked(context.userId, data.childId);
+    const { error } = await admin.from("parent_child_messages").insert({
+      parent_id: context.userId,
+      child_id: data.childId,
+      sender_role: "parent",
+      kind: data.kind,
+      body: data.body,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** 保護者側：延長申請の承認・却下 */
+export const decideExtensionRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z
+      .object({
+        requestId: z.string().uuid(),
+        approve: z.boolean(),
+        minutes: z.number().int().min(0).max(240).optional(),
+      })
+      .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: req } = await supabaseAdmin
+      .from("child_extension_requests")
+      .select("*")
+      .eq("id", data.requestId)
+      .maybeSingle();
+    if (!req) throw new Error("申請が見つかりません");
+    if ((req as any).parent_id !== context.userId) throw new Error("権限がありません");
+
+    const granted = data.approve ? (data.minutes ?? (req as any).minutes) : 0;
+    await supabaseAdmin
+      .from("child_extension_requests")
+      .update({
+        status: data.approve ? "approved" : "rejected",
+        granted_minutes: granted,
+        decided_at: new Date().toISOString(),
+      })
+      .eq("id", data.requestId);
+
+    if (data.approve && granted > 0) {
+      const childId = (req as any).child_id as string;
+      const today = JST();
+      const { data: cur } = await supabaseAdmin
+        .from("child_controls")
+        .select("bonus_minutes, bonus_date")
+        .eq("child_id", childId)
+        .maybeSingle();
+      const base = (cur as any)?.bonus_date === today ? Number((cur as any).bonus_minutes ?? 0) : 0;
+      await supabaseAdmin
+        .from("child_controls")
+        .upsert(
+          { child_id: childId, bonus_minutes: base + granted, bonus_date: today, updated_by: context.userId },
+          { onConflict: "child_id" },
+        );
+      await supabaseAdmin.from("parent_child_messages").insert({
+        parent_id: context.userId,
+        child_id: childId,
+        sender_role: "parent",
+        kind: "text",
+        body: `あと${granted}分つかえるようにしたよ！`,
+      });
+    }
+    return { ok: true, granted };
+  });
+
+/** 保護者側：今すぐ時間を追加する（申請なしでも延長できる） */
+export const grantBonusMinutes = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z.object({ childId: z.string().uuid(), minutes: z.number().int().min(-240).max(240) }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const admin = await assertLinked(context.userId, data.childId);
+    const today = JST();
+    const { data: cur } = await admin
+      .from("child_controls")
+      .select("bonus_minutes, bonus_date")
+      .eq("child_id", data.childId)
+      .maybeSingle();
+    const base = (cur as any)?.bonus_date === today ? Number((cur as any).bonus_minutes ?? 0) : 0;
+    const next = Math.max(0, base + data.minutes);
+    const { error } = await admin
+      .from("child_controls")
+      .upsert(
+        { child_id: data.childId, bonus_minutes: next, bonus_date: today, updated_by: context.userId },
+        { onConflict: "child_id" },
+      );
+    if (error) throw new Error(error.message);
+    return { ok: true, bonus: next };
+  });
