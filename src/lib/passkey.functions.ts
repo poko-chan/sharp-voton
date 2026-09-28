@@ -48,7 +48,7 @@ export const passkeyRegisterOptions = createServerFn({ method: "POST" })
       .insert({ user_id: context.userId, challenge: options.challenge } as never)
       .select("id")
       .single();
-    return { options: JSON.parse(JSON.stringify(options)), challengeId: (ch as { id: string }).id };
+    return { options: JSON.parse(JSON.stringify(options)), challengeId: (ch as unknown as { id: string }).id };
   });
 
 export const passkeyRegisterVerify = createServerFn({ method: "POST" })
@@ -93,7 +93,7 @@ export const passkeyLoginOptions = createServerFn({ method: "POST" }).handler(as
     .insert({ challenge: options.challenge } as never)
     .select("id")
     .single();
-  return { options: JSON.parse(JSON.stringify(options)), challengeId: (ch as { id: string }).id };
+  return { options: JSON.parse(JSON.stringify(options)), challengeId: (ch as unknown as { id: string }).id };
 });
 
 export const passkeyLoginVerify = createServerFn({ method: "POST" })
