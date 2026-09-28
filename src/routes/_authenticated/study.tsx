@@ -38,6 +38,7 @@ import { MaterialPicker } from "@/components/MaterialPicker";
 import { useOrderedSubjects, type SubjectLite } from "@/lib/subjects";
 import { StudyStats } from "@/components/study/StudyStats";
 import { notifyStudyFinished } from "@/lib/parent.functions";
+import { notifyChatStudyFinished } from "@/lib/chat-webhooks.functions";
 
 
 export const Route = createFileRoute("/_authenticated/study")({
@@ -149,6 +150,7 @@ function StudyPage() {
     } as never);
     if (error) return toast.error(error.message);
     void notifyStudyFinished({ data: { minutes: duration, questions: 0 } }).catch(() => {});
+    void notifyChatStudyFinished({ data: { minutes: duration } }).catch(() => {});
 
     setContent("");
     setDuration(30);

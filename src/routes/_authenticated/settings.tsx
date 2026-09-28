@@ -39,6 +39,7 @@ import { PaymentSection } from "@/components/settings/PaymentSection";
 import { DangerSection } from "@/components/settings/DangerSection";
 import { AdvancedSection } from "@/components/settings/AdvancedSection";
 import { LineSection } from "@/components/settings/LineSection";
+import { ChatWebhookSection } from "@/components/settings/ChatWebhookSection";
 
 
 const CATEGORIES: SettingsCategory[] = [
@@ -158,7 +159,7 @@ const CATEGORIES: SettingsCategory[] = [
     id: "line",
     label: "LINE連携・通知",
     icon: MessageCircle,
-    keywords: ["line", "ライン", "リマインダー", "通知", "レポート", "おやすみ", "連携"],
+    keywords: ["line", "discord", "slack", "ライン", "リマインダー", "通知", "レポート", "おやすみ", "連携"],
   },
   {
 
@@ -193,7 +194,7 @@ const CATEGORIES: SettingsCategory[] = [
 const SECTIONS: Record<SettingsCategoryId, React.ComponentType> = {
   account: AccountSection,
   login: LoginMethodsSection,
-  line: LineSection,
+  line: () => (<div className="space-y-6"><LineSection /><ChatWebhookSection /></div>),
 
   appearance: AppearanceSection,
   notifications: NotificationsSection,
