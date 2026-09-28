@@ -1,6 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { ChildGuard } from "@/components/ChildGuard";
 import { ParentBarButton } from "@/components/parent/ParentBarButton";
+import { AppBadgeSync } from "@/components/AppBadgeSync";
 
 import {
   LayoutDashboard,
@@ -623,7 +624,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <HelpCircle className="h-4 w-4" />
                 <span className="hidden lg:inline">サポート</span>
               </Link>
-              <ParentBarButton />
+              <ParentBarButton /><AppBadgeSync />
               <ChromeAiStatusBadge compact />
 
               <div className="mx-2 h-4 w-px bg-border/70" />
