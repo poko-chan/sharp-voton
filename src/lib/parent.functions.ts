@@ -699,6 +699,12 @@ export const sendCheerToChild = createServerFn({ method: "POST" })
       body: data.body,
     });
     if (error) throw new Error(error.message);
+    try {
+      const { pushToUser } = await import("@/lib/push.server");
+      await pushToUser(data.childId);
+    } catch {
+      /* ignore */
+    }
     return { ok: true };
   });
 
