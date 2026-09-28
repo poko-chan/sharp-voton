@@ -146,6 +146,12 @@ export const adminUpdateFeedback = createServerFn({ method: "POST" })
             link: "/notifications",
           })),
         );
+        try {
+          const { pushToUser } = await import("@/lib/push.server");
+          await pushToUser(uid);
+        } catch {
+          /* ignore */
+        }
         await supabaseAdmin
           .from("feedback")
           .update({ user_notified_at: new Date().toISOString() })
@@ -282,6 +288,12 @@ export const postThreadMessage = createServerFn({ method: "POST" })
         body: data.body.slice(0, 200),
         link: "/notifications",
       });
+      try {
+        const { pushToUser } = await import("@/lib/push.server");
+        await pushToUser(fb.user_id);
+      } catch {
+        /* ignore */
+      }
     }
     return { ok: true };
   });

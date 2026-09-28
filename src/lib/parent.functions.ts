@@ -567,6 +567,12 @@ export const sendMessageToParent = createServerFn({ method: "POST" })
       .maybeSingle();
     const name = (me as any)?.display_name ?? (me as any)?.username ?? "お子様";
     await notifyParentOnLine(parentId, [{ type: "text", text: `${name}さんから：${data.body}` }]);
+    try {
+      const { pushToUser } = await import("@/lib/push.server");
+      await pushToUser(parentId);
+    } catch {
+      /* ignore */
+    }
     return { ok: true };
   });
 
@@ -693,6 +699,12 @@ export const sendCheerToChild = createServerFn({ method: "POST" })
       body: data.body,
     });
     if (error) throw new Error(error.message);
+    try {
+      const { pushToUser } = await import("@/lib/push.server");
+      await pushToUser(data.childId);
+    } catch {
+      /* ignore */
+    }
     return { ok: true };
   });
 
