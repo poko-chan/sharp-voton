@@ -567,6 +567,12 @@ export const sendMessageToParent = createServerFn({ method: "POST" })
       .maybeSingle();
     const name = (me as any)?.display_name ?? (me as any)?.username ?? "お子様";
     await notifyParentOnLine(parentId, [{ type: "text", text: `${name}さんから：${data.body}` }]);
+    try {
+      const { pushToUser } = await import("@/lib/push.server");
+      await pushToUser(parentId);
+    } catch {
+      /* ignore */
+    }
     return { ok: true };
   });
 
