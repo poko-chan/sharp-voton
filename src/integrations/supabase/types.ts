@@ -7851,6 +7851,30 @@ export type Database = {
           },
         ]
       }
+      user_chat_webhooks: {
+        Row: {
+          discord_url: string | null
+          notify_study_finished: boolean
+          slack_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          discord_url?: string | null
+          notify_study_finished?: boolean
+          slack_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          discord_url?: string | null
+          notify_study_finished?: boolean
+          slack_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_coins: {
         Row: {
           balance: number
