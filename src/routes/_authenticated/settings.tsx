@@ -40,6 +40,7 @@ import { DangerSection } from "@/components/settings/DangerSection";
 import { AdvancedSection } from "@/components/settings/AdvancedSection";
 import { LineSection } from "@/components/settings/LineSection";
 import { ChatWebhookSection } from "@/components/settings/ChatWebhookSection";
+import { DeviceSection } from "@/components/settings/DeviceSection";
 
 
 const CATEGORIES: SettingsCategory[] = [
@@ -193,7 +194,7 @@ const CATEGORIES: SettingsCategory[] = [
 
 const SECTIONS: Record<SettingsCategoryId, React.ComponentType> = {
   account: AccountSection,
-  login: LoginMethodsSection,
+  login: () => (<div className="space-y-6"><LoginMethodsSection /><DeviceSection /></div>),
   line: () => (<div className="space-y-6"><LineSection /><ChatWebhookSection /></div>),
 
   appearance: AppearanceSection,
