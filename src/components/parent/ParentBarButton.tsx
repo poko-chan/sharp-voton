@@ -147,10 +147,15 @@ export function ParentBarButton({ compact = false }: { compact?: boolean }) {
           </DialogHeader>
 
           <Tabs value={tab} onValueChange={(v) => setTab(v as ParentPanelTab)}>
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="message">メッセージ</TabsTrigger>
               <TabsTrigger value="extend">もっと使いたい</TabsTrigger>
+              <TabsTrigger value="missions">ミッション</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="missions" className="pt-3">
+              <MyMissions />
+            </TabsContent>
 
             <TabsContent value="message" className="space-y-3 pt-3">
               {unread && (
