@@ -499,7 +499,7 @@ function ChildFullDetail({ childId, todayMinutes }: { childId: string; todayMinu
   const maxDay = Math.max(1, ...days.map((x) => x.min));
 
   // 教科バランス
-  const subjName = new Map((d.subjects ?? []).map((s: any) => [s.id, s.name]));
+  const subjName = new Map<string, string>((d.subjects ?? []).map((s: any) => [s.id, s.name]));
   const bySubject = new Map<string, number>();
   for (const l of d.logs ?? []) {
     const k = subjName.get(l.subject_id) ?? "その他";
