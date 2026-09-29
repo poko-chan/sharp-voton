@@ -572,6 +572,8 @@ export type Database = {
           child_id: string
           created_at: string
           daily_limit_minutes: number | null
+          focus_scope: string | null
+          focus_until: string | null
           homework_first: boolean
           locked_features: string[]
           updated_at: string
@@ -587,6 +589,8 @@ export type Database = {
           child_id: string
           created_at?: string
           daily_limit_minutes?: number | null
+          focus_scope?: string | null
+          focus_until?: string | null
           homework_first?: boolean
           locked_features?: string[]
           updated_at?: string
@@ -602,6 +606,8 @@ export type Database = {
           child_id?: string
           created_at?: string
           daily_limit_minutes?: number | null
+          focus_scope?: string | null
+          focus_until?: string | null
           homework_first?: boolean
           locked_features?: string[]
           updated_at?: string
@@ -6069,6 +6075,51 @@ export type Database = {
           id?: string
           used_at?: string | null
           used_by?: string | null
+        }
+        Relationships: []
+      }
+      parent_missions: {
+        Row: {
+          approved_at: string | null
+          child_id: string
+          claimed_at: string | null
+          created_at: string
+          detail: string | null
+          due_date: string | null
+          id: string
+          parent_id: string
+          reward_coins: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          child_id: string
+          claimed_at?: string | null
+          created_at?: string
+          detail?: string | null
+          due_date?: string | null
+          id?: string
+          parent_id: string
+          reward_coins?: number
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          child_id?: string
+          claimed_at?: string | null
+          created_at?: string
+          detail?: string | null
+          due_date?: string | null
+          id?: string
+          parent_id?: string
+          reward_coins?: number
+          status?: string
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
