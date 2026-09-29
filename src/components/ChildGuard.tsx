@@ -128,6 +128,26 @@ export function ChildGuard() {
 
   const alwaysOk = (controls.always_allowed_features ?? []).includes(feature ?? "");
 
+  const focusOn =
+    controls.focus_until && new Date(controls.focus_until).getTime() > Date.now();
+  if (focusOn) {
+    const studyOk =
+      controls.focus_scope === "study_only" && STUDY_PATHS.some((p) => path.startsWith(p));
+    if (!studyOk) {
+      const until = new Date(controls.focus_until as string).toLocaleTimeString("ja-JP", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      return (
+        <Blocked
+          icon="lock"
+          title="いまは集中タイムです"
+          body={`${until} までは勉強のページだけつかえます。`}
+        />
+      );
+    }
+  }
+
   if (!alwaysOk && !withinWindow(controls.allowed_from, controls.allowed_to)) {
     return (
       <Blocked
