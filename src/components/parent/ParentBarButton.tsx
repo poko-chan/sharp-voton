@@ -266,3 +266,51 @@ export function ParentBarButton({ compact = false }: { compact?: boolean }) {
 }
 
 export default ParentBarButton;
+
+function MyMissions() {
+  const [rows, setRows] = useState<any[]>([]);
+  const load = useCallback(async () => {
+    try {
+      const { listMyMissions } = await import("@/lib/parent.functions");
+      setRows((await listMyMissions()) as any[]);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const claim = async (id: string) => {
+    const { claimMyMission } = await import("@/lib/parent.functions");
+    await claimMyMission({ data: { missionId: id } });
+    toast.success("できた！を報告したよ");
+    void load();
+  };
+
+  if (rows.length === 0)
+    return <p className="text-sm text-muted-foreground">いまはミッションがありません。</p>;
+
+  return (
+    <div className="max-h-72 space-y-2 overflow-auto">
+      {rows.map((m) => (
+        <div key={m.id} className="rounded-xl border p-3">
+          <div className="text-sm font-medium">{m.title}</div>
+          {m.detail && <div className="text-xs text-muted-foreground">{m.detail}</div>}
+          <div className="mt-1 text-[11px] text-muted-foreground">
+            ごほうび {m.reward_coins}コイン{m.due_date ? ` · ${m.due_date}まで` : ""}
+          </div>
+          {m.status === "open" && (
+            <Button size="sm" className="mt-2" onClick={() => claim(m.id)}>
+              できた！
+            </Button>
+          )}
+          {m.status === "claimed" && (
+            <div className="mt-2 text-xs text-muted-foreground">おうちの人のかくにん待ち</div>
+          )}
+          {m.status === "done" && <div className="mt-2 text-xs text-emerald-600">たっせい！🎉</div>}
+        </div>
+      ))}
+    </div>
+  );
+}
