@@ -287,31 +287,113 @@ function AdminLinePage() {
         </div>
       </Card>
 
+      <Card className="space-y-4 p-6">
+        <h2 className="font-semibold">Apps Script 設定フォーム</h2>
+        <p className="text-xs text-muted-foreground">
+          ここに入力すると、下のコードが自動で完成します。コピーして script.google.com
+          に貼り付け、ウェブアプリとしてデプロイしてください。
+        </p>
+        <div className="space-y-1">
+          <Label>LINE チャネルアクセストークン（コードに埋め込むだけ・保存されません）</Label>
+          <Input
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            placeholder="LINE Developers の Messaging API から取得"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label>あいさつメッセージ（友だち追加のとき）</Label>
+          <Textarea
+            rows={2}
+            value={s.welcome_message ?? ""}
+            onChange={(e) => setS({ ...s, welcome_message: e.target.value })}
+            placeholder="Study# へようこそ！"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>キーワード自動返信ルール</Label>
+          <p className="text-[11px] text-muted-foreground">
+            返信文に {"{"}LOGIN_URL{"}"} と書くと、ログインリンクに置きかわります。
+          </p>
+          {s.auto_replies.map((r, i) => (
+            <div key={i} className="flex gap-2">
+              <Input
+                className="w-40"
+                value={r.keyword}
+                placeholder="キーワード"
+                onChange={(e) => {
+                  const next = [...s.auto_replies];
+                  next[i] = { ...r, keyword: e.target.value };
+                  setS({ ...s, auto_replies: next });
+                }}
+              />
+              <Input
+                value={r.reply}
+                placeholder="返信する文"
+                onChange={(e) => {
+                  const next = [...s.auto_replies];
+                  next[i] = { ...r, reply: e.target.value };
+                  setS({ ...s, auto_replies: next });
+                }}
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() =>
+                  setS({ ...s, auto_replies: s.auto_replies.filter((_, j) => j !== i) })
+                }
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setS({ ...s, auto_replies: [...s.auto_replies, { keyword: "", reply: "" }] })
+            }
+          >
+            ルールを追加
+          </Button>
+        </div>
+        <div className="space-y-1">
+          <Label>ログインURL（自動）</Label>
+          <Input readOnly value={loginUrl} className="font-mono text-xs" />
+        </div>
+      </Card>
+
       <Card className="space-y-3 p-6">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold">Google Apps Script のコード</h2>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setS({ ...s, apps_script_code: DEFAULT_APPS_SCRIPT })}
-            >
-              初期コードに戻す
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => copy(s.apps_script_code ?? "")}>
-              <Copy className="mr-2 h-4 w-4" />
-              コピー
-            </Button>
-          </div>
+          <h2 className="font-semibold">できあがったコード</h2>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              copy(
+                buildAppsScript({
+                  token,
+                  welcome: s.welcome_message ?? "",
+                  loginUrl,
+                  replies: s.auto_replies,
+                }),
+              )
+            }
+          >
+            <Copy className="mr-2 h-4 w-4" />
+            コピー
+          </Button>
         </div>
-        <p className="text-xs text-muted-foreground">
-          このコードを script.google.com に貼り付けてウェブアプリとしてデプロイし、発行されたURLを上の「Webhook転送先URL」に入れてください。
-        </p>
         <Textarea
-          rows={22}
+          rows={20}
+          readOnly
           className="font-mono text-xs"
-          value={s.apps_script_code ?? ""}
-          onChange={(e) => setS({ ...s, apps_script_code: e.target.value })}
+          value={buildAppsScript({
+            token,
+            welcome: s.welcome_message ?? "",
+            loginUrl,
+            replies: s.auto_replies,
+          })}
         />
         <div className="space-y-1">
           <Label>メモ</Label>
