@@ -2461,6 +2461,7 @@ export type Database = {
       line_settings: {
         Row: {
           apps_script_code: string | null
+          auto_replies: Json
           created_at: string
           id: number
           liff_id: string | null
@@ -2474,6 +2475,7 @@ export type Database = {
         }
         Insert: {
           apps_script_code?: string | null
+          auto_replies?: Json
           created_at?: string
           id?: number
           liff_id?: string | null
@@ -2487,6 +2489,7 @@ export type Database = {
         }
         Update: {
           apps_script_code?: string | null
+          auto_replies?: Json
           created_at?: string
           id?: number
           liff_id?: string | null
