@@ -299,6 +299,9 @@ function AdminLinePage() {
         </div>
       </Card>
 
+      <LineLogCard />
+
+
       <Button onClick={save} disabled={saving} size="lg">
         保存する
       </Button>
