@@ -26,8 +26,7 @@ const DEFAULT_APPS_SCRIPT = `/**
 
 // LINE Developers の Messaging API チャネルアクセストークン
 const LINE_ACCESS_TOKEN = 'ここにチャネルアクセストークン';
-// 記録用スプレッドシートのID（不要なら空文字のまま）
-const SHEET_ID = '';
+// 記録は Study# のデータベースに自動保存されます
 const LOGIN_URL = 'https://sharp-voton.lovable.app/line-liff/login';
 
 function doPost(e) {
@@ -38,8 +37,6 @@ function doPost(e) {
 }
 
 function handleEvent(event) {
-  log_(event);
-
   if (event.type === 'follow') {
     replyText_(event.replyToken, 'Study# へようこそ！\\nこちらからログインできます:\\n' + LOGIN_URL);
     return;
@@ -66,16 +63,6 @@ function replyText_(replyToken, text) {
   });
 }
 
-function log_(event) {
-  if (!SHEET_ID) return;
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
-  sheet.appendRow([
-    new Date(),
-    event.type,
-    (event.source && event.source.userId) || '',
-    JSON.stringify(event.message || {}),
-  ]);
-}
 `;
 
 type Settings = {
@@ -299,6 +286,9 @@ function AdminLinePage() {
         </div>
       </Card>
 
+      <LineLogCard />
+
+
       <Button onClick={save} disabled={saving} size="lg">
         保存する
       </Button>
@@ -316,3 +306,46 @@ export const Route = createFileRoute("/_authenticated/admin_/line")({
   }),
   component: AdminLinePage,
 });
+
+function LineLogCard() {
+  const [rows, setRows] = useState<any[]>([]);
+  const load = async () => {
+    const { data } = await supabase
+      .from("line_message_logs" as any)
+      .select("id, direction, event_type, line_user_id, user_id, text, ok, created_at")
+      .order("created_at", { ascending: false })
+      .limit(50);
+    setRows((data as any[]) ?? []);
+  };
+  useEffect(() => {
+    void load();
+  }, []);
+  return (
+    <Card className="space-y-3 p-6">
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold">LINEの記録（最新50件）</h2>
+        <Button variant="outline" size="sm" onClick={load}>更新</Button>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        受け取ったメッセージと送ったお知らせは、すべてStudy#のデータベースに保存されます。
+      </p>
+      <div className="max-h-96 space-y-1 overflow-auto text-xs">
+        {rows.length === 0 && <p className="text-muted-foreground">まだ記録はありません。</p>}
+        {rows.map((r) => (
+          <div key={r.id} className="flex gap-2 rounded border p-2">
+            <span className={r.direction === "in" ? "text-primary" : "text-muted-foreground"}>
+              {r.direction === "in" ? "受信" : "送信"}
+            </span>
+            <span className="text-muted-foreground">{new Date(r.created_at).toLocaleString("ja-JP")}</span>
+            <span>{r.event_type}</span>
+            {r.ok === false && <span className="text-destructive">失敗</span>}
+            <span className="truncate">{r.text}</span>
+            {!r.user_id && r.direction === "in" && (
+              <span className="ml-auto text-muted-foreground">未連携</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}

@@ -19,9 +19,29 @@ export async function pushToLineUser(lineUserId: string, messages: LineMessage[]
       },
       body: JSON.stringify({ to: lineUserId, messages: messages.slice(0, 5) }),
     });
+    await logOutgoing(lineUserId, messages, res.ok);
     return { ok: res.ok, skipped: false };
   } catch {
+    await logOutgoing(lineUserId, messages, false);
     return { ok: false, skipped: false };
+  }
+}
+
+async function logOutgoing(lineUserId: string, messages: LineMessage[], ok: boolean) {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const first = messages[0] ?? {};
+    await supabaseAdmin.from("line_message_logs" as any).insert({
+      direction: "out",
+      event_type: "push",
+      line_user_id: lineUserId,
+      message_type: String(first.type ?? ""),
+      text: String(first.text ?? first.altText ?? "").slice(0, 2000),
+      ok,
+      raw: { messages },
+    } as any);
+  } catch {
+    /* ignore */
   }
 }
 

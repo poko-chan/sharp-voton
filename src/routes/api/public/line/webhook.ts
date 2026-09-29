@@ -48,6 +48,37 @@ export const Route = createFileRoute("/api/public/line/webhook")({
           return new Response("bad payload", { status: 400 });
         }
 
+        // Store every verified event in our own database.
+        try {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const events: any[] = payload.events ?? [];
+          const ids = [...new Set(events.map((e) => e?.source?.userId).filter(Boolean))];
+          const map = new Map<string, string>();
+          if (ids.length) {
+            const { data: profs } = await supabaseAdmin
+              .from("profiles")
+              .select("id, line_user_id")
+              .in("line_user_id", ids as string[]);
+            for (const p of (profs ?? []) as any[]) map.set(p.line_user_id, p.id);
+          }
+          if (events.length) {
+            await supabaseAdmin.from("line_message_logs" as any).insert(
+              events.map((e) => ({
+                direction: "in",
+                event_type: e?.type ?? null,
+                line_user_id: e?.source?.userId ?? null,
+                user_id: map.get(e?.source?.userId) ?? null,
+                message_type: e?.message?.type ?? null,
+                text: e?.message?.text ?? e?.postback?.data ?? null,
+                ok: true,
+                raw: e,
+              })) as any,
+            );
+          }
+        } catch {
+          /* logging must not break LINE delivery */
+        }
+
         // Relay the verified payload to Google Apps Script when configured.
         const forward = settings?.webhook_forward_url;
         if (forward) {
