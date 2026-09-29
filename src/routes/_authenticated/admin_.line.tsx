@@ -146,6 +146,7 @@ function AdminLinePage() {
   const [s, setS] = useState<Settings>(EMPTY);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<Record<string, boolean> | null>(null);
+  const [token, setToken] = useState("");
 
   const webhookUrl =
     typeof window !== "undefined" ? `${window.location.origin}/api/public/line/webhook` : "";
@@ -162,10 +163,11 @@ function AdminLinePage() {
     (async () => {
       const { data } = await supabase.from("line_settings").select("*").eq("id", 1).maybeSingle();
       if (data) {
+        const ar = (data as any).auto_replies;
         setS({
           ...EMPTY,
           ...(data as any),
-          apps_script_code: (data as any).apps_script_code || DEFAULT_APPS_SCRIPT,
+          auto_replies: Array.isArray(ar) && ar.length > 0 ? ar : EMPTY.auto_replies,
         });
       }
       try {
