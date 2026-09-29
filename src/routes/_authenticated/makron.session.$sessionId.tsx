@@ -463,6 +463,16 @@ function SessionPage() {
         return;
       }
       setSubmitConfirmOpen(false);
+      try {
+        const startedAt = session?.started_at ? new Date(session.started_at).getTime() : Date.now();
+        const mins = Math.max(0, Math.round((Date.now() - startedAt) / 60000));
+        const { notifyStudyFinished } = await import("@/lib/parent.functions");
+        void notifyStudyFinished({
+          data: { minutes: mins, questions: questions.length },
+        }).catch(() => {});
+      } catch {
+        /* ignore */
+      }
       nav({ to: "/makron/result/$sessionId", params: { sessionId } });
     } finally {
       setSubmitting(false);

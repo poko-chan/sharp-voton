@@ -791,3 +791,285 @@ export const grantBonusMinutes = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true, bonus: next };
   });
+
+/* ---------------- 親子ミッション・集中ロック ---------------- */
+
+/** 保護者側：ミッション一覧 */
+export const listChildMissions = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ childId: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    const admin = await assertLinked(context.userId, data.childId);
+    const { data: rows } = await admin
+      .from("parent_missions")
+      .select("*")
+      .eq("child_id", data.childId)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    return rows ?? [];
+  });
+
+/** 保護者側：ミッションを作る */
+export const createChildMission = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z
+      .object({
+        childId: z.string().uuid(),
+        title: z.string().min(1).max(80),
+        detail: z.string().max(300).optional(),
+        reward_coins: z.number().int().min(0).max(300),
+        due_date: z.string().max(10).nullable().optional(),
+      })
+      .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const admin = await assertLinked(context.userId, data.childId);
+    const { error } = await admin.from("parent_missions").insert({
+      parent_id: context.userId,
+      child_id: data.childId,
+      title: data.title,
+      detail: data.detail ?? null,
+      reward_coins: data.reward_coins,
+      due_date: data.due_date || null,
+    });
+    if (error) throw new Error(error.message);
+    try {
+      const { pushToUser } = await import("@/lib/push.server");
+      await pushToUser(data.childId);
+    } catch {
+      /* ignore */
+    }
+    return { ok: true };
+  });
+
+export const deleteChildMission = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ missionId: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin
+      .from("parent_missions")
+      .delete()
+      .eq("id", data.missionId)
+      .eq("parent_id", context.userId);
+    return { ok: true };
+  });
+
+/** 保護者側：達成の承認／却下（承認でコインを付与） */
+export const reviewChildMission = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z.object({ missionId: z.string().uuid(), approve: z.boolean() }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: m } = await supabaseAdmin
+      .from("parent_missions")
+      .select("*")
+      .eq("id", data.missionId)
+      .maybeSingle();
+    if (!m) throw new Error("ミッションが見つかりません");
+    if ((m as any).parent_id !== context.userId) throw new Error("権限がありません");
+
+    await supabaseAdmin
+      .from("parent_missions")
+      .update({
+        status: data.approve ? "done" : "open",
+        approved_at: data.approve ? new Date().toISOString() : null,
+        claimed_at: data.approve ? (m as any).claimed_at : null,
+      })
+      .eq("id", data.missionId);
+
+    if (data.approve) {
+      const coins = Number((m as any).reward_coins ?? 0);
+      const childId = (m as any).child_id as string;
+      if (coins > 0) {
+        try {
+          await supabaseAdmin.rpc("admin_grant_coins" as any, {
+            _user_id: childId,
+            _amount: coins,
+            _reason: `おうちのミッション：${(m as any).title}`,
+          } as any);
+        } catch {
+          const { data: cur } = await supabaseAdmin
+            .from("user_coins")
+            .select("balance")
+            .eq("user_id", childId)
+            .maybeSingle();
+          await supabaseAdmin
+            .from("user_coins")
+            .upsert(
+              { user_id: childId, balance: Number((cur as any)?.balance ?? 0) + coins },
+              { onConflict: "user_id" },
+            );
+          await supabaseAdmin.from("coin_transactions").insert({
+            user_id: childId,
+            amount: coins,
+            reason: `おうちのミッション：${(m as any).title}`,
+          });
+        }
+      }
+      await supabaseAdmin.from("parent_child_messages").insert({
+        parent_id: context.userId,
+        child_id: childId,
+        sender_role: "parent",
+        kind: "text",
+        body: `ミッション「${(m as any).title}」たっせい！${coins}コインをあげたよ🎉`,
+      });
+    }
+    return { ok: true };
+  });
+
+/** 子供側：自分のミッション一覧 */
+export const listMyMissions = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data } = await context.supabase
+      .from("parent_missions")
+      .select("*")
+      .eq("child_id", context.userId)
+      .order("created_at", { ascending: false })
+      .limit(30);
+    return data ?? [];
+  });
+
+/** 子供側：できた！と報告する */
+export const claimMyMission = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ missionId: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("parent_missions")
+      .update({ status: "claimed", claimed_at: new Date().toISOString() })
+      .eq("id", data.missionId)
+      .eq("child_id", context.userId);
+    if (error) throw new Error(error.message);
+    const parentId = await parentOf(context.userId);
+    if (parentId) {
+      await notifyParentOnLine(parentId, [
+        { type: "text", text: "お子様からミッション達成の報告が届きました。Study#で承認できます。" },
+      ]);
+      try {
+        const { pushToUser } = await import("@/lib/push.server");
+        await pushToUser(parentId);
+      } catch {
+        /* ignore */
+      }
+    }
+    return { ok: true };
+  });
+
+/** 保護者側：いますぐ集中ロック（分数と範囲を指定） */
+export const setFocusLock = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z
+      .object({
+        childId: z.string().uuid(),
+        minutes: z.number().int().min(0).max(1440),
+        scope: z.enum(["all", "study_only"]).default("all"),
+      })
+      .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const admin = await assertLinked(context.userId, data.childId);
+    const until =
+      data.minutes > 0 ? new Date(Date.now() + data.minutes * 60000).toISOString() : null;
+    const { error } = await admin.from("child_controls").upsert(
+      {
+        child_id: data.childId,
+        focus_until: until,
+        focus_scope: data.minutes > 0 ? data.scope : null,
+        updated_by: context.userId,
+      },
+      { onConflict: "child_id" },
+    );
+    if (error) throw new Error(error.message);
+    try {
+      const { pushToUser } = await import("@/lib/push.server");
+      await pushToUser(data.childId);
+    } catch {
+      /* ignore */
+    }
+    return { ok: true, until };
+  });
+
+/** 保護者側：全員まとめて集中ロック */
+export const setFocusLockAll = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z
+      .object({
+        minutes: z.number().int().min(0).max(1440),
+        scope: z.enum(["all", "study_only"]).default("all"),
+      })
+      .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: links } = await supabaseAdmin
+      .from("parent_child_links")
+      .select("child_id")
+      .eq("parent_id", context.userId);
+    const until =
+      data.minutes > 0 ? new Date(Date.now() + data.minutes * 60000).toISOString() : null;
+    for (const l of links ?? []) {
+      await supabaseAdmin.from("child_controls").upsert(
+        {
+          child_id: (l as any).child_id,
+          focus_until: until,
+          focus_scope: data.minutes > 0 ? data.scope : null,
+          updated_by: context.userId,
+        },
+        { onConflict: "child_id" },
+      );
+    }
+    return { ok: true, count: (links ?? []).length };
+  });
+
+/** 保護者側：左ペイン用の軽いサマリー（今日の学習時間など） */
+export const getChildrenOverview = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: links } = await supabaseAdmin
+      .from("parent_child_links")
+      .select("child_id")
+      .eq("parent_id", context.userId);
+    const ids = (links ?? []).map((l: any) => l.child_id);
+    if (ids.length === 0) return [];
+    const today = JST();
+    const [{ data: profs }, { data: logs }, { data: ctrls }, { data: reqs }] = await Promise.all([
+      supabaseAdmin.from("profiles").select("id, username, display_name, avatar_url").in("id", ids),
+      supabaseAdmin
+        .from("study_logs")
+        .select("user_id, duration_minutes")
+        .in("user_id", ids)
+        .eq("date", today),
+      supabaseAdmin
+        .from("child_controls")
+        .select("child_id, daily_limit_minutes, bonus_minutes, bonus_date, focus_until")
+        .in("child_id", ids),
+      supabaseAdmin
+        .from("child_extension_requests")
+        .select("child_id, status")
+        .in("child_id", ids)
+        .eq("status", "pending"),
+    ]);
+    return (profs ?? []).map((p: any) => {
+      const mins = (logs ?? [])
+        .filter((l: any) => l.user_id === p.id)
+        .reduce((s: number, l: any) => s + (l.duration_minutes ?? 0), 0);
+      const c = (ctrls ?? []).find((x: any) => x.child_id === p.id) as any;
+      const bonus = c?.bonus_date === today ? Number(c?.bonus_minutes ?? 0) : 0;
+      return {
+        ...p,
+        todayMinutes: mins,
+        dailyLimit: c?.daily_limit_minutes ?? null,
+        bonusMinutes: bonus,
+        focusUntil: c?.focus_until ?? null,
+        pendingRequests: (reqs ?? []).filter((r: any) => r.child_id === p.id).length,
+      };
+    });
+  });

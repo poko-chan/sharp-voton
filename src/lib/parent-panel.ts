@@ -1,5 +1,5 @@
 /** どこからでも「おうちの人」パネルを開くための小さなイベント */
-export type ParentPanelTab = "message" | "extend";
+export type ParentPanelTab = "message" | "extend" | "missions";
 
 const EVENT = "study-hash.parent-panel";
 

@@ -12,8 +12,21 @@ import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Check, Copy, MessageCircle, X } from "lucide-react";
 import { toast } from "sonner";
 
-const DEFAULT_APPS_SCRIPT = `/**
- * Study# × LINE 連携用 Google Apps Script
+type AutoReply = { keyword: string; reply: string };
+
+function buildAppsScript(opts: {
+  token: string;
+  welcome: string;
+  loginUrl: string;
+  replies: AutoReply[];
+}) {
+  const esc = (v: string) => JSON.stringify(v ?? "");
+  const rules = (opts.replies ?? [])
+    .filter((r) => r.keyword.trim())
+    .map((r) => `  { keyword: ${esc(r.keyword.trim())}, reply: ${esc(r.reply)} },`)
+    .join("\n");
+  return `/**
+ * Study# × LINE 連携用 Google Apps Script（自動生成）
  *
  * 1. script.google.com で新しいプロジェクトを作成し、このコードを貼り付ける
  * 2. 「デプロイ」→「新しいデプロイ」→ 種類「ウェブアプリ」
@@ -21,49 +34,66 @@ const DEFAULT_APPS_SCRIPT = `/**
  *    - アクセスできるユーザー: 全員
  * 3. 発行された /exec のURLを Study# の「Webhook転送先URL」に貼り付ける
  *
- * Study# が LINE の署名を検証したあと、このスクリプトへ本文を転送します。
+ * 記録はすべて Study# のデータベースに自動保存されます。
  */
 
-// LINE Developers の Messaging API チャネルアクセストークン
-const LINE_ACCESS_TOKEN = 'ここにチャネルアクセストークン';
-// 記録は Study# のデータベースに自動保存されます
-const LOGIN_URL = 'https://sharp-voton.lovable.app/line-liff/login';
+const LINE_ACCESS_TOKEN = ${esc(opts.token || "ここにチャネルアクセストークン")};
+const LOGIN_URL = ${esc(opts.loginUrl)};
+const WELCOME_MESSAGE = ${esc(opts.welcome || "Study# へようこそ！")};
+
+const AUTO_REPLIES = [
+${rules || "  // キーワード自動返信ルールは Study# の管理画面で追加できます"}
+];
 
 function doPost(e) {
-  const body = JSON.parse(e.postData.contents);
-  (body.events || []).forEach(handleEvent);
+  try {
+    const body = JSON.parse(e.postData.contents);
+    (body.events || []).forEach(handleEvent_);
+  } catch (err) {
+    console.error(err);
+  }
   return ContentService.createTextOutput(JSON.stringify({ ok: true }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-function handleEvent(event) {
+function handleEvent_(event) {
   if (event.type === 'follow') {
-    replyText_(event.replyToken, 'Study# へようこそ！\\nこちらからログインできます:\\n' + LOGIN_URL);
+    replyText_(event.replyToken, WELCOME_MESSAGE + '\\n' + LOGIN_URL);
     return;
   }
+  if (event.type !== 'message' || !event.message || event.message.type !== 'text') return;
 
-  if (event.type === 'message' && event.message.type === 'text') {
-    const text = (event.message.text || '').trim();
-    if (text === 'ログイン' || text.toLowerCase() === 'login') {
-      replyText_(event.replyToken, 'こちらからログインしてください:\\n' + LOGIN_URL);
-    } else {
-      replyText_(event.replyToken, '「ログイン」と送るとログインリンクをお送りします。');
+  const text = (event.message.text || '').trim();
+  for (let i = 0; i < AUTO_REPLIES.length; i++) {
+    const rule = AUTO_REPLIES[i];
+    if (text === rule.keyword || text.indexOf(rule.keyword) >= 0) {
+      replyText_(event.replyToken, rule.reply.replace('{LOGIN_URL}', LOGIN_URL));
+      return;
     }
   }
+  if (text === 'ログイン' || text.toLowerCase() === 'login') {
+    replyText_(event.replyToken, 'こちらからログインしてください:\\n' + LOGIN_URL);
+    return;
+  }
+  replyText_(event.replyToken, '「ログイン」と送るとログインリンクをお送りします。');
 }
 
 function replyText_(replyToken, text) {
-  if (!replyToken) return;
-  UrlFetchApp.fetch('https://api.line.me/v2/bot/message/reply', {
-    method: 'post',
-    contentType: 'application/json',
-    headers: { Authorization: 'Bearer ' + LINE_ACCESS_TOKEN },
-    payload: JSON.stringify({ replyToken: replyToken, messages: [{ type: 'text', text: text }] }),
-    muteHttpExceptions: true,
-  });
+  if (!replyToken || !text) return;
+  try {
+    UrlFetchApp.fetch('https://api.line.me/v2/bot/message/reply', {
+      method: 'post',
+      contentType: 'application/json',
+      headers: { Authorization: 'Bearer ' + LINE_ACCESS_TOKEN },
+      payload: JSON.stringify({ replyToken: replyToken, messages: [{ type: 'text', text: text }] }),
+      muteHttpExceptions: true,
+    });
+  } catch (err) {
+    console.error(err);
+  }
 }
-
 `;
+}
 
 type Settings = {
   login_channel_id: string | null;
@@ -74,6 +104,7 @@ type Settings = {
   welcome_message: string | null;
   apps_script_code: string | null;
   notes: string | null;
+  auto_replies: AutoReply[];
 };
 
 const EMPTY: Settings = {
@@ -83,8 +114,12 @@ const EMPTY: Settings = {
   webhook_forward_url: "",
   webhook_enabled: true,
   welcome_message: "",
-  apps_script_code: DEFAULT_APPS_SCRIPT,
+  apps_script_code: "",
   notes: "",
+  auto_replies: [
+    { keyword: "ログイン", reply: "こちらからログインしてください:\n{LOGIN_URL}" },
+    { keyword: "ヘルプ", reply: "使い方はStudy#のヘルプページをご覧ください。" },
+  ],
 };
 
 function copy(text: string) {
@@ -111,6 +146,7 @@ function AdminLinePage() {
   const [s, setS] = useState<Settings>(EMPTY);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<Record<string, boolean> | null>(null);
+  const [token, setToken] = useState("");
 
   const webhookUrl =
     typeof window !== "undefined" ? `${window.location.origin}/api/public/line/webhook` : "";
@@ -127,10 +163,11 @@ function AdminLinePage() {
     (async () => {
       const { data } = await supabase.from("line_settings").select("*").eq("id", 1).maybeSingle();
       if (data) {
+        const ar = (data as any).auto_replies;
         setS({
           ...EMPTY,
           ...(data as any),
-          apps_script_code: (data as any).apps_script_code || DEFAULT_APPS_SCRIPT,
+          auto_replies: Array.isArray(ar) && ar.length > 0 ? ar : EMPTY.auto_replies,
         });
       }
       try {
@@ -250,31 +287,113 @@ function AdminLinePage() {
         </div>
       </Card>
 
+      <Card className="space-y-4 p-6">
+        <h2 className="font-semibold">Apps Script 設定フォーム</h2>
+        <p className="text-xs text-muted-foreground">
+          ここに入力すると、下のコードが自動で完成します。コピーして script.google.com
+          に貼り付け、ウェブアプリとしてデプロイしてください。
+        </p>
+        <div className="space-y-1">
+          <Label>LINE チャネルアクセストークン（コードに埋め込むだけ・保存されません）</Label>
+          <Input
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            placeholder="LINE Developers の Messaging API から取得"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label>あいさつメッセージ（友だち追加のとき）</Label>
+          <Textarea
+            rows={2}
+            value={s.welcome_message ?? ""}
+            onChange={(e) => setS({ ...s, welcome_message: e.target.value })}
+            placeholder="Study# へようこそ！"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>キーワード自動返信ルール</Label>
+          <p className="text-[11px] text-muted-foreground">
+            返信文に {"{"}LOGIN_URL{"}"} と書くと、ログインリンクに置きかわります。
+          </p>
+          {s.auto_replies.map((r, i) => (
+            <div key={i} className="flex gap-2">
+              <Input
+                className="w-40"
+                value={r.keyword}
+                placeholder="キーワード"
+                onChange={(e) => {
+                  const next = [...s.auto_replies];
+                  next[i] = { ...r, keyword: e.target.value };
+                  setS({ ...s, auto_replies: next });
+                }}
+              />
+              <Input
+                value={r.reply}
+                placeholder="返信する文"
+                onChange={(e) => {
+                  const next = [...s.auto_replies];
+                  next[i] = { ...r, reply: e.target.value };
+                  setS({ ...s, auto_replies: next });
+                }}
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() =>
+                  setS({ ...s, auto_replies: s.auto_replies.filter((_, j) => j !== i) })
+                }
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setS({ ...s, auto_replies: [...s.auto_replies, { keyword: "", reply: "" }] })
+            }
+          >
+            ルールを追加
+          </Button>
+        </div>
+        <div className="space-y-1">
+          <Label>ログインURL（自動）</Label>
+          <Input readOnly value={loginUrl} className="font-mono text-xs" />
+        </div>
+      </Card>
+
       <Card className="space-y-3 p-6">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold">Google Apps Script のコード</h2>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setS({ ...s, apps_script_code: DEFAULT_APPS_SCRIPT })}
-            >
-              初期コードに戻す
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => copy(s.apps_script_code ?? "")}>
-              <Copy className="mr-2 h-4 w-4" />
-              コピー
-            </Button>
-          </div>
+          <h2 className="font-semibold">できあがったコード</h2>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              copy(
+                buildAppsScript({
+                  token,
+                  welcome: s.welcome_message ?? "",
+                  loginUrl,
+                  replies: s.auto_replies,
+                }),
+              )
+            }
+          >
+            <Copy className="mr-2 h-4 w-4" />
+            コピー
+          </Button>
         </div>
-        <p className="text-xs text-muted-foreground">
-          このコードを script.google.com に貼り付けてウェブアプリとしてデプロイし、発行されたURLを上の「Webhook転送先URL」に入れてください。
-        </p>
         <Textarea
-          rows={22}
+          rows={20}
+          readOnly
           className="font-mono text-xs"
-          value={s.apps_script_code ?? ""}
-          onChange={(e) => setS({ ...s, apps_script_code: e.target.value })}
+          value={buildAppsScript({
+            token,
+            welcome: s.welcome_message ?? "",
+            loginUrl,
+            replies: s.auto_replies,
+          })}
         />
         <div className="space-y-1">
           <Label>メモ</Label>

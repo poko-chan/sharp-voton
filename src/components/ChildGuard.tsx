@@ -19,7 +19,24 @@ type Controls = {
   bonus_minutes: number | null;
   bonus_date: string | null;
   homework_first: boolean;
+  focus_until: string | null;
+  focus_scope: string | null;
 };
+
+const STUDY_PATHS = [
+  "/dashboard",
+  "/makron",
+  "/study",
+  "/timer",
+  "/flashcards",
+  "/notebooks",
+  "/notes",
+  "/materials",
+  "/exams",
+  "/goals",
+  "/practice",
+  "/questions",
+];
 
 function jstToday() {
   return new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);
@@ -110,6 +127,26 @@ export function ChildGuard() {
   if (!controls) return null;
 
   const alwaysOk = (controls.always_allowed_features ?? []).includes(feature ?? "");
+
+  const focusOn =
+    controls.focus_until && new Date(controls.focus_until).getTime() > Date.now();
+  if (focusOn) {
+    const studyOk =
+      controls.focus_scope === "study_only" && STUDY_PATHS.some((p) => path.startsWith(p));
+    if (!studyOk) {
+      const until = new Date(controls.focus_until as string).toLocaleTimeString("ja-JP", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      return (
+        <Blocked
+          icon="lock"
+          title="いまは集中タイムです"
+          body={`${until} までは勉強のページだけつかえます。`}
+        />
+      );
+    }
+  }
 
   if (!alwaysOk && !withinWindow(controls.allowed_from, controls.allowed_to)) {
     return (

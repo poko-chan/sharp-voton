@@ -89,6 +89,41 @@ export function cardMessage(
   };
 }
 
+/**
+ * Forward an in-app notification to the user's LINE, honouring their
+ * "forward app notifications" switch and quiet hours.
+ */
+export async function forwardNotificationToLine(
+  userId: string,
+  title: string,
+  body?: string | null,
+) {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [{ data: pref }, { data: prof }] = await Promise.all([
+      supabaseAdmin
+        .from("user_line_preferences")
+        .select("forward_app_notifications, quiet_enabled, quiet_from, quiet_to")
+        .eq("user_id", userId)
+        .maybeSingle(),
+      supabaseAdmin.from("profiles").select("line_user_id").eq("id", userId).maybeSingle(),
+    ]);
+    const p = pref as Record<string, unknown> | null;
+    if (!p || p.forward_app_notifications !== true) return;
+    if (
+      p.quiet_enabled === true &&
+      inQuietHours((p.quiet_from as string) ?? null, (p.quiet_to as string) ?? null)
+    ) {
+      return;
+    }
+    const lineId = (prof as { line_user_id?: string } | null)?.line_user_id;
+    if (!lineId) return;
+    await pushToLineUser(lineId, [textMessage(body ? `${title}\n${body}` : title)]);
+  } catch {
+    /* notifications must never fail because of LINE */
+  }
+}
+
 /** Quiet-hours check against "HH:MM" strings, local JST. */
 export function inQuietHours(from: string | null, to: string | null) {
   if (!from || !to) return false;
