@@ -2383,6 +2383,45 @@ export type Database = {
         }
         Relationships: []
       }
+      line_message_logs: {
+        Row: {
+          created_at: string
+          direction: string
+          event_type: string | null
+          id: string
+          line_user_id: string | null
+          message_type: string | null
+          ok: boolean | null
+          raw: Json | null
+          text: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          direction?: string
+          event_type?: string | null
+          id?: string
+          line_user_id?: string | null
+          message_type?: string | null
+          ok?: boolean | null
+          raw?: Json | null
+          text?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          direction?: string
+          event_type?: string | null
+          id?: string
+          line_user_id?: string | null
+          message_type?: string | null
+          ok?: boolean | null
+          raw?: Json | null
+          text?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       line_pending_links: {
         Row: {
           created_at: string
