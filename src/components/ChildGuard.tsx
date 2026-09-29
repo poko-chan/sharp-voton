@@ -19,7 +19,24 @@ type Controls = {
   bonus_minutes: number | null;
   bonus_date: string | null;
   homework_first: boolean;
+  focus_until: string | null;
+  focus_scope: string | null;
 };
+
+const STUDY_PATHS = [
+  "/dashboard",
+  "/makron",
+  "/study",
+  "/timer",
+  "/flashcards",
+  "/notebooks",
+  "/notes",
+  "/materials",
+  "/exams",
+  "/goals",
+  "/practice",
+  "/questions",
+];
 
 function jstToday() {
   return new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);
