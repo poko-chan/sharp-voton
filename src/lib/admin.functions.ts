@@ -342,7 +342,11 @@ export const adminSendNotification = createServerFn({ method: "POST" })
     );
     try {
       const { pushToUser } = await import("@/lib/push.server");
-      for (const target of targets) await pushToUser(target.id);
+      const { forwardNotificationToLine } = await import("@/lib/line-messaging.server");
+      for (const target of targets) {
+        await pushToUser(target.id);
+        await forwardNotificationToLine(target.id, data.title, data.body || null);
+      }
     } catch {
       /* push は失敗しても通知本体は成立させる */
     }

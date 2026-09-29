@@ -291,6 +291,12 @@ export const postThreadMessage = createServerFn({ method: "POST" })
       try {
         const { pushToUser } = await import("@/lib/push.server");
         await pushToUser(fb.user_id);
+        const { forwardNotificationToLine } = await import("@/lib/line-messaging.server");
+        await forwardNotificationToLine(
+          fb.user_id,
+          "管理者から返信があります",
+          data.body.slice(0, 200),
+        );
       } catch {
         /* ignore */
       }
