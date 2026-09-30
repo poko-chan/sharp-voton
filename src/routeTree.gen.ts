@@ -21,6 +21,7 @@ import { Route as GuideRouteImport } from './routes/guide'
 import { Route as ForgotRouteImport } from './routes/forgot'
 import { Route as ForSchoolsRouteImport } from './routes/for-schools'
 import { Route as AllServicesRouteImport } from './routes/all-services'
+import { Route as AiVisionRouteImport } from './routes/ai-vision'
 import { Route as AiRouteImport } from './routes/ai'
 import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as AccessibilityRouteImport } from './routes/accessibility'
@@ -163,6 +164,11 @@ const ForSchoolsRoute = ForSchoolsRouteImport.update({
 const AllServicesRoute = AllServicesRouteImport.update({
   id: '/all-services',
   path: '/all-services',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AiVisionRoute = AiVisionRouteImport.update({
+  id: '/ai-vision',
+  path: '/ai-vision',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AiRoute = AiRouteImport.update({
@@ -617,6 +623,7 @@ export interface FileRoutesByFullPath {
   '/accessibility': typeof AccessibilityRoute
   '/admin-login': typeof AdminLoginRoute
   '/ai': typeof AiRoute
+  '/ai-vision': typeof AiVisionRoute
   '/all-services': typeof AllServicesRoute
   '/for-schools': typeof ForSchoolsRoute
   '/forgot': typeof ForgotRoute
@@ -713,6 +720,7 @@ export interface FileRoutesByTo {
   '/accessibility': typeof AccessibilityRoute
   '/admin-login': typeof AdminLoginRoute
   '/ai': typeof AiRoute
+  '/ai-vision': typeof AiVisionRoute
   '/all-services': typeof AllServicesRoute
   '/for-schools': typeof ForSchoolsRoute
   '/forgot': typeof ForgotRoute
@@ -805,6 +813,7 @@ export interface FileRoutesById {
   '/accessibility': typeof AccessibilityRoute
   '/admin-login': typeof AdminLoginRoute
   '/ai': typeof AiRoute
+  '/ai-vision': typeof AiVisionRoute
   '/all-services': typeof AllServicesRoute
   '/for-schools': typeof ForSchoolsRoute
   '/forgot': typeof ForgotRoute
@@ -903,6 +912,7 @@ export interface FileRouteTypes {
     | '/accessibility'
     | '/admin-login'
     | '/ai'
+    | '/ai-vision'
     | '/all-services'
     | '/for-schools'
     | '/forgot'
@@ -999,6 +1009,7 @@ export interface FileRouteTypes {
     | '/accessibility'
     | '/admin-login'
     | '/ai'
+    | '/ai-vision'
     | '/all-services'
     | '/for-schools'
     | '/forgot'
@@ -1090,6 +1101,7 @@ export interface FileRouteTypes {
     | '/accessibility'
     | '/admin-login'
     | '/ai'
+    | '/ai-vision'
     | '/all-services'
     | '/for-schools'
     | '/forgot'
@@ -1188,6 +1200,7 @@ export interface RootRouteChildren {
   AccessibilityRoute: typeof AccessibilityRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AiRoute: typeof AiRoute
+  AiVisionRoute: typeof AiVisionRoute
   AllServicesRoute: typeof AllServicesRoute
   ForSchoolsRoute: typeof ForSchoolsRoute
   ForgotRoute: typeof ForgotRoute
@@ -1301,6 +1314,13 @@ declare module '@tanstack/react-router' {
       path: '/all-services'
       fullPath: '/all-services'
       preLoaderRoute: typeof AllServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ai-vision': {
+      id: '/ai-vision'
+      path: '/ai-vision'
+      fullPath: '/ai-vision'
+      preLoaderRoute: typeof AiVisionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ai': {
@@ -2106,6 +2126,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccessibilityRoute: AccessibilityRoute,
   AdminLoginRoute: AdminLoginRoute,
   AiRoute: AiRoute,
+  AiVisionRoute: AiVisionRoute,
   AllServicesRoute: AllServicesRoute,
   ForSchoolsRoute: ForSchoolsRoute,
   ForgotRoute: ForgotRoute,
