@@ -173,13 +173,6 @@ export const APPS: AppEntry[] = [
     icon: Building2,
     group: "組織",
   },
-    {
-    to: "/inventory",
-    label: "ショップ・持ち物",
-    keywords: "shop coin アイテム",
-    icon: ShoppingBag,
-    group: "その他",
-  },
   { to: "/share", label: "共有", keywords: "share 共有リンク", icon: Share2, group: "その他" },
   {
     to: "/announcements",
