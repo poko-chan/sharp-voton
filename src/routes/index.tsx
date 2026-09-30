@@ -1,7 +1,6 @@
 import { useI18n } from "@/lib/i18n";
 import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import { PublicFooter, PublicMobileNav } from "@/components/public/PublicShell";
-import { AiTrialChat } from "@/components/public/AiTrialChat";
 
 
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
