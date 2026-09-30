@@ -34,6 +34,7 @@
   --color-warning: var(--warning);
   --color-signal: var(--signal);
   --color-ink: var(--ink);
+  --color-brand: var(--brand);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -54,17 +55,17 @@
    Signal: cyan #5BC8FF, lime #7CF5A0                        */
 :root {
   --radius: 0.75rem;
-  --ink: oklch(0.19 0.035 265);
-  --signal: oklch(0.79 0.12 230);
+  --ink: oklch(0.28 0.035 258);
+  --signal: oklch(0.74 0.14 178);
 
-  --background: oklch(0.985 0.004 250);
-  --foreground: oklch(0.19 0.035 265);
-  --card: oklch(1 0 0);
+  --background: oklch(0.982 0.01 190);
+  --foreground: oklch(0.28 0.035 258);
+  --card: oklch(0.993 0.006 190);
   --card-foreground: oklch(0.19 0.035 265);
-  --popover: oklch(1 0 0);
+  --popover: oklch(0.993 0.006 190);
   --popover-foreground: oklch(0.19 0.035 265);
-  --primary: oklch(0.24 0.045 265);
-  --primary-foreground: oklch(0.98 0.01 200);
+  --primary: oklch(0.62 0.12 180);
+  --primary-foreground: oklch(0.985 0.012 180);
   --secondary: oklch(0.955 0.008 250);
   --secondary-foreground: oklch(0.24 0.045 265);
   --muted: oklch(0.965 0.006 250);
@@ -75,22 +76,24 @@
   --destructive-foreground: oklch(0.99 0.01 110);
   --border: oklch(0.91 0.008 258);
   --input: oklch(0.93 0.008 258);
-  --ring: oklch(0.66 0.14 230);
+  --ring: oklch(0.74 0.14 178);
   --success: oklch(0.72 0.16 160);
   --warning: oklch(0.79 0.15 78);
-  --chart-1: oklch(0.66 0.14 230);
+  --chart-1: oklch(0.74 0.14 178);
   --chart-2: oklch(0.76 0.16 160);
   --chart-3: oklch(0.72 0.15 75);
   --chart-4: oklch(0.55 0.13 285);
   --chart-5: oklch(0.6 0.18 20);
   --sidebar: oklch(0.985 0.004 250);
   --sidebar-foreground: oklch(0.25 0.03 265);
-  --sidebar-primary: oklch(0.24 0.045 265);
+  --sidebar-primary: oklch(0.62 0.12 180);
   --sidebar-primary-foreground: oklch(0.98 0.01 200);
   --sidebar-accent: oklch(0.94 0.012 250);
   --sidebar-accent-foreground: oklch(0.22 0.04 265);
   --sidebar-border: oklch(0.91 0.008 258);
-  --sidebar-ring: oklch(0.66 0.14 230);
+  --sidebar-ring: oklch(0.74 0.14 178);
+  --brand: oklch(0.74 0.14 178);
+  --gradient-aura: linear-gradient(145deg, oklch(0.985 0.015 170), oklch(0.975 0.012 230));
 }
 
 /* AIチャットはMarkon/Cnoteと同じ、殻から独立した不透明な作業画面。 */

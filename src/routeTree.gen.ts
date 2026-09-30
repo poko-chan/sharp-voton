@@ -21,6 +21,7 @@ import { Route as GuideRouteImport } from './routes/guide'
 import { Route as ForgotRouteImport } from './routes/forgot'
 import { Route as ForSchoolsRouteImport } from './routes/for-schools'
 import { Route as AllServicesRouteImport } from './routes/all-services'
+import { Route as AiVisionRouteImport } from './routes/ai-vision'
 import { Route as AiRouteImport } from './routes/ai'
 import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as AccessibilityRouteImport } from './routes/accessibility'
@@ -57,7 +58,6 @@ import { Route as AuthenticatedMentorRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedMaterialsRouteImport } from './routes/_authenticated/materials'
 import { Route as AuthenticatedMakronRouteImport } from './routes/_authenticated/makron'
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
-import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedHeatmapRouteImport } from './routes/_authenticated/heatmap'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedFriendsRouteImport } from './routes/_authenticated/friends'
@@ -164,6 +164,11 @@ const ForSchoolsRoute = ForSchoolsRouteImport.update({
 const AllServicesRoute = AllServicesRouteImport.update({
   id: '/all-services',
   path: '/all-services',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AiVisionRoute = AiVisionRouteImport.update({
+  id: '/ai-vision',
+  path: '/ai-vision',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AiRoute = AiRouteImport.update({
@@ -348,11 +353,6 @@ const AuthenticatedLeaderboardRoute =
     path: '/leaderboard',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedInventoryRoute = AuthenticatedInventoryRouteImport.update({
-  id: '/inventory',
-  path: '/inventory',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedHeatmapRoute = AuthenticatedHeatmapRouteImport.update({
   id: '/heatmap',
   path: '/heatmap',
@@ -623,6 +623,7 @@ export interface FileRoutesByFullPath {
   '/accessibility': typeof AccessibilityRoute
   '/admin-login': typeof AdminLoginRoute
   '/ai': typeof AiRoute
+  '/ai-vision': typeof AiVisionRoute
   '/all-services': typeof AllServicesRoute
   '/for-schools': typeof ForSchoolsRoute
   '/forgot': typeof ForgotRoute
@@ -649,7 +650,6 @@ export interface FileRoutesByFullPath {
   '/friends': typeof AuthenticatedFriendsRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/heatmap': typeof AuthenticatedHeatmapRoute
-  '/inventory': typeof AuthenticatedInventoryRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/makron': typeof AuthenticatedMakronRouteWithChildren
   '/materials': typeof AuthenticatedMaterialsRouteWithChildren
@@ -720,6 +720,7 @@ export interface FileRoutesByTo {
   '/accessibility': typeof AccessibilityRoute
   '/admin-login': typeof AdminLoginRoute
   '/ai': typeof AiRoute
+  '/ai-vision': typeof AiVisionRoute
   '/all-services': typeof AllServicesRoute
   '/for-schools': typeof ForSchoolsRoute
   '/forgot': typeof ForgotRoute
@@ -745,7 +746,6 @@ export interface FileRoutesByTo {
   '/friends': typeof AuthenticatedFriendsRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/heatmap': typeof AuthenticatedHeatmapRoute
-  '/inventory': typeof AuthenticatedInventoryRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/mentor': typeof AuthenticatedMentorRoute
   '/notes': typeof AuthenticatedNotesRoute
@@ -813,6 +813,7 @@ export interface FileRoutesById {
   '/accessibility': typeof AccessibilityRoute
   '/admin-login': typeof AdminLoginRoute
   '/ai': typeof AiRoute
+  '/ai-vision': typeof AiVisionRoute
   '/all-services': typeof AllServicesRoute
   '/for-schools': typeof ForSchoolsRoute
   '/forgot': typeof ForgotRoute
@@ -839,7 +840,6 @@ export interface FileRoutesById {
   '/_authenticated/friends': typeof AuthenticatedFriendsRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/heatmap': typeof AuthenticatedHeatmapRoute
-  '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/makron': typeof AuthenticatedMakronRouteWithChildren
   '/_authenticated/materials': typeof AuthenticatedMaterialsRouteWithChildren
@@ -912,6 +912,7 @@ export interface FileRouteTypes {
     | '/accessibility'
     | '/admin-login'
     | '/ai'
+    | '/ai-vision'
     | '/all-services'
     | '/for-schools'
     | '/forgot'
@@ -938,7 +939,6 @@ export interface FileRouteTypes {
     | '/friends'
     | '/goals'
     | '/heatmap'
-    | '/inventory'
     | '/leaderboard'
     | '/makron'
     | '/materials'
@@ -1009,6 +1009,7 @@ export interface FileRouteTypes {
     | '/accessibility'
     | '/admin-login'
     | '/ai'
+    | '/ai-vision'
     | '/all-services'
     | '/for-schools'
     | '/forgot'
@@ -1034,7 +1035,6 @@ export interface FileRouteTypes {
     | '/friends'
     | '/goals'
     | '/heatmap'
-    | '/inventory'
     | '/leaderboard'
     | '/mentor'
     | '/notes'
@@ -1101,6 +1101,7 @@ export interface FileRouteTypes {
     | '/accessibility'
     | '/admin-login'
     | '/ai'
+    | '/ai-vision'
     | '/all-services'
     | '/for-schools'
     | '/forgot'
@@ -1127,7 +1128,6 @@ export interface FileRouteTypes {
     | '/_authenticated/friends'
     | '/_authenticated/goals'
     | '/_authenticated/heatmap'
-    | '/_authenticated/inventory'
     | '/_authenticated/leaderboard'
     | '/_authenticated/makron'
     | '/_authenticated/materials'
@@ -1200,6 +1200,7 @@ export interface RootRouteChildren {
   AccessibilityRoute: typeof AccessibilityRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AiRoute: typeof AiRoute
+  AiVisionRoute: typeof AiVisionRoute
   AllServicesRoute: typeof AllServicesRoute
   ForSchoolsRoute: typeof ForSchoolsRoute
   ForgotRoute: typeof ForgotRoute
@@ -1313,6 +1314,13 @@ declare module '@tanstack/react-router' {
       path: '/all-services'
       fullPath: '/all-services'
       preLoaderRoute: typeof AllServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ai-vision': {
+      id: '/ai-vision'
+      path: '/ai-vision'
+      fullPath: '/ai-vision'
+      preLoaderRoute: typeof AiVisionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ai': {
@@ -1565,13 +1573,6 @@ declare module '@tanstack/react-router' {
       path: '/leaderboard'
       fullPath: '/leaderboard'
       preLoaderRoute: typeof AuthenticatedLeaderboardRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/inventory': {
-      id: '/_authenticated/inventory'
-      path: '/inventory'
-      fullPath: '/inventory'
-      preLoaderRoute: typeof AuthenticatedInventoryRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/heatmap': {
@@ -2048,7 +2049,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedFriendsRoute: typeof AuthenticatedFriendsRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedHeatmapRoute: typeof AuthenticatedHeatmapRoute
-  AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
   AuthenticatedMakronRoute: typeof AuthenticatedMakronRouteWithChildren
   AuthenticatedMaterialsRoute: typeof AuthenticatedMaterialsRouteWithChildren
@@ -2090,7 +2090,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedFriendsRoute: AuthenticatedFriendsRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedHeatmapRoute: AuthenticatedHeatmapRoute,
-  AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
   AuthenticatedMakronRoute: AuthenticatedMakronRouteWithChildren,
   AuthenticatedMaterialsRoute: AuthenticatedMaterialsRouteWithChildren,
@@ -2127,6 +2126,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccessibilityRoute: AccessibilityRoute,
   AdminLoginRoute: AdminLoginRoute,
   AiRoute: AiRoute,
+  AiVisionRoute: AiVisionRoute,
   AllServicesRoute: AllServicesRoute,
   ForSchoolsRoute: ForSchoolsRoute,
   ForgotRoute: ForgotRoute,

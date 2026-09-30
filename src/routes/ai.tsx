@@ -67,8 +67,12 @@ function AiPage() {
           Study#
           のAI機能は、できるだけ「あなたの端末の中」で動かすことを基本にしています。使えるエンジンは設定画面から選択でき、選んだエンジンに応じてモデルの一覧が表示されます。
         </p>
-        <p className="mt-3 rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm leading-relaxed">
-          AIチャットは現在ベータ版です。回答内容は必ず自分で確かめてから使ってください。
+        <p className="mt-3 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm leading-relaxed">
+          AI機能は現在、提供方式を検討中のため一時停止しています。今後の構想は{" "}
+          <Link to="/ai-vision" className="font-semibold text-primary underline">
+            これからのAI
+          </Link>{" "}
+          をご覧ください。
         </p>
 
         <section className="mt-8">

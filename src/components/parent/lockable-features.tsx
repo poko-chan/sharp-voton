@@ -3,7 +3,6 @@ export const LOCKABLE_FEATURES: { key: string; label: string }[] = [
   { key: "chat", label: "チャット" },
   { key: "feed", label: "みんなの投稿" },
   { key: "friends", label: "フレンド" },
-  { key: "inventory", label: "ショップ・持ち物" },
   { key: "town", label: "街づくり" },
   { key: "together", label: "みんなで勉強" },
   { key: "leaderboard", label: "ランキング" },
