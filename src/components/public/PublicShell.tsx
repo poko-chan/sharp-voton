@@ -4,7 +4,7 @@ import logoUrl from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 import { Menu } from "lucide-react";
 
-type NavKey = "features" | "all-services" | "for-schools" | "guide" | "help";
+type NavKey = "features" | "all-services" | "for-schools" | "guide" | "help" | "ai-vision";
 
 const NAV: { key: NavKey; label: string; to: string }[] = [
   { key: "features", label: "機能", to: "/features" },
@@ -12,6 +12,7 @@ const NAV: { key: NavKey; label: string; to: string }[] = [
   { key: "guide", label: "使い方", to: "/guide" },
   { key: "for-schools", label: "学校・塾の方へ", to: "/for-schools" },
   { key: "help", label: "ヘルプ", to: "/help" },
+  { key: "ai-vision", label: "これからのAI", to: "/ai-vision" },
 ];
 
 /** 公開ページ共通のヘッダー。current で現在地をハイライトする。 */
