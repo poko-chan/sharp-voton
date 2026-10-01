@@ -298,17 +298,23 @@ function MyMissions() {
           <div className="text-sm font-medium">{m.title}</div>
           {m.detail && <div className="text-xs text-muted-foreground">{m.detail}</div>}
           <div className="mt-1 text-[11px] text-muted-foreground">
-            ごほうび {m.reward_coins}コイン{m.due_date ? ` · ${m.due_date}まで` : ""}
+            {m.reward_text ? `ごほうび：${m.reward_text}` : "ごほうびはおうちの人と相談"}
+            {m.due_date ? ` · ${m.due_date}まで` : ""}
           </div>
           {m.status === "open" && (
             <Button size="sm" className="mt-2" onClick={() => claim(m.id)}>
-              できた！
+              できたよ
             </Button>
           )}
           {m.status === "claimed" && (
-            <div className="mt-2 text-xs text-muted-foreground">おうちの人のかくにん待ち</div>
+            <div className="mt-2 text-xs text-muted-foreground">おうちの人の返事まち</div>
           )}
-          {m.status === "done" && <div className="mt-2 text-xs text-emerald-600">たっせい！🎉</div>}
+          {m.status === "done" && (
+            <div className="mt-2 text-xs text-primary">できた！ごほうびを待ってね</div>
+          )}
+          {m.status === "rewarded" && (
+            <div className="mt-2 text-xs text-muted-foreground">約束おわり。よくがんばったね</div>
+          )}
         </div>
       ))}
     </div>

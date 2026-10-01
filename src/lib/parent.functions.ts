@@ -818,7 +818,7 @@ export const createChildMission = createServerFn({ method: "POST" })
         childId: z.string().uuid(),
         title: z.string().min(1).max(80),
         detail: z.string().max(300).optional(),
-        reward_coins: z.number().int().min(0).max(300),
+        reward_text: z.string().max(80).optional(),
         due_date: z.string().max(10).nullable().optional(),
       })
       .parse(i),
@@ -830,9 +830,10 @@ export const createChildMission = createServerFn({ method: "POST" })
       child_id: data.childId,
       title: data.title,
       detail: data.detail ?? null,
-      reward_coins: data.reward_coins,
+      reward_coins: 0,
+      reward_text: data.reward_text?.trim() || null,
       due_date: data.due_date || null,
-    });
+    } as any);
     if (error) throw new Error(error.message);
     try {
       const { pushToUser } = await import("@/lib/push.server");
@@ -856,11 +857,17 @@ export const deleteChildMission = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-/** 保護者側：達成の承認／却下（承認でコインを付与） */
+/** 保護者側：確認／もう少し／ごほうびを渡した（コインは使わない） */
 export const reviewChildMission = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i) =>
-    z.object({ missionId: z.string().uuid(), approve: z.boolean() }).parse(i),
+    z
+      .object({
+        missionId: z.string().uuid(),
+        approve: z.boolean(),
+        rewarded: z.boolean().optional(),
+      })
+      .parse(i),
   )
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -869,8 +876,25 @@ export const reviewChildMission = createServerFn({ method: "POST" })
       .select("*")
       .eq("id", data.missionId)
       .maybeSingle();
-    if (!m) throw new Error("ミッションが見つかりません");
+    if (!m) throw new Error("約束が見つかりません");
     if ((m as any).parent_id !== context.userId) throw new Error("権限がありません");
+    const childId = (m as any).child_id as string;
+    const reward = (m as any).reward_text as string | null;
+
+    if (data.rewarded) {
+      await supabaseAdmin
+        .from("parent_missions")
+        .update({ status: "rewarded", rewarded_at: new Date().toISOString() } as any)
+        .eq("id", data.missionId);
+      await supabaseAdmin.from("parent_child_messages").insert({
+        parent_id: context.userId,
+        child_id: childId,
+        sender_role: "parent",
+        kind: "text",
+        body: `約束「${(m as any).title}」のごほうびを渡したよ。よくがんばったね`,
+      });
+      return { ok: true };
+    }
 
     await supabaseAdmin
       .from("parent_missions")
@@ -881,42 +905,20 @@ export const reviewChildMission = createServerFn({ method: "POST" })
       })
       .eq("id", data.missionId);
 
-    if (data.approve) {
-      const coins = Number((m as any).reward_coins ?? 0);
-      const childId = (m as any).child_id as string;
-      if (coins > 0) {
-        try {
-          await supabaseAdmin.rpc("admin_grant_coins" as any, {
-            _user_id: childId,
-            _amount: coins,
-            _reason: `おうちのミッション：${(m as any).title}`,
-          } as any);
-        } catch {
-          const { data: cur } = await supabaseAdmin
-            .from("user_coins")
-            .select("balance")
-            .eq("user_id", childId)
-            .maybeSingle();
-          await supabaseAdmin
-            .from("user_coins")
-            .upsert(
-              { user_id: childId, balance: Number((cur as any)?.balance ?? 0) + coins },
-              { onConflict: "user_id" },
-            );
-          await supabaseAdmin.from("coin_transactions").insert({
-            user_id: childId,
-            amount: coins,
-            reason: `おうちのミッション：${(m as any).title}`,
-          });
-        }
-      }
-      await supabaseAdmin.from("parent_child_messages").insert({
-        parent_id: context.userId,
-        child_id: childId,
-        sender_role: "parent",
-        kind: "text",
-        body: `ミッション「${(m as any).title}」たっせい！${coins}コインをあげたよ🎉`,
-      });
+    await supabaseAdmin.from("parent_child_messages").insert({
+      parent_id: context.userId,
+      child_id: childId,
+      sender_role: "parent",
+      kind: "text",
+      body: data.approve
+        ? `約束「${(m as any).title}」できたね！${reward ? `ごほうび「${reward}」を楽しみにしててね` : ""}`
+        : `約束「${(m as any).title}」もう少しだけがんばろう`,
+    });
+    try {
+      const { pushToUser } = await import("@/lib/push.server");
+      await pushToUser(childId);
+    } catch {
+      /* ignore */
     }
     return { ok: true };
   });
