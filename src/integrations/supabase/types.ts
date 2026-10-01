@@ -6092,6 +6092,8 @@ export type Database = {
           id: string
           parent_id: string
           reward_coins: number
+          reward_text: string | null
+          rewarded_at: string | null
           status: string
           title: string
           updated_at: string
@@ -6106,6 +6108,8 @@ export type Database = {
           id?: string
           parent_id: string
           reward_coins?: number
+          reward_text?: string | null
+          rewarded_at?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -6120,6 +6124,8 @@ export type Database = {
           id?: string
           parent_id?: string
           reward_coins?: number
+          reward_text?: string | null
+          rewarded_at?: string | null
           status?: string
           title?: string
           updated_at?: string
