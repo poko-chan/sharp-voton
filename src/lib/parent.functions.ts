@@ -834,12 +834,6 @@ export const createChildMission = createServerFn({ method: "POST" })
       reward_text: data.reward_text?.trim() || null,
       due_date: data.due_date || null,
     } as any);
-    if (false) await admin.from("parent_missions").insert({
-      parent_id: context.userId,
-      child_id: data.childId,
-      title: data.title,
-      due_date: data.due_date || null,
-    });
     if (error) throw new Error(error.message);
     try {
       const { pushToUser } = await import("@/lib/push.server");

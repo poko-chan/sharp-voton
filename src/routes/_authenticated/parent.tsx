@@ -339,7 +339,7 @@ function MissionPanel({ childId }: { childId: string }) {
   const [rows, setRows] = useState<any[]>([]);
   const [title, setTitle] = useState("");
   const [detail, setDetail] = useState("");
-  const [coins, setCoins] = useState(50);
+  const [reward, setReward] = useState("");
   const [due, setDue] = useState("");
 
   const load = useCallback(async () => {
@@ -356,21 +356,23 @@ function MissionPanel({ childId }: { childId: string }) {
         childId,
         title: title.trim(),
         detail: detail.trim() || undefined,
-        reward_coins: coins,
+        reward_text: reward.trim() || undefined,
         due_date: due || null,
       },
     });
     setTitle("");
     setDetail("");
+    setReward("");
     setDue("");
-    toast.success("ミッションを出しました");
+    toast.success("約束を作りました");
     void load();
   };
 
   const label: Record<string, string> = {
     open: "とりくみ中",
-    claimed: "承認まち",
-    done: "たっせい",
+    claimed: "できたよ報告あり",
+    done: "ごほうびを渡す番",
+    rewarded: "おわり",
   };
 
   return (
@@ -391,13 +393,12 @@ function MissionPanel({ childId }: { childId: string }) {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            <Label className="text-xs">ごほうびコイン</Label>
+            <Label className="text-xs">ごほうび（家族で決めたこと）</Label>
             <Input
-              type="number"
-              min={0}
-              max={300}
-              value={coins}
-              onChange={(e) => setCoins(Math.max(0, Math.min(300, Number(e.target.value) || 0)))}
+              value={reward}
+              maxLength={80}
+              onChange={(e) => setReward(e.target.value)}
+              placeholder="日曜に公園へ行く"
             />
           </div>
           <div className="space-y-1">
@@ -420,7 +421,8 @@ function MissionPanel({ childId }: { childId: string }) {
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium">{m.title}</div>
                   <div className="text-[11px] text-muted-foreground">
-                    {label[m.status] ?? m.status} · {m.reward_coins}コイン
+                    {label[m.status] ?? m.status}
+                    {m.reward_text ? ` · ごほうび：${m.reward_text}` : ""}
                     {m.due_date ? ` · ${m.due_date}まで` : ""}
                   </div>
                   {m.detail && <div className="mt-1 text-xs">{m.detail}</div>}
@@ -436,17 +438,30 @@ function MissionPanel({ childId }: { childId: string }) {
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
+              {m.status === "done" && (
+                <Button
+                  size="sm"
+                  className="mt-2"
+                  onClick={async () => {
+                    await reviewFn({ data: { missionId: m.id, approve: true, rewarded: true } });
+                    toast.success("ごほうびを渡しました");
+                    void load();
+                  }}
+                >
+                  ごほうびを渡したよ
+                </Button>
+              )}
               {m.status === "claimed" && (
                 <div className="mt-2 flex gap-2">
                   <Button
                     size="sm"
                     onClick={async () => {
                       await reviewFn({ data: { missionId: m.id, approve: true } });
-                      toast.success("承認してコインをあげました");
+                      toast.success("確認しました");
                       void load();
                     }}
                   >
-                    承認してコイン
+                    確認したよ
                   </Button>
                   <Button
                     size="sm"
