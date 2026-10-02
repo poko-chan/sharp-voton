@@ -307,7 +307,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         (payload: any) => {
           const n = payload.new;
           const notificationPath =
-            typeof n.link === "string" && n.link.startsWith("/") ? n.link : "/notifications";
+            typeof n.link === "string" && /^\/(?![/\\])/.test(n.link) ? n.link : "/notifications";
           toast(n.title || "新しい通知", {
             description: n.body || "通知を確認してください",
             duration: 3200,
