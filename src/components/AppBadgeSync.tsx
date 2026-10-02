@@ -13,7 +13,7 @@ export function AppBadgeSync() {
         })
         .catch(() => {});
     void tick();
-    const id = setInterval(tick, 120_000);
+    const id = setInterval(tick, 10 * 60_000);
     return () => clearInterval(id);
   }, []);
   return null;

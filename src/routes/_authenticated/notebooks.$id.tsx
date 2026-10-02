@@ -195,23 +195,24 @@ function NotebookEditor() {
     pagesRef.current = pagesRef.current.map((p) => (p.id === updated.id ? updated : p));
     setPages(pagesRef.current);
     setSaving("dirty");
-    if (timer.current) clearTimeout(timer.current);
-    // 書くたびに保存せず、手が止まってからまとめて1回保存する
-    timer.current = setTimeout(() => savePage(updated), 4000);
+    // 自動保存はしない。「保存」ボタンを押したときだけ書き込む。
+    try {
+      localStorage.setItem(`cnote.draft.${updated.id}`, JSON.stringify(updated));
+    } catch {
+      /* noop */
+    }
   };
 
   // ページを離れる／タブを隠すときに未保存分だけ保存する
   useEffect(() => {
-    const flush = () => {
-      if (document.visibilityState !== "hidden") return;
-      const p = pendingRef.current;
-      if (!p) return;
-      if (timer.current) clearTimeout(timer.current);
-      savePage(p);
+    const warn = (e: BeforeUnloadEvent) => {
+      if (!pendingRef.current) return;
+      e.preventDefault();
+      e.returnValue = "";
     };
-    document.addEventListener("visibilitychange", flush);
+    window.addEventListener("beforeunload", warn);
     return () => {
-      document.removeEventListener("visibilitychange", flush);
+      window.removeEventListener("beforeunload", warn);
       const p = pendingRef.current;
       if (p) savePage(p);
     };
@@ -349,7 +350,7 @@ function NotebookEditor() {
           {!readOnly && page && (
             <Button
               size="sm"
-              variant="outline"
+              variant={saving === "dirty" ? "default" : "outline"}
               onClick={() => {
                 if (timer.current) clearTimeout(timer.current);
                 savePage(page);

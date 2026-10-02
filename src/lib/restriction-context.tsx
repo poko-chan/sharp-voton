@@ -73,7 +73,7 @@ export function RestrictionProvider({ children }: { children: ReactNode }) {
         () => load(),
       )
       .subscribe();
-    const i = setInterval(load, 60000);
+    const i = setInterval(load, 10 * 60_000);
     return () => {
       supabase.removeChannel(ch);
       clearInterval(i);
