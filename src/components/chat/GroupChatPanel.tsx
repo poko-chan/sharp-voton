@@ -77,7 +77,7 @@ export function GroupChatPanel({
   const readers = useQuery({
     queryKey: ["chat-group-reads", groupId],
     queryFn: () => fetchGroupMembers(groupId),
-    refetchInterval: 20000,
+    refetchInterval: 60_000,
   });
   const readCount = (m: GroupMessage) =>
     (readers.data ?? []).filter(

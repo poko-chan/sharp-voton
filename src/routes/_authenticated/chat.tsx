@@ -34,7 +34,7 @@ function ChatPage() {
     queryKey: ["chat-conversations"],
     queryFn: listConversations,
     enabled: !!user,
-    refetchInterval: 15000,
+    refetchInterval: 60_000,
   });
 
   const friends = useQuery({

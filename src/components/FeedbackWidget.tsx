@@ -97,7 +97,7 @@ export function FeedbackWidget({ compact = false }: { compact?: boolean }) {
     queryFn: () => unreadFn(),
     enabled: !!user,
     staleTime: 20_000,
-    refetchInterval: 30_000,
+    refetchInterval: false,
     refetchOnWindowFocus: true,
   });
   const count = unread?.count ?? 0;
@@ -307,7 +307,7 @@ function ThreadView({ id, onBack }: { id: string; onBack: () => void }) {
   const { data, isLoading } = useQuery({
     queryKey: ["thread", id],
     queryFn: () => get({ data: { feedbackId: id } }),
-    refetchInterval: 5000,
+    refetchInterval: 30_000,
     refetchOnWindowFocus: true,
   });
   useEffect(() => {
