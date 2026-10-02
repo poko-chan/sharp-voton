@@ -169,6 +169,11 @@ function NotebookEditor() {
             return;
           }
           savedSig.current[p.id] = sig;
+          try {
+            localStorage.removeItem(`cnote.draft.${p.id}`);
+          } catch {
+            /* noop */
+          }
           const now = Date.now();
           if (now - nbTouched.current > 5 * 60 * 1000) {
             nbTouched.current = now;
