@@ -1,4 +1,9 @@
-import { QuestionTypeEditor, EXTRA_TYPES, AUTO_TYPES, finalizeDraft } from "@/components/makron/QuestionTypeEditor";
+import {
+  QuestionTypeEditor,
+  EXTRA_TYPES,
+  AUTO_TYPES,
+  finalizeDraft,
+} from "@/components/makron/QuestionTypeEditor";
 import { QUESTION_COLUMNS, loadQuestionKeys } from "@/lib/makron-questions";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -49,9 +54,19 @@ const TYPES = [
 ] as const;
 
 const TYPE_JA: Record<string, string> = {
-  single: "択一", multi: "複数選択", text: "記述(短)", ocr: "手書き", written: "記述", file: "ファイル",
-  true_false: "○×", tiles: "単語タイル", ordering: "並べ替え", matching: "ペア合わせ",
-  fill_blank: "穴埋め", listen: "聞き取り", numeric: "数値",
+  single: "択一",
+  multi: "複数選択",
+  text: "記述(短)",
+  ocr: "手書き",
+  written: "記述",
+  file: "ファイル",
+  true_false: "○×",
+  tiles: "単語タイル",
+  ordering: "並べ替え",
+  matching: "ペア合わせ",
+  fill_blank: "穴埋め",
+  listen: "聞き取り",
+  numeric: "数値",
 };
 
 function PackPage() {
@@ -273,55 +288,59 @@ function PackPage() {
                 />
               )}
               <div className="space-y-1 max-h-96 overflow-auto">
-                {questions.filter((q) => !qFilter || (q.prompt ?? "").includes(qFilter)).map((q) => (
-                  <div
-                    key={q.id}
-                    className={`flex items-center gap-1 border rounded p-2 text-sm ${q.is_active === false ? "opacity-50" : ""}`}
-                  >
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">{TYPE_JA[q.type] ?? q.type}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10">
-                      {q.points}点
-                    </span>
-                    <span className="flex-1 min-w-0 truncate">{q.prompt}</span>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={async () => {
-                        await (supabase as any)
-                          .from("makron_questions")
-                          .update({ is_active: q.is_active === false })
-                          .eq("id", q.id);
-                        load();
-                      }}
+                {questions
+                  .filter((q) => !qFilter || (q.prompt ?? "").includes(qFilter))
+                  .map((q) => (
+                    <div
+                      key={q.id}
+                      className={`flex items-center gap-1 border rounded p-2 text-sm ${q.is_active === false ? "opacity-50" : ""}`}
                     >
-                      <Power
-                        className={`h-4 w-4 ${q.is_active === false ? "text-muted-foreground" : "text-success"}`}
-                      />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={async () => {
-                        try {
-                          const k = await loadQuestionKeys(q.id);
-                          setDraft({ ...q, options: q.options ?? [], ...k });
-                        } catch (e: any) {
-                          toast.error(e.message);
-                        }
-                      }}
-                    >
-                      編集
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-destructive"
-                      onClick={() => delQuestion(q.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">
+                        {TYPE_JA[q.type] ?? q.type}
+                      </span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10">
+                        {q.points}点
+                      </span>
+                      <span className="flex-1 min-w-0 truncate">{q.prompt}</span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={async () => {
+                          await (supabase as any)
+                            .from("makron_questions")
+                            .update({ is_active: q.is_active === false })
+                            .eq("id", q.id);
+                          load();
+                        }}
+                      >
+                        <Power
+                          className={`h-4 w-4 ${q.is_active === false ? "text-muted-foreground" : "text-success"}`}
+                        />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={async () => {
+                          try {
+                            const k = await loadQuestionKeys(q.id);
+                            setDraft({ ...q, options: q.options ?? [], ...k });
+                          } catch (e: any) {
+                            toast.error(e.message);
+                          }
+                        }}
+                      >
+                        編集
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive"
+                        onClick={() => delQuestion(q.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
                 {questions.length === 0 && (
                   <div className="text-xs text-muted-foreground text-center p-6">
                     問題はまだありません。上の「問題を追加」から作成してください。
@@ -387,10 +406,7 @@ function PackPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem
-                            value="auto"
-                            disabled={!AUTO_TYPES.includes(draft.type)}
-                          >
+                          <SelectItem value="auto" disabled={!AUTO_TYPES.includes(draft.type)}>
                             自動
                           </SelectItem>
                           <SelectItem value="manual">手動</SelectItem>
@@ -476,7 +492,11 @@ function PackPage() {
                       </Button>
                     </div>
                   )}
-                  <QuestionTypeEditor key={draft.id ?? draft.type} draft={draft} setDraft={setDraft} />
+                  <QuestionTypeEditor
+                    key={draft.id ?? draft.type}
+                    draft={draft}
+                    setDraft={setDraft}
+                  />
                   {(draft.type === "text" || draft.type === "ocr") && (
                     <div>
                       <label className="text-xs">

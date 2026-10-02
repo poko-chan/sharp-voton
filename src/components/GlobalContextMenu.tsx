@@ -107,14 +107,23 @@ export function GlobalContextMenu({ children }: { children: React.ReactNode }) {
               Study<span className="text-primary">#</span>
             </span>
           </div>
-          <MenuButton icon={<ArrowLeft />} label="戻る" disabled={!history.length} onClick={() => run(() => history.back())} />
+          <MenuButton
+            icon={<ArrowLeft />}
+            label="戻る"
+            disabled={!history.length}
+            onClick={() => run(() => history.back())}
+          />
           <MenuButton
             icon={<ArrowRight />}
             label="進む"
             disabled={!history.forward}
             onClick={() => run(() => history.forward())}
           />
-          <MenuButton icon={<RefreshCw />} label="ページを再読み込み" onClick={() => run(() => location.reload())} />
+          <MenuButton
+            icon={<RefreshCw />}
+            label="ページを再読み込み"
+            onClick={() => run(() => location.reload())}
+          />
           <div className="my-1 border-t border-border/60" />
           {menu.href && (
             <MenuButton

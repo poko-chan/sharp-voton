@@ -40,7 +40,6 @@ import { StudyStats } from "@/components/study/StudyStats";
 import { notifyStudyFinished } from "@/lib/parent.functions";
 import { notifyChatStudyFinished } from "@/lib/chat-webhooks.functions";
 
-
 export const Route = createFileRoute("/_authenticated/study")({
   component: StudyPage,
 });

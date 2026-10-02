@@ -125,9 +125,7 @@ export async function streamChat(options: {
           model: backend.model,
           stream: true,
           messages,
-          ...(typeof options.temperature === "number"
-            ? { temperature: options.temperature }
-            : {}),
+          ...(typeof options.temperature === "number" ? { temperature: options.temperature } : {}),
           ...(options.maxTokens ? { max_tokens: options.maxTokens } : {}),
         }),
       });

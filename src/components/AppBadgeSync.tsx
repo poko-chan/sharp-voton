@@ -3,7 +3,10 @@ import { unreadCount } from "@/lib/notifications.functions";
 
 export function AppBadgeSync() {
   useEffect(() => {
-    const nav = navigator as Navigator & { setAppBadge?: (n?: number) => Promise<void>; clearAppBadge?: () => Promise<void> };
+    const nav = navigator as Navigator & {
+      setAppBadge?: (n?: number) => Promise<void>;
+      clearAppBadge?: () => Promise<void>;
+    };
     if (!nav.setAppBadge) return;
     const tick = () =>
       unreadCount()

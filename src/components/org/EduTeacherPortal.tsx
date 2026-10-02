@@ -26,11 +26,21 @@ async function exportKanten(orgId: string, names: Record<string, string>) {
   const pct = (x: [number, number]) => (x[1] ? Math.round((x[0] / x[1]) * 100) : "");
   const abc = (p: number | string) => (p === "" ? "" : +p >= 80 ? "A" : +p >= 50 ? "B" : "C");
   const rows = Object.entries(m).map(([id, r]) => {
-    const k = pct(r.k), s = pct(r.s), d = r.days.size;
+    const k = pct(r.k),
+      s = pct(r.s),
+      d = r.days.size;
     return [names[id] ?? "生徒", k, abc(k), s, abc(s), d, d >= 20 ? "A" : d >= 8 ? "B" : "C"];
   });
   downloadCsv(`3観点_${new Date().toISOString().slice(0, 10)}.csv`, [
-    ["生徒", "知識・技能(%)", "評定", "思考・判断・表現(%)", "評定", "主体的に取り組む態度(学習日数)", "評定"],
+    [
+      "生徒",
+      "知識・技能(%)",
+      "評定",
+      "思考・判断・表現(%)",
+      "評定",
+      "主体的に取り組む態度(学習日数)",
+      "評定",
+    ],
     ...rows,
   ]);
 }
@@ -44,7 +54,10 @@ import { AlertTriangle, LayoutGrid, List, Download, Printer } from "lucide-react
 type Att = { user_id: string; correct: boolean; created_at: string };
 
 function esc(s: string) {
-  return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+  return s.replace(
+    /[&<>"]/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!,
+  );
 }
 
 function PrintQuiz({ orgId }: { orgId: string }) {
@@ -75,7 +88,7 @@ function PrintQuiz({ orgId }: { orgId: string }) {
       .q{margin:14px 0;page-break-inside:avoid}.line{border-bottom:1px solid #999;height:28px;margin-top:6px}
       .meta{display:flex;gap:24px;font-size:13px;margin-bottom:12px}</style></head><body>
       <h1>${esc(u.title)} 小テスト</h1>
-      <div class="meta"><span>年　組　番</span><span>名前＿＿＿＿＿＿＿＿＿＿</span><span>得点　　／${qs.length}</span></div>
+      <div class="meta"><span>年\u3000組\u3000番</span><span>名前＿＿＿＿＿＿＿＿＿＿</span><span>得点\u3000\u3000／${qs.length}</span></div>
       ${qs
         .map(
           (q, i) =>
@@ -93,13 +106,20 @@ function PrintQuiz({ orgId }: { orgId: string }) {
   return (
     <div className="relative">
       <Button size="sm" variant="outline" onClick={() => setOpen((o) => !o)}>
-        <Printer className="h-4 w-4 mr-1" />小テスト印刷
+        <Printer className="h-4 w-4 mr-1" />
+        小テスト印刷
       </Button>
       {open && (
         <Card className="absolute right-0 z-20 mt-1 w-60 max-h-72 overflow-auto p-1">
-          {units.length === 0 && <div className="p-2 text-xs text-muted-foreground">単元がありません</div>}
+          {units.length === 0 && (
+            <div className="p-2 text-xs text-muted-foreground">単元がありません</div>
+          )}
           {units.map((u) => (
-            <button key={u.id} className="block w-full text-left text-sm p-2 rounded hover:bg-muted" onClick={() => print(u)}>
+            <button
+              key={u.id}
+              className="block w-full text-left text-sm p-2 rounded hover:bg-muted"
+              onClick={() => print(u)}
+            >
               {u.title}
             </button>
           ))}
@@ -185,15 +205,24 @@ export function EduTeacherPortal({ orgId }: { orgId: string }) {
       const list = atts.filter((a) => a.created_at.slice(0, 10) === day);
       out.push({
         d: day.slice(5),
-        rate: list.length ? Math.round((list.filter((a) => a.correct).length / list.length) * 100) : null,
+        rate: list.length
+          ? Math.round((list.filter((a) => a.correct).length / list.length) * 100)
+          : null,
       });
     }
     return out;
   }, [atts]);
 
-  const avg = atts.length ? Math.round((atts.filter((a) => a.correct).length / atts.length) * 100) : 0;
+  const avg = atts.length
+    ? Math.round((atts.filter((a) => a.correct).length / atts.length) * 100)
+    : 0;
   const alerts = rows.filter((r) => r.state === "red");
-  const dot = { red: "bg-destructive", yellow: "bg-amber-400", green: "bg-emerald-500", idle: "bg-muted" };
+  const dot = {
+    red: "bg-destructive",
+    yellow: "bg-amber-400",
+    green: "bg-emerald-500",
+    idle: "bg-muted",
+  };
   const label = { red: "つまずき中", yellow: "解答中", green: "スムーズ", idle: "未着手" };
 
   const exportCsv = () =>
@@ -205,26 +234,42 @@ export function EduTeacherPortal({ orgId }: { orgId: string }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2 justify-end">
-        <Button size="sm" variant={view === "seat" ? "default" : "outline"} onClick={() => setView("seat")}>
-          <LayoutGrid className="h-4 w-4 mr-1" />座席タイル
+        <Button
+          size="sm"
+          variant={view === "seat" ? "default" : "outline"}
+          onClick={() => setView("seat")}
+        >
+          <LayoutGrid className="h-4 w-4 mr-1" />
+          座席タイル
         </Button>
-        <Button size="sm" variant={view === "table" ? "default" : "outline"} onClick={() => setView("table")}>
-          <List className="h-4 w-4 mr-1" />一覧
+        <Button
+          size="sm"
+          variant={view === "table" ? "default" : "outline"}
+          onClick={() => setView("table")}
+        >
+          <List className="h-4 w-4 mr-1" />
+          一覧
         </Button>
         <Button size="sm" variant="outline" onClick={exportCsv}>
-          <Download className="h-4 w-4 mr-1" />成績CSV
+          <Download className="h-4 w-4 mr-1" />
+          成績CSV
         </Button>
         <Button size="sm" variant="outline" onClick={() => exportKanten(orgId, names)}>
-          <Download className="h-4 w-4 mr-1" />3観点CSV
+          <Download className="h-4 w-4 mr-1" />
+          3観点CSV
         </Button>
         <PrintQuiz orgId={orgId} />
         <Button
           size="sm"
           variant="outline"
           onClick={async () => {
-            const { data, error } = await (supabase as any).rpc("org_edu_seed_starter", { _org: orgId });
+            const { data, error } = await (supabase as any).rpc("org_edu_seed_starter", {
+              _org: orgId,
+            });
             if (error) return toast.error(error.message);
-            toast.success(data ? `スターター問題を${data}問追加しました` : "スターター問題は追加済みです");
+            toast.success(
+              data ? `スターター問題を${data}問追加しました` : "スターター問題は追加済みです",
+            );
           }}
         >
           スターター問題を追加
@@ -232,9 +277,14 @@ export function EduTeacherPortal({ orgId }: { orgId: string }) {
       </div>
       {view === "seat" && (
         <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 gap-2">
-          {rows.length === 0 && <div className="col-span-full text-sm text-muted-foreground">生徒がいません</div>}
+          {rows.length === 0 && (
+            <div className="col-span-full text-sm text-muted-foreground">生徒がいません</div>
+          )}
           {rows.map((r) => (
-            <Card key={r.id} className={`p-2 text-center border-2 ${r.state === "red" ? "border-destructive animate-pulse" : ""}`}>
+            <Card
+              key={r.id}
+              className={`p-2 text-center border-2 ${r.state === "red" ? "border-destructive animate-pulse" : ""}`}
+            >
               <span className={`inline-block h-3 w-3 rounded-full ${dot[r.state]}`} />
               <div className="text-xs font-bold truncate mt-1">{r.name}</div>
               <div className="text-[10px] text-muted-foreground">
@@ -252,7 +302,10 @@ export function EduTeacherPortal({ orgId }: { orgId: string }) {
           </div>
           <div className="flex flex-wrap gap-2 mt-2">
             {alerts.map((a) => (
-              <span key={a.id} className="text-xs font-bold rounded-full bg-destructive/15 px-3 py-1">
+              <span
+                key={a.id}
+                className="text-xs font-bold rounded-full bg-destructive/15 px-3 py-1"
+              >
                 {a.name}
               </span>
             ))}
@@ -269,7 +322,10 @@ export function EduTeacherPortal({ orgId }: { orgId: string }) {
           {daily.map((d) => (
             <div key={d.d} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
               <div className="text-[10px] text-muted-foreground">{d.rate ?? "-"}</div>
-              <div className="w-full rounded-t bg-primary/70" style={{ height: `${d.rate ?? 0}%` }} />
+              <div
+                className="w-full rounded-t bg-primary/70"
+                style={{ height: `${d.rate ?? 0}%` }}
+              />
               <div className="text-[10px] text-muted-foreground">{d.d}</div>
             </div>
           ))}
@@ -277,42 +333,44 @@ export function EduTeacherPortal({ orgId }: { orgId: string }) {
       </Card>
 
       {view === "table" && (
-      <Card className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50 text-xs text-muted-foreground">
-            <tr>
-              <th className="text-left p-2">生徒</th>
-              <th className="text-left p-2">状態</th>
-              <th className="p-2">解答数</th>
-              <th className="p-2">正答率</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 && (
+        <Card className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50 text-xs text-muted-foreground">
               <tr>
-                <td colSpan={4} className="p-6 text-center text-muted-foreground">
-                  生徒がいません
-                </td>
+                <th className="text-left p-2">生徒</th>
+                <th className="text-left p-2">状態</th>
+                <th className="p-2">解答数</th>
+                <th className="p-2">正答率</th>
               </tr>
-            )}
-            {rows.map((r) => (
-              <tr key={r.id} className="border-t">
-                <td className="p-2 font-medium">{r.name}</td>
-                <td className="p-2">
-                  <span className="inline-flex items-center gap-2 text-xs">
-                    <span className={`h-3 w-3 rounded-full ${dot[r.state]}`} />
-                    {label[r.state]}
-                    {r.unit ? <span className="text-muted-foreground">（{r.unit}）</span> : null}
-                  </span>
-                </td>
-                <td className="p-2 text-center">{r.total}</td>
-                <td className="p-2 text-center font-bold">{r.rate === null ? "-" : `${r.rate}%`}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="p-2 text-[10px] text-muted-foreground">15秒ごとに自動更新</div>
-      </Card>
+            </thead>
+            <tbody>
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="p-6 text-center text-muted-foreground">
+                    生徒がいません
+                  </td>
+                </tr>
+              )}
+              {rows.map((r) => (
+                <tr key={r.id} className="border-t">
+                  <td className="p-2 font-medium">{r.name}</td>
+                  <td className="p-2">
+                    <span className="inline-flex items-center gap-2 text-xs">
+                      <span className={`h-3 w-3 rounded-full ${dot[r.state]}`} />
+                      {label[r.state]}
+                      {r.unit ? <span className="text-muted-foreground">（{r.unit}）</span> : null}
+                    </span>
+                  </td>
+                  <td className="p-2 text-center">{r.total}</td>
+                  <td className="p-2 text-center font-bold">
+                    {r.rate === null ? "-" : `${r.rate}%`}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="p-2 text-[10px] text-muted-foreground">15秒ごとに自動更新</div>
+        </Card>
       )}
     </div>
   );

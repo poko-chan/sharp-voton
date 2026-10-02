@@ -175,7 +175,12 @@ export const XLANG_UNITS: XUnit[] = [
             type: "listen",
             en: "I go to bed at eleven.",
             ja: "私は11時に寝ます。",
-            options: ["私は11時に寝ます。", "私は11時に起きます。", "私は11歳です。", "11時に会おう。"],
+            options: [
+              "私は11時に寝ます。",
+              "私は11時に起きます。",
+              "私は11歳です。",
+              "11時に会おう。",
+            ],
             answer: 0,
           },
           {
@@ -206,7 +211,12 @@ export const XLANG_UNITS: XUnit[] = [
             en: "I will take this one",
             distractors: ["them", "never", "give"],
           },
-          { type: "type", ja: "高すぎます。", en: "It is too expensive", alts: ["it's too expensive"] },
+          {
+            type: "type",
+            ja: "高すぎます。",
+            en: "It is too expensive",
+            alts: ["it's too expensive"],
+          },
           {
             type: "match",
             pairs: [
@@ -291,7 +301,11 @@ export const XLANG_UNITS: XUnit[] = [
               ["proud", "誇らしい"],
             ],
           },
-          { type: "speak", en: "I am really glad to hear that.", ja: "それを聞けてとてもうれしいです。" },
+          {
+            type: "speak",
+            en: "I am really glad to hear that.",
+            ja: "それを聞けてとてもうれしいです。",
+          },
         ],
       },
       {
@@ -352,7 +366,12 @@ export const XLANG_UNITS: XUnit[] = [
             options: ["休憩しませんか？", "休んではいけない", "なぜ休んだの？", "休みは終わり"],
             answer: 0,
           },
-          { type: "type", ja: "窓を開けてもいいですか？", en: "May I open the window", alts: ["can i open the window"] },
+          {
+            type: "type",
+            ja: "窓を開けてもいいですか？",
+            en: "May I open the window",
+            alts: ["can i open the window"],
+          },
           {
             type: "match",
             pairs: [
@@ -362,7 +381,11 @@ export const XLANG_UNITS: XUnit[] = [
               ["let's", "〜しよう"],
             ],
           },
-          { type: "speak", en: "Could you say that again, please?", ja: "もう一度言っていただけますか？" },
+          {
+            type: "speak",
+            en: "Could you say that again, please?",
+            ja: "もう一度言っていただけますか？",
+          },
         ],
       },
     ],

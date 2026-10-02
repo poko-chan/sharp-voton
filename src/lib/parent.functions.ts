@@ -363,7 +363,6 @@ export const setChildControls = createServerFn({ method: "POST" })
         always_allowed_features: z.array(z.string().max(40)).max(40).optional(),
         app_time_limits: z.record(z.string().max(40), z.number().int().min(0).max(1440)).optional(),
         homework_first: z.boolean(),
-
       })
       .parse(i),
   )
@@ -372,7 +371,10 @@ export const setChildControls = createServerFn({ method: "POST" })
     const { childId, ...rest } = data;
     const { error } = await admin
       .from("child_controls")
-      .upsert({ child_id: childId, updated_by: context.userId, ...rest }, { onConflict: "child_id" });
+      .upsert(
+        { child_id: childId, updated_by: context.userId, ...rest },
+        { onConflict: "child_id" },
+      );
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -749,12 +751,15 @@ export const decideExtensionRequest = createServerFn({ method: "POST" })
         .eq("child_id", childId)
         .maybeSingle();
       const base = (cur as any)?.bonus_date === today ? Number((cur as any).bonus_minutes ?? 0) : 0;
-      await supabaseAdmin
-        .from("child_controls")
-        .upsert(
-          { child_id: childId, bonus_minutes: base + granted, bonus_date: today, updated_by: context.userId },
-          { onConflict: "child_id" },
-        );
+      await supabaseAdmin.from("child_controls").upsert(
+        {
+          child_id: childId,
+          bonus_minutes: base + granted,
+          bonus_date: today,
+          updated_by: context.userId,
+        },
+        { onConflict: "child_id" },
+      );
       await supabaseAdmin.from("parent_child_messages").insert({
         parent_id: context.userId,
         child_id: childId,
@@ -782,12 +787,15 @@ export const grantBonusMinutes = createServerFn({ method: "POST" })
       .maybeSingle();
     const base = (cur as any)?.bonus_date === today ? Number((cur as any).bonus_minutes ?? 0) : 0;
     const next = Math.max(0, base + data.minutes);
-    const { error } = await admin
-      .from("child_controls")
-      .upsert(
-        { child_id: data.childId, bonus_minutes: next, bonus_date: today, updated_by: context.userId },
-        { onConflict: "child_id" },
-      );
+    const { error } = await admin.from("child_controls").upsert(
+      {
+        child_id: data.childId,
+        bonus_minutes: next,
+        bonus_date: today,
+        updated_by: context.userId,
+      },
+      { onConflict: "child_id" },
+    );
     if (error) throw new Error(error.message);
     return { ok: true, bonus: next };
   });
@@ -950,7 +958,10 @@ export const claimMyMission = createServerFn({ method: "POST" })
     const parentId = await parentOf(context.userId);
     if (parentId) {
       await notifyParentOnLine(parentId, [
-        { type: "text", text: "お子様からミッション達成の報告が届きました。Study#で承認できます。" },
+        {
+          type: "text",
+          text: "お子様からミッション達成の報告が届きました。Study#で承認できます。",
+        },
       ]);
       try {
         const { pushToUser } = await import("@/lib/push.server");

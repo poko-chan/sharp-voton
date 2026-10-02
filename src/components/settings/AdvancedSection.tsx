@@ -240,9 +240,7 @@ export function AdvancedSection() {
           <Label className="text-sm">プロフィールの公開範囲</Label>
           <Select
             value={prefs.profile_visibility}
-            onValueChange={(v) =>
-              set("profile_visibility", v as LocalPrefs["profile_visibility"])
-            }
+            onValueChange={(v) => set("profile_visibility", v as LocalPrefs["profile_visibility"])}
           >
             <SelectTrigger>
               <SelectValue />

@@ -37,7 +37,9 @@ function TogetherPage() {
   const [ranking, setRanking] = useState<{ user_id: string; minutes: number }[]>([]);
   const [target, setTarget] = useState(300);
   const [note, setNote] = useState("");
-  const [logs, setLogs] = useState<{ date: string; start_time: string | null; duration_minutes: number }[]>([]);
+  const [logs, setLogs] = useState<
+    { date: string; start_time: string | null; duration_minutes: number }[]
+  >([]);
 
   const loadNames = async (ids: string[]) => {
     const missing = ids.filter((i) => i && !names[i]);
@@ -147,7 +149,8 @@ function TogetherPage() {
   const leave = async () => {
     if (!room) return;
     await db.from("fr_room_members").delete().eq("room_id", room.id).eq("user_id", uid);
-    if (room.host_id === uid) await db.from("fr_rooms").update({ status: "closed" }).eq("id", room.id);
+    if (room.host_id === uid)
+      await db.from("fr_rooms").update({ status: "closed" }).eq("id", room.id);
     loadRoom();
   };
 
@@ -198,10 +201,13 @@ function TogetherPage() {
     }
     const days = Object.keys(perDay).length || 1;
     const avgSession = Math.round(total / logs.length);
-    const type =
-      morning > night * 1.2 ? "朝型" : night > morning * 1.2 ? "夜型" : "バランス型";
+    const type = morning > night * 1.2 ? "朝型" : night > morning * 1.2 ? "夜型" : "バランス型";
     const style =
-      avgSession >= 60 ? "長時間集中タイプ" : avgSession <= 25 ? "こまぎれ学習タイプ" : "標準ペース";
+      avgSession >= 60
+        ? "長時間集中タイプ"
+        : avgSession <= 25
+          ? "こまぎれ学習タイプ"
+          : "標準ペース";
     const consistency = Math.round((days / 30) * 100);
     return { type, style, avgSession, consistency, days, total };
   }, [logs]);

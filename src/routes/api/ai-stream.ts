@@ -29,7 +29,10 @@ type Body = {
 };
 
 function textResponse(message: string, status: number) {
-  return new Response(message, { status, headers: { "Content-Type": "text/plain; charset=utf-8" } });
+  return new Response(message, {
+    status,
+    headers: { "Content-Type": "text/plain; charset=utf-8" },
+  });
 }
 
 async function verifyUser(request: Request): Promise<boolean> {
@@ -159,10 +162,7 @@ export const Route = createFileRoute("/api/ai-stream")({
             body: JSON.stringify({
               model,
               stream: true,
-              messages: [
-                { role: "system", content: buildSystem(body.system) },
-                ...turns,
-              ],
+              messages: [{ role: "system", content: buildSystem(body.system) }, ...turns],
               ...(typeof body.temperature === "number" ? { temperature: body.temperature } : {}),
               ...(body.maxTokens ? { max_tokens: body.maxTokens } : {}),
             }),

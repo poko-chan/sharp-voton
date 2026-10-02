@@ -162,7 +162,11 @@ export function ResultSheet({
           <div
             className={`flex items-center gap-2 text-lg font-extrabold ${good ? "text-success" : bad ? "text-destructive" : ""}`}
           >
-            {good ? <CircleCheck className="h-6 w-6" /> : bad ? <CircleX className="h-6 w-6" /> : null}
+            {good ? (
+              <CircleCheck className="h-6 w-6" />
+            ) : bad ? (
+              <CircleX className="h-6 w-6" />
+            ) : null}
             {good ? pickPraise(combo) : bad ? "ここを押さえよう" : "採点結果"}
             {good && combo >= 2 && (
               <span className="ml-1 inline-flex items-center gap-0.5 rounded-full bg-warning/20 text-warning px-2 py-0.5 text-xs">

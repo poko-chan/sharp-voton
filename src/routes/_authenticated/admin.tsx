@@ -25,7 +25,12 @@ import {
 import { UsersTab } from "@/components/admin/users";
 import { RestrictionsHub } from "@/components/admin/restrictions";
 import { AnnouncementsTab, FaqTab, LoginBoardsTab } from "@/components/admin/content";
-import { CoinGrantAllTab, LowDataModeTab, MaintenanceTab, VersionTab } from "@/components/admin/system";
+import {
+  CoinGrantAllTab,
+  LowDataModeTab,
+  MaintenanceTab,
+  VersionTab,
+} from "@/components/admin/system";
 import { FeedbackTab } from "@/components/admin/feedback";
 import { OrgsAdminTab } from "@/components/admin/commerce";
 import { MaterialsReviewTab } from "@/components/admin/materials";
@@ -66,31 +71,91 @@ const groups: { title: string; items: AdminItem[] }[] = [
   {
     title: "ユーザーとアクセス",
     items: [
-      { tab: "users", label: "ユーザー管理", description: "アカウント、権限、利用停止", icon: Users },
-      { tab: "restrictions", label: "利用制限", description: "機能やサービスの公開範囲", icon: Flag },
+      {
+        tab: "users",
+        label: "ユーザー管理",
+        description: "アカウント、権限、利用停止",
+        icon: Users,
+      },
+      {
+        tab: "restrictions",
+        label: "利用制限",
+        description: "機能やサービスの公開範囲",
+        icon: Flag,
+      },
       { tab: "orgs", label: "組織管理", description: "学校・組織の申請と設定", icon: Building2 },
     ],
   },
   {
     title: "コンテンツと連絡",
     items: [
-      { tab: "notifications", label: "通知を送る", description: "全員または個別ユーザーへ通知", icon: BellRing },
-      { tab: "announcements", label: "お知らせ", description: "公開日時つきのお知らせを作成", icon: Megaphone },
-      { tab: "feedback", label: "フィードバック", description: "要望や問い合わせに返信", icon: HelpCircle },
+      {
+        tab: "notifications",
+        label: "通知を送る",
+        description: "全員または個別ユーザーへ通知",
+        icon: BellRing,
+      },
+      {
+        tab: "announcements",
+        label: "お知らせ",
+        description: "公開日時つきのお知らせを作成",
+        icon: Megaphone,
+      },
+      {
+        tab: "feedback",
+        label: "フィードバック",
+        description: "要望や問い合わせに返信",
+        icon: HelpCircle,
+      },
       { tab: "faq", label: "FAQ", description: "よくある質問を管理", icon: FileText },
-      { tab: "boards", label: "ログイン掲示板", description: "ログイン前に表示する掲示板", icon: Megaphone },
+      {
+        tab: "boards",
+        label: "ログイン掲示板",
+        description: "ログイン前に表示する掲示板",
+        icon: Megaphone,
+      },
       { tab: "materials", label: "教材承認", description: "投稿された教材を確認", icon: BookOpen },
     ],
   },
   {
     title: "システム",
     items: [
-      { tab: "maintenance", label: "メンテナンス", description: "停止状態と案内文を設定", icon: Wrench },
-      { tab: "lowdata", label: "低データモード", description: "一般ユーザーの利用機能を最小限に制限", icon: Database },
-      { tab: "version", label: "バージョン", description: "アプリのバージョン情報", icon: Settings },
-      { tab: "coingrant", label: "コイン一括配布", description: "全ユーザーへコインを付与", icon: Coins },
-      { tab: "plans", label: "プラン管理", description: "プラン・料金・内容・追加パック", icon: CreditCard },
-      { tab: "line", label: "LINE連携", description: "Webhook設定とApps Scriptコード", icon: MessageCircle },
+      {
+        tab: "maintenance",
+        label: "メンテナンス",
+        description: "停止状態と案内文を設定",
+        icon: Wrench,
+      },
+      {
+        tab: "lowdata",
+        label: "低データモード",
+        description: "一般ユーザーの利用機能を最小限に制限",
+        icon: Database,
+      },
+      {
+        tab: "version",
+        label: "バージョン",
+        description: "アプリのバージョン情報",
+        icon: Settings,
+      },
+      {
+        tab: "coingrant",
+        label: "コイン一括配布",
+        description: "全ユーザーへコインを付与",
+        icon: Coins,
+      },
+      {
+        tab: "plans",
+        label: "プラン管理",
+        description: "プラン・料金・内容・追加パック",
+        icon: CreditCard,
+      },
+      {
+        tab: "line",
+        label: "LINE連携",
+        description: "Webhook設定とApps Scriptコード",
+        icon: MessageCircle,
+      },
     ],
   },
 ];
@@ -180,20 +245,35 @@ function AdminOverview({ onSelect }: { onSelect: (tab: AdminTab) => void }) {
 
 function renderTab(tab: AdminTab) {
   switch (tab) {
-    case "users": return <UsersTab />;
-    case "maintenance": return <MaintenanceTab />;
-    case "lowdata": return <LowDataModeTab />;
-    case "restrictions": return <RestrictionsHub />;
-    case "orgs": return <OrgsAdminTab />;
-    case "materials": return <MaterialsReviewTab />;
-    case "faq": return <FaqTab />;
-    case "version": return <VersionTab />;
-    case "announcements": return <AnnouncementsTab />;
-    case "feedback": return <FeedbackTab />;
-    case "coingrant": return <CoinGrantAllTab />;
-    case "boards": return <LoginBoardsTab />;
-    case "notifications": return <NotificationsAdminTab />;
-    case "plans": return <PlansAdminTab />;
-    case "line": return null;
+    case "users":
+      return <UsersTab />;
+    case "maintenance":
+      return <MaintenanceTab />;
+    case "lowdata":
+      return <LowDataModeTab />;
+    case "restrictions":
+      return <RestrictionsHub />;
+    case "orgs":
+      return <OrgsAdminTab />;
+    case "materials":
+      return <MaterialsReviewTab />;
+    case "faq":
+      return <FaqTab />;
+    case "version":
+      return <VersionTab />;
+    case "announcements":
+      return <AnnouncementsTab />;
+    case "feedback":
+      return <FeedbackTab />;
+    case "coingrant":
+      return <CoinGrantAllTab />;
+    case "boards":
+      return <LoginBoardsTab />;
+    case "notifications":
+      return <NotificationsAdminTab />;
+    case "plans":
+      return <PlansAdminTab />;
+    case "line":
+      return null;
   }
 }

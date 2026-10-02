@@ -54,8 +54,14 @@ export const saveChatWebhooks = createServerFn({ method: "POST" })
   .inputValidator((d) =>
     z
       .object({
-        discord_url: z.string().max(300).refine((v) => !v || discordRe.test(v), "Discord URLが正しくありません"),
-        slack_url: z.string().max(300).refine((v) => !v || slackRe.test(v), "Slack URLが正しくありません"),
+        discord_url: z
+          .string()
+          .max(300)
+          .refine((v) => !v || discordRe.test(v), "Discord URLが正しくありません"),
+        slack_url: z
+          .string()
+          .max(300)
+          .refine((v) => !v || slackRe.test(v), "Slack URLが正しくありません"),
         notify_study_finished: z.boolean(),
       })
       .parse(d),

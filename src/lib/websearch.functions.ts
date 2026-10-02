@@ -312,7 +312,12 @@ function isPrivateIpv4(ip: number): boolean {
 /** ホスト名が内部・ループバック・リンクローカル等のアドレスなら true。 */
 function isBlockedHost(hostname: string): boolean {
   let h = hostname.toLowerCase().replace(/\.$/, "");
-  if (h === "localhost" || h.endsWith(".localhost") || h.endsWith(".local") || h.endsWith(".internal"))
+  if (
+    h === "localhost" ||
+    h.endsWith(".localhost") ||
+    h.endsWith(".local") ||
+    h.endsWith(".internal")
+  )
     return true;
   // IPv6（[...] 表記を剥がす）
   if (h.startsWith("[") && h.endsWith("]")) h = h.slice(1, -1);
@@ -412,10 +417,24 @@ export const fetchPage = createServerFn({ method: "POST" })
           try {
             next = new URL(loc, current);
           } catch {
-            return { url, finalUrl: current, title: "", text: "", ok: false, error: "リダイレクト先のURLが不正です" };
+            return {
+              url,
+              finalUrl: current,
+              title: "",
+              text: "",
+              ok: false,
+              error: "リダイレクト先のURLが不正です",
+            };
           }
           if (!/^https?:$/.test(next.protocol) || isBlockedHost(next.hostname)) {
-            return { url, finalUrl: next.toString(), title: "", text: "", ok: false, error: "このアドレスにはアクセスできません" };
+            return {
+              url,
+              finalUrl: next.toString(),
+              title: "",
+              text: "",
+              ok: false,
+              error: "このアドレスにはアクセスできません",
+            };
           }
           current = next.toString();
           continue;

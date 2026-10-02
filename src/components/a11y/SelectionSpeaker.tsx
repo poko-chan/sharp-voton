@@ -39,6 +39,7 @@ export function SelectionSpeaker() {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = "ja-JP";
+      u.rate = prefs.speech_rate;
       window.speechSynthesis.speak(u);
     } catch {
       /* 非対応ブラウザ */

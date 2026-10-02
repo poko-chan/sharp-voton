@@ -105,10 +105,12 @@ export function saveXLangState(userId: string, state: XLangState) {
 
 export function answerXLangQuestion(state: XLangState, isCorrect: boolean): XLangState {
   const today = localDateStr();
-  const nextAccuracy = Math.round(
-    ((state.accuracy * state.reviewedCount + (isCorrect ? 100 : 0)) /
-      Math.max(1, state.reviewedCount + 1)) * 10,
-  ) / 10;
+  const nextAccuracy =
+    Math.round(
+      ((state.accuracy * state.reviewedCount + (isCorrect ? 100 : 0)) /
+        Math.max(1, state.reviewedCount + 1)) *
+        10,
+    ) / 10;
   return {
     ...state,
     hearts: isCorrect ? state.hearts : Math.max(0, state.hearts - 1),
@@ -117,7 +119,17 @@ export function answerXLangQuestion(state: XLangState, isCorrect: boolean): XLan
     reviewedCount: state.reviewedCount + 1,
     dailyProgress: state.dailyProgressDate === today ? state.dailyProgress : 0,
     dailyProgressDate: today,
-    difficulty: Math.min(5, Math.max(1, nextAccuracy >= 80 ? state.difficulty + 1 : nextAccuracy < 55 ? state.difficulty - 1 : state.difficulty)),
+    difficulty: Math.min(
+      5,
+      Math.max(
+        1,
+        nextAccuracy >= 80
+          ? state.difficulty + 1
+          : nextAccuracy < 55
+            ? state.difficulty - 1
+            : state.difficulty,
+      ),
+    ),
   };
 }
 
@@ -171,7 +183,10 @@ export function finishLesson(
     ),
     difficulty: Math.min(
       5,
-      Math.max(1, rate >= 80 ? state.difficulty + 1 : rate < 55 ? state.difficulty - 1 : state.difficulty),
+      Math.max(
+        1,
+        rate >= 80 ? state.difficulty + 1 : rate < 55 ? state.difficulty - 1 : state.difficulty,
+      ),
     ),
     accuracy: nextAccuracy,
     reviewedCount: state.reviewedCount + 1,
@@ -183,10 +198,15 @@ export function finishLesson(
 }
 
 /** 従来API互換（簡易記録） */
-export function completeXLangLesson(state: XLangState, isCorrectOrScore: boolean | number, totalAnswers = 1): XLangState {
-  const isCorrect = typeof isCorrectOrScore === "number"
-    ? isCorrectOrScore >= Math.ceil(totalAnswers * 0.6)
-    : isCorrectOrScore;
+export function completeXLangLesson(
+  state: XLangState,
+  isCorrectOrScore: boolean | number,
+  totalAnswers = 1,
+): XLangState {
+  const isCorrect =
+    typeof isCorrectOrScore === "number"
+      ? isCorrectOrScore >= Math.ceil(totalAnswers * 0.6)
+      : isCorrectOrScore;
   return finishLesson(state, {
     lessonId: "quick",
     correct: typeof isCorrectOrScore === "number" ? isCorrectOrScore : isCorrect ? 1 : 0,

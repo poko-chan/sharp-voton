@@ -180,9 +180,7 @@ export function PlansAdminTab() {
                   className="min-w-[180px] flex-1"
                   placeholder="説明（任意）"
                   defaultValue={k.description ?? ""}
-                  onBlur={(e) =>
-                    patch("plan_packs", k.id, { description: e.target.value || null })
-                  }
+                  onBlur={(e) => patch("plan_packs", k.id, { description: e.target.value || null })}
                 />
                 <label className="flex items-center gap-2 text-xs">
                   公開
@@ -311,7 +309,13 @@ function GroupTable({
   const rows = useMemo(() => {
     const map = new Map<
       string,
-      { label: string; kind: "bool" | "text"; sort: number; description: string | null; group_label: string | null }
+      {
+        label: string;
+        kind: "bool" | "text";
+        sort: number;
+        description: string | null;
+        group_label: string | null;
+      }
     >();
     for (const f of groupFeatures) {
       const cur = map.get(f.label);
@@ -395,9 +399,9 @@ function GroupTable({
   const addRow = async () => {
     if (plans.length === 0) return toast.error("先にプランを追加してください。");
     const label = `新しい項目 ${rows.length + 1}`;
-    const { error } = await (supabase as any).from("plan_features").insert(
-      plans.map((p) => ({ plan_id: p.id, label, kind: "bool", sort_order: rows.length })),
-    );
+    const { error } = await (supabase as any)
+      .from("plan_features")
+      .insert(plans.map((p) => ({ plan_id: p.id, label, kind: "bool", sort_order: rows.length })));
     if (error) return toast.error(error.message);
     await reload();
   };
@@ -414,9 +418,7 @@ function GroupTable({
           className="min-w-[200px] flex-1"
           placeholder="説明（任意）"
           defaultValue={group.description ?? ""}
-          onBlur={(e) =>
-            onPatch("plan_groups", group.id, { description: e.target.value || null })
-          }
+          onBlur={(e) => onPatch("plan_groups", group.id, { description: e.target.value || null })}
         />
         <label className="flex items-center gap-2 text-xs">
           公開
@@ -448,9 +450,7 @@ function GroupTable({
                     className="h-7 text-xs"
                     placeholder="キャッチコピー"
                     defaultValue={p.description ?? ""}
-                    onBlur={(e) =>
-                      onPatch("plans", p.id, { description: e.target.value || null })
-                    }
+                    onBlur={(e) => onPatch("plans", p.id, { description: e.target.value || null })}
                   />
                   <div className="flex items-center gap-1">
                     <span className="text-[11px] text-muted-foreground">月</span>
@@ -531,18 +531,14 @@ function GroupTable({
                     className="h-7 text-xs"
                     placeholder="説明（任意）"
                     defaultValue={row.description ?? ""}
-                    onBlur={(e) =>
-                      setRowMeta(row.label, { description: e.target.value || null })
-                    }
+                    onBlur={(e) => setRowMeta(row.label, { description: e.target.value || null })}
                   />
                   <div className="flex items-center gap-1">
                     <Input
                       className="h-7 w-24 text-xs"
                       placeholder="グループ"
                       defaultValue={row.group_label ?? ""}
-                      onBlur={(e) =>
-                        setRowMeta(row.label, { group_label: e.target.value || null })
-                      }
+                      onBlur={(e) => setRowMeta(row.label, { group_label: e.target.value || null })}
                     />
                     <select
                       className="h-7 rounded-md border bg-background px-2 text-xs"

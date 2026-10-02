@@ -110,7 +110,12 @@ export function PaymentSection() {
       {groups.map((g) => {
         const list = plans.filter((p) => p.group_id === g.id);
         if (list.length === 0) return null;
-        const labels: { label: string; kind: "bool" | "text"; group: string; desc: string | null }[] = [];
+        const labels: {
+          label: string;
+          kind: "bool" | "text";
+          group: string;
+          desc: string | null;
+        }[] = [];
         for (const f of features.filter((f) => list.some((p) => p.id === f.plan_id))) {
           if (!labels.some((l) => l.label === f.label))
             labels.push({
@@ -131,9 +136,7 @@ export function PaymentSection() {
           <section key={g.id} className="space-y-5">
             <div className="text-center">
               <h3 className="text-lg font-bold">{g.name}</h3>
-              {g.description && (
-                <p className="text-sm text-muted-foreground">{g.description}</p>
-              )}
+              {g.description && <p className="text-sm text-muted-foreground">{g.description}</p>}
             </div>
 
             {(() => {
@@ -163,7 +166,9 @@ export function PaymentSection() {
                                     おすすめ
                                   </span>
                                 )}
-                                <span className="text-lg font-extrabold tracking-tight">{p.name}</span>
+                                <span className="text-lg font-extrabold tracking-tight">
+                                  {p.name}
+                                </span>
                                 {p.description && (
                                   <span className="text-xs font-normal text-muted-foreground">
                                     {p.description}
@@ -220,15 +225,16 @@ export function PaymentSection() {
                                   <td
                                     key={p.id}
                                     className={`border-t p-4 text-center ${
-                                      p.id === featured?.id
-                                        ? "border-x bg-primary/5"
-                                        : ""
+                                      p.id === featured?.id ? "border-x bg-primary/5" : ""
                                     } ${l === lg.rows[lg.rows.length - 1] ? "border-b" : ""}`}
                                   >
                                     {l.kind === "bool" ? (
                                       f?.bool_value ? (
                                         <span className="mx-auto flex h-7 w-7 items-center justify-center rounded-full bg-primary/15">
-                                          <Check className="h-4 w-4 font-black text-primary" strokeWidth={3} />
+                                          <Check
+                                            className="h-4 w-4 font-black text-primary"
+                                            strokeWidth={3}
+                                          />
                                         </span>
                                       ) : (
                                         <X className="mx-auto h-4 w-4 text-muted-foreground/40" />

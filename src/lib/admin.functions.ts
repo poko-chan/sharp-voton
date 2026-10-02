@@ -268,7 +268,11 @@ export const adminListUsers = createServerFn({ method: "POST" })
       .select("id, email, username, display_name, avatar_url, created_at", { count: "exact" })
       .order("created_at", { ascending: false });
     // フィルタ式を壊す文字を除去してから検索に使う
-    const search = data.search?.trim().replace(/[%_,.()\\"']/g, " ").slice(0, 60).trim();
+    const search = data.search
+      ?.trim()
+      .replace(/[%_,.()\\"']/g, " ")
+      .slice(0, 60)
+      .trim();
     if (search) {
       q = q.or(`username.ilike.%${search}%,display_name.ilike.%${search}%,email.ilike.%${search}%`);
     }
@@ -326,7 +330,7 @@ export const adminSendNotification = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     const targets = data.sendToAll
-      ? (await supabaseAdmin.from("profiles").select("id")).data ?? []
+      ? ((await supabaseAdmin.from("profiles").select("id")).data ?? [])
       : data.userId
         ? [{ id: data.userId }]
         : [];

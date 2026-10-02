@@ -15,18 +15,18 @@
 
 ## 2. 主要機能一覧
 
-| # | 機能 | 概要 |
-|---|------|------|
-| 1 | 勉強記録の投稿 | 本文（コメント）、学習時間（分）、教材/教科、公開範囲を指定して投稿 |
-| 2 | 直近の学習記録から投稿を作成 | `study_logs` の直近7日分をワンタップで下書きに反映 |
-| 3 | タイムライン表示 | タブで「すべて」「フォロー中」「自分」を切替 |
-| 4 | 公開範囲（visibility） | `public`（全体公開） / `followers`（フォロワーのみ） / `private`（自分のみ）を投稿ごとに設定 |
-| 5 | 組織限定投稿 | 既存の `organization_id` によるクラス/組織限定投稿（visibility とは独立した追加スコープ） |
-| 6 | いいね | 1ユーザー1投稿につき1回。トグル可能 |
-| 7 | コメント | 投稿に対してスレッド形式のコメント（削除は本人/管理者） |
-| 8 | 投稿削除 | 投稿者本人 or 管理者のみ |
-| 9 | もっと見る（ページネーション） | 20件ずつ取得し、末尾の「もっと見る」ボタンで追加読込 |
-| 10 | フレンド管理 | フォロー/フォロワー/フレンド(相互)/申請中を明確に区別 |
+| #   | 機能                           | 概要                                                                                         |
+| --- | ------------------------------ | -------------------------------------------------------------------------------------------- |
+| 1   | 勉強記録の投稿                 | 本文（コメント）、学習時間（分）、教材/教科、公開範囲を指定して投稿                          |
+| 2   | 直近の学習記録から投稿を作成   | `study_logs` の直近7日分をワンタップで下書きに反映                                           |
+| 3   | タイムライン表示               | タブで「すべて」「フォロー中」「自分」を切替                                                 |
+| 4   | 公開範囲（visibility）         | `public`（全体公開） / `followers`（フォロワーのみ） / `private`（自分のみ）を投稿ごとに設定 |
+| 5   | 組織限定投稿                   | 既存の `organization_id` によるクラス/組織限定投稿（visibility とは独立した追加スコープ）    |
+| 6   | いいね                         | 1ユーザー1投稿につき1回。トグル可能                                                          |
+| 7   | コメント                       | 投稿に対してスレッド形式のコメント（削除は本人/管理者）                                      |
+| 8   | 投稿削除                       | 投稿者本人 or 管理者のみ                                                                     |
+| 9   | もっと見る（ページネーション） | 20件ずつ取得し、末尾の「もっと見る」ボタンで追加読込                                         |
+| 10  | フレンド管理                   | フォロー/フォロワー/フレンド(相互)/申請中を明確に区別                                        |
 
 ---
 
@@ -56,6 +56,7 @@
 ```
 
 **1カードの構成要素**
+
 - ヘッダー: アバター（頭文字）、表示名、投稿日時、`visibility` バッジ（全体公開/フォロワー限定/自分のみ・組織限定は別バッジ）、（本人のみ）削除ボタン
 - 本文: 改行保持のテキスト
 - メタ情報チップ: 教科名、学習時間（分）
@@ -63,6 +64,7 @@
 - コメントパネル: 既存コメントのリスト＋インライン投稿欄
 
 **タブの種類**
+
 - `すべて`: 自分が閲覧可能な投稿全体（RLS が返す範囲＝`public` 投稿 + 自分がフォロワーとして見える `followers` 投稿 + 自分の投稿 + 組織投稿）
 - `フォロー中`: 自分がフォローしている（`follows.status = 'accepted'`）ユーザーの投稿のみ
 - `自分`: 自分の投稿のみ（`private` を含む全件）
@@ -88,16 +90,17 @@
 
 ### 4.1 現状のスキーマ（実装済み・調査結果）
 
-| テーブル | 主要カラム | 備考 |
-|---|---|---|
-| `profiles`(Users相当) | `id`, `username`, `display_name`, `avatar_url` | 認証ユーザーに1:1 |
-| `study_logs` | `id`, `user_id`, `date`, `duration_minutes`, `subject_id`, `content` | 学習記録の実体。投稿の下書き元 |
-| `social_posts` | `id`, `user_id`, `body`, `minutes`, `subject`, `organization_id`, `created_at`, `updated_at` | 投稿。**公開範囲カラムが無かった**（今回 `visibility` を追加） |
-| `social_likes` | `id`, `post_id`, `user_id` | `unique(post_id,user_id)` |
-| `social_comments` | `id`, `post_id`, `user_id`, `body`, `created_at` | |
-| `follows` | `id`, `follower_id`, `following_id`, `status('pending'\|'accepted')` | フォロー関係。相互フォロー判定は `are_mutual_friends(a,b)` 関数を使用 |
+| テーブル              | 主要カラム                                                                                   | 備考                                                                  |
+| --------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `profiles`(Users相当) | `id`, `username`, `display_name`, `avatar_url`                                               | 認証ユーザーに1:1                                                     |
+| `study_logs`          | `id`, `user_id`, `date`, `duration_minutes`, `subject_id`, `content`                         | 学習記録の実体。投稿の下書き元                                        |
+| `social_posts`        | `id`, `user_id`, `body`, `minutes`, `subject`, `organization_id`, `created_at`, `updated_at` | 投稿。**公開範囲カラムが無かった**（今回 `visibility` を追加）        |
+| `social_likes`        | `id`, `post_id`, `user_id`                                                                   | `unique(post_id,user_id)`                                             |
+| `social_comments`     | `id`, `post_id`, `user_id`, `body`, `created_at`                                             |                                                                       |
+| `follows`             | `id`, `follower_id`, `following_id`, `status('pending'\|'accepted')`                         | フォロー関係。相互フォロー判定は `are_mutual_friends(a,b)` 関数を使用 |
 
 既存の便利関数:
+
 - `public.is_org_member(org, user)` — 組織メンバー判定
 - `public.are_mutual_friends(a, b)` — 相互フォロー(=フレンド)判定（`chat_messages` の DM 許可判定に既に利用中）
 
@@ -123,11 +126,11 @@ profiles *───* follows (follower_id, following_id, status)
 
 ### 5.1 公開範囲の定義
 
-| visibility | 意味 | 閲覧できる人 |
-|---|---|---|
-| `public` | 全体公開（デフォルト） | 全ログインユーザー |
-| `followers` | フォロワーのみ | 投稿者本人 + 投稿者を `accepted` でフォローしているユーザー |
-| `private` | 自分のみ | 投稿者本人のみ |
+| visibility  | 意味                   | 閲覧できる人                                                |
+| ----------- | ---------------------- | ----------------------------------------------------------- |
+| `public`    | 全体公開（デフォルト） | 全ログインユーザー                                          |
+| `followers` | フォロワーのみ         | 投稿者本人 + 投稿者を `accepted` でフォローしているユーザー |
+| `private`   | 自分のみ               | 投稿者本人のみ                                              |
 
 `organization_id` が設定されている投稿は上記に加えて別軸のスコープとして扱い、**組織メンバーであれば閲覧可能**（visibility は組織投稿には適用しない＝組織内共有を優先）。
 
@@ -148,11 +151,11 @@ profiles *───* follows (follower_id, following_id, status)
 
 ## 6. 実装ファイル対応表
 
-| ファイル | 役割 |
-|---|---|
-| `src/routes/_authenticated/feed.tsx` | タイムライン画面（タブ・投稿フォーム・一覧のコンテナ） |
-| `src/components/feed/PostComposer.tsx` | 投稿フォーム（本文/時間/教科/公開範囲/直近記録の反映） |
-| `src/components/feed/PostCard.tsx` | 投稿1件のカードUI（いいね・コメント） |
-| `src/components/feed/VisibilityBadge.tsx` | 公開範囲バッジ表示 |
-| `src/lib/social.functions.ts` | タイムライン取得（タブ・ページネーション）、投稿作成のサーバー関数 |
-| `src/routes/_authenticated/friends.tsx` | フォロー/フォロワー/フレンド(相互)/申請中の一本化UI |
+| ファイル                                  | 役割                                                               |
+| ----------------------------------------- | ------------------------------------------------------------------ |
+| `src/routes/_authenticated/feed.tsx`      | タイムライン画面（タブ・投稿フォーム・一覧のコンテナ）             |
+| `src/components/feed/PostComposer.tsx`    | 投稿フォーム（本文/時間/教科/公開範囲/直近記録の反映）             |
+| `src/components/feed/PostCard.tsx`        | 投稿1件のカードUI（いいね・コメント）                              |
+| `src/components/feed/VisibilityBadge.tsx` | 公開範囲バッジ表示                                                 |
+| `src/lib/social.functions.ts`             | タイムライン取得（タブ・ページネーション）、投稿作成のサーバー関数 |
+| `src/routes/_authenticated/friends.tsx`   | フォロー/フォロワー/フレンド(相互)/申請中の一本化UI                |

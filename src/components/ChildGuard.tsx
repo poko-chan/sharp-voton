@@ -53,15 +53,7 @@ function withinWindow(from: string | null, to: string | null) {
   return start <= end ? cur >= start && cur <= end : cur >= start || cur <= end;
 }
 
-function Blocked({
-  icon,
-  title,
-  body,
-}: {
-  icon: "time" | "lock";
-  title: string;
-  body: string;
-}) {
+function Blocked({ icon, title, body }: { icon: "time" | "lock"; title: string; body: string }) {
   const navigate = useNavigate();
   return (
     <div className="fixed inset-0 z-[80] grid place-items-center bg-background/95 p-6 backdrop-blur">
@@ -128,8 +120,7 @@ export function ChildGuard() {
 
   const alwaysOk = (controls.always_allowed_features ?? []).includes(feature ?? "");
 
-  const focusOn =
-    controls.focus_until && new Date(controls.focus_until).getTime() > Date.now();
+  const focusOn = controls.focus_until && new Date(controls.focus_until).getTime() > Date.now();
   if (focusOn) {
     const studyOk =
       controls.focus_scope === "study_only" && STUDY_PATHS.some((p) => path.startsWith(p));

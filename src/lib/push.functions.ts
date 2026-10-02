@@ -10,7 +10,13 @@ export const getVapidPublicKey = createServerFn({ method: "GET" }).handler(
 export const savePushSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
-    z.object({ endpoint: z.string().url().max(1000), p256dh: z.string().max(200), auth: z.string().max(100) }).parse(d),
+    z
+      .object({
+        endpoint: z.string().url().max(1000),
+        p256dh: z.string().max(200),
+        auth: z.string().max(100),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
@@ -24,7 +30,10 @@ export const removePushSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ endpoint: z.string().max(1000) }).parse(d))
   .handler(async ({ data, context }) => {
-    await context.supabase.from("push_subscriptions" as never).delete().eq("endpoint", data.endpoint);
+    await context.supabase
+      .from("push_subscriptions" as never)
+      .delete()
+      .eq("endpoint", data.endpoint);
     return { ok: true };
   });
 

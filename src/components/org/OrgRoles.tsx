@@ -48,7 +48,12 @@ export function OrgRoles({ orgId }: { orgId: string }) {
     ]);
     setRoles(r ?? []);
     setMembers(m ?? []);
-    setNames(await loadOrgProfiles(orgId, (m ?? []).map((x: any) => x.user_id)));
+    setNames(
+      await loadOrgProfiles(
+        orgId,
+        (m ?? []).map((x: any) => x.user_id),
+      ),
+    );
   };
   useEffect(() => {
     load();
@@ -145,12 +150,12 @@ export function OrgRoles({ orgId }: { orgId: string }) {
   };
 
   const perms: OrgRolePerms = draft?.permissions ?? {};
-  const setPerms = (p: OrgRolePerms) =>
-    setDraft({ ...draft, permissions: { ...perms, ...p } });
+  const setPerms = (p: OrgRolePerms) => setDraft({ ...draft, permissions: { ...perms, ...p } });
 
   const memberCount = useMemo(() => {
     const map: Record<string, number> = {};
-    for (const m of members) if (m.custom_role_id) map[m.custom_role_id] = (map[m.custom_role_id] ?? 0) + 1;
+    for (const m of members)
+      if (m.custom_role_id) map[m.custom_role_id] = (map[m.custom_role_id] ?? 0) + 1;
     return map;
   }, [members]);
 
@@ -161,7 +166,11 @@ export function OrgRoles({ orgId }: { orgId: string }) {
 
   return (
     <div className="mx-auto max-w-6xl p-4 sm:p-6 space-y-4">
-      <Link to="/organizations/$orgId" params={{ orgId }} className="text-sm underline text-muted-foreground">
+      <Link
+        to="/organizations/$orgId"
+        params={{ orgId }}
+        className="text-sm underline text-muted-foreground"
+      >
         ← 組織ホームへ
       </Link>
       <div className="flex flex-wrap items-center gap-2">
@@ -194,7 +203,10 @@ export function OrgRoles({ orgId }: { orgId: string }) {
                   selected === r.id ? "bg-primary/10" : ""
                 }`}
               >
-                <span className="h-3.5 w-3.5 rounded-full shrink-0" style={{ background: r.color }} />
+                <span
+                  className="h-3.5 w-3.5 rounded-full shrink-0"
+                  style={{ background: r.color }}
+                />
                 <span className="flex-1 min-w-0">
                   <span className="block font-bold text-sm truncate">{r.name}</span>
                   <span className="block text-[11px] text-muted-foreground">

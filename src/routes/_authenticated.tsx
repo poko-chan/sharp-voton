@@ -64,7 +64,15 @@ function AuthLayout() {
     if (!ok) navigate({ to: "/parent" });
   }, [accountKind, path, user, loading, navigate]);
   useEffect(() => {
-    if (loading || !user || isAdmin || !lowDataMode || accountKind === "parent" || accountKind === "org") return;
+    if (
+      loading ||
+      !user ||
+      isAdmin ||
+      !lowDataMode ||
+      accountKind === "parent" ||
+      accountKind === "org"
+    )
+      return;
     const allowed = ["/dashboard", "/study", "/timer", "/chat", "/settings", "/announcements"];
     const ok = allowed.some((p) => path === p || path.startsWith(p + "/"));
     if (!ok) navigate({ to: "/dashboard" });

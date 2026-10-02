@@ -9,7 +9,9 @@ self.addEventListener("push", (e) => {
         badge: "/icon-192.png",
         data: { url: "/notifications" },
       }),
-      self.navigator && self.navigator.setAppBadge ? self.navigator.setAppBadge().catch(() => {}) : null,
+      self.navigator && self.navigator.setAppBadge
+        ? self.navigator.setAppBadge().catch(() => {})
+        : null,
     ]),
   );
 });

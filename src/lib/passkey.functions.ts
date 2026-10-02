@@ -15,8 +15,15 @@ async function admin() {
 
 async function takeChallenge(id: string) {
   const db = await admin();
-  const { data } = await db.from("webauthn_challenges" as never).select("*").eq("id", id).maybeSingle();
-  await db.from("webauthn_challenges" as never).delete().eq("id", id);
+  const { data } = await db
+    .from("webauthn_challenges" as never)
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  await db
+    .from("webauthn_challenges" as never)
+    .delete()
+    .eq("id", id);
   const row = data as { challenge: string; user_id: string | null; created_at: string } | null;
   if (!row || Date.now() - new Date(row.created_at).getTime() > 5 * 60_000)
     throw new Error("時間切れです。もう一度お試しください");
@@ -48,13 +55,18 @@ export const passkeyRegisterOptions = createServerFn({ method: "POST" })
       .insert({ user_id: context.userId, challenge: options.challenge } as never)
       .select("id")
       .single();
-    return { options: JSON.parse(JSON.stringify(options)), challengeId: (ch as unknown as { id: string }).id };
+    return {
+      options: JSON.parse(JSON.stringify(options)),
+      challengeId: (ch as unknown as { id: string }).id,
+    };
   });
 
 export const passkeyRegisterVerify = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
-    z.object({ challengeId: z.string().uuid(), response: z.any(), label: z.string().max(40) }).parse(d),
+    z
+      .object({ challengeId: z.string().uuid(), response: z.any(), label: z.string().max(40) })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { verifyRegistrationResponse } = await import("@simplewebauthn/server");
@@ -93,7 +105,10 @@ export const passkeyLoginOptions = createServerFn({ method: "POST" }).handler(as
     .insert({ challenge: options.challenge } as never)
     .select("id")
     .single();
-  return { options: JSON.parse(JSON.stringify(options)), challengeId: (ch as unknown as { id: string }).id };
+  return {
+    options: JSON.parse(JSON.stringify(options)),
+    challengeId: (ch as unknown as { id: string }).id,
+  };
 });
 
 export const passkeyLoginVerify = createServerFn({ method: "POST" })
@@ -104,10 +119,18 @@ export const passkeyLoginVerify = createServerFn({ method: "POST" })
     const ch = await takeChallenge(data.challengeId);
     const db = await admin();
     const credId = String(data.response?.id ?? "");
-    const { data: row } = await db.from("user_passkeys" as never).select("*").eq("id", credId).maybeSingle();
-    const cred = row as
-      | { id: string; user_id: string; public_key: string; counter: number; transports: string[] | null }
-      | null;
+    const { data: row } = await db
+      .from("user_passkeys" as never)
+      .select("*")
+      .eq("id", credId)
+      .maybeSingle();
+    const cred = row as {
+      id: string;
+      user_id: string;
+      public_key: string;
+      counter: number;
+      transports: string[] | null;
+    } | null;
     if (!cred) return { error: "このパスキーは登録されていません" };
     const { origin, rpID } = rp();
     const v = await verifyAuthenticationResponse({
@@ -150,6 +173,10 @@ export const deletePasskey = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ id: z.string().max(512) }).parse(d))
   .handler(async ({ data, context }) => {
-    await context.supabase.from("user_passkeys" as never).delete().eq("id", data.id).eq("user_id", context.userId);
+    await context.supabase
+      .from("user_passkeys" as never)
+      .delete()
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
     return { ok: true };
   });

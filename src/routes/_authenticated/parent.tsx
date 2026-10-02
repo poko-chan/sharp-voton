@@ -78,7 +78,7 @@ function ParentPage() {
     const [cs, ov] = await Promise.all([list(), overview()]);
     setChildren(cs as any[]);
     setRows(ov as any[]);
-    setSelected((prev) => prev ?? ((cs as any[])[0]?.id ?? null));
+    setSelected((prev) => prev ?? (cs as any[])[0]?.id ?? null);
   }, [list, overview]);
 
   useEffect(() => {
@@ -274,7 +274,8 @@ function ChildWorkspace({ child, row, onChange, unlink }: any) {
           {focusOn && (
             <Badge className="gap-1">
               <Timer className="h-3 w-3" />
-              {focusUntil?.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}まで集中
+              {focusUntil?.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}
+              まで集中
             </Badge>
           )}
           <Button size="sm" variant="destructive" onClick={() => doLock(30)}>

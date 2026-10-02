@@ -8,10 +8,27 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { unreadCount as nUnreadCount, listNotifications, markNotificationRead } from "@/lib/notifications.functions";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  unreadCount as nUnreadCount,
+  listNotifications,
+  markNotificationRead,
+} from "@/lib/notifications.functions";
 import { useQueryClient } from "@tanstack/react-query";
 import { RadialGauge, PowerBar } from "@/components/RadialGauge";
 import {
@@ -181,7 +198,12 @@ function LowDataDashboard() {
               <XAxis dataKey="date" fontSize={11} />
               <YAxis unit="分" fontSize={11} />
               <Tooltip formatter={(value: number) => `${value} 分`} />
-              <Bar dataKey="minutes" name="学習時間" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              <Bar
+                dataKey="minutes"
+                name="学習時間"
+                fill="hsl(var(--primary))"
+                radius={[4, 4, 0, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -207,12 +229,18 @@ function FullDashboard() {
     const [logsRes, goalsAllRes, annRes, gradesRes, subsRes, examsRes] = await Promise.all([
       supabase
         .from("study_logs")
-        .select("id, date, duration_minutes, subject_id, start_time, content, materials(title), subjects(name, color)")
+        .select(
+          "id, date, duration_minutes, subject_id, start_time, content, materials(title), subjects(name, color)",
+        )
 
         .eq("user_id", uid)
         .order("date", { ascending: false })
         .limit(2000),
-      supabase.from("goals").select("*").eq("user_id", uid).order("created_at", { ascending: false }),
+      supabase
+        .from("goals")
+        .select("*")
+        .eq("user_id", uid)
+        .order("created_at", { ascending: false }),
       supabase
         .from("announcements")
         .select("id, title, body, publish_at, tag")
@@ -235,7 +263,9 @@ function FullDashboard() {
 
     const today = localDateStr();
     const totalMin = logs.reduce((s, l) => s + (l.duration_minutes ?? 0), 0);
-    const todayMin = logs.filter((l) => l.date === today).reduce((s, l) => s + (l.duration_minutes ?? 0), 0);
+    const todayMin = logs
+      .filter((l) => l.date === today)
+      .reduce((s, l) => s + (l.duration_minutes ?? 0), 0);
     const dayMap = new Map<string, number>();
     logs.forEach((l) => dayMap.set(l.date, (dayMap.get(l.date) ?? 0) + (l.duration_minutes ?? 0)));
     const base = new Date();
@@ -338,7 +368,9 @@ function FullDashboard() {
 
     const grades = gradesRes.data ?? [];
     const gradingCount = grades.length;
-    const gradingAvg = gradingCount ? Math.round(grades.reduce((s, g) => s + (g.score ?? 0), 0) / gradingCount) : 0;
+    const gradingAvg = gradingCount
+      ? Math.round(grades.reduce((s, g) => s + (g.score ?? 0), 0) / gradingCount)
+      : 0;
     const gradingPass = grades.filter((g) => g.correct).length;
     const activeDays = Array.from(dayMap.values()).filter((v) => v > 0).length;
     const avgPerActiveDay = activeDays ? Math.round(totalMin / activeDays) : 0;
@@ -445,7 +477,8 @@ function FullDashboard() {
     : 999;
   const lvl = levelInfo(stats.totalMin + classroomXp, daysSinceLast);
   const peakLabel = stats.peakHour >= 0 ? `${stats.peakHour}時台` : "—";
-  const goalRate = stats.goalsTotal > 0 ? Math.round((stats.goalsDone / stats.goalsTotal) * 100) : 0;
+  const goalRate =
+    stats.goalsTotal > 0 ? Math.round((stats.goalsDone / stats.goalsTotal) * 100) : 0;
 
   const dailyPct = dailyGoal > 0 ? Math.min(100, (stats.todayMin / dailyGoal) * 100) : 0;
   const weeklyTarget = weeklyGoal;
@@ -474,7 +507,12 @@ function FullDashboard() {
     const nextExam = exams[0];
     if (nextExam) {
       const days = nextExam.start_date
-        ? Math.max(0, Math.ceil((new Date(nextExam.start_date + "T00:00:00").getTime() - Date.now()) / 86400000))
+        ? Math.max(
+            0,
+            Math.ceil(
+              (new Date(nextExam.start_date + "T00:00:00").getTime() - Date.now()) / 86400000,
+            ),
+          )
         : null;
       return {
         title: nextExam.name,
@@ -706,7 +744,9 @@ function FullDashboard() {
           <div className="absolute -right-8 -top-10 h-32 w-32 rounded-full bg-primary/10 blur-2xl" />
           <div className="relative flex h-full flex-col justify-between gap-5">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary/80">NEXT MOVE</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary/80">
+                NEXT MOVE
+              </p>
               <h2 className="mt-1 flex items-center gap-2 text-lg font-bold">
                 <Sparkles className="h-5 w-5 text-primary" />
                 今日の次の一手
@@ -799,8 +839,18 @@ function FullDashboard() {
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={weekly}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="day" stroke="var(--muted-foreground)" tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--muted-foreground)" tickLine={false} axisLine={false} width={36} />
+                <XAxis
+                  dataKey="day"
+                  stroke="var(--muted-foreground)"
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  stroke="var(--muted-foreground)"
+                  tickLine={false}
+                  axisLine={false}
+                  width={36}
+                />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v}分`, "学習"]} />
                 <Bar dataKey="minutes" fill="oklch(0.65 0.19 150)" radius={[10, 10, 0, 0]} />
               </BarChart>
@@ -816,8 +866,19 @@ function FullDashboard() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="date" stroke="var(--muted-foreground)" interval={4} tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--muted-foreground)" tickLine={false} axisLine={false} width={36} />
+                <XAxis
+                  dataKey="date"
+                  stroke="var(--muted-foreground)"
+                  interval={4}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  stroke="var(--muted-foreground)"
+                  tickLine={false}
+                  axisLine={false}
+                  width={36}
+                />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v}分`, "学習"]} />
                 <Area
                   type="monotone"
@@ -833,13 +894,25 @@ function FullDashboard() {
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={byDow}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="day" stroke="var(--muted-foreground)" tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--muted-foreground)" tickLine={false} axisLine={false} width={36} />
+                <XAxis
+                  dataKey="day"
+                  stroke="var(--muted-foreground)"
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  stroke="var(--muted-foreground)"
+                  tickLine={false}
+                  axisLine={false}
+                  width={36}
+                />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v}分`, "平均"]} />
                 <Bar dataKey="minutes" fill="oklch(0.68 0.17 200)" radius={[10, 10, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
-            <p className="text-[11px] text-muted-foreground mt-2">直近12週間の曜日ごとの平均学習時間</p>
+            <p className="text-[11px] text-muted-foreground mt-2">
+              直近12週間の曜日ごとの平均学習時間
+            </p>
           </TabsContent>
           <TabsContent value="hour">
             <ResponsiveContainer width="100%" height={260}>
@@ -853,7 +926,12 @@ function FullDashboard() {
                   tickLine={false}
                   axisLine={false}
                 />
-                <YAxis stroke="var(--muted-foreground)" tickLine={false} axisLine={false} width={36} />
+                <YAxis
+                  stroke="var(--muted-foreground)"
+                  tickLine={false}
+                  axisLine={false}
+                  width={36}
+                />
                 <Tooltip
                   contentStyle={tooltipStyle}
                   formatter={(v: any) => [`${v}分`, "学習"]}
@@ -877,7 +955,11 @@ function FullDashboard() {
             <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
               少ない
               {[0, 0.25, 0.5, 0.75, 1].map((i) => (
-                <span key={i} className="h-3 w-3 rounded-[3px]" style={{ background: heatColor(i * 120) }} />
+                <span
+                  key={i}
+                  className="h-3 w-3 rounded-[3px]"
+                  style={{ background: heatColor(i * 120) }}
+                />
               ))}
               多い
             </div>
@@ -896,11 +978,16 @@ function FullDashboard() {
             </div>
             <div className="rounded-xl bg-muted/60 px-3 py-2">
               <div className="text-[10px] text-muted-foreground">最多の日</div>
-              <div className="mt-0.5 truncate text-lg font-bold tabular-nums">{fmt(heatPeak.minutes)}</div>
+              <div className="mt-0.5 truncate text-lg font-bold tabular-nums">
+                {fmt(heatPeak.minutes)}
+              </div>
             </div>
           </div>
           <div className="overflow-x-auto pb-1">
-            <div className="grid grid-flow-col grid-rows-7 gap-[3px] w-max" aria-label="過去12週間の学習量">
+            <div
+              className="grid grid-flow-col grid-rows-7 gap-[3px] w-max"
+              aria-label="過去12週間の学習量"
+            >
               {heatmap.map((h) => (
                 <div
                   key={h.date}
@@ -961,7 +1048,10 @@ function FullDashboard() {
                       <Cell key={i} fill={s.color} stroke="none" />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: any, n: any) => [`${v}分`, n]} />
+                  <Tooltip
+                    contentStyle={tooltipStyle}
+                    formatter={(v: any, n: any) => [`${v}分`, n]}
+                  />
                 </PieChart>
               </ResponsiveContainer>
               <div className="space-y-2.5 mt-3">
@@ -977,7 +1067,13 @@ function FullDashboard() {
                           {fmt(s.value)}・{Math.round(pct)}%
                         </span>
                       </div>
-                      <PowerBar value={pct} height={8} striped={false} from={s.color} to={s.color} />
+                      <PowerBar
+                        value={pct}
+                        height={8}
+                        striped={false}
+                        from={s.color}
+                        to={s.color}
+                      />
                     </div>
                   );
                 })}
@@ -1012,11 +1108,20 @@ function FullDashboard() {
             <div className="space-y-3">
               {exams.map((e) => {
                 const days = e.start_date
-                  ? Math.max(0, Math.ceil((new Date(e.start_date + "T00:00:00").getTime() - Date.now()) / 86400000))
+                  ? Math.max(
+                      0,
+                      Math.ceil(
+                        (new Date(e.start_date + "T00:00:00").getTime() - Date.now()) / 86400000,
+                      ),
+                    )
                   : null;
-                const urgency = days === null ? "slate" : days <= 3 ? "rose" : days <= 14 ? "amber" : "primary";
+                const urgency =
+                  days === null ? "slate" : days <= 3 ? "rose" : days <= 14 ? "amber" : "primary";
                 return (
-                  <div key={e.id} className="flex items-center gap-3 p-3 rounded-xl border bg-muted/20">
+                  <div
+                    key={e.id}
+                    className="flex items-center gap-3 p-3 rounded-xl border bg-muted/20"
+                  >
                     <div
                       className={`h-12 w-12 rounded-xl grid place-items-center shrink-0 font-extrabold tabular-nums ${
                         urgency === "rose"
@@ -1064,7 +1169,9 @@ function FullDashboard() {
                     <span className="font-semibold truncate pr-2">
                       {i + 1}. {m.name}
                     </span>
-                    <span className="text-muted-foreground tabular-nums shrink-0">{fmt(m.value)}</span>
+                    <span className="text-muted-foreground tabular-nums shrink-0">
+                      {fmt(m.value)}
+                    </span>
                   </div>
                   <PowerBar
                     value={(m.value / maxMaterialMin) * 100}
@@ -1104,12 +1211,17 @@ function FullDashboard() {
           ) : (
             <div className="space-y-4">
               {goals.slice(0, 4).map((g) => {
-                const pct = g.target_minutes > 0 ? Math.min(100, (g.progress_minutes / g.target_minutes) * 100) : 0;
+                const pct =
+                  g.target_minutes > 0
+                    ? Math.min(100, (g.progress_minutes / g.target_minutes) * 100)
+                    : 0;
                 return (
                   <div key={g.id}>
                     <div className="flex justify-between text-sm mb-1.5">
                       <span className="font-semibold truncate pr-2">{g.title}</span>
-                      <span className="text-xs text-muted-foreground shrink-0 tabular-nums">{Math.round(pct)}%</span>
+                      <span className="text-xs text-muted-foreground shrink-0 tabular-nums">
+                        {Math.round(pct)}%
+                      </span>
                     </div>
                     <PowerBar value={pct} height={12} />
                     <div className="text-[10px] text-muted-foreground mt-1">
@@ -1146,14 +1258,18 @@ function FullDashboard() {
                     style={{ background: r.subjects?.color ?? "#94a3b8" }}
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium truncate">{r.subjects?.name ?? "その他"}</div>
+                    <div className="text-sm font-medium truncate">
+                      {r.subjects?.name ?? "その他"}
+                    </div>
                     <div className="text-[10px] text-muted-foreground truncate">
                       {r.date}
                       {r.materials?.title ? ` ・ 📗${r.materials.title}` : ""}
                       {r.content ? ` ・ ${r.content}` : ""}
                     </div>
                   </div>
-                  <div className="text-sm font-bold tabular-nums shrink-0">{fmt(r.duration_minutes ?? 0)}</div>
+                  <div className="text-sm font-bold tabular-nums shrink-0">
+                    {fmt(r.duration_minutes ?? 0)}
+                  </div>
                 </div>
               ))}
             </div>
@@ -1180,7 +1296,9 @@ function FullDashboard() {
                 <div key={a.id} className="p-3 rounded-xl border bg-muted/20">
                   <div className="flex justify-between items-baseline gap-2 flex-wrap">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded border shrink-0 ${t.className}`}>
+                      <span
+                        className={`text-[10px] px-1.5 py-0.5 rounded border shrink-0 ${t.className}`}
+                      >
                         {t.label}
                       </span>
                       <p className="font-medium text-sm truncate">{a.title}</p>
@@ -1189,7 +1307,9 @@ function FullDashboard() {
                       {new Date(a.publish_at).toLocaleString("ja-JP")}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2 mt-1 whitespace-pre-wrap">{a.body}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-2 mt-1 whitespace-pre-wrap">
+                    {a.body}
+                  </p>
                 </div>
               );
             })}
@@ -1307,7 +1427,12 @@ function LearningPath({
     { label: "選択", detail: "今日を決める", icon: Target, done: todayPct > 0 },
     { label: "集中", detail: "深く取り組む", icon: Timer, done: todayPct >= 25 },
     { label: "定着", detail: "思い出して解く", icon: Brain, done: gradingCount > 0 },
-    { label: "振り返り", detail: "次へつなげる", icon: CheckCircle2, done: todayPct >= 100 && hasLogs },
+    {
+      label: "振り返り",
+      detail: "次へつなげる",
+      icon: CheckCircle2,
+      done: todayPct >= 100 && hasLogs,
+    },
   ];
   const completed = steps.filter((step) => step.done).length;
   const progress = Math.max(4, (completed / steps.length) * 100);
@@ -1348,7 +1473,9 @@ function LearningPath({
               >
                 {step.label}
               </span>
-              <span className="hidden text-[9px] text-muted-foreground md:block">{step.detail}</span>
+              <span className="hidden text-[9px] text-muted-foreground md:block">
+                {step.detail}
+              </span>
             </div>
           );
         })}
@@ -1409,7 +1536,9 @@ function QuickLogCard({ subjects }: { subjects: { id: string; name: string; colo
     <Card className="p-5 liquid-card border-emerald-500/20">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-600">QUICK LOG</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-600">
+            QUICK LOG
+          </p>
           <h2 className="mt-1 flex items-center gap-2 text-lg font-bold">
             <BookOpen className="h-5 w-5 text-emerald-600" />
             学習をクイック記録
@@ -1428,7 +1557,10 @@ function QuickLogCard({ subjects }: { subjects: { id: string; name: string; colo
             {subjects.map((subject) => (
               <SelectItem key={subject.id} value={subject.id}>
                 <span className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full" style={{ background: subject.color ?? "#94a3b8" }} />
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ background: subject.color ?? "#94a3b8" }}
+                  />
                   {subject.name}
                 </span>
               </SelectItem>
@@ -1444,7 +1576,9 @@ function QuickLogCard({ subjects }: { subjects: { id: string; name: string; colo
             value={duration}
             onChange={(event) => setDuration(Number(event.target.value))}
           />
-          <span className="pointer-events-none absolute right-3 top-2.5 text-xs text-muted-foreground">分</span>
+          <span className="pointer-events-none absolute right-3 top-2.5 text-xs text-muted-foreground">
+            分
+          </span>
         </div>
       </div>
       <Textarea
@@ -1493,7 +1627,12 @@ function DailyGoalDialog({ value, onChange }: { value: number; onChange: (v: num
           </div>
           <div className="flex gap-2 flex-wrap">
             {[30, 60, 90, 120, 180, 240].map((m) => (
-              <Button key={m} size="sm" variant={draft === m ? "default" : "outline"} onClick={() => setDraft(m)}>
+              <Button
+                key={m}
+                size="sm"
+                variant={draft === m ? "default" : "outline"}
+                onClick={() => setDraft(m)}
+              >
                 {fmt(m)}
               </Button>
             ))}
@@ -1551,7 +1690,12 @@ function WeeklyGoalDialog({ value, onChange }: { value: number; onChange: (v: nu
           </div>
           <div className="flex flex-wrap gap-2">
             {[300, 420, 600, 840, 1200, 1800].map((m) => (
-              <Button key={m} size="sm" variant={draft === m ? "default" : "outline"} onClick={() => setDraft(m)}>
+              <Button
+                key={m}
+                size="sm"
+                variant={draft === m ? "default" : "outline"}
+                onClick={() => setDraft(m)}
+              >
                 {fmt(m)}
               </Button>
             ))}
@@ -1587,7 +1731,9 @@ function StatCard({ icon: Icon, label, value, sub, accent }: any) {
           <Icon className="h-5 w-5" />
         </div>
         <div className="min-w-0">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide truncate">{label}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wide truncate">
+            {label}
+          </p>
           <p className="text-xl font-extrabold leading-tight tabular-nums">{value}</p>
           {sub && <p className="text-[10px] mt-0.5 text-muted-foreground">{sub}</p>}
         </div>
@@ -1706,7 +1852,10 @@ function RecentNotifications() {
       ) : (
         <div className="divide-y">
           {recent.map((n: any) => (
-            <div key={n.id} className={`py-2 flex items-start gap-2 ${n.read_at ? "opacity-60" : ""}`}>
+            <div
+              key={n.id}
+              className={`py-2 flex items-start gap-2 ${n.read_at ? "opacity-60" : ""}`}
+            >
               <span
                 className={`mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 ${n.read_at ? "bg-muted-foreground/40" : "bg-primary"}`}
               />

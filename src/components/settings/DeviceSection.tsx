@@ -28,7 +28,10 @@ export function DeviceSection() {
   const [pushOn, setPushOn] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const reload = () => listMyPasskeys().then(setKeys).catch(() => {});
+  const reload = () =>
+    listMyPasskeys()
+      .then(setKeys)
+      .catch(() => {});
   useEffect(() => {
     void reload();
     if ("serviceWorker" in navigator)
@@ -71,12 +74,18 @@ export function DeviceSection() {
   const enablePush = () =>
     run(async () => {
       if (!("serviceWorker" in navigator) || !("PushManager" in window))
-        throw new Error("この端末は通知に対応していません（iPhoneはホーム画面に追加すると使えます）");
-      if ((await Notification.requestPermission()) !== "granted") throw new Error("通知が許可されませんでした");
+        throw new Error(
+          "この端末は通知に対応していません（iPhoneはホーム画面に追加すると使えます）",
+        );
+      if ((await Notification.requestPermission()) !== "granted")
+        throw new Error("通知が許可されませんでした");
       const reg = await swReg();
       await navigator.serviceWorker.ready;
       const key = await getVapidPublicKey();
-      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: toU8(key) });
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: toU8(key),
+      });
       const j = sub.toJSON();
       await savePushSubscription({
         data: { endpoint: sub.endpoint, p256dh: j.keys?.p256dh ?? "", auth: j.keys?.auth ?? "" },
@@ -100,10 +109,14 @@ export function DeviceSection() {
       <Card className="space-y-3 p-5">
         <h2 className="font-bold">パスキー（顔・指紋でログイン）</h2>
         <p className="text-sm text-muted-foreground">
-          登録すると、ログイン画面の「パスキーでログイン」から Face ID / Touch ID / Windows Hello でパスワードなしで入れます。
+          登録すると、ログイン画面の「パスキーでログイン」から Face ID / Touch ID / Windows Hello
+          でパスワードなしで入れます。
         </p>
         {keys.map((k) => (
-          <div key={k.id} className="flex items-center justify-between rounded-lg border p-2 text-sm">
+          <div
+            key={k.id}
+            className="flex items-center justify-between rounded-lg border p-2 text-sm"
+          >
             <span>
               {k.label ?? "端末"}（{new Date(k.created_at).toLocaleDateString("ja-JP")}）
             </span>
@@ -111,7 +124,12 @@ export function DeviceSection() {
               size="sm"
               variant="ghost"
               disabled={busy}
-              onClick={() => run(async () => { await deletePasskey({ data: { id: k.id } }); await reload(); }, "削除しました")}
+              onClick={() =>
+                run(async () => {
+                  await deletePasskey({ data: { id: k.id } });
+                  await reload();
+                }, "削除しました")
+              }
             >
               削除
             </Button>
@@ -133,7 +151,10 @@ export function DeviceSection() {
               <Button variant="outline" disabled={busy} onClick={disablePush}>
                 通知をオフ
               </Button>
-              <Button disabled={busy} onClick={() => run(() => sendTestPush(), "テスト通知を送りました")}>
+              <Button
+                disabled={busy}
+                onClick={() => run(() => sendTestPush(), "テスト通知を送りました")}
+              >
                 テスト通知
               </Button>
             </>

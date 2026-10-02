@@ -114,10 +114,7 @@ export function OrgSetupWizard({ orgId, onDone }: { orgId: string; onDone?: () =
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <span
-                        className="h-2.5 w-2.5 rounded-full"
-                        style={{ background: a.color }}
-                      />
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ background: a.color }} />
                       <span className="text-sm font-bold flex-1">{a.label}</span>
                       {on && <Check className="h-4 w-4 text-primary" />}
                     </div>

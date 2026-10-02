@@ -270,10 +270,7 @@ export const unlinkLine = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin
-      .from("profiles")
-      .update({ line_user_id: null })
-      .eq("id", context.userId);
+    await supabaseAdmin.from("profiles").update({ line_user_id: null }).eq("id", context.userId);
     return { ok: true };
   });
 

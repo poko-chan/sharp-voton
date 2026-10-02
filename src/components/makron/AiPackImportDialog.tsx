@@ -362,7 +362,7 @@ function buildPrompt(args: {
         ? '全問 type は "multi"（複数選択）。'
         : args.qType === "text"
           ? '全問 type は "text"（短答記述）。'
-          : 'type は下の【type一覧】から問題に合うものを幅広く混在させる。';
+          : "type は下の【type一覧】から問題に合うものを幅広く混在させる。";
 
   const schema =
     args.mode === "new"
@@ -426,7 +426,16 @@ ${schema}
 }
 
 const ALLOWED_TYPES = new Set([
-  "single", "multi", "text", "true_false", "tiles", "ordering", "matching", "fill_blank", "listen", "numeric",
+  "single",
+  "multi",
+  "text",
+  "true_false",
+  "tiles",
+  "ordering",
+  "matching",
+  "fill_blank",
+  "listen",
+  "numeric",
 ]);
 const USES_ACCEPTED = new Set(["text", "matching", "fill_blank", "listen", "numeric"]);
 const USES_CORRECT = new Set(["single", "multi", "true_false", "tiles", "ordering"]);

@@ -2,7 +2,6 @@ import { useI18n } from "@/lib/i18n";
 import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import { PublicFooter, PublicMobileNav } from "@/components/public/PublicShell";
 
-
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
@@ -122,36 +121,40 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
           <nav className="flex items-center gap-1.5 text-sm">
             <a
               href="#features"
-                className="hidden px-3 py-2 font-medium text-muted-foreground transition hover:text-foreground sm:inline-block"
+              className="hidden px-3 py-2 font-medium text-muted-foreground transition hover:text-foreground sm:inline-block"
             >
               {t("landing.features")}
             </a>
             <Link
               to="/all-services"
-                className="hidden px-3 py-2 font-medium text-muted-foreground transition hover:text-foreground sm:inline-block"
+              className="hidden px-3 py-2 font-medium text-muted-foreground transition hover:text-foreground sm:inline-block"
             >
               {t("landing.allServices")}
             </Link>
             <Link
               to="/for-schools"
-                className="hidden px-3 py-2 font-medium text-muted-foreground transition hover:text-foreground sm:inline-block"
+              className="hidden px-3 py-2 font-medium text-muted-foreground transition hover:text-foreground sm:inline-block"
             >
               {t("landing.forSchools")}
             </Link>
             <Link
               to="/guide"
-                className="hidden px-3 py-2 font-medium text-muted-foreground transition hover:text-foreground sm:inline-block"
+              className="hidden px-3 py-2 font-medium text-muted-foreground transition hover:text-foreground sm:inline-block"
             >
               {t("landing.guide")}
             </Link>
             <a
               href="#faq"
-                className="hidden px-3 py-2 font-medium text-muted-foreground transition hover:text-foreground sm:inline-block"
+              className="hidden px-3 py-2 font-medium text-muted-foreground transition hover:text-foreground sm:inline-block"
             >
               {t("landing.faq")}
             </a>
             <Button asChild size="sm" className="h-10 rounded-lg px-5 shadow-md">
-              {isAuthed ? <Link to="/dashboard">{t("landing.dashboard")}</Link> : <Link to="/login">{t("landing.start")}</Link>}
+              {isAuthed ? (
+                <Link to="/dashboard">{t("landing.dashboard")}</Link>
+              ) : (
+                <Link to="/login">{t("landing.start")}</Link>
+              )}
             </Button>
             <GoogleTranslateWidget />
             <PublicMobileNav includeFaq />
@@ -187,29 +190,54 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
         <section className="relative mx-auto max-w-6xl px-4 pb-16 pt-16 text-center sm:pb-24 sm:pt-24">
           <div aria-hidden className="landing-grid-fade absolute inset-x-4 top-0 -z-10 h-full" />
           <div className="landing-rise mx-auto max-w-4xl">
-            <div className="landing-kicker"><span className="h-2 w-2 rounded-full bg-signal" />Voton Study Sharp</div>
+            <div className="landing-kicker">
+              <span className="h-2 w-2 rounded-full bg-signal" />
+              Voton Study Sharp
+            </div>
             <h1 className="mt-7 font-display text-4xl font-bold leading-[1.14] sm:text-6xl lg:text-7xl">
-              学習のすべてを、<br /><span className="landing-title-accent">もっとスマートに。</span>
+              学習のすべてを、
+              <br />
+              <span className="landing-title-accent">もっとスマートに。</span>
             </h1>
             <p className="mx-auto mt-7 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
               記録、集中、演習、AI、計画をひとつに。Study#は、毎日の学習を整理し、次にやるべきことへ迷わず進める総合学習プラットフォームです。
             </p>
             <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
               <Button asChild size="lg" className="h-12 rounded-lg px-8 text-base shadow-lg">
-                {isAuthed ? <Link to="/dashboard">{t("landing.dashboard")} <ArrowRight /></Link> : <Link to="/login">{t("landing.start")} <ArrowRight /></Link>}
+                {isAuthed ? (
+                  <Link to="/dashboard">
+                    {t("landing.dashboard")} <ArrowRight />
+                  </Link>
+                ) : (
+                  <Link to="/login">
+                    {t("landing.start")} <ArrowRight />
+                  </Link>
+                )}
               </Button>
-              <Button asChild variant="outline" size="lg" className="h-12 rounded-lg px-8 text-base">
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="h-12 rounded-lg px-8 text-base"
+              >
                 <Link to="/ai-vision">これからのAI</Link>
               </Button>
               <Button asChild variant="ghost" size="lg" className="h-12 rounded-lg px-8 text-base">
                 <Link to="/all-services">サービス詳細を見る</Link>
               </Button>
-
             </div>
           </div>
           <dl className="landing-rise mx-auto mt-14 grid max-w-4xl grid-cols-2 border-y border-border/70 sm:grid-cols-4">
-            {[[`${SERVICE_COUNT}+`, "搭載機能"], ["0円", "主要機能は無料"], ["24h", "AIチャット"], ["4段階", "組織の役割管理"]].map(([v, l]) => (
-              <div key={l} className="px-3 py-5 sm:border-l sm:first:border-l-0"><dt className="font-display text-2xl font-bold text-primary">{v}</dt><dd className="mt-1 text-xs text-muted-foreground">{l}</dd></div>
+            {[
+              [`${SERVICE_COUNT}+`, "搭載機能"],
+              ["0円", "主要機能は無料"],
+              ["24h", "AIチャット"],
+              ["4段階", "組織の役割管理"],
+            ].map(([v, l]) => (
+              <div key={l} className="px-3 py-5 sm:border-l sm:first:border-l-0">
+                <dt className="font-display text-2xl font-bold text-primary">{v}</dt>
+                <dd className="mt-1 text-xs text-muted-foreground">{l}</dd>
+              </div>
             ))}
           </dl>
         </section>
@@ -219,7 +247,8 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
           className="mx-auto max-w-6xl px-4 pb-16 sm:pb-24"
         >
           <div className="grid gap-4 sm:grid-cols-3">
-            <article className="landing-value p-6"><BookOpenCheck className="mb-6 h-7 w-7 text-primary" aria-hidden />
+            <article className="landing-value p-6">
+              <BookOpenCheck className="mb-6 h-7 w-7 text-primary" aria-hidden />
               <h2 id="service-message" className="font-display text-lg font-black sm:text-xl">
                 学習のすべてをひとつに
               </h2>
@@ -227,13 +256,15 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
                 記録、集中、演習、AI、計画をVoton Study Sharpに集約します。
               </p>
             </article>
-            <article className="landing-value p-6"><Sparkles className="mb-6 h-7 w-7 text-accent-foreground" aria-hidden />
+            <article className="landing-value p-6">
+              <Sparkles className="mb-6 h-7 w-7 text-accent-foreground" aria-hidden />
               <h2 className="font-display text-lg font-black sm:text-xl">学習を賢く、楽しく</h2>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 続けやすい仕組みと見える記録で、毎日の学習を前に進めます。
               </p>
             </article>
-            <article className="landing-value p-6"><BarChart3 className="mb-6 h-7 w-7 text-signal" aria-hidden />
+            <article className="landing-value p-6">
+              <BarChart3 className="mb-6 h-7 w-7 text-signal" aria-hidden />
               <h2 className="font-display text-lg font-black sm:text-xl">
                 総合学習プラットフォーム
               </h2>
@@ -247,41 +278,53 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
         <section id="ai-trial" className="mx-auto max-w-3xl scroll-mt-20 px-4 pb-16 sm:pb-24">
           <p className="section-eyebrow">Vision</p>
           <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">
-            ひとつの情報になるために、<span className="text-gradient">ひとつのプラットフォーム</span>になる。
+            ひとつの情報になるために、
+            <span className="text-gradient">ひとつのプラットフォーム</span>になる。
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            AI機能は現在、提供方式を検討中のため一時停止しています。今後、Study# に蓄積された学習記録・演習・教材・目標・連絡のすべてをAIが横断して分析できるようにします。
+            AI機能は現在、提供方式を検討中のため一時停止しています。今後、Study#
+            に蓄積された学習記録・演習・教材・目標・連絡のすべてをAIが横断して分析できるようにします。
           </p>
           <div className="mt-6">
             <Button asChild size="lg" className="rounded-lg">
-              <Link to="/ai-vision">これからのAIを見る <ArrowRight /></Link>
+              <Link to="/ai-vision">
+                これからのAIを見る <ArrowRight />
+              </Link>
             </Button>
           </div>
         </section>
 
-
-
         {/* Before / After */}
-        <section className="border-y border-border/60 bg-muted/30"><div className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
-          <p className="section-eyebrow">Before / After</p>
-          <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">
-            いつもの勉強が、こう変わる
-          </h2>
-          <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
-            新しいことを増やすのではなく、いま手作業でやっていることを置き換えます。
-          </p>
-          <div className="mt-10 grid gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-2 lg:grid-cols-3">
-            {REPLACEMENTS.map((r) => (
-              <article key={r.before} className="group flex flex-col gap-3 bg-card p-6 transition-colors hover:bg-secondary">
-                <p className="text-sm text-muted-foreground line-through decoration-destructive/50">
-                  {r.before}
-                </p>
-                <p className="flex gap-2 text-sm font-semibold leading-relaxed"><ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{r.after}</p>
-                <p className="mt-auto flex items-center gap-2 pt-3 text-xs font-semibold text-primary"><Check className="h-3.5 w-3.5" />{r.gain}
-                </p>
-              </article>
-            ))}
-          </div></div>
+        <section className="border-y border-border/60 bg-muted/30">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
+            <p className="section-eyebrow">Before / After</p>
+            <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">
+              いつもの勉強が、こう変わる
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
+              新しいことを増やすのではなく、いま手作業でやっていることを置き換えます。
+            </p>
+            <div className="mt-10 grid gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-2 lg:grid-cols-3">
+              {REPLACEMENTS.map((r) => (
+                <article
+                  key={r.before}
+                  className="group flex flex-col gap-3 bg-card p-6 transition-colors hover:bg-secondary"
+                >
+                  <p className="text-sm text-muted-foreground line-through decoration-destructive/50">
+                    {r.before}
+                  </p>
+                  <p className="flex gap-2 text-sm font-semibold leading-relaxed">
+                    <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    {r.after}
+                  </p>
+                  <p className="mt-auto flex items-center gap-2 pt-3 text-xs font-semibold text-primary">
+                    <Check className="h-3.5 w-3.5" />
+                    {r.gain}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* Why it works */}

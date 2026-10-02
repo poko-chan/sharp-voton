@@ -57,7 +57,11 @@ function QrLoginPage() {
             <p className="text-sm text-muted-foreground">
               ログインカードのQRをカメラで読み取るか、カードの文字を入力してください。
             </p>
-            <Input value={code} onChange={(e) => setCode(e.target.value.trim())} placeholder="ログインコード" />
+            <Input
+              value={code}
+              onChange={(e) => setCode(e.target.value.trim())}
+              placeholder="ログインコード"
+            />
             <Button className="w-full" disabled={code.length < 10} onClick={() => submit(code)}>
               ログイン
             </Button>
@@ -76,7 +80,10 @@ export const Route = createFileRoute("/qr-login")({
   head: () => ({
     meta: [
       { title: "カードでログイン｜Study#" },
-      { name: "description", content: "保護者が発行したQRログインカードでStudy#にログインします。" },
+      {
+        name: "description",
+        content: "保護者が発行したQRログインカードでStudy#にログインします。",
+      },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),

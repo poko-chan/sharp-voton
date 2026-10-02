@@ -29,7 +29,12 @@ import {
   type WebLlmTag,
 } from "@/lib/web-llm";
 import { ollamaModels, ollamaDiagnostics, createOllamaSession } from "@/lib/ollama";
-import { CLOUD_MODELS, DEFAULT_CLOUD_MODEL, SPEED_LABELS, findCloudModel } from "@/lib/cloud-models";
+import {
+  CLOUD_MODELS,
+  DEFAULT_CLOUD_MODEL,
+  SPEED_LABELS,
+  findCloudModel,
+} from "@/lib/cloud-models";
 import { createCloudSession } from "@/lib/cloud-ai";
 import {
   aiRunStart,

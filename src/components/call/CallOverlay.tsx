@@ -131,7 +131,11 @@ export function CallOverlay() {
             <span
               className="flex items-center gap-1"
               title={
-                call.quality === "good" ? "接続: 良好" : call.quality === "fair" ? "接続: 普通" : "接続: 不安定"
+                call.quality === "good"
+                  ? "接続: 良好"
+                  : call.quality === "fair"
+                    ? "接続: 普通"
+                    : "接続: 不安定"
               }
             >
               {call.quality === "good" ? (
@@ -187,7 +191,9 @@ export function CallOverlay() {
           playsInline
           muted
           className={`absolute w-24 rounded-lg border border-white/20 sm:w-36 ${
-            call.remoteScreen || call.localScreen ? "bottom-4 right-40 sm:right-52" : "bottom-4 right-4 w-32 sm:w-44"
+            call.remoteScreen || call.localScreen
+              ? "bottom-4 right-40 sm:right-52"
+              : "bottom-4 right-4 w-32 sm:w-44"
           } ${isVideo ? "" : "hidden"}`}
         />
         {(call.remoteScreen || call.localScreen) && (

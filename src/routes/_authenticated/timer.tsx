@@ -177,7 +177,9 @@ function TodaySummary() {
         .lte("date", today);
       const rows = data ?? [];
       const todayRows = rows.filter((r: any) => r.date === today);
-      const done = new Set(rows.filter((r: any) => (r.duration_minutes ?? 0) > 0).map((r: any) => r.date));
+      const done = new Set(
+        rows.filter((r: any) => (r.duration_minutes ?? 0) > 0).map((r: any) => r.date),
+      );
       let streak = 0;
       for (let i = 0; i < 7; i++) {
         const d = addDaysStr(new Date(), -i);
@@ -264,7 +266,11 @@ function TimerPage() {
       if (t && ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName)) return;
       if (e.code === "Space" && state) {
         e.preventDefault();
-        state.running ? pause() : resume();
+        if (state.running) {
+          pause();
+        } else {
+          resume();
+        }
       }
       if (e.key.toLowerCase() === "f") setFocus((v) => !v);
       if (e.key === "Escape") setFocus(false);

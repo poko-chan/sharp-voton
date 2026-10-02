@@ -33,7 +33,6 @@ const ICE: RTCConfiguration = {
   rtcpMuxPolicy: "require",
 };
 
-
 const pairName = (a: string, b: string) => `call-pair-${[a, b].sort().join("_")}`;
 
 type Ctx = {
@@ -213,7 +212,6 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     return stream;
   }, []);
 
-
   const buildPc = useCallback(
     (stream: MediaStream, otherId: string) => {
       const pc = new RTCPeerConnection(ICE);
@@ -223,7 +221,12 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
           const p = sender.getParameters();
           p.encodings = [
             t.kind === "video"
-              ? { maxBitrate: 1_500_000, maxFramerate: 30, networkPriority: "high", priority: "high" }
+              ? {
+                  maxBitrate: 1_500_000,
+                  maxFramerate: 30,
+                  networkPriority: "high",
+                  priority: "high",
+                }
               : { maxBitrate: 64_000, networkPriority: "high", priority: "high" },
           ];
           if (t.kind === "video") p.degradationPreference = "balanced";
@@ -278,7 +281,6 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
           toast.error("通話に接続できませんでした");
           cleanup({ record: "done" });
         }
-
       };
       pcRef.current = pc;
       void otherId;
@@ -418,7 +420,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   }, [peerId, kind, getMedia, joinPair, buildPc, sendPair]);
 
   const decline = useCallback(() => {
-    if (peerId && callIdRef.current) void sendTo(peerId, { t: "decline", callId: callIdRef.current });
+    if (peerId && callIdRef.current)
+      void sendTo(peerId, { t: "decline", callId: callIdRef.current });
     cleanup();
   }, [peerId, sendTo, cleanup]);
 
@@ -458,7 +461,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     screenSenderRef.current = null;
     setLocalScreen(null);
     setSharing(false);
-    if (callIdRef.current) sendPair({ t: "share", callId: callIdRef.current, streamId: "", on: false });
+    if (callIdRef.current)
+      sendPair({ t: "share", callId: callIdRef.current, streamId: "", on: false });
   }, [sendPair]);
 
   const toggleShare = useCallback(async () => {

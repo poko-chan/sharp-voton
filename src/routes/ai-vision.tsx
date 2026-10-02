@@ -124,10 +124,16 @@ function AiVisionPage() {
         </section>
 
         <div className="mt-16 flex flex-wrap gap-3">
-          <Link to="/for-schools" className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">
+          <Link
+            to="/for-schools"
+            className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
+          >
             学校・組織向けの導入
           </Link>
-          <Link to="/all-services" className="rounded-full border px-5 py-2.5 text-sm font-semibold">
+          <Link
+            to="/all-services"
+            className="rounded-full border px-5 py-2.5 text-sm font-semibold"
+          >
             すべての機能を見る
           </Link>
         </div>

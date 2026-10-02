@@ -131,10 +131,7 @@ export function StudyStats({ logs }: { logs: any[] }) {
               <div className="mt-2 space-y-1">
                 {s.subjects.slice(0, 5).map((x, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs">
-                    <span
-                      className="h-2.5 w-2.5 rounded-full"
-                      style={{ background: x.color }}
-                    />
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: x.color }} />
                     <span className="flex-1 truncate">{x.name}</span>
                     <span className="tabular-nums text-muted-foreground">
                       {Math.round((x.min / s.subjTotal) * 100)}% ・ {fmt(x.min)}

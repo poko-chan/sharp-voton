@@ -399,7 +399,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navHiddenByUser = decorated.filter(
     (n) =>
       !isRestricted(n.to) &&
-      (hiddenByUser.has(n.to) || n.adminHidden || (lowDataMode && !isAdmin && !isLowDataAllowed(n.to))),
+      (hiddenByUser.has(n.to) ||
+        n.adminHidden ||
+        (lowDataMode && !isAdmin && !isLowDataAllowed(n.to))),
   );
   const quickbarItems = decorated.filter(
     (n) =>
@@ -429,10 +431,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       ];
   const mobileNav = isParent
     ? parentNav.slice(0, 4).map((n) => ({ ...n, labelKey: null }))
-    : (lowDataMode && !isAdmin
-        ? NAV.filter((n) => isLowDataAllowed(n.to))
-        : BOTTOM_NAV
-      ).map((n) => ({ ...n, label: null }));
+    : (lowDataMode && !isAdmin ? NAV.filter((n) => isLowDataAllowed(n.to)) : BOTTOM_NAV).map(
+        (n) => ({ ...n, label: null }),
+      );
 
   const renderLabel = (n: any) => n.adminLabel || n.override || t(n.labelKey);
   const renderIcon = (n: any, cls = "h-4 w-4") =>
@@ -523,8 +524,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                   to={n.to}
                   className={`nav-pill flex items-center gap-3 px-3 py-2.5 text-sm ${
                     active
-                       ? "nav-pill-active bg-primary/12 text-primary font-semibold"
-                       : "hover:bg-sidebar-accent/70 text-sidebar-foreground"
+                      ? "nav-pill-active bg-primary/12 text-primary font-semibold"
+                      : "hover:bg-sidebar-accent/70 text-sidebar-foreground"
                   }`}
                 >
                   {renderIcon(n)}
@@ -624,7 +625,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <HelpCircle className="h-4 w-4" />
                 <span className="hidden lg:inline">サポート</span>
               </Link>
-              <ParentBarButton /><AppBadgeSync />
+              <ParentBarButton />
+              <AppBadgeSync />
               <ChromeAiStatusBadge compact />
 
               <div className="mx-2 h-4 w-px bg-border/70" />

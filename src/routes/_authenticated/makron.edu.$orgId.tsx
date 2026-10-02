@@ -9,7 +9,17 @@ import { EduWorkspace } from "@/components/org/EduWorkspace";
 import { EduTeacherPortal } from "@/components/org/EduTeacherPortal";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, ClipboardList, Trophy, BarChart3, Settings2, Users, ShieldCheck, Send, LayoutGrid } from "lucide-react";
+import {
+  BookOpen,
+  ClipboardList,
+  Trophy,
+  BarChart3,
+  Settings2,
+  Users,
+  ShieldCheck,
+  Send,
+  LayoutGrid,
+} from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/makron/edu/$orgId")({
   head: () => ({
@@ -84,7 +94,9 @@ function Ranking({ orgId }: { orgId: string }) {
   }, [orgId]);
   if (!rows) return <div className="text-sm text-muted-foreground">読み込み中…</div>;
   if (!rows.length)
-    return <Card className="p-8 text-center text-sm text-muted-foreground">まだ記録がありません</Card>;
+    return (
+      <Card className="p-8 text-center text-sm text-muted-foreground">まだ記録がありません</Card>
+    );
   return (
     <Card className="divide-y">
       {rows.map((r, i) => (
@@ -96,7 +108,9 @@ function Ranking({ orgId }: { orgId: string }) {
           </div>
           <div className="flex-1 font-medium truncate">{r.display_name}</div>
           <div className="text-xs text-muted-foreground">🔥{r.current_streak}日</div>
-          <div className="text-xs text-muted-foreground w-16 text-right">正解 {r.total_correct}</div>
+          <div className="text-xs text-muted-foreground w-16 text-right">
+            正解 {r.total_correct}
+          </div>
           <div className="font-bold w-20 text-right">{r.xp} XP</div>
         </div>
       ))}
@@ -119,7 +133,8 @@ function Grades({ orgId }: { orgId: string }) {
       if (ids.length) {
         const p = await loadOrgProfiles(orgId, ids as string[]);
         const m: Record<string, string> = {};
-        for (const id of ids as string[]) m[id] = p[id]?.display_name ?? p[id]?.username ?? "ユーザー";
+        for (const id of ids as string[])
+          m[id] = p[id]?.display_name ?? p[id]?.username ?? "ユーザー";
         setNames(m);
       }
     })();
@@ -137,7 +152,9 @@ function Grades({ orgId }: { orgId: string }) {
   }, [attempts]);
 
   if (!rows.length)
-    return <Card className="p-8 text-center text-sm text-muted-foreground">まだ解答がありません</Card>;
+    return (
+      <Card className="p-8 text-center text-sm text-muted-foreground">まだ解答がありません</Card>
+    );
   return (
     <Card className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -175,12 +192,27 @@ function Grades({ orgId }: { orgId: string }) {
 
 function AdminLinks({ orgId, onTab }: { orgId: string; onTab: (t: Tab) => void }) {
   const items: { label: string; desc: string; icon: any; tab?: Tab; section?: string }[] = [
-    { label: "問題集をつくる・編集", desc: "組織専用の問題集と問題を作成", icon: BookOpen, tab: "manageq" },
+    {
+      label: "問題集をつくる・編集",
+      desc: "組織専用の問題集と問題を作成",
+      icon: BookOpen,
+      tab: "manageq",
+    },
     { label: "課題を配る", desc: "問題集を期限つきで配布", icon: Send, tab: "tasks" },
     { label: "成績を見る", desc: "生徒ごとの解答数・正答率", icon: BarChart3, tab: "grades" },
     { label: "メンバー", desc: "生徒・先生の管理", icon: Users, section: "members" },
-    { label: "権限（役職）", desc: "問題作成・配布できる人を決める", icon: ShieldCheck, section: "roles" },
-    { label: "アプリ管理", desc: "Makron for education のON/OFF", icon: LayoutGrid, section: "apps" },
+    {
+      label: "権限（役職）",
+      desc: "問題作成・配布できる人を決める",
+      icon: ShieldCheck,
+      section: "roles",
+    },
+    {
+      label: "アプリ管理",
+      desc: "Makron for education のON/OFF",
+      icon: LayoutGrid,
+      section: "apps",
+    },
   ];
   return (
     <div className="grid sm:grid-cols-2 gap-3">

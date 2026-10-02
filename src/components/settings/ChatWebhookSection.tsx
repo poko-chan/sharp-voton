@@ -40,7 +40,8 @@ export function ChatWebhookSection() {
       <div>
         <h2 className="font-bold">Discord / Slack 通知</h2>
         <p className="text-sm text-muted-foreground">
-          勉強仲間のチャンネルに、勉強が終わったことを自動で投稿します。チャンネル設定で作った「Webhook URL」を貼ってください。
+          勉強仲間のチャンネルに、勉強が終わったことを自動で投稿します。チャンネル設定で作った「Webhook
+          URL」を貼ってください。
         </p>
       </div>
       <label className="block space-y-1 text-sm">
@@ -67,7 +68,10 @@ export function ChatWebhookSection() {
         />
       </div>
       <div className="flex gap-2">
-        <Button disabled={busy} onClick={() => run(() => saveChatWebhooks({ data: v }), "保存しました")}>
+        <Button
+          disabled={busy}
+          onClick={() => run(() => saveChatWebhooks({ data: v }), "保存しました")}
+        >
           保存
         </Button>
         <Button

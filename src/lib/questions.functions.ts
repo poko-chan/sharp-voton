@@ -159,7 +159,8 @@ ${JSON_SHAPE}`;
 
 export const recordAttempt = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z
+  .inputValidator((i) =>
+    z
       .object({
         id: z.string().uuid(),
         answer: z.string().max(5000).optional(),
@@ -182,10 +183,13 @@ export const recordAttempt = createServerFn({ method: "POST" })
         // 正誤はサーバー側で判定。自己採点は「不正解」にすることだけ許可
         was_wrong:
           data.answer !== undefined
-            ? data.answer.trim().toLowerCase() !== String(row?.answer ?? "").trim().toLowerCase()
+            ? data.answer.trim().toLowerCase() !==
+              String(row?.answer ?? "")
+                .trim()
+                .toLowerCase()
             : data.markWrong
               ? true
-              : row?.was_wrong ?? null,
+              : (row?.was_wrong ?? null),
       })
       .eq("id", data.id);
     if (error) throw error;
@@ -380,9 +384,7 @@ ${RULES}
     const allowed = new Set(data.formats);
     const rows = questions.map((q) => {
       const f = (q.format && allowed.has(q.format as any) ? q.format : data.formats[0]) as
-        | "flashcard"
-        | "multiple_choice"
-        | "exam";
+        "flashcard" | "multiple_choice" | "exam";
       return {
         user_id: userId,
         topic,

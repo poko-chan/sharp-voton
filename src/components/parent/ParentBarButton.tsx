@@ -4,12 +4,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   getMyParentPanel,
@@ -82,13 +77,15 @@ export function ParentBarButton({ compact = false }: { compact?: boolean }) {
     void load();
   }, [user, accountKind, load]);
 
-  useEffect(() =>
-    onParentPanelOpen((t) => {
-      setTab(t);
-      setOpen(true);
-      void load();
-    }),
-  [load]);
+  useEffect(
+    () =>
+      onParentPanelOpen((t) => {
+        setTab(t);
+        setOpen(true);
+        void load();
+      }),
+    [load],
+  );
 
   useEffect(() => {
     if (open) void load();
@@ -172,9 +169,7 @@ export function ParentBarButton({ compact = false }: { compact?: boolean }) {
                     <div
                       key={m.id}
                       className={`max-w-[85%] rounded-xl px-3 py-1.5 text-sm ${
-                        m.sender_role === "child"
-                          ? "ml-auto bg-primary/10"
-                          : "mr-auto bg-muted"
+                        m.sender_role === "child" ? "ml-auto bg-primary/10" : "mr-auto bg-muted"
                       }`}
                     >
                       {m.body}

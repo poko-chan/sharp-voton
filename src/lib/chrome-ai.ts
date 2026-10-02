@@ -265,7 +265,8 @@ export function extractJSON<T = unknown>(raw: string): T {
   if (fence) s = fence[1].trim();
   // 最初の { または [ から末尾の対応する括弧まで切り出す
   const start = s.search(/[[]{/);
-  if (start === -1) throw new Error("JSON が見つかりません。AIの返答の { から } までをそのまま貼り付けてください");
+  if (start === -1)
+    throw new Error("JSON が見つかりません。AIの返答の { から } までをそのまま貼り付けてください");
   const open = s[start];
   const close = open === "{" ? "}" : "]";
   let depth = 0;

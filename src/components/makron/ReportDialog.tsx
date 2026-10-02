@@ -55,7 +55,11 @@ export function ReportDialog({
   const [openInner, setOpenInner] = useState(false);
   const open = openProp ?? openInner;
   const setOpen = (v: boolean) => {
-    onOpenChange ? onOpenChange(v) : setOpenInner(v);
+    if (onOpenChange) {
+      onOpenChange(v);
+    } else {
+      setOpenInner(v);
+    }
   };
   const [category, setCategory] = useState<string>(REPORT_CATEGORIES[0]);
   const [suggested, setSuggested] = useState("");

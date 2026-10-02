@@ -36,21 +36,21 @@ export const Route = createFileRoute("/api/public/line/cron")({
     handlers: {
       POST: async () => {
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { pushToLineUser, textMessage, cardMessage, inQuietHours } = await import(
-          "@/lib/line-messaging.server"
-        );
+        const { pushToLineUser, textMessage, cardMessage, inQuietHours } =
+          await import("@/lib/line-messaging.server");
 
         const now = jstNow();
         const cur = now.getUTCHours() * 60 + now.getUTCMinutes();
         const dow = now.getUTCDay();
         const isWeekend = dow === 0 || dow === 6;
-        const within = (target: number | null) =>
-          target !== null && Math.abs(cur - target) <= 5;
+        const within = (target: number | null) => target !== null && Math.abs(cur - target) <= 5;
 
         const { data: prefs } = await supabaseAdmin
           .from("user_line_preferences")
           .select("*")
-          .or("reminder_enabled.eq.true,daily_report_enabled.eq.true,weekly_report_enabled.eq.true");
+          .or(
+            "reminder_enabled.eq.true,daily_report_enabled.eq.true,weekly_report_enabled.eq.true",
+          );
 
         let reminders = 0;
         let reports = 0;
@@ -134,23 +134,19 @@ export const Route = createFileRoute("/api/public/line/cron")({
           }
 
           await pushToLineUser(lineId, [
-            cardMessage(
-              wantWeekly ? "今週の学習レポート" : "今日の学習レポート",
-              [
-                ["学習時間", `${total}分`],
-                ["教科ランキング", topRanking(bySubject) || "記録なし"],
-                ["教材ランキング", topRanking(byMaterial) || "記録なし"],
-                ["連続ストリーク", `${streak}日`],
-              ],
-            ),
+            cardMessage(wantWeekly ? "今週の学習レポート" : "今日の学習レポート", [
+              ["学習時間", `${total}分`],
+              ["教科ランキング", topRanking(bySubject) || "記録なし"],
+              ["教材ランキング", topRanking(byMaterial) || "記録なし"],
+              ["連続ストリーク", `${streak}日`],
+            ]),
           ]);
           reports++;
         }
 
         return Response.json({ ok: true, reminders, reports });
       },
-      GET: async () =>
-        Response.json({ ok: true, hint: "POST this endpoint from a scheduler." }),
+      GET: async () => Response.json({ ok: true, hint: "POST this endpoint from a scheduler." }),
     },
   },
 });

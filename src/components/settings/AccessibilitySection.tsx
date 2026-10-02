@@ -183,6 +183,23 @@ export function AccessibilitySection() {
           checked={lp.tts_enabled}
           onChange={(v) => saveLocal({ tts_enabled: v })}
         />
+        {lp.tts_enabled && (
+          <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
+            <label htmlFor="speech-rate" className="text-sm">
+              読み上げ速度: {lp.speech_rate.toFixed(1)}倍
+            </label>
+            <input
+              id="speech-rate"
+              type="range"
+              min={0.7}
+              max={1.5}
+              step={0.1}
+              value={lp.speech_rate}
+              onChange={(e) => saveLocal({ speech_rate: Number(e.target.value) })}
+              className="w-40"
+            />
+          </div>
+        )}
       </Card>
 
       <Card className="p-4 space-y-2">

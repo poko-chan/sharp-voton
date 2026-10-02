@@ -4,7 +4,6 @@ export type SettingsCategoryId =
   | "account"
   | "login"
   | "line"
-
   | "appearance"
   | "notifications"
   | "study"

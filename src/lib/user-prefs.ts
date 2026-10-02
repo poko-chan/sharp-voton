@@ -223,6 +223,7 @@ export type LocalPrefs = {
   color_filter: "none" | "grayscale" | "protanopia" | "deuteranopia" | "tritanopia";
   hide_images: boolean;
   tts_enabled: boolean;
+  speech_rate: number;
   // チャット
   chat_enter_send: boolean; // Enterで送信（OFFなら Ctrl+Enter で送信）
   chat_compact: boolean; // コンパクト表示
@@ -302,6 +303,7 @@ export const DEFAULT_LOCAL_PREFS: LocalPrefs = {
   color_filter: "none",
   hide_images: false,
   tts_enabled: false,
+  speech_rate: 1,
   chat_enter_send: true,
   chat_compact: false,
   chat_show_time: true,

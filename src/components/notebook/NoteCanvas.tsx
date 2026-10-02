@@ -361,7 +361,11 @@ export function NoteCanvas({
       if (e.ctrlKey || e.metaKey) {
         if (e.key.toLowerCase() === "z" && !typing) {
           e.preventDefault();
-          e.shiftKey ? redo() : undo();
+          if (e.shiftKey) {
+            redo();
+          } else {
+            undo();
+          }
         }
         return;
       }

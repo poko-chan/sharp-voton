@@ -26,17 +26,28 @@ async function vapidJwt(aud: string) {
   const head = b64u(enc.encode(JSON.stringify({ typ: "JWT", alg: "ES256" })));
   const body = b64u(
     enc.encode(
-      JSON.stringify({ aud, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: "mailto:support@studysharp.app" }),
+      JSON.stringify({
+        aud,
+        exp: Math.floor(Date.now() / 1000) + 12 * 3600,
+        sub: "mailto:support@studysharp.app",
+      }),
     ),
   );
-  const sig = await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, key, enc.encode(`${head}.${body}`));
+  const sig = await crypto.subtle.sign(
+    { name: "ECDSA", hash: "SHA-256" },
+    key,
+    enc.encode(`${head}.${body}`),
+  );
   return `${head}.${body}.${b64u(sig)}`;
 }
 
 export async function pushToUser(userId: string) {
   if (!process.env["VAPID_PRIVATE_D"]) return 0;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin.from("push_subscriptions" as never).select("endpoint").eq("user_id", userId);
+  const { data } = await supabaseAdmin
+    .from("push_subscriptions" as never)
+    .select("endpoint")
+    .eq("user_id", userId);
   let sent = 0;
   for (const { endpoint } of (data ?? []) as { endpoint: string }[]) {
     try {
@@ -50,7 +61,10 @@ export async function pushToUser(userId: string) {
         },
       });
       if (res.status === 404 || res.status === 410)
-        await supabaseAdmin.from("push_subscriptions" as never).delete().eq("endpoint", endpoint);
+        await supabaseAdmin
+          .from("push_subscriptions" as never)
+          .delete()
+          .eq("endpoint", endpoint);
       else if (res.ok) sent++;
     } catch {
       /* ignore */

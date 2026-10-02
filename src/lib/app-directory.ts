@@ -116,7 +116,7 @@ export const APPS: AppEntry[] = [
     icon: Flame,
     group: "記録・分析",
   },
-    {
+  {
     to: "/export",
     label: "データ書き出し",
     keywords: "export csv バックアップ",

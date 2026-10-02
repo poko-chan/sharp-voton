@@ -29,8 +29,7 @@ export const submitFeedback = createServerFn({ method: "POST" })
     // 認証トークンが有効な場合のみ、検証済みセッションからユーザーIDを取得する。
     let verifiedUserId: string | null = null;
     const authHeader = getRequest()?.headers?.get("authorization");
-    const token =
-      authHeader && authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+    const token = authHeader && authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
     if (token) {
       try {
         const anon = createClient(

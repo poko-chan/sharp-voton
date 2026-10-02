@@ -31,7 +31,10 @@ function EduHub() {
       const ids = (mem ?? []).map((m: any) => m.organization_id);
       if (!ids.length) return setOrgs([]);
       const [{ data: o }, { data: s }] = await Promise.all([
-        (supabase as any).from("organizations").select("id, name, description, status").in("id", ids),
+        (supabase as any)
+          .from("organizations")
+          .select("id, name, description, status")
+          .in("id", ids),
         (supabase as any)
           .from("org_app_settings")
           .select("organization_id, enabled")
@@ -39,7 +42,9 @@ function EduHub() {
           .in("organization_id", ids),
       ]);
       // 設定が無い組織は「ON」とみなす（組織ホームのアプリ一覧と同じ扱い）
-      const off = new Set((s ?? []).filter((r: any) => r.enabled === false).map((r: any) => r.organization_id));
+      const off = new Set(
+        (s ?? []).filter((r: any) => r.enabled === false).map((r: any) => r.organization_id),
+      );
       const role = new Map((mem ?? []).map((m: any) => [m.organization_id, m.role]));
       setOrgs(
         (o ?? [])

@@ -103,7 +103,8 @@ export function OrgDigitalId({ orgId, ctx }: { orgId: string; ctx: any }) {
         {d.full_name ?? nameOf(profiles[d.user_id], "メンバー")}
       </div>
       <div className="text-xs text-muted-foreground">
-        {d.affiliation ?? "—"}　No. {d.id_number ?? "—"}
+        {d.affiliation ?? "—"}
+        {"\u3000"}No. {d.id_number ?? "—"}
       </div>
       {d.barcode_value && (
         <div className="flex flex-col items-center gap-2 bg-white rounded p-2">

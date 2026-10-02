@@ -17,7 +17,6 @@ import {
   MessageSquare,
   Building2,
   MessageCircle,
-
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { SettingsNav } from "@/components/settings/SettingsNav";
@@ -41,7 +40,6 @@ import { AdvancedSection } from "@/components/settings/AdvancedSection";
 import { LineSection } from "@/components/settings/LineSection";
 import { ChatWebhookSection } from "@/components/settings/ChatWebhookSection";
 import { DeviceSection } from "@/components/settings/DeviceSection";
-
 
 const CATEGORIES: SettingsCategory[] = [
   {
@@ -148,7 +146,15 @@ const CATEGORIES: SettingsCategory[] = [
     id: "accessibility",
     label: "アクセシビリティ",
     icon: Accessibility,
-    keywords: ["アクセシビリティ", "読み上げ", "動きを減らす", "コントラスト", "accessibility"],
+    keywords: [
+      "アクセシビリティ",
+      "読み上げ",
+      "読み上げ速度",
+      "音声",
+      "動きを減らす",
+      "コントラスト",
+      "accessibility",
+    ],
   },
   {
     id: "data",
@@ -160,10 +166,19 @@ const CATEGORIES: SettingsCategory[] = [
     id: "line",
     label: "LINE連携・通知",
     icon: MessageCircle,
-    keywords: ["line", "discord", "slack", "ライン", "リマインダー", "通知", "レポート", "おやすみ", "連携"],
+    keywords: [
+      "line",
+      "discord",
+      "slack",
+      "ライン",
+      "リマインダー",
+      "通知",
+      "レポート",
+      "おやすみ",
+      "連携",
+    ],
   },
   {
-
     id: "payment",
     label: "お支払い",
     icon: CreditCard,
@@ -194,8 +209,18 @@ const CATEGORIES: SettingsCategory[] = [
 
 const SECTIONS: Record<SettingsCategoryId, React.ComponentType> = {
   account: AccountSection,
-  login: () => (<div className="space-y-6"><LoginMethodsSection /><DeviceSection /></div>),
-  line: () => (<div className="space-y-6"><LineSection /><ChatWebhookSection /></div>),
+  login: () => (
+    <div className="space-y-6">
+      <LoginMethodsSection />
+      <DeviceSection />
+    </div>
+  ),
+  line: () => (
+    <div className="space-y-6">
+      <LineSection />
+      <ChatWebhookSection />
+    </div>
+  ),
 
   appearance: AppearanceSection,
   notifications: NotificationsSection,

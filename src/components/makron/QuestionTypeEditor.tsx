@@ -13,8 +13,17 @@ export const EXTRA_TYPES = [
 ] as const;
 
 export const AUTO_TYPES = [
-  "single", "multi", "text", "ocr", "true_false", "tiles", "ordering", "matching",
-  "fill_blank", "listen", "numeric",
+  "single",
+  "multi",
+  "text",
+  "ocr",
+  "true_false",
+  "tiles",
+  "ordering",
+  "matching",
+  "fill_blank",
+  "listen",
+  "numeric",
 ];
 
 function shuffle<T>(a: T[]) {
@@ -26,9 +35,19 @@ function shuffle<T>(a: T[]) {
   return b;
 }
 
-const lines = (s: string) => s.split("\n").map((x) => x.trim()).filter(Boolean);
+const lines = (s: string) =>
+  s
+    .split("\n")
+    .map((x) => x.trim())
+    .filter(Boolean);
 
-export function QuestionTypeEditor({ draft, setDraft }: { draft: any; setDraft: (d: any) => void }) {
+export function QuestionTypeEditor({
+  draft,
+  setDraft,
+}: {
+  draft: any;
+  setDraft: (d: any) => void;
+}) {
   const t = draft.type;
   const co: string[] = draft.correct_options ?? [];
   const acc: string[] = draft.accepted_answers ?? [];
@@ -127,7 +146,14 @@ export function QuestionTypeEditor({ draft, setDraft }: { draft: any; setDraft: 
         <Textarea
           rows={3}
           defaultValue={acc.join("\n")}
-          onBlur={(e) => setDraft({ ...draft, accepted_answers: lines(e.target.value), options: [], correct_options: [] })}
+          onBlur={(e) =>
+            setDraft({
+              ...draft,
+              accepted_answers: lines(e.target.value),
+              options: [],
+              correct_options: [],
+            })
+          }
         />
       </div>
     );
@@ -143,7 +169,9 @@ export function QuestionTypeEditor({ draft, setDraft }: { draft: any; setDraft: 
           />
         </div>
         <div>
-          <label className="text-xs">正答（1行1つ。空白・句読点は無視。空なら読み上げ文が正解）</label>
+          <label className="text-xs">
+            正答（1行1つ。空白・句読点は無視。空なら読み上げ文が正解）
+          </label>
           <Textarea
             rows={2}
             defaultValue={acc.join("\n")}

@@ -147,11 +147,19 @@ function GuidePage() {
           </p>
         </div>
 
-        <section className="ink-panel mt-8 overflow-hidden p-6 text-white sm:p-8" aria-labelledby="guide-overview">
+        <section
+          className="ink-panel mt-8 overflow-hidden p-6 text-white sm:p-8"
+          aria-labelledby="guide-overview"
+        >
           <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/60">Start small, keep the context</p>
-              <h2 id="guide-overview" className="mt-3 max-w-xl font-display text-2xl font-black leading-tight sm:text-3xl">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/60">
+                Start small, keep the context
+              </p>
+              <h2
+                id="guide-overview"
+                className="mt-3 max-w-xl font-display text-2xl font-black leading-tight sm:text-3xl"
+              >
                 ひとつの機能から始めて、必要なところだけ広げる
               </h2>
               <p className="mt-4 max-w-xl text-sm leading-relaxed text-white/72">
@@ -180,7 +188,10 @@ function GuidePage() {
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
             <div>
               <p className="section-eyebrow">A simple loop</p>
-              <h2 id="guide-lenses" className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">
+              <h2
+                id="guide-lenses"
+                className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl"
+              >
                 Study#の使い方を3つの視点で見る
               </h2>
             </div>
@@ -192,7 +203,9 @@ function GuidePage() {
             {GUIDE_LENSES.map((item, index) => (
               <article key={item.label} className={`rounded-2xl border p-5 ${item.tone}`}>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="chip bg-background/70">0{index + 1} / {item.label}</span>
+                  <span className="chip bg-background/70">
+                    0{index + 1} / {item.label}
+                  </span>
                 </div>
                 <h3 className="mt-5 font-display text-lg font-extrabold">{item.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
@@ -235,11 +248,17 @@ function GuidePage() {
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
             <div>
               <p className="section-eyebrow">What is inside</p>
-              <h2 id="guide-features" className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">
+              <h2
+                id="guide-features"
+                className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl"
+              >
                 できることを、役割ごとに
               </h2>
             </div>
-            <Link to="/all-services" className="text-sm font-semibold text-primary underline-offset-4 hover:underline">
+            <Link
+              to="/all-services"
+              className="text-sm font-semibold text-primary underline-offset-4 hover:underline"
+            >
               全機能一覧を見る →
             </Link>
           </div>
@@ -247,23 +266,36 @@ function GuidePage() {
             {CORE.map((feature) => (
               <article key={feature.name} className="surface surface-hover p-5">
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl" aria-hidden="true">{feature.emoji}</span>
+                  <span className="text-2xl" aria-hidden="true">
+                    {feature.emoji}
+                  </span>
                   <div>
                     <h3 className="font-display text-lg font-extrabold">{feature.name}</h3>
                     <p className="mt-1 text-sm font-semibold text-primary">{feature.lead}</p>
                   </div>
                 </div>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{feature.detail}</p>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  {feature.detail}
+                </p>
                 <ul className="mt-4 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
-                  {feature.points.map((point) => <li key={point} className="rounded-lg bg-muted/60 px-3 py-2">{point}</li>)}
+                  {feature.points.map((point) => (
+                    <li key={point} className="rounded-lg bg-muted/60 px-3 py-2">
+                      {point}
+                    </li>
+                  ))}
                 </ul>
               </article>
             ))}
           </div>
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
             {MORE.slice(0, 3).map((feature) => (
-              <article key={feature.name} className="rounded-2xl border border-border/70 bg-background/65 p-4">
-                <span className="text-xl" aria-hidden="true">{feature.emoji}</span>
+              <article
+                key={feature.name}
+                className="rounded-2xl border border-border/70 bg-background/65 p-4"
+              >
+                <span className="text-xl" aria-hidden="true">
+                  {feature.emoji}
+                </span>
                 <h3 className="mt-3 font-bold">{feature.name}</h3>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{feature.lead}</p>
               </article>
@@ -292,7 +324,10 @@ function GuidePage() {
         <section className="mt-16" aria-labelledby="guide-reality">
           <div className="border-l-4 border-signal pl-5">
             <p className="section-eyebrow">Use it well</p>
-            <h2 id="guide-reality" className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">
+            <h2
+              id="guide-reality"
+              className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl"
+            >
               先に知っておきたいこと
             </h2>
           </div>

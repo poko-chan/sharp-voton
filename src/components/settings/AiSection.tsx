@@ -27,7 +27,6 @@ export function AiSection() {
         <p className="text-sm text-muted-foreground">
           端末内AIを選んだ場合、会話は端末の外に送信されません。サーバー側のAIを使う場合は、回答の生成のためだけに送信され、学習には使われません。AIチャットで「AIが参照できる情報」を種類ごとにオン・オフできます。
         </p>
-
       </Card>
     </div>
   );

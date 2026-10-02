@@ -28,7 +28,12 @@ import {
 import { toast } from "sonner";
 import { ReportDialog } from "@/components/makron/ReportDialog";
 import { MakronHandwriteOCR } from "@/components/makron/MakronHandwriteOCR";
-import { TilesInput, ListenInput, TrueFalseInput, ResultSheet } from "@/components/makron/AnswerWidgets";
+import {
+  TilesInput,
+  ListenInput,
+  TrueFalseInput,
+  ResultSheet,
+} from "@/components/makron/AnswerWidgets";
 import { nanoGradeWritten } from "@/lib/nano-tasks";
 import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
 import {
@@ -273,7 +278,11 @@ function SessionPage() {
       );
     setLikes((s) => {
       const n = new Set(s);
-      liked ? n.add(q.id) : n.delete(q.id);
+      if (liked) {
+        n.add(q.id);
+      } else {
+        n.delete(q.id);
+      }
       return n;
     });
   };
@@ -603,7 +612,11 @@ function SessionPage() {
             onClick={() =>
               setReviewFlags((s) => {
                 const n = new Set(s);
-                n.has(q.id) ? n.delete(q.id) : n.add(q.id);
+                if (n.has(q.id)) {
+                  n.delete(q.id);
+                } else {
+                  n.add(q.id);
+                }
                 return n;
               })
             }
@@ -968,7 +981,9 @@ function SessionPage() {
         <div className="h-2 rounded-full bg-muted overflow-hidden" aria-label="進み具合">
           <div
             className="h-full bg-primary transition-all duration-500"
-            style={{ width: `${((idx + (currentLocked ? 1 : 0)) / Math.max(1, questions.length)) * 100}%` }}
+            style={{
+              width: `${((idx + (currentLocked ? 1 : 0)) / Math.max(1, questions.length)) * 100}%`,
+            }}
           />
         </div>
         <div className="flex items-center justify-between gap-2">

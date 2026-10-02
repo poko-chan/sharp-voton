@@ -23,7 +23,10 @@ function preprocess(src: HTMLCanvasElement): { canvas: HTMLCanvasElement; single
   const h = src.height;
   const data = src.getContext("2d")!.getImageData(0, 0, w, h).data;
   const ink = new Uint8Array(w * h);
-  let minX = w, minY = h, maxX = -1, maxY = -1;
+  let minX = w,
+    minY = h,
+    maxX = -1,
+    maxY = -1;
   for (let y = 0; y < h; y++)
     for (let x = 0; x < w; x++) {
       const i = (y * w + x) * 4;
@@ -41,7 +44,8 @@ function preprocess(src: HTMLCanvasElement): { canvas: HTMLCanvasElement; single
   const bh = maxY - minY + 1;
 
   // 行数の推定：横方向の投影で空白帯を数える
-  let lines = 0, inLine = false;
+  let lines = 0,
+    inLine = false;
   for (let y = minY; y <= maxY; y++) {
     let any = false;
     for (let x = minX; x <= maxX && !any; x++) any = ink[y * w + x] === 1;
@@ -66,7 +70,12 @@ function preprocess(src: HTMLCanvasElement): { canvas: HTMLCanvasElement; single
   for (let y = minY; y <= maxY; y++)
     for (let x = minX; x <= maxX; x++)
       if (ink[y * w + x])
-        o.fillRect(pad + (x - minX) * scale - r / 2, pad + (y - minY) * scale - r / 2, r + scale, r + scale);
+        o.fillRect(
+          pad + (x - minX) * scale - r / 2,
+          pad + (y - minY) * scale - r / 2,
+          r + scale,
+          r + scale,
+        );
   return { canvas: out, singleLine };
 }
 
@@ -82,9 +91,11 @@ export async function ocrHandwrite(
   onProgress?.(0.5);
   const res = await w.recognize(img);
   onProgress?.(1);
-  return String(res?.data?.text ?? "")
-    .replace(/\s+/g, "")
-    // 手書きで混同しやすい記号を正規化
-    .replace(/[|｜]/g, "1")
-    .replace(/[“”"]/g, "");
+  return (
+    String(res?.data?.text ?? "")
+      .replace(/\s+/g, "")
+      // 手書きで混同しやすい記号を正規化
+      .replace(/[|｜]/g, "1")
+      .replace(/[“”"]/g, "")
+  );
 }

@@ -30,8 +30,16 @@ export function EduWorkspace({ orgId }: { orgId: string }) {
         data: { user },
       } = await supabase.auth.getUser();
       const [{ data: s }, { data: u }, { data: st }] = await Promise.all([
-        (supabase as any).from("org_edu_subjects").select("*").eq("organization_id", orgId).order("sort_order"),
-        (supabase as any).from("org_edu_units").select("*").eq("organization_id", orgId).order("sort_order"),
+        (supabase as any)
+          .from("org_edu_subjects")
+          .select("*")
+          .eq("organization_id", orgId)
+          .order("sort_order"),
+        (supabase as any)
+          .from("org_edu_units")
+          .select("*")
+          .eq("organization_id", orgId)
+          .order("sort_order"),
         (supabase as any)
           .from("org_edu_streaks")
           .select("current_streak")
@@ -74,7 +82,10 @@ export function EduWorkspace({ orgId }: { orgId: string }) {
               onClick={() => setSubjectId(s.id)}
               className={`rounded-xl border-2 p-4 text-left font-bold transition ${subjectId === s.id ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"}`}
             >
-              <span className="inline-block h-3 w-3 rounded-full mr-2" style={{ background: s.color }} />
+              <span
+                className="inline-block h-3 w-3 rounded-full mr-2"
+                style={{ background: s.color }}
+              />
               {s.name}
             </button>
           ))}
@@ -84,7 +95,9 @@ export function EduWorkspace({ orgId }: { orgId: string }) {
         <div>
           <div className="text-sm font-bold mb-2">② 単元をえらぶ</div>
           {subjUnits.length === 0 && (
-            <Card className="p-6 text-center text-sm text-muted-foreground">この教科に単元はありません</Card>
+            <Card className="p-6 text-center text-sm text-muted-foreground">
+              この教科に単元はありません
+            </Card>
           )}
           <div className="grid sm:grid-cols-2 gap-2">
             {subjUnits.map((u) => {
@@ -139,7 +152,9 @@ function Solver({
   const [idx, setIdx] = useState(0);
   const [queue, setQueue] = useState<Q[]>([]); // さかのぼり割り込み
   const [answer, setAnswer] = useState("");
-  const [result, setResult] = useState<null | { ok: boolean; answer: string; explanation: string }>(null);
+  const [result, setResult] = useState<null | { ok: boolean; answer: string; explanation: string }>(
+    null,
+  );
   const [wrongRun, setWrongRun] = useState(0);
   const [stars, setStars] = useState(0);
   const [correct, setCorrect] = useState(0);
@@ -150,7 +165,10 @@ function Solver({
 
   // 経過秒タイマー（1秒ごと）
   useEffect(() => {
-    const t = setInterval(() => setElapsed(Math.round((Date.now() - startedAt.current) / 1000)), 1000);
+    const t = setInterval(
+      () => setElapsed(Math.round((Date.now() - startedAt.current) / 1000)),
+      1000,
+    );
     return () => clearInterval(t);
   }, [padKey]);
   const times = useRef<number[]>([]);
@@ -260,7 +278,9 @@ function Solver({
     for (let i = 0; i < 6; i++) {
       if (typeof navigator !== "undefined" && !navigator.onLine) {
         toast("通信が切れています。つながったら自動で送信します");
-        await new Promise<void>((r) => window.addEventListener("online", () => r(), { once: true }));
+        await new Promise<void>((r) =>
+          window.addEventListener("online", () => r(), { once: true }),
+        );
       }
       const res = await (supabase as any).rpc("org_edu_check_answer", {
         _question: current.id,
@@ -419,7 +439,7 @@ function Solver({
                 ) : (
                   <XCircle className="h-5 w-5 text-destructive" />
                 )}
-                {result.ok ? "正解！" : `不正解　正解：${result.answer}`}
+                {result.ok ? "正解！" : `不正解\u3000正解：${result.answer}`}
               </div>
               {result.explanation && (
                 <div className="text-sm mt-2 whitespace-pre-wrap">{result.explanation}</div>

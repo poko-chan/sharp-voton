@@ -172,9 +172,7 @@ export function LineSection() {
                   onClick={() =>
                     set(
                       "reminder_days",
-                      on
-                        ? prefs.reminder_days.filter((x) => x !== i)
-                        : [...prefs.reminder_days, i],
+                      on ? prefs.reminder_days.filter((x) => x !== i) : [...prefs.reminder_days, i],
                     )
                   }
                   className={`h-9 w-9 rounded-full border text-sm transition ${

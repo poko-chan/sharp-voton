@@ -227,7 +227,13 @@ function NotebookEditor() {
     if (error) return toast.error(error.message);
     setPages((p) => [
       ...p,
-      { id: (data as any).id, page_index: nextIdx, title: `ページ ${nextIdx + 1}`, strokes: [], texts: [] },
+      {
+        id: (data as any).id,
+        page_index: nextIdx,
+        title: `ページ ${nextIdx + 1}`,
+        strokes: [],
+        texts: [],
+      },
     ]);
     setIdx(pages.length);
   };
@@ -250,7 +256,13 @@ function NotebookEditor() {
     if (error) return toast.error(error.message);
     setPages((current) => [
       ...current,
-      { id: (data as any).id, page_index: nextIdx, title, strokes: page.strokes, texts: page.texts },
+      {
+        id: (data as any).id,
+        page_index: nextIdx,
+        title,
+        strokes: page.strokes,
+        texts: page.texts,
+      },
     ]);
     setIdx(pages.length);
     toast.success("ページを複製しました");
@@ -537,13 +549,17 @@ function NotebookEditor() {
                 readOnly={readOnly}
                 onChange={(e) => {
                   const title = e.target.value;
-                  setPages((current) => current.map((p) => (p.id === page.id ? { ...p, title } : p)));
+                  setPages((current) =>
+                    current.map((p) => (p.id === page.id ? { ...p, title } : p)),
+                  );
                   pendingRef.current = { ...page, title };
                   setSaving("dirty");
                 }}
                 onBlur={() => {
                   const title = page.title.trim() || `ページ ${page.page_index + 1}`;
-                  setPages((current) => current.map((p) => (p.id === page.id ? { ...p, title } : p)));
+                  setPages((current) =>
+                    current.map((p) => (p.id === page.id ? { ...p, title } : p)),
+                  );
                   void savePage({ ...page, title });
                 }}
                 placeholder="ページ名"

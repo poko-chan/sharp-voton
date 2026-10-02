@@ -150,8 +150,7 @@ function AdminLinePage() {
 
   const webhookUrl =
     typeof window !== "undefined" ? `${window.location.origin}/api/public/line/webhook` : "";
-  const loginUrl =
-    typeof window !== "undefined" ? `${window.location.origin}/line-liff/login` : "";
+  const loginUrl = typeof window !== "undefined" ? `${window.location.origin}/line-liff/login` : "";
   const callbackUrl = loginUrl;
 
   useEffect(() => {
@@ -275,7 +274,10 @@ function AdminLinePage() {
           </div>
           <div className="space-y-1">
             <Label>LIFF ID（任意）</Label>
-            <Input value={s.liff_id ?? ""} onChange={(e) => setS({ ...s, liff_id: e.target.value })} />
+            <Input
+              value={s.liff_id ?? ""}
+              onChange={(e) => setS({ ...s, liff_id: e.target.value })}
+            />
           </div>
           <div className="space-y-1">
             <Label>公式アカウントID（任意）</Label>
@@ -407,7 +409,6 @@ function AdminLinePage() {
 
       <LineLogCard />
 
-
       <Button onClick={save} disabled={saving} size="lg">
         保存する
       </Button>
@@ -443,7 +444,9 @@ function LineLogCard() {
     <Card className="space-y-3 p-6">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold">LINEの記録（最新50件）</h2>
-        <Button variant="outline" size="sm" onClick={load}>更新</Button>
+        <Button variant="outline" size="sm" onClick={load}>
+          更新
+        </Button>
       </div>
       <p className="text-xs text-muted-foreground">
         受け取ったメッセージと送ったお知らせは、すべてStudy#のデータベースに保存されます。
@@ -455,7 +458,9 @@ function LineLogCard() {
             <span className={r.direction === "in" ? "text-primary" : "text-muted-foreground"}>
               {r.direction === "in" ? "受信" : "送信"}
             </span>
-            <span className="text-muted-foreground">{new Date(r.created_at).toLocaleString("ja-JP")}</span>
+            <span className="text-muted-foreground">
+              {new Date(r.created_at).toLocaleString("ja-JP")}
+            </span>
             <span>{r.event_type}</span>
             {r.ok === false && <span className="text-destructive">失敗</span>}
             <span className="truncate">{r.text}</span>

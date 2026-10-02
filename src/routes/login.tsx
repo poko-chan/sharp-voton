@@ -8,7 +8,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Shield, Eye, EyeOff, LoaderCircle, MessageCircle, QrCode, Fingerprint } from "lucide-react";
+import {
+  Shield,
+  Eye,
+  EyeOff,
+  LoaderCircle,
+  MessageCircle,
+  QrCode,
+  Fingerprint,
+} from "lucide-react";
 import { QrScannerDialog } from "@/components/QrScannerDialog";
 
 import { toast } from "sonner";
@@ -370,16 +378,22 @@ function LoginPage() {
                 onClick={async () => {
                   try {
                     const { startAuthentication } = await import("@simplewebauthn/browser");
-                    const { passkeyLoginOptions, passkeyLoginVerify } = await import("@/lib/passkey.functions");
+                    const { passkeyLoginOptions, passkeyLoginVerify } =
+                      await import("@/lib/passkey.functions");
                     const { options, challengeId } = await passkeyLoginOptions();
                     const response = await startAuthentication({ optionsJSON: options });
                     const r = await passkeyLoginVerify({ data: { challengeId, response } });
                     if ("error" in r && r.error) throw new Error(r.error);
-                    const { error } = await supabase.auth.verifyOtp({ token_hash: (r as { tokenHash: string }).tokenHash, type: "magiclink" });
+                    const { error } = await supabase.auth.verifyOtp({
+                      token_hash: (r as { tokenHash: string }).tokenHash,
+                      type: "magiclink",
+                    });
                     if (error) throw error;
                     window.location.href = "/dashboard";
                   } catch (e) {
-                    toast.error(e instanceof Error ? e.message : "パスキーでログインできませんでした");
+                    toast.error(
+                      e instanceof Error ? e.message : "パスキーでログインできませんでした",
+                    );
                   }
                 }}
               >
@@ -404,8 +418,6 @@ function LoginPage() {
                 }
               }}
             />
-
-
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">

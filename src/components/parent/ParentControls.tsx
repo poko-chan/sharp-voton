@@ -85,7 +85,9 @@ export function ParentControls({ childId }: { childId: string }) {
   useEffect(() => {
     if (!code) return setQr(null);
     const url = `${window.location.origin}/qr-login?c=${code}`;
-    QRCode.toDataURL(url, { width: 320, margin: 1 }).then(setQr).catch(() => setQr(null));
+    QRCode.toDataURL(url, { width: 320, margin: 1 })
+      .then(setQr)
+      .catch(() => setQr(null));
   }, [code]);
 
   const save = async () => {

@@ -37,7 +37,8 @@ function LineLoginPage() {
   const [sessionUser, setSessionUser] = useState<string | null>(null);
   const started = useRef(false);
 
-  const redirectUri = typeof window !== "undefined" ? `${window.location.origin}/line-liff/login` : "";
+  const redirectUri =
+    typeof window !== "undefined" ? `${window.location.origin}/line-liff/login` : "";
 
   const finish = useCallback(
     async (tokenHash: string) => {
@@ -205,7 +206,9 @@ function LineLoginPage() {
                 </div>
               )}
               <div className="min-w-0">
-                <div className="truncate text-sm font-medium">{pending.lineName ?? "LINEユーザー"}</div>
+                <div className="truncate text-sm font-medium">
+                  {pending.lineName ?? "LINEユーザー"}
+                </div>
                 <div className="text-xs text-muted-foreground">まだStudy#と連携されていません</div>
               </div>
             </div>
