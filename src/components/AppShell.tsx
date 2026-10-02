@@ -164,12 +164,29 @@ export function AppShell({ children }: { children: ReactNode }) {
   } | null>(null);
 
   useEffect(() => {
+    try {
+      const cached = sessionStorage.getItem("app.version");
+      if (cached !== null) {
+        setVersion(cached);
+        return;
+      }
+    } catch {
+      /* noop */
+    }
     supabase
       .from("app_settings")
       .select("app_version")
       .eq("id", 1)
       .maybeSingle()
-      .then(({ data }) => setVersion(data?.app_version ?? ""));
+      .then(({ data }) => {
+        const v = data?.app_version ?? "";
+        setVersion(v);
+        try {
+          sessionStorage.setItem("app.version", v);
+        } catch {
+          /* noop */
+        }
+      });
   }, []);
 
   const loadProfile = useCallback(async () => {
@@ -184,29 +201,47 @@ export function AppShell({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
-  const loadLevel = useCallback(async () => {
-    if (!user || (lowDataMode && !isAdmin)) return;
-    const { data } = await supabase
-      .from("study_logs")
-      .select("duration_minutes, date")
-      .eq("user_id", user.id);
-    const rows = data ?? [];
-    const total = rows.reduce((s, r) => s + (r.duration_minutes ?? 0), 0);
-    const { data: subs } = await supabase
-      .from("submissions")
-      .select("xp_awarded")
-      .eq("user_id", user.id);
-    const xp = (subs ?? []).reduce((s, r) => s + (r.xp_awarded ?? 0), 0);
-    const last = rows.reduce<string | null>((m, r) => (m && m > r.date ? m : r.date), null);
-    const days = last
-      ? Math.floor(
-          (new Date(localDateStr() + "T00:00:00").getTime() -
-            new Date(last + "T00:00:00").getTime()) /
-            86400000,
-        )
-      : 999;
-    setLevel(levelFromMinutes(total + xp, days));
-  }, [isAdmin, lowDataMode, user]);
+  // レベルは学習記録が変わったときだけ再計算し、それ以外は端末内のキャッシュを使う
+  const loadLevel = useCallback(
+    async (force = false) => {
+      if (!user || (lowDataMode && !isAdmin)) return;
+      const cacheKey = `app.level.${user.id}.${localDateStr()}`;
+      if (!force) {
+        try {
+          const c = sessionStorage.getItem(cacheKey);
+          if (c) {
+            setLevel(Number(c) || 1);
+            return;
+          }
+        } catch {
+          /* noop */
+        }
+      }
+      const [{ data }, { data: subs }] = await Promise.all([
+        supabase.from("study_logs").select("duration_minutes, date").eq("user_id", user.id),
+        supabase.from("submissions").select("xp_awarded").eq("user_id", user.id),
+      ]);
+      const rows = data ?? [];
+      const total = rows.reduce((s, r) => s + (r.duration_minutes ?? 0), 0);
+      const xp = (subs ?? []).reduce((s, r) => s + (r.xp_awarded ?? 0), 0);
+      const last = rows.reduce<string | null>((m, r) => (m && m > r.date ? m : r.date), null);
+      const days = last
+        ? Math.floor(
+            (new Date(localDateStr() + "T00:00:00").getTime() -
+              new Date(last + "T00:00:00").getTime()) /
+              86400000,
+          )
+        : 999;
+      const lv = levelFromMinutes(total + xp, days);
+      setLevel(lv);
+      try {
+        sessionStorage.setItem(cacheKey, String(lv));
+      } catch {
+        /* noop */
+      }
+    },
+    [isAdmin, lowDataMode, user],
+  );
 
   useEffect(() => {
     loadProfile();
@@ -216,7 +251,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     () =>
       onProfileChange(() => {
         loadProfile();
-        loadLevel();
+        loadLevel(true);
       }),
     [loadProfile, loadLevel],
   );

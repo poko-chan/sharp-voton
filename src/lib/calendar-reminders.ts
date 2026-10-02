@@ -8,6 +8,14 @@ import { localDateStr } from "@/lib/date";
 export async function syncCalendarNotifications(userId: string): Promise<void> {
   const today = localDateStr(new Date());
   const key = `study.calnotif.${userId}.${today}`;
+  // 同じ日に同じ端末で1回だけ確認する（画面を開くたびの問い合わせを防ぐ）
+  const checkedKey = `study.calnotif.checked.${userId}.${today}`;
+  try {
+    if (localStorage.getItem(checkedKey)) return;
+    localStorage.setItem(checkedKey, "1");
+  } catch {
+    /* noop */
+  }
   let done: string[] = [];
   try {
     done = JSON.parse(localStorage.getItem(key) ?? "[]");
