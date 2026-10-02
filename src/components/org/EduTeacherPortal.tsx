@@ -165,7 +165,7 @@ export function EduTeacherPortal({ orgId }: { orgId: string }) {
       }
     })();
     loadAtts();
-    const t = setInterval(loadAtts, 60_000);
+    const t = setInterval(loadAtts, 15000);
     const ch = supabase.channel(`edu-live-${orgId}`);
     ch.on("presence", { event: "sync" }, () => {
       const st = ch.presenceState() as Record<string, any[]>;
