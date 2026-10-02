@@ -4,7 +4,9 @@ import {
   Check,
   Clipboard,
   Copy,
+  Download,
   ExternalLink,
+  Image,
   RefreshCw,
   TextSelect,
 } from "lucide-react";
@@ -15,6 +17,7 @@ type MenuState = {
   x: number;
   y: number;
   href: string | null;
+  imageSrc: string | null;
   selectedText: string;
   editable: boolean;
 };
@@ -31,6 +34,7 @@ export function GlobalContextMenu({ children }: { children: React.ReactNode }) {
       if (target?.closest("[data-native-context-menu]")) return;
 
       const link = target?.closest("a[href]") as HTMLAnchorElement | null;
+      const image = target?.closest("img") as HTMLImageElement | null;
       const selection = window.getSelection()?.toString().trim() ?? "";
       const editable = Boolean(target?.closest("input, textarea, [contenteditable='true']"));
       event.preventDefault();
@@ -39,6 +43,7 @@ export function GlobalContextMenu({ children }: { children: React.ReactNode }) {
         x: event.clientX,
         y: event.clientY,
         href: link?.href ?? null,
+        imageSrc: image?.currentSrc || image?.src || null,
         selectedText: selection,
         editable,
       });
@@ -84,6 +89,25 @@ export function GlobalContextMenu({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const downloadImage = async (src: string) => {
+    const fallbackTab = window.open("about:blank", "_blank");
+    try {
+      const response = await fetch(src);
+      if (!response.ok) throw new Error("画像を取得できませんでした");
+      const objectUrl = URL.createObjectURL(await response.blob());
+      const anchor = document.createElement("a");
+      const filename = decodeURIComponent(new URL(src).pathname.split("/").pop() || "image");
+      anchor.href = objectUrl;
+      anchor.download = filename;
+      anchor.click();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      fallbackTab?.close();
+    } catch {
+      if (fallbackTab) fallbackTab.location.href = src;
+      else window.open(src, "_blank", "noopener,noreferrer");
+    }
+  };
+
   const handleMenuContext = (event: ReactMouseEvent) => event.preventDefault();
 
   return (
@@ -95,10 +119,10 @@ export function GlobalContextMenu({ children }: { children: React.ReactNode }) {
           aria-label="ページの操作"
           onPointerDown={(event) => event.stopPropagation()}
           onContextMenu={handleMenuContext}
-          className="fixed z-[200] w-64 overflow-hidden rounded-xl border border-border/70 bg-popover/95 p-1.5 text-sm shadow-2xl backdrop-blur-xl"
+          className="fixed z-[200] max-h-[calc(100dvh-1rem)] w-64 overflow-y-auto rounded-xl border border-border/70 bg-popover/95 p-1.5 text-sm shadow-2xl backdrop-blur-xl"
           style={{
-            left: Math.min(menu.x, window.innerWidth - 272),
-            top: Math.min(menu.y, window.innerHeight - 260),
+            left: Math.max(8, Math.min(menu.x, window.innerWidth - 272)),
+            top: Math.max(8, Math.min(menu.y, window.innerHeight - 380)),
           }}
         >
           <div className="mb-1 flex items-center gap-2 border-b border-border/60 px-2.5 pb-2">
@@ -131,6 +155,30 @@ export function GlobalContextMenu({ children }: { children: React.ReactNode }) {
               label="リンクを新しいタブで開く"
               onClick={() => run(() => window.open(menu.href!, "_blank", "noopener,noreferrer"))}
             />
+          )}
+          {menu.imageSrc && (
+            <>
+              <MenuButton
+                icon={<Image />}
+                label="画像を新しいタブで開く"
+                onClick={() =>
+                  run(() => window.open(menu.imageSrc!, "_blank", "noopener,noreferrer"))
+                }
+              />
+              <MenuButton
+                icon={<Download />}
+                label="画像をダウンロード"
+                onClick={() => {
+                  void downloadImage(menu.imageSrc!);
+                  setMenu(null);
+                }}
+              />
+              <MenuButton
+                icon={copied === "image" ? <Check /> : <Copy />}
+                label={copied === "image" ? "画像アドレスをコピーしました" : "画像アドレスをコピー"}
+                onClick={() => void copy(menu.imageSrc!, "image")}
+              />
+            </>
           )}
           {menu.selectedText && (
             <MenuButton
