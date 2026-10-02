@@ -34,7 +34,15 @@ function topRanking(map: Map<string, number>, limit = 3) {
 export const Route = createFileRoute("/api/public/line/cron")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }: { request: Request }) => {
+        // 呼び出し元の確認: 共有シークレット（CRON_SECRET）が一致しない限り実行しない
+        const secret = process.env.CRON_SECRET;
+        const given =
+          request.headers.get("x-cron-secret") ??
+          (request.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
+        if (!secret || given !== secret) {
+          return new Response("Unauthorized", { status: 401 });
+        }
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { pushToLineUser, textMessage, cardMessage, inQuietHours } =
           await import("@/lib/line-messaging.server");
