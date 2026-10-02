@@ -421,7 +421,7 @@ function FullDashboard() {
     enabled: !!user,
     staleTime: 15_000,
     refetchOnWindowFocus: true,
-    refetchInterval: 60_000,
+    refetchInterval: false,
   });
 
   const stats = data?.stats ?? {
@@ -1883,7 +1883,7 @@ function NotificationBell() {
     queryKey: ["notif-unread"],
     queryFn: () => fn(),
     staleTime: 20_000,
-    refetchInterval: 30_000,
+    refetchInterval: false,
     refetchOnWindowFocus: true,
   });
   const count = data?.count ?? 0;
