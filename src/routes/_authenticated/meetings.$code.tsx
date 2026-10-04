@@ -20,6 +20,10 @@ import {
   Send,
   UserMinus,
   Settings2,
+  CheckCircle2,
+  Clock,
+  BookOpen,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +33,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import { formatCode, rpcJoinMeeting, useMeetingRoom, type MeetingInfo, type Peer } from "@/lib/meeting-room";
+import { useOrderedSubjects } from "@/lib/subjects";
+import { localDateStr } from "@/lib/date";
 
 export const Route = createFileRoute("/_authenticated/meetings/$code")({
   head: () => ({
@@ -50,6 +56,7 @@ function MeetingPage() {
   const navigate = useNavigate();
   const [meeting, setMeeting] = useState<MeetingInfo | null>(null);
   const [name, setName] = useState<string | null>(null);
+  const [summary, setSummary] = useState<MeetingSummary | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -73,6 +80,7 @@ function MeetingPage() {
     };
   }, [code, user, navigate]);
 
+  if (summary && user) return <Summary s={summary} userId={user.id} />;
   if (!user || !meeting || !name) {
     return (
       <div className="fixed inset-0 z-50 grid place-items-center bg-background">
@@ -80,7 +88,141 @@ function MeetingPage() {
       </div>
     );
   }
-  return <Room meeting={meeting} userId={user.id} name={name} />;
+  return <Room meeting={meeting} userId={user.id} name={name} onEnded={setSummary} />;
+}
+
+type MeetingSummary = {
+  title: string;
+  reason: string;
+  minutes: number;
+  members: string[];
+  chat: { name: string; text: string; at: number | string }[];
+};
+
+function Summary({ s, userId }: { s: MeetingSummary; userId: string }) {
+  const navigate = useNavigate();
+  const { subjects } = useOrderedSubjects();
+  const [subjectId, setSubjectId] = useState("");
+  const [minutes, setMinutes] = useState(s.minutes);
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const chatText = s.chat
+    .map((c) => `[${new Date(c.at).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}] ${c.name}: ${c.text}`)
+    .join("\n");
+  const fullText = `会議: ${s.title}\n参加時間: ${s.minutes}分\n\n${chatText}`;
+
+  const save = async () => {
+    setSaving(true);
+    const { error } = await supabase.from("study_logs").insert({
+      user_id: userId,
+      subject_id: subjectId || null,
+      date: localDateStr(),
+      duration_minutes: minutes,
+      content: `オンライン会議（${s.title}）`,
+    } as never);
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    setSaved(true);
+    toast.success("学習記録に追加しました");
+  };
+
+  const download = () => {
+    const blob = new Blob([fullText], { type: "text/plain;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `meeting-${localDateStr()}.txt`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-auto bg-background p-4">
+      <div className="mx-auto max-w-lg space-y-4 py-8">
+        <div className="text-center">
+          <CheckCircle2 className="mx-auto h-10 w-10 text-primary" />
+          <h1 className="mt-2 text-xl font-bold">
+            {s.reason === "ended" ? "会議は終了しました" : s.reason === "kicked" ? "会議から退出しました" : "お疲れさまでした"}
+          </h1>
+        </div>
+
+        <section className="space-y-1 rounded-xl border border-border p-4 text-sm">
+          <div className="font-semibold">{s.title}</div>
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <Clock className="h-4 w-4" /> 参加時間 {s.minutes}分
+          </div>
+          {s.members.length > 0 && (
+            <div className="flex items-start gap-1.5 text-muted-foreground">
+              <Users className="mt-0.5 h-4 w-4 shrink-0" /> {s.members.join("、")}
+            </div>
+          )}
+        </section>
+
+        <section className="space-y-3 rounded-xl border border-primary/40 bg-primary/5 p-4">
+          <div className="flex items-center gap-1.5 font-semibold">
+            <BookOpen className="h-4 w-4 text-primary" /> この時間を学習記録に追加
+          </div>
+          <div className="flex gap-2">
+            <select
+              value={subjectId}
+              onChange={(e) => setSubjectId(e.target.value)}
+              className="h-10 flex-1 rounded-md border border-input bg-background px-2 text-sm"
+              disabled={saved}
+            >
+              <option value="">教科なし</option>
+              {subjects.map((sub) => (
+                <option key={sub.id} value={sub.id}>
+                  {sub.name}
+                </option>
+              ))}
+            </select>
+            <Input
+              type="number"
+              min={1}
+              className="w-24"
+              value={minutes}
+              onChange={(e) => setMinutes(Math.max(1, Number(e.target.value) || 1))}
+              disabled={saved}
+            />
+            <span className="self-center text-sm">分</span>
+          </div>
+          <Button className="w-full" onClick={save} disabled={saved || saving}>
+            {saved ? "記録しました" : saving ? "保存中…" : "学習記録に登録"}
+          </Button>
+        </section>
+
+        {s.chat.length > 0 && (
+          <section className="space-y-2 rounded-xl border border-border p-4">
+            <div className="flex items-center gap-1.5 font-semibold">
+              <MessageSquare className="h-4 w-4" /> チャット {s.chat.length}件（保存されていません）
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={async () => {
+                  await navigator.clipboard.writeText(fullText);
+                  toast.success("コピーしました");
+                }}
+              >
+                <Copy className="mr-1.5 h-4 w-4" /> コピー
+              </Button>
+              <Button variant="outline" className="flex-1" onClick={download}>
+                <Download className="mr-1.5 h-4 w-4" /> .txt保存
+              </Button>
+            </div>
+          </section>
+        )}
+
+        <div className="grid grid-cols-2 gap-2">
+          <Button onClick={() => navigate({ to: "/meetings" })}>ロビーに戻る</Button>
+          <Button variant="outline" onClick={() => navigate({ to: "/notes" })}>ノートを書く</Button>
+          <Button variant="outline" onClick={() => navigate({ to: "/study" })}>学習記録を見る</Button>
+          <Button variant="outline" onClick={() => navigate({ to: "/makron" })}>演習へ</Button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function VideoEl({ stream, muted, mirror }: { stream: MediaStream | null; muted?: boolean; mirror?: boolean }) {
@@ -99,9 +241,24 @@ function VideoEl({ stream, muted, mirror }: { stream: MediaStream | null; muted?
   );
 }
 
-function Room({ meeting: initial, userId, name }: { meeting: MeetingInfo; userId: string; name: string }) {
-  const navigate = useNavigate();
+function Room({
+  meeting: initial,
+  userId,
+  name,
+  onEnded,
+}: {
+  meeting: MeetingInfo;
+  userId: string;
+  name: string;
+  onEnded: (s: MeetingSummary) => void;
+}) {
   const withVideo = typeof window !== "undefined" && sessionStorage.getItem("meeting.video") !== "0";
+  const startedAt = useRef(Date.now());
+  const snap = useRef<{ title: string; chat: MeetingSummary["chat"]; names: Set<string> }>({
+    title: initial.title,
+    chat: [],
+    names: new Set(),
+  });
   const room = useMeetingRoom({
     meeting: initial,
     userId,
@@ -109,11 +266,19 @@ function Room({ meeting: initial, userId, name }: { meeting: MeetingInfo; userId
     withVideo,
     onLeave: (reason) => {
       if (reason === "kicked") toast.error("主催者により退出しました");
-      if (reason === "ended") toast("会議は終了しました");
-      navigate({ to: "/meetings" });
+      onEnded({
+        title: snap.current.title,
+        reason,
+        minutes: Math.max(1, Math.round((Date.now() - startedAt.current) / 60000)),
+        members: [...snap.current.names],
+        chat: snap.current.chat,
+      });
     },
   });
   const { meeting, isHost } = room;
+  snap.current.title = meeting.title;
+  snap.current.chat = room.chat.map((c) => ({ name: c.from === userId ? "自分" : c.name, text: c.text, at: c.at }));
+  room.peers.forEach((p) => p.uid !== userId && snap.current.names.add(p.name));
   const [panel, setPanel] = useState<"people" | "chat" | null>(null);
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
