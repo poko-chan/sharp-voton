@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Mic,
   MicOff,
@@ -509,7 +509,7 @@ function ShareView({ stream }: { stream: MediaStream | null }) {
   return <video ref={ref} autoPlay playsInline muted className="h-full w-full object-contain" />;
 }
 
-function SettingRow(props: { icon: React.ReactNode; label: string; desc: string; checked: boolean; onChange: (v: boolean) => void }) {
+function SettingRow(props: { icon: ReactNode; label: string; desc: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <div className="flex items-start gap-3">
       <div className="mt-0.5 text-primary">{props.icon}</div>
@@ -523,7 +523,7 @@ function SettingRow(props: { icon: React.ReactNode; label: string; desc: string;
 }
 
 function CtrlBtn(props: {
-  children: React.ReactNode;
+  children: ReactNode;
   label: string;
   active?: boolean;
   danger?: boolean;
