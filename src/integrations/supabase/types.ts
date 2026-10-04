@@ -3537,6 +3537,80 @@ export type Database = {
         }
         Relationships: []
       }
+      meeting_participants: {
+        Row: {
+          joined_at: string
+          kicked: boolean
+          meeting_id: string
+          user_id: string
+        }
+        Insert: {
+          joined_at?: string
+          kicked?: boolean
+          meeting_id: string
+          user_id: string
+        }
+        Update: {
+          joined_at?: string
+          kicked?: boolean
+          meeting_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_participants_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meetings: {
+        Row: {
+          allow_screen_share: boolean
+          code: string
+          created_at: string
+          created_by: string
+          ended_at: string | null
+          host_id: string
+          id: string
+          is_locked: boolean
+          mute_on_entry: boolean
+          password_hash: string | null
+          status: string
+          title: string
+        }
+        Insert: {
+          allow_screen_share?: boolean
+          code: string
+          created_at?: string
+          created_by: string
+          ended_at?: string | null
+          host_id: string
+          id?: string
+          is_locked?: boolean
+          mute_on_entry?: boolean
+          password_hash?: string | null
+          status?: string
+          title: string
+        }
+        Update: {
+          allow_screen_share?: boolean
+          code?: string
+          created_at?: string
+          created_by?: string
+          ended_at?: string | null
+          host_id?: string
+          id?: string
+          is_locked?: boolean
+          mute_on_entry?: boolean
+          password_hash?: string | null
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
       mentor_sessions: {
         Row: {
           answer: string | null
@@ -8551,6 +8625,10 @@ export type Database = {
         Args: { _member_ids: string[]; _name: string }
         Returns: string
       }
+      create_meeting: {
+        Args: { _mute_on_entry: boolean; _password: string; _title: string }
+        Returns: Json
+      }
       current_jst_date: { Args: never; Returns: string }
       delete_makron_pack: { Args: { _pack_id: string }; Returns: undefined }
       finalize_makron_session: {
@@ -8676,6 +8754,10 @@ export type Database = {
         Args: { _group: string; _user: string }
         Returns: boolean
       }
+      is_meeting_participant: {
+        Args: { _meeting: string; _user: string }
+        Returns: boolean
+      }
       is_org_admin: { Args: { _org: string; _user: string }; Returns: boolean }
       is_org_member: { Args: { _org: string; _user: string }; Returns: boolean }
       is_org_staff: { Args: { _org: string; _user: string }; Returns: boolean }
@@ -8689,6 +8771,10 @@ export type Database = {
       }
       join_class_by_code: { Args: { _code: string }; Returns: string }
       join_group_room_by_code: { Args: { _code: string }; Returns: string }
+      join_meeting: {
+        Args: { _code: string; _password: string }
+        Returns: Json
+      }
       jst_today: { Args: never; Returns: string }
       leave_chat_group: { Args: { _group: string }; Returns: undefined }
       list_chat_conversations: {
@@ -8860,6 +8946,19 @@ export type Database = {
           total_minutes: number
           users_count: number
         }[]
+      }
+      meeting_host_action: {
+        Args: {
+          _action: string
+          _meeting: string
+          _target: string
+          _value: boolean
+        }
+        Returns: Json
+      }
+      meeting_public: {
+        Args: { m: Database["public"]["Tables"]["meetings"]["Row"] }
+        Returns: Json
       }
       my_material_usage: {
         Args: never

@@ -74,6 +74,7 @@ import { Route as AuthenticatedAiChatRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedOrganizationsIndexRouteImport } from './routes/_authenticated/organizations.index'
 import { Route as AuthenticatedNotebooksIndexRouteImport } from './routes/_authenticated/notebooks.index'
+import { Route as AuthenticatedMeetingsIndexRouteImport } from './routes/_authenticated/meetings.index'
 import { Route as AuthenticatedMaterialsIndexRouteImport } from './routes/_authenticated/materials.index'
 import { Route as AuthenticatedMakronIndexRouteImport } from './routes/_authenticated/makron.index'
 import { Route as AuthenticatedExamsIndexRouteImport } from './routes/_authenticated/exams.index'
@@ -81,6 +82,7 @@ import { Route as AuthenticatedClassroomIndexRouteImport } from './routes/_authe
 import { Route as ApiPublicAiTrialRouteImport } from './routes/api/public/ai-trial'
 import { Route as AuthenticatedOrganizationsOrgIdRouteImport } from './routes/_authenticated/organizations.$orgId'
 import { Route as AuthenticatedNotebooksIdRouteImport } from './routes/_authenticated/notebooks.$id'
+import { Route as AuthenticatedMeetingsCodeRouteImport } from './routes/_authenticated/meetings.$code'
 import { Route as AuthenticatedMaterialsIdRouteImport } from './routes/_authenticated/materials.$id'
 import { Route as AuthenticatedMakronUnitsRouteImport } from './routes/_authenticated/makron.units'
 import { Route as AuthenticatedMakronLabelsRouteImport } from './routes/_authenticated/makron.labels'
@@ -436,6 +438,12 @@ const AuthenticatedNotebooksIndexRoute =
     path: '/notebooks/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedMeetingsIndexRoute =
+  AuthenticatedMeetingsIndexRouteImport.update({
+    id: '/meetings/',
+    path: '/meetings/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedMaterialsIndexRoute =
   AuthenticatedMaterialsIndexRouteImport.update({
     id: '/',
@@ -474,6 +482,12 @@ const AuthenticatedNotebooksIdRoute =
   AuthenticatedNotebooksIdRouteImport.update({
     id: '/notebooks/$id',
     path: '/notebooks/$id',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMeetingsCodeRoute =
+  AuthenticatedMeetingsCodeRouteImport.update({
+    id: '/meetings/$code',
+    path: '/meetings/$code',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedMaterialsIdRoute =
@@ -689,6 +703,7 @@ export interface FileRoutesByFullPath {
   '/makron/labels': typeof AuthenticatedMakronLabelsRoute
   '/makron/units': typeof AuthenticatedMakronUnitsRoute
   '/materials/$id': typeof AuthenticatedMaterialsIdRoute
+  '/meetings/$code': typeof AuthenticatedMeetingsCodeRoute
   '/notebooks/$id': typeof AuthenticatedNotebooksIdRoute
   '/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdRouteWithChildren
   '/api/public/ai-trial': typeof ApiPublicAiTrialRoute
@@ -696,6 +711,7 @@ export interface FileRoutesByFullPath {
   '/exams/': typeof AuthenticatedExamsIndexRoute
   '/makron/': typeof AuthenticatedMakronIndexRoute
   '/materials/': typeof AuthenticatedMaterialsIndexRoute
+  '/meetings/': typeof AuthenticatedMeetingsIndexRoute
   '/notebooks/': typeof AuthenticatedNotebooksIndexRoute
   '/organizations/': typeof AuthenticatedOrganizationsIndexRoute
   '/exams/series/$seriesId': typeof AuthenticatedExamsSeriesSeriesIdRoute
@@ -782,12 +798,14 @@ export interface FileRoutesByTo {
   '/makron/labels': typeof AuthenticatedMakronLabelsRoute
   '/makron/units': typeof AuthenticatedMakronUnitsRoute
   '/materials/$id': typeof AuthenticatedMaterialsIdRoute
+  '/meetings/$code': typeof AuthenticatedMeetingsCodeRoute
   '/notebooks/$id': typeof AuthenticatedNotebooksIdRoute
   '/api/public/ai-trial': typeof ApiPublicAiTrialRoute
   '/classroom': typeof AuthenticatedClassroomIndexRoute
   '/exams': typeof AuthenticatedExamsIndexRoute
   '/makron': typeof AuthenticatedMakronIndexRoute
   '/materials': typeof AuthenticatedMaterialsIndexRoute
+  '/meetings': typeof AuthenticatedMeetingsIndexRoute
   '/notebooks': typeof AuthenticatedNotebooksIndexRoute
   '/organizations': typeof AuthenticatedOrganizationsIndexRoute
   '/exams/series/$seriesId': typeof AuthenticatedExamsSeriesSeriesIdRoute
@@ -879,6 +897,7 @@ export interface FileRoutesById {
   '/_authenticated/makron/labels': typeof AuthenticatedMakronLabelsRoute
   '/_authenticated/makron/units': typeof AuthenticatedMakronUnitsRoute
   '/_authenticated/materials/$id': typeof AuthenticatedMaterialsIdRoute
+  '/_authenticated/meetings/$code': typeof AuthenticatedMeetingsCodeRoute
   '/_authenticated/notebooks/$id': typeof AuthenticatedNotebooksIdRoute
   '/_authenticated/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdRouteWithChildren
   '/api/public/ai-trial': typeof ApiPublicAiTrialRoute
@@ -886,6 +905,7 @@ export interface FileRoutesById {
   '/_authenticated/exams/': typeof AuthenticatedExamsIndexRoute
   '/_authenticated/makron/': typeof AuthenticatedMakronIndexRoute
   '/_authenticated/materials/': typeof AuthenticatedMaterialsIndexRoute
+  '/_authenticated/meetings/': typeof AuthenticatedMeetingsIndexRoute
   '/_authenticated/notebooks/': typeof AuthenticatedNotebooksIndexRoute
   '/_authenticated/organizations/': typeof AuthenticatedOrganizationsIndexRoute
   '/_authenticated/exams/series/$seriesId': typeof AuthenticatedExamsSeriesSeriesIdRoute
@@ -978,6 +998,7 @@ export interface FileRouteTypes {
     | '/makron/labels'
     | '/makron/units'
     | '/materials/$id'
+    | '/meetings/$code'
     | '/notebooks/$id'
     | '/organizations/$orgId'
     | '/api/public/ai-trial'
@@ -985,6 +1006,7 @@ export interface FileRouteTypes {
     | '/exams/'
     | '/makron/'
     | '/materials/'
+    | '/meetings/'
     | '/notebooks/'
     | '/organizations/'
     | '/exams/series/$seriesId'
@@ -1071,12 +1093,14 @@ export interface FileRouteTypes {
     | '/makron/labels'
     | '/makron/units'
     | '/materials/$id'
+    | '/meetings/$code'
     | '/notebooks/$id'
     | '/api/public/ai-trial'
     | '/classroom'
     | '/exams'
     | '/makron'
     | '/materials'
+    | '/meetings'
     | '/notebooks'
     | '/organizations'
     | '/exams/series/$seriesId'
@@ -1167,6 +1191,7 @@ export interface FileRouteTypes {
     | '/_authenticated/makron/labels'
     | '/_authenticated/makron/units'
     | '/_authenticated/materials/$id'
+    | '/_authenticated/meetings/$code'
     | '/_authenticated/notebooks/$id'
     | '/_authenticated/organizations/$orgId'
     | '/api/public/ai-trial'
@@ -1174,6 +1199,7 @@ export interface FileRouteTypes {
     | '/_authenticated/exams/'
     | '/_authenticated/makron/'
     | '/_authenticated/materials/'
+    | '/_authenticated/meetings/'
     | '/_authenticated/notebooks/'
     | '/_authenticated/organizations/'
     | '/_authenticated/exams/series/$seriesId'
@@ -1687,6 +1713,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotebooksIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/meetings/': {
+      id: '/_authenticated/meetings/'
+      path: '/meetings'
+      fullPath: '/meetings/'
+      preLoaderRoute: typeof AuthenticatedMeetingsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/materials/': {
       id: '/_authenticated/materials/'
       path: '/'
@@ -1734,6 +1767,13 @@ declare module '@tanstack/react-router' {
       path: '/notebooks/$id'
       fullPath: '/notebooks/$id'
       preLoaderRoute: typeof AuthenticatedNotebooksIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/meetings/$code': {
+      id: '/_authenticated/meetings/$code'
+      path: '/meetings/$code'
+      fullPath: '/meetings/$code'
+      preLoaderRoute: typeof AuthenticatedMeetingsCodeRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/materials/$id': {
@@ -2070,8 +2110,10 @@ interface AuthenticatedRouteChildren {
   AuthenticatedXlangRoute: typeof AuthenticatedXlangRoute
   AuthenticatedAdminLineRoute: typeof AuthenticatedAdminLineRoute
   AuthenticatedClassroomClassIdRoute: typeof AuthenticatedClassroomClassIdRoute
+  AuthenticatedMeetingsCodeRoute: typeof AuthenticatedMeetingsCodeRoute
   AuthenticatedNotebooksIdRoute: typeof AuthenticatedNotebooksIdRoute
   AuthenticatedClassroomIndexRoute: typeof AuthenticatedClassroomIndexRoute
+  AuthenticatedMeetingsIndexRoute: typeof AuthenticatedMeetingsIndexRoute
   AuthenticatedNotebooksIndexRoute: typeof AuthenticatedNotebooksIndexRoute
 }
 
@@ -2111,8 +2153,10 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedXlangRoute: AuthenticatedXlangRoute,
   AuthenticatedAdminLineRoute: AuthenticatedAdminLineRoute,
   AuthenticatedClassroomClassIdRoute: AuthenticatedClassroomClassIdRoute,
+  AuthenticatedMeetingsCodeRoute: AuthenticatedMeetingsCodeRoute,
   AuthenticatedNotebooksIdRoute: AuthenticatedNotebooksIdRoute,
   AuthenticatedClassroomIndexRoute: AuthenticatedClassroomIndexRoute,
+  AuthenticatedMeetingsIndexRoute: AuthenticatedMeetingsIndexRoute,
   AuthenticatedNotebooksIndexRoute: AuthenticatedNotebooksIndexRoute,
 }
 
