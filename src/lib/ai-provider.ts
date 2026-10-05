@@ -361,6 +361,11 @@ export async function createAiSession(opts?: {
     });
   }
 
+  if (target.engine === "cloud") {
+    const s = createCloudSession({ system: opts?.system, modelId: target.modelId ?? undefined });
+    return Object.assign(s, { engine: "cloud" as const, modelLabel: target.modelLabel });
+  }
+
   throw new Error("使える端末内 AI がありません。AI設定からモデルをダウンロードしてください。");
 }
 
