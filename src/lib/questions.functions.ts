@@ -189,7 +189,7 @@ export const recordAttempt = createServerFn({ method: "POST" })
                 .toLowerCase()
             : data.markWrong
               ? true
-              : (row?.was_wrong ?? null),
+              : false,
       })
       .eq("id", data.id);
     if (error) throw error;

@@ -205,8 +205,8 @@ export const getChildFullDashboard = createServerFn({ method: "POST" })
         .from("today_entries")
         .select("*")
         .eq("user_id", cid)
-        .gte("planned_date", since90)
-        .order("planned_date", { ascending: false })
+        .gte("date", since90)
+        .order("date", { ascending: false })
         .limit(200),
       supabaseAdmin
         .from("goals")
@@ -218,7 +218,7 @@ export const getChildFullDashboard = createServerFn({ method: "POST" })
         .from("exams")
         .select("*")
         .eq("user_id", cid)
-        .order("date", { ascending: false })
+        .order("start_date", { ascending: false })
         .limit(20),
       supabaseAdmin.from("exam_subjects").select("*").eq("user_id", cid).limit(200),
       supabaseAdmin.from("streak_freezes").select("*").eq("user_id", cid),
@@ -246,12 +246,12 @@ export const getChildFullDashboard = createServerFn({ method: "POST" })
         .from("focus_logs")
         .select("*")
         .eq("user_id", cid)
-        .gte("started_at", sinceIso)
-        .order("started_at", { ascending: false })
+        .gte("created_at", sinceIso)
+        .order("created_at", { ascending: false })
         .limit(200),
       supabaseAdmin
         .from("sticky_notes")
-        .select("id, title, updated_at")
+        .select("id, content, updated_at")
         .eq("user_id", cid)
         .order("updated_at", { ascending: false })
         .limit(30),
