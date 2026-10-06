@@ -15,7 +15,6 @@ import {
   CreditCard,
   AlertTriangle,
   MessageSquare,
-  Building2,
   MessageCircle,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -28,7 +27,6 @@ import { AppearanceSection } from "@/components/settings/AppearanceSection";
 import { NotificationsSection } from "@/components/settings/NotificationsSection";
 import { StudySection } from "@/components/settings/StudySection";
 import { ChatSection } from "@/components/settings/ChatSection";
-import { TownSection } from "@/components/settings/TownSection";
 import { PrivacySection } from "@/components/settings/PrivacySection";
 import { AiSection } from "@/components/settings/AiSection";
 import { LanguageSection } from "@/components/settings/LanguageSection";
@@ -117,12 +115,6 @@ const CATEGORIES: SettingsCategory[] = [
     label: "チャット",
     icon: MessageSquare,
     keywords: ["チャット", "メッセージ", "送信", "enter", "リアクション", "chat"],
-  },
-  {
-    id: "town",
-    label: "街",
-    icon: Building2,
-    keywords: ["街", "まち", "3D", "回転", "都市", "town"],
   },
   {
     id: "privacy",
@@ -226,7 +218,6 @@ const SECTIONS: Record<SettingsCategoryId, React.ComponentType> = {
   notifications: NotificationsSection,
   study: StudySection,
   chat: ChatSection,
-  town: TownSection,
   privacy: PrivacySection,
   ai: AiSection,
   language: LanguageSection,
