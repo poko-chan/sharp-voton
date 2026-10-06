@@ -681,18 +681,6 @@ function PackPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs">1問あたりコイン</label>
-                      <Input
-                        type="number"
-                        min={0}
-                        value={pack.coin_per_question ?? 1}
-                        onChange={(e) =>
-                          setPack({ ...pack, coin_per_question: Number(e.target.value) })
-                        }
-                        onBlur={() => saveSettings({ coin_per_question: pack.coin_per_question })}
-                      />
-                    </div>
-                    <div>
                       <label className="text-xs">1人あたりXP上限（空欄 = 無制限）</label>
                       <Input
                         type="number"
@@ -704,20 +692,6 @@ function PackPage() {
                           })
                         }
                         onBlur={() => saveSettings({ xp_cap_per_user: pack.xp_cap_per_user })}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs">1人あたりコイン上限（空欄 = 無制限）</label>
-                      <Input
-                        type="number"
-                        value={pack.coin_cap_per_user ?? ""}
-                        onChange={(e) =>
-                          setPack({
-                            ...pack,
-                            coin_cap_per_user: e.target.value ? Number(e.target.value) : null,
-                          })
-                        }
-                        onBlur={() => saveSettings({ coin_cap_per_user: pack.coin_cap_per_user })}
                       />
                     </div>
                     <div>

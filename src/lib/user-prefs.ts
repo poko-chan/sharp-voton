@@ -230,10 +230,6 @@ export type LocalPrefs = {
   chat_show_time: boolean; // 時刻を表示
   chat_font_scale: number; // 吹き出しの文字サイズ倍率
   chat_send_sound: boolean; // 送信時の効果音
-  // 街
-  town_auto_rotate: boolean; // 3Dの自動回転
-  town_show_labels: boolean; // 建物名ラベル
-  town_default_tab: "economy" | "policy" | "build" | "map" | "info";
   // 表示・操作
   home_start_page: "dashboard" | "study" | "timer" | "makron" | "chat";
   sticky_header: boolean;
@@ -309,9 +305,6 @@ export const DEFAULT_LOCAL_PREFS: LocalPrefs = {
   chat_show_time: true,
   chat_font_scale: 1,
   chat_send_sound: false,
-  town_auto_rotate: true,
-  town_show_labels: true,
-  town_default_tab: "economy",
   home_start_page: "dashboard",
   sticky_header: true,
   card_shadows: true,

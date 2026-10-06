@@ -8,56 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Wrench, Coins, Database } from "lucide-react";
+import { Wrench, Database } from "lucide-react";
 import { toast } from "sonner";
-
-export function CoinGrantAllTab() {
-  const [amount, setAmount] = useState<number>(100);
-  const [reason, setReason] = useState<string>("管理者からのプレゼント");
-  const [busy, setBusy] = useState(false);
-  const grant = async () => {
-    if (!confirm(`全ユーザーに ${amount} コインを配布します。よろしいですか？`)) return;
-    setBusy(true);
-    const { data, error } = await (supabase as any).rpc("admin_grant_coins_to_all", {
-      _amount: amount,
-      _reason: reason,
-    });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success(`${data ?? 0} 人に配布しました`);
-  };
-  return (
-    <Card className="p-6 max-w-xl space-y-3">
-      <div className="flex items-center gap-2 font-bold">
-        <Coins className="h-5 w-5 text-amber-500" />
-        全ユーザーへコイン一括配布
-      </div>
-      <div className="text-xs text-muted-foreground">
-        保護者アカウント以外のすべてのユーザーに、同じ金額を一度に付与します。
-      </div>
-      <div>
-        <Label>金額（負数で回収も可）</Label>
-        <Input
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(parseInt(e.target.value) || 0)}
-        />
-      </div>
-      <div>
-        <Label>理由・メッセージ</Label>
-        <Input
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder="例: イベント報酬"
-        />
-      </div>
-      <Button onClick={grant} disabled={busy || !amount}>
-        <Coins className="h-4 w-4 mr-1" />
-        配布する
-      </Button>
-    </Card>
-  );
-}
 
 export function MaintenanceTab() {
   const update = useServerFn(adminUpdateMaintenance);

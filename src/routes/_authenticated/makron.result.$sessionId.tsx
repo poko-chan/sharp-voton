@@ -5,7 +5,7 @@ import { MakronShell } from "@/components/makron/MakronShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Check, X, Copy, Award, Zap, Coins } from "lucide-react";
+import { Check, X, Copy, Award, Zap } from "lucide-react";
 import { ReportDialog } from "@/components/makron/ReportDialog";
 import { toast } from "sonner";
 import { Bookmark, BookmarkCheck } from "lucide-react";
@@ -173,9 +173,6 @@ function ResultPage() {
           <div className="flex justify-center gap-4 mt-3 text-sm">
             <div className="flex items-center gap-1">
               <Zap className="h-4 w-4 text-primary" />+{session.xp_awarded} XP
-            </div>
-            <div className="flex items-center gap-1">
-              <Coins className="h-4 w-4 text-amber-500" />+{session.coins_awarded} コイン
             </div>
           </div>
         </Card>

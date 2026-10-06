@@ -112,19 +112,6 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       } as any);
       if (error) toast.error(error.message);
       else {
-        // Also snap into Today timeline as a study block (#5/#6 timer→Today auto sync)
-        try {
-          await (supabase as any).from("today_entries").insert({
-            user_id: user.id,
-            date: localDateStr(),
-            category: "study",
-            label: state.content || kindLabel,
-            color: "#22c55e",
-            start_time: startTime,
-            end_time: endTime,
-            material_ids: state.materialIds ?? [],
-          });
-        } catch {}
         toast.success(`${minutes}分を記録しました🎉`);
         emitProfileChange();
       }

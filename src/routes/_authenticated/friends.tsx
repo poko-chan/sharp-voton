@@ -14,8 +14,6 @@ import {
   UserPlus,
   Trophy,
   UserMinus,
-  Coins,
-  Gift,
   Search,
   Heart,
   MessageCircle,
@@ -62,24 +60,8 @@ function FriendsPage() {
   const [results, setResults] = useState<Profile[] | null>(null);
   const [searching, setSearching] = useState(false);
   const [board, setBoard] = useState<Array<Profile & { minutes: number }>>([]);
-  const [giftTarget, setGiftTarget] = useState<Profile | null>(null);
-  const [giftAmount, setGiftAmount] = useState(10);
-  const [giftMsg, setGiftMsg] = useState("");
   const [profileTarget, setProfileTarget] = useState<Profile | null>(null);
   const [tab, setTab] = useState("friends");
-
-  const sendGift = async () => {
-    if (!giftTarget) return;
-    const { error } = await (supabase as any).rpc("send_coin_gift", {
-      _to: giftTarget.id,
-      _amount: giftAmount,
-      _message: giftMsg,
-    });
-    if (error) return toast.error(error.message);
-    toast.success(`${giftAmount}コインを送りました`);
-    setGiftTarget(null);
-    setGiftMsg("");
-  };
 
   const load = async () => {
     if (!user) return;
@@ -291,10 +273,6 @@ function FriendsPage() {
           <Button size="sm" variant="outline" onClick={() => openDm(p)}>
             <MessageCircle className="h-4 w-4 mr-1" />
             DMを開く
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => setGiftTarget(p)}>
-            <Gift className="h-4 w-4 mr-1" />
-            コイン
           </Button>
           <CallButtons peerId={p.id} peerName={p.display_name ?? "フレンド"} size="icon" />
         </>
@@ -530,51 +508,6 @@ function FriendsPage() {
           ))}
         </Card>
       )}
-
-      <Dialog open={!!giftTarget} onOpenChange={(v) => !v && setGiftTarget(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{giftTarget?.display_name} にコインを贈る</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs">金額 (最低10コイン)</label>
-              <Input
-                type="number"
-                min={10}
-                max={500}
-                value={giftAmount}
-                onChange={(e) => setGiftAmount(Math.max(10, Number(e.target.value) || 10))}
-              />
-              <div className="text-[11px] text-amber-600 mt-1">
-                税 (10%): <b>{Math.ceil(giftAmount * 0.1)}</b> コイン ／ 相手が受け取る:{" "}
-                <b>{giftAmount - Math.ceil(giftAmount * 0.1)}</b> コイン
-              </div>
-            </div>
-            <div>
-              <label className="text-xs">メッセージ (任意)</label>
-              <Input
-                value={giftMsg}
-                onChange={(e) => setGiftMsg(e.target.value)}
-                placeholder="ありがとう！"
-              />
-            </div>
-            <div className="text-[11px] text-muted-foreground">
-              ※ 相互フォローのみ送付可能 ／ 1日最大3回・合計500コインまで ／
-              アカウント作成から24h以降に解放
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setGiftTarget(null)}>
-              キャンセル
-            </Button>
-            <Button onClick={sendGift}>
-              <Coins className="h-4 w-4 mr-1" />
-              送る
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={!!profileTarget} onOpenChange={(v) => !v && setProfileTarget(null)}>
         <DialogContent>

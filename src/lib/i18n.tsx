@@ -206,7 +206,7 @@ const dict = {
     "settings.dataExport": "Data export",
     "settings.dataExportDesc": "Export your study logs and schedule.",
     "settings.currentPlan": "Current plan",
-    "settings.invite": "Invite friends (+10 coins)",
+    "settings.invite": "Invite friends",
     "settings.dangerZone": "Delete account",
 
     "login.title": "Sign in",

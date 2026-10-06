@@ -32,7 +32,7 @@ function ReferralPage() {
         toast.error(error.message);
       } else {
         setStatus("ok");
-        toast.success("+10コインを獲得しました！");
+        toast.success("招待を受け取りました");
         try {
           localStorage.removeItem("pending_referral_code");
         } catch {}
@@ -45,7 +45,7 @@ function ReferralPage() {
       <Card className="p-6 text-center space-y-3">
         <h1 className="text-2xl font-bold">招待コード: {code}</h1>
         {status === "idle" && <p>処理中…</p>}
-        {status === "ok" && <p className="text-green-600">10コインを受け取りました！</p>}
+        {status === "ok" && <p className="text-green-600">招待を受け取りました。ようこそ！</p>}
         {status === "err" && <p className="text-destructive text-sm">{msg}</p>}
         <Button onClick={() => navigate({ to: "/dashboard" })}>ホームへ</Button>
       </Card>
