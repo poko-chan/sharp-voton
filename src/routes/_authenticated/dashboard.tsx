@@ -74,7 +74,6 @@ import {
 import { localDateStr, addDaysStr } from "@/lib/date";
 import { levelInfo } from "@/lib/level";
 import { buildReport } from "@/lib/report-pdf";
-import { TodayBreakdownChart } from "@/components/TodayBreakdownChart";
 import { WeeklySubjectDiff } from "@/components/WeeklySubjectDiff";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { FocusPanel } from "@/components/dashboard/FocusPanel";
@@ -1311,7 +1310,6 @@ function FullDashboard() {
         </Card>
       )}
 
-      <TodayBreakdownChart />
 
       <WeeklySubjectDiff />
       <DashboardRanking />

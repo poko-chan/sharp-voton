@@ -19,11 +19,9 @@ import {
   BellRing,
   Flame,
   Building2,
-  ShoppingBag,
   LineChart,
   Share2,
   FileDown,
-  Bot,
   type LucideIcon,
 } from "lucide-react";
 
@@ -130,7 +128,6 @@ export const APPS: AppEntry[] = [
     icon: Sparkles,
     group: "学習",
   },
-  { to: "/mentor", label: "メンター", keywords: "mentor 相談", icon: Bot, group: "学習" },
   {
     to: "/chat",
     label: "チャット",

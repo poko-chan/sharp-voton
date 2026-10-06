@@ -36,7 +36,7 @@ import {
   Pencil,
   LogIn,
   Plus,
-  Coins,
+  Zap,
   Save,
   Ban,
   ChevronLeft,
@@ -486,17 +486,14 @@ export function UserRow({
 export function UserCoinXpPopover({ userId }: { userId: string }) {
   const [open, setOpen] = useState(false);
   const [xp, setXp] = useState<number>(0);
-  const [coins, setCoins] = useState<number>(0);
-  const [grantAmt, setGrantAmt] = useState<number>(100);
-  const [grantMsg, setGrantMsg] = useState<string>("");
 
   const load = async () => {
-    const [{ data: x }, { data: c }] = await Promise.all([
-      (supabase as any).from("makron_xp").select("xp").eq("user_id", userId).maybeSingle(),
-      supabase.from("user_coins").select("balance").eq("user_id", userId).maybeSingle(),
-    ]);
+    const { data: x } = await (supabase as any)
+      .from("makron_xp")
+      .select("xp")
+      .eq("user_id", userId)
+      .maybeSingle();
     setXp(x?.xp ?? 0);
-    setCoins(c?.balance ?? 0);
   };
   return (
     <Dialog
@@ -507,13 +504,13 @@ export function UserCoinXpPopover({ userId }: { userId: string }) {
       }}
     >
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" title="XP / コイン編集">
-          <Coins className="h-3.5 w-3.5" />
+        <Button size="sm" variant="outline" title="XP編集">
+          <Zap className="h-3.5 w-3.5" />
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>XP / コイン編集</DialogTitle>
+          <DialogTitle>XP編集</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div>
@@ -537,59 +534,6 @@ export function UserCoinXpPopover({ userId }: { userId: string }) {
                 <Save className="h-4 w-4" />
               </Button>
             </div>
-          </div>
-          <div>
-            <Label>コイン残高 (絶対値で上書き)</Label>
-            <div className="flex gap-2">
-              <Input
-                type="number"
-                value={coins}
-                onChange={(e) => setCoins(Number(e.target.value) || 0)}
-              />
-              <Button
-                onClick={async () => {
-                  const { error } = await (supabase as any).rpc("admin_set_user_coins", {
-                    _user_id: userId,
-                    _balance: coins,
-                  });
-                  if (error) return toast.error(error.message);
-                  toast.success("コインを更新しました");
-                }}
-              >
-                <Save className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          <div className="border-t pt-3 space-y-2">
-            <Label>コインを贈呈 (加算 / メッセージ付き通知)</Label>
-            <Input
-              type="number"
-              placeholder="金額"
-              value={grantAmt}
-              onChange={(e) => setGrantAmt(Number(e.target.value) || 0)}
-            />
-            <Input
-              placeholder="メッセージ"
-              value={grantMsg}
-              onChange={(e) => setGrantMsg(e.target.value)}
-            />
-            <Button
-              className="w-full"
-              onClick={async () => {
-                const { error } = await (supabase as any).rpc("admin_grant_coins", {
-                  _user_id: userId,
-                  _amount: grantAmt,
-                  _message: grantMsg,
-                });
-                if (error) return toast.error(error.message);
-                toast.success("コインを贈呈しました");
-                load();
-                setGrantMsg("");
-              }}
-            >
-              <Coins className="h-4 w-4 mr-1" />
-              贈呈
-            </Button>
           </div>
         </div>
       </DialogContent>

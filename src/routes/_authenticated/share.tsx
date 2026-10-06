@@ -67,30 +67,6 @@ function SharePage() {
     download(csv, "study_logs.csv", "text/csv");
   };
 
-  const exportICS = async () => {
-    if (!user) return;
-    const { data } = await supabase
-      .from("today_entries")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("date");
-    const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Study#//JP"];
-    for (const e of (data ?? []) as any[]) {
-      const dt = (d: string, t: string) =>
-        `${d.replace(/-/g, "")}T${t.replace(/:/g, "").slice(0, 4)}00`;
-      ics.push(
-        "BEGIN:VEVENT",
-        `UID:${e.id}@studyplus`,
-        `SUMMARY:${(e.label || e.category).replace(/\n/g, " ")}`,
-        `DTSTART:${dt(e.date, e.start_time)}`,
-        `DTEND:${dt(e.date, e.end_time)}`,
-        "END:VEVENT",
-      );
-    }
-    ics.push("END:VCALENDAR");
-    download(ics.join("\r\n"), "today.ics", "text/calendar");
-  };
-
   return (
     <div className="p-4 md:p-8 max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
@@ -148,13 +124,9 @@ function SharePage() {
             <Download className="h-4 w-4 mr-1" />
             勉強記録 CSV
           </Button>
-          <Button variant="outline" onClick={exportICS}>
-            <Download className="h-4 w-4 mr-1" />
-            Today iCal (.ics)
-          </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          CSV は Excel / Google スプレッドシート、ICS は Google カレンダー等にインポートできます。
+          CSV は Excel / Google スプレッドシートで開けます。
         </p>
       </Card>
     </div>

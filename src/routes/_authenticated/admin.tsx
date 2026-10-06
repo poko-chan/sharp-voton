@@ -8,7 +8,6 @@ import {
   BellRing,
   BookOpen,
   Building2,
-  Coins,
   CreditCard,
   Database,
   ExternalLink,
@@ -26,7 +25,6 @@ import { UsersTab } from "@/components/admin/users";
 import { RestrictionsHub } from "@/components/admin/restrictions";
 import { AnnouncementsTab, FaqTab, LoginBoardsTab } from "@/components/admin/content";
 import {
-  CoinGrantAllTab,
   LowDataModeTab,
   MaintenanceTab,
   VersionTab,
@@ -53,7 +51,6 @@ type AdminTab =
   | "version"
   | "announcements"
   | "feedback"
-  | "coingrant"
   | "boards"
   | "notifications"
   | "lowdata"
@@ -137,12 +134,6 @@ const groups: { title: string; items: AdminItem[] }[] = [
         label: "バージョン",
         description: "アプリのバージョン情報",
         icon: Settings,
-      },
-      {
-        tab: "coingrant",
-        label: "コイン一括配布",
-        description: "全ユーザーへコインを付与",
-        icon: Coins,
       },
       {
         tab: "plans",
@@ -265,8 +256,6 @@ function renderTab(tab: AdminTab) {
       return <AnnouncementsTab />;
     case "feedback":
       return <FeedbackTab />;
-    case "coingrant":
-      return <CoinGrantAllTab />;
     case "boards":
       return <LoginBoardsTab />;
     case "notifications":
