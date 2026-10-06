@@ -15,7 +15,6 @@ import {
   CreditCard,
   AlertTriangle,
   MessageSquare,
-  Building2,
   MessageCircle,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
