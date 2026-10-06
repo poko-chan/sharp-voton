@@ -8,7 +8,6 @@ export type SettingsCategoryId =
   | "notifications"
   | "study"
   | "chat"
-  | "town"
   | "privacy"
   | "ai"
   | "language"

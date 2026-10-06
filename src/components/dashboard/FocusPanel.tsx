@@ -12,8 +12,6 @@ import { localDateStr, addDaysStr } from "@/lib/date";
 import {
   AreaChart,
   Area,
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -48,14 +46,8 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
   const view = useMemo(() => {
     const logs = data?.logs ?? [];
     const dayMap = new Map<string, number>();
-    const daySubj = new Map<string, Set<string>>();
     for (const l of logs as any[]) {
       dayMap.set(l.date, (dayMap.get(l.date) ?? 0) + (l.duration_minutes ?? 0));
-      if (l.subject_id) {
-        const s = daySubj.get(l.date) ?? new Set<string>();
-        s.add(l.subject_id);
-        daySubj.set(l.date, s);
-      }
     }
     const today = localDateStr();
     const base = new Date();
@@ -67,8 +59,6 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
       series.push({ day: key.slice(5).replace("-", "/"), minutes: dayMap.get(key) ?? 0 });
     }
 
-    const last = series[series.length - 1];
-    const prev = series[series.length - 8] ?? series[0];
     const week = series.slice(-7).reduce((s, d) => s + d.minutes, 0);
     const sessions = (logs as any[]).filter((l) => l.date === today).length;
     const avgSession = sessions ? Math.round(todayMin / sessions) : 0;
@@ -79,15 +69,6 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
       sessions,
       avgSession,
       series,
-      metrics: last,
-      delta:
-        last && prev
-          ? {
-              population: last.population - prev.population,
-              gdp: last.gdp - prev.gdp,
-              co2: last.co2 - prev.co2,
-            }
-          : { population: 0, gdp: 0, co2: 0 },
     };
   }, [data]);
 
@@ -189,7 +170,6 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
           </ResponsiveContainer>
         </div>
       </div>
-
     </Card>
   );
 }

@@ -73,7 +73,6 @@ import {
 } from "recharts";
 import { localDateStr, addDaysStr } from "@/lib/date";
 import { levelInfo } from "@/lib/level";
-import { Town } from "@/components/Town";
 import { buildReport } from "@/lib/report-pdf";
 import { TodayBreakdownChart } from "@/components/TodayBreakdownChart";
 import { WeeklySubjectDiff } from "@/components/WeeklySubjectDiff";
@@ -719,11 +718,6 @@ function FullDashboard() {
             <QuickAction to="/flashcards" icon={Layers} label="暗記カード" />
           </div>
         </Card>
-
-        {/* ===== あなたの街（右上） ===== */}
-        <div className="dashboard-town xl:sticky xl:top-4">
-          <Town />
-        </div>
       </div>
 
       {/* ===== はじめかた & 最近の利用状況 ===== */}
