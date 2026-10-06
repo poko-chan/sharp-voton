@@ -14,8 +14,6 @@ import {
   UserPlus,
   Trophy,
   UserMinus,
-  Coins,
-  Gift,
   Search,
   Heart,
   MessageCircle,

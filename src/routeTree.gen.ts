@@ -44,7 +44,6 @@ import { Route as AuthenticatedHeatmapRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
 import { Route as AuthenticatedMakronRouteImport } from './routes/_authenticated/makron'
 import { Route as AuthenticatedMaterialsRouteImport } from './routes/_authenticated/materials'
-import { Route as AuthenticatedMentorRouteImport } from './routes/_authenticated/mentor'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedOrganizationsRouteImport } from './routes/_authenticated/organizations'
@@ -67,7 +66,7 @@ import { Route as CatalogKeyRouteImport } from './routes/catalog.$key'
 import { Route as FeaturesIndexRouteImport } from './routes/features.index'
 import { Route as FeaturesSlugRouteImport } from './routes/features.$slug'
 import { Route as InstatusCheckAiBackRouteImport } from './routes/instatus-check.ai-back'
-import { Route as InstatusCheckDatebaseRouteImport } from './routes/instatus-check.datebase'
+import { Route as InstatusCheckDatabaseRouteImport } from './routes/instatus-check.database'
 import { Route as InstatusCheckLoginRouteImport } from './routes/instatus-check.login'
 import { Route as LineLiffLoginRouteImport } from './routes/line-liff.login'
 import { Route as RCodeRouteImport } from './routes/r.$code'
@@ -283,11 +282,6 @@ const AuthenticatedMaterialsRoute = AuthenticatedMaterialsRouteImport.update({
   path: '/materials',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedMentorRoute = AuthenticatedMentorRouteImport.update({
-  id: '/mentor',
-  path: '/mentor',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
   id: '/notes',
   path: '/notes',
@@ -400,9 +394,9 @@ const InstatusCheckAiBackRoute = InstatusCheckAiBackRouteImport.update({
   path: '/instatus-check/ai-back',
   getParentRoute: () => rootRouteImport,
 } as any)
-const InstatusCheckDatebaseRoute = InstatusCheckDatebaseRouteImport.update({
-  id: '/instatus-check/datebase',
-  path: '/instatus-check/datebase',
+const InstatusCheckDatabaseRoute = InstatusCheckDatabaseRouteImport.update({
+  id: '/instatus-check/database',
+  path: '/instatus-check/database',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InstatusCheckLoginRoute = InstatusCheckLoginRouteImport.update({
@@ -660,7 +654,6 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/makron': typeof AuthenticatedMakronRouteWithChildren
   '/materials': typeof AuthenticatedMaterialsRouteWithChildren
-  '/mentor': typeof AuthenticatedMentorRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
@@ -681,7 +674,7 @@ export interface FileRoutesByFullPath {
   '/catalog/$key': typeof CatalogKeyRoute
   '/features/$slug': typeof FeaturesSlugRoute
   '/instatus-check/ai-back': typeof InstatusCheckAiBackRoute
-  '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
+  '/instatus-check/database': typeof InstatusCheckDatabaseRoute
   '/instatus-check/login': typeof InstatusCheckLoginRoute
   '/line-liff/login': typeof LineLiffLoginRoute
   '/r/$code': typeof RCodeRoute
@@ -755,7 +748,6 @@ export interface FileRoutesByTo {
   '/goals': typeof AuthenticatedGoalsRoute
   '/heatmap': typeof AuthenticatedHeatmapRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
-  '/mentor': typeof AuthenticatedMentorRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/parent': typeof AuthenticatedParentRoute
@@ -775,7 +767,7 @@ export interface FileRoutesByTo {
   '/catalog/$key': typeof CatalogKeyRoute
   '/features/$slug': typeof FeaturesSlugRoute
   '/instatus-check/ai-back': typeof InstatusCheckAiBackRoute
-  '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
+  '/instatus-check/database': typeof InstatusCheckDatabaseRoute
   '/instatus-check/login': typeof InstatusCheckLoginRoute
   '/line-liff/login': typeof LineLiffLoginRoute
   '/r/$code': typeof RCodeRoute
@@ -852,7 +844,6 @@ export interface FileRoutesById {
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/makron': typeof AuthenticatedMakronRouteWithChildren
   '/_authenticated/materials': typeof AuthenticatedMaterialsRouteWithChildren
-  '/_authenticated/mentor': typeof AuthenticatedMentorRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
@@ -873,7 +864,7 @@ export interface FileRoutesById {
   '/catalog/$key': typeof CatalogKeyRoute
   '/features/$slug': typeof FeaturesSlugRoute
   '/instatus-check/ai-back': typeof InstatusCheckAiBackRoute
-  '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
+  '/instatus-check/database': typeof InstatusCheckDatabaseRoute
   '/instatus-check/login': typeof InstatusCheckLoginRoute
   '/line-liff/login': typeof LineLiffLoginRoute
   '/r/$code': typeof RCodeRoute
@@ -952,7 +943,6 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/makron'
     | '/materials'
-    | '/mentor'
     | '/notes'
     | '/notifications'
     | '/organizations'
@@ -973,7 +963,7 @@ export interface FileRouteTypes {
     | '/catalog/$key'
     | '/features/$slug'
     | '/instatus-check/ai-back'
-    | '/instatus-check/datebase'
+    | '/instatus-check/database'
     | '/instatus-check/login'
     | '/line-liff/login'
     | '/r/$code'
@@ -1047,7 +1037,6 @@ export interface FileRouteTypes {
     | '/goals'
     | '/heatmap'
     | '/leaderboard'
-    | '/mentor'
     | '/notes'
     | '/notifications'
     | '/parent'
@@ -1067,7 +1056,7 @@ export interface FileRouteTypes {
     | '/catalog/$key'
     | '/features/$slug'
     | '/instatus-check/ai-back'
-    | '/instatus-check/datebase'
+    | '/instatus-check/database'
     | '/instatus-check/login'
     | '/line-liff/login'
     | '/r/$code'
@@ -1143,7 +1132,6 @@ export interface FileRouteTypes {
     | '/_authenticated/leaderboard'
     | '/_authenticated/makron'
     | '/_authenticated/materials'
-    | '/_authenticated/mentor'
     | '/_authenticated/notes'
     | '/_authenticated/notifications'
     | '/_authenticated/organizations'
@@ -1164,7 +1152,7 @@ export interface FileRouteTypes {
     | '/catalog/$key'
     | '/features/$slug'
     | '/instatus-check/ai-back'
-    | '/instatus-check/datebase'
+    | '/instatus-check/database'
     | '/instatus-check/login'
     | '/line-liff/login'
     | '/r/$code'
@@ -1231,7 +1219,7 @@ export interface RootRouteChildren {
   CatalogKeyRoute: typeof CatalogKeyRoute
   FeaturesSlugRoute: typeof FeaturesSlugRoute
   InstatusCheckAiBackRoute: typeof InstatusCheckAiBackRoute
-  InstatusCheckDatebaseRoute: typeof InstatusCheckDatebaseRoute
+  InstatusCheckDatabaseRoute: typeof InstatusCheckDatabaseRoute
   InstatusCheckLoginRoute: typeof InstatusCheckLoginRoute
   LineLiffLoginRoute: typeof LineLiffLoginRoute
   RCodeRoute: typeof RCodeRoute
@@ -1490,13 +1478,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMaterialsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/mentor': {
-      id: '/_authenticated/mentor'
-      path: '/mentor'
-      fullPath: '/mentor'
-      preLoaderRoute: typeof AuthenticatedMentorRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/notes': {
       id: '/_authenticated/notes'
       path: '/notes'
@@ -1651,11 +1632,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InstatusCheckAiBackRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/instatus-check/datebase': {
-      id: '/instatus-check/datebase'
-      path: '/instatus-check/datebase'
-      fullPath: '/instatus-check/datebase'
-      preLoaderRoute: typeof InstatusCheckDatebaseRouteImport
+    '/instatus-check/database': {
+      id: '/instatus-check/database'
+      path: '/instatus-check/database'
+      fullPath: '/instatus-check/database'
+      preLoaderRoute: typeof InstatusCheckDatabaseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/instatus-check/login': {
@@ -2070,7 +2051,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
   AuthenticatedMakronRoute: typeof AuthenticatedMakronRouteWithChildren
   AuthenticatedMaterialsRoute: typeof AuthenticatedMaterialsRouteWithChildren
-  AuthenticatedMentorRoute: typeof AuthenticatedMentorRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRouteWithChildren
@@ -2113,7 +2093,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
   AuthenticatedMakronRoute: AuthenticatedMakronRouteWithChildren,
   AuthenticatedMaterialsRoute: AuthenticatedMaterialsRouteWithChildren,
-  AuthenticatedMentorRoute: AuthenticatedMentorRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRouteWithChildren,
@@ -2166,7 +2145,7 @@ const rootRouteChildren: RootRouteChildren = {
   CatalogKeyRoute: CatalogKeyRoute,
   FeaturesSlugRoute: FeaturesSlugRoute,
   InstatusCheckAiBackRoute: InstatusCheckAiBackRoute,
-  InstatusCheckDatebaseRoute: InstatusCheckDatebaseRoute,
+  InstatusCheckDatabaseRoute: InstatusCheckDatabaseRoute,
   InstatusCheckLoginRoute: InstatusCheckLoginRoute,
   LineLiffLoginRoute: LineLiffLoginRoute,
   RCodeRoute: RCodeRoute,
