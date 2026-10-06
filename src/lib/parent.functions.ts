@@ -167,10 +167,8 @@ export const getChildFullDashboard = createServerFn({ method: "POST" })
 
     const [
       profile,
-      coins,
       subjects,
       logs,
-      todayEntries,
       goals,
       exams,
       examSubjects,
@@ -183,7 +181,6 @@ export const getChildFullDashboard = createServerFn({ method: "POST" })
       badges,
       titles,
       inventory,
-      txns,
       missions,
       photoLogs,
       reflections,
@@ -193,7 +190,6 @@ export const getChildFullDashboard = createServerFn({ method: "POST" })
         .select("id, username, display_name, email, avatar_url, created_at, account_kind")
         .eq("id", cid)
         .maybeSingle(),
-      supabaseAdmin.from("user_coins").select("*").eq("user_id", cid).maybeSingle(),
       supabaseAdmin.from("subjects").select("id, name, color").eq("user_id", cid),
       supabaseAdmin
         .from("study_logs")
@@ -201,13 +197,6 @@ export const getChildFullDashboard = createServerFn({ method: "POST" })
         .eq("user_id", cid)
         .gte("date", since90)
         .order("date", { ascending: false }),
-      supabaseAdmin
-        .from("today_entries")
-        .select("*")
-        .eq("user_id", cid)
-        .gte("date", since90)
-        .order("date", { ascending: false })
-        .limit(200),
       supabaseAdmin
         .from("goals")
         .select("*")
@@ -265,12 +254,6 @@ export const getChildFullDashboard = createServerFn({ method: "POST" })
       supabaseAdmin.from("user_titles").select("*").eq("user_id", cid),
       supabaseAdmin.from("user_inventory").select("*").eq("user_id", cid),
       supabaseAdmin
-        .from("coin_transactions")
-        .select("*")
-        .eq("user_id", cid)
-        .order("created_at", { ascending: false })
-        .limit(100),
-      supabaseAdmin
         .from("daily_missions")
         .select("*")
         .eq("user_id", cid)
@@ -293,10 +276,8 @@ export const getChildFullDashboard = createServerFn({ method: "POST" })
 
     return {
       profile: profile.data,
-      coins: coins.data,
       subjects: subjects.data ?? [],
       logs: logs.data ?? [],
-      todayEntries: todayEntries.data ?? [],
       goals: goals.data ?? [],
       exams: exams.data ?? [],
       examSubjects: examSubjects.data ?? [],
@@ -309,7 +290,6 @@ export const getChildFullDashboard = createServerFn({ method: "POST" })
       badges: badges.data ?? [],
       titles: titles.data ?? [],
       inventory: inventory.data ?? [],
-      txns: txns.data ?? [],
       missions: missions.data ?? [],
       photoLogs: photoLogs.data ?? [],
       reflections: reflections.data ?? [],
