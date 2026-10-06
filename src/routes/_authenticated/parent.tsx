@@ -33,7 +33,6 @@ import {
   Ban,
   Activity,
   Trophy,
-  Coins,
   Brain,
   Target,
   Camera,
@@ -553,7 +552,6 @@ function ChildFullDetail({ childId, todayMinutes }: { childId: string; todayMinu
         <Stat icon={Clock} label="今日の学習(分)" value={todayMinutes} />
         <Stat icon={Clock} label="90日学習(分)" value={totalMin} />
         <Stat icon={Brain} label="Markon正解率" value={`${acc}%`} />
-        <Stat icon={Coins} label="コイン残高" value={d.coins?.balance ?? 0} />
         <Stat icon={Activity} label="集中(分)" value={focusMin} />
         <Stat icon={Target} label="進行中の目標" value={openGoals} />
         <Stat icon={Trophy} label="バッジ" value={(d.badges ?? []).length} />
@@ -612,18 +610,6 @@ function ChildFullDetail({ childId, todayMinutes }: { childId: string; todayMinu
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
-        <List
-          title="Today予定"
-          rows={d.todayEntries.slice(0, 30)}
-          render={(r: any) => (
-            <div className="flex justify-between">
-              <span>
-                {r.planned_date} · {r.title ?? r.content ?? ""}
-              </span>
-              <span className="text-muted-foreground">{r.done_at ? "済" : "未"}</span>
-            </div>
-          )}
-        />
         <List
           title="目標"
           rows={d.goals}
