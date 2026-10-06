@@ -125,9 +125,10 @@ function AuthLayout() {
   ) : (
     <Outlet />
   );
-  // Makron uses its own full-screen shell, bypass AppShell.
-  const isMakron = path === "/makron" || path.startsWith("/makron/");
-  if (isMakron) {
+  // Full-screen workspaces must bypass AppShell's scrolling page container.
+  const isFullscreenWorkspace =
+    path === "/makron" || path.startsWith("/makron/") || path.startsWith("/meetings/");
+  if (isFullscreenWorkspace) {
     return (
       <TimerProvider>
         <CallProvider>

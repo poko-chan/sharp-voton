@@ -24,6 +24,8 @@ import {
   Clock,
   BookOpen,
   Download,
+  Maximize,
+  Minimize,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -285,6 +287,7 @@ function Room({
   const [elapsed, setElapsed] = useState(0);
   const [chatText, setChatText] = useState("");
   const [unread, setUnread] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const seenChat = useRef(0);
   const prevHost = useRef(meeting.host_id);
   const prevHands = useRef(new Set<string>());
@@ -293,6 +296,12 @@ function Room({
     const t0 = Date.now();
     const iv = setInterval(() => setElapsed(Math.floor((Date.now() - t0) / 1000)), 1000);
     return () => clearInterval(iv);
+  }, []);
+
+  useEffect(() => {
+    const updateFullscreen = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", updateFullscreen);
+    return () => document.removeEventListener("fullscreenchange", updateFullscreen);
   }, []);
 
   useEffect(() => {
@@ -351,6 +360,11 @@ function Room({
       if (e?.name === "NotAllowedError") return;
       toast.error(e?.message ?? "操作できませんでした");
     }
+  };
+
+  const toggleFullscreen = async () => {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else await document.documentElement.requestFullscreen();
   };
 
   const hostName = room.peers.find((p) => p.uid === meeting.host_id)?.name ?? "不在";
@@ -580,6 +594,13 @@ function Room({
           onClick={() => void run(room.toggleShare)}
         >
           {room.screen ? <ScreenShareOff className="h-5 w-5" /> : <ScreenShare className="h-5 w-5" />}
+        </CtrlBtn>
+        <CtrlBtn
+          active={isFullscreen}
+          label={isFullscreen ? "全画面を終了" : "全画面表示"}
+          onClick={() => void run(toggleFullscreen)}
+        >
+          {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
         </CtrlBtn>
         <CtrlBtn active={room.hand} label="挙手" onClick={room.toggleHand}>
           <Hand className="h-5 w-5" />
