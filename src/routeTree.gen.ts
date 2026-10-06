@@ -67,6 +67,7 @@ import { Route as FeaturesIndexRouteImport } from './routes/features.index'
 import { Route as FeaturesSlugRouteImport } from './routes/features.$slug'
 import { Route as InstatusCheckAiBackRouteImport } from './routes/instatus-check.ai-back'
 import { Route as InstatusCheckDatabaseRouteImport } from './routes/instatus-check.database'
+import { Route as InstatusCheckDatebaseRouteImport } from './routes/instatus-check.datebase'
 import { Route as InstatusCheckLoginRouteImport } from './routes/instatus-check.login'
 import { Route as LineLiffLoginRouteImport } from './routes/line-liff.login'
 import { Route as RCodeRouteImport } from './routes/r.$code'
@@ -399,6 +400,11 @@ const InstatusCheckDatabaseRoute = InstatusCheckDatabaseRouteImport.update({
   path: '/instatus-check/database',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InstatusCheckDatebaseRoute = InstatusCheckDatebaseRouteImport.update({
+  id: '/instatus-check/datebase',
+  path: '/instatus-check/datebase',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InstatusCheckLoginRoute = InstatusCheckLoginRouteImport.update({
   id: '/instatus-check/login',
   path: '/instatus-check/login',
@@ -675,6 +681,7 @@ export interface FileRoutesByFullPath {
   '/features/$slug': typeof FeaturesSlugRoute
   '/instatus-check/ai-back': typeof InstatusCheckAiBackRoute
   '/instatus-check/database': typeof InstatusCheckDatabaseRoute
+  '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
   '/instatus-check/login': typeof InstatusCheckLoginRoute
   '/line-liff/login': typeof LineLiffLoginRoute
   '/r/$code': typeof RCodeRoute
@@ -768,6 +775,7 @@ export interface FileRoutesByTo {
   '/features/$slug': typeof FeaturesSlugRoute
   '/instatus-check/ai-back': typeof InstatusCheckAiBackRoute
   '/instatus-check/database': typeof InstatusCheckDatabaseRoute
+  '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
   '/instatus-check/login': typeof InstatusCheckLoginRoute
   '/line-liff/login': typeof LineLiffLoginRoute
   '/r/$code': typeof RCodeRoute
@@ -865,6 +873,7 @@ export interface FileRoutesById {
   '/features/$slug': typeof FeaturesSlugRoute
   '/instatus-check/ai-back': typeof InstatusCheckAiBackRoute
   '/instatus-check/database': typeof InstatusCheckDatabaseRoute
+  '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
   '/instatus-check/login': typeof InstatusCheckLoginRoute
   '/line-liff/login': typeof LineLiffLoginRoute
   '/r/$code': typeof RCodeRoute
@@ -964,6 +973,7 @@ export interface FileRouteTypes {
     | '/features/$slug'
     | '/instatus-check/ai-back'
     | '/instatus-check/database'
+    | '/instatus-check/datebase'
     | '/instatus-check/login'
     | '/line-liff/login'
     | '/r/$code'
@@ -1057,6 +1067,7 @@ export interface FileRouteTypes {
     | '/features/$slug'
     | '/instatus-check/ai-back'
     | '/instatus-check/database'
+    | '/instatus-check/datebase'
     | '/instatus-check/login'
     | '/line-liff/login'
     | '/r/$code'
@@ -1153,6 +1164,7 @@ export interface FileRouteTypes {
     | '/features/$slug'
     | '/instatus-check/ai-back'
     | '/instatus-check/database'
+    | '/instatus-check/datebase'
     | '/instatus-check/login'
     | '/line-liff/login'
     | '/r/$code'
@@ -1220,6 +1232,7 @@ export interface RootRouteChildren {
   FeaturesSlugRoute: typeof FeaturesSlugRoute
   InstatusCheckAiBackRoute: typeof InstatusCheckAiBackRoute
   InstatusCheckDatabaseRoute: typeof InstatusCheckDatabaseRoute
+  InstatusCheckDatebaseRoute: typeof InstatusCheckDatebaseRoute
   InstatusCheckLoginRoute: typeof InstatusCheckLoginRoute
   LineLiffLoginRoute: typeof LineLiffLoginRoute
   RCodeRoute: typeof RCodeRoute
@@ -1637,6 +1650,13 @@ declare module '@tanstack/react-router' {
       path: '/instatus-check/database'
       fullPath: '/instatus-check/database'
       preLoaderRoute: typeof InstatusCheckDatabaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/instatus-check/datebase': {
+      id: '/instatus-check/datebase'
+      path: '/instatus-check/datebase'
+      fullPath: '/instatus-check/datebase'
+      preLoaderRoute: typeof InstatusCheckDatebaseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/instatus-check/login': {
@@ -2146,6 +2166,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesSlugRoute: FeaturesSlugRoute,
   InstatusCheckAiBackRoute: InstatusCheckAiBackRoute,
   InstatusCheckDatabaseRoute: InstatusCheckDatabaseRoute,
+  InstatusCheckDatebaseRoute: InstatusCheckDatebaseRoute,
   InstatusCheckLoginRoute: InstatusCheckLoginRoute,
   LineLiffLoginRoute: LineLiffLoginRoute,
   RCodeRoute: RCodeRoute,
