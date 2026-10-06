@@ -596,7 +596,7 @@ function FullDashboard() {
   return (
     <div className="dashboard-page p-4 md:p-8 lg:p-10 space-y-8 max-w-[1480px] mx-auto">
       {/* ===== 一番上: 左=1日の目標 / 右=あなたの街 ===== */}
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.12fr)_minmax(360px,0.88fr)] items-start">
+      <div className="grid gap-6 items-start">
         {/* ===== ヒーロー ===== */}
         <Card className="dashboard-hero relative overflow-hidden liquid-card p-0 border-primary/15 shadow-[0_24px_60px_-36px_color-mix(in_oklab,var(--primary)_55%,transparent)]">
           <div
