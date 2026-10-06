@@ -662,19 +662,6 @@ function ChildFullDetail({ childId, todayMinutes }: { childId: string; todayMinu
           )}
         />
         <List
-          title="コイン取引"
-          rows={d.txns.slice(0, 30)}
-          render={(r: any) => (
-            <div className="flex justify-between">
-              <span className={r.amount > 0 ? "text-green-600" : "text-red-600"}>
-                {r.amount > 0 ? "+" : ""}
-                {r.amount}
-              </span>
-              <span className="ml-2 truncate text-muted-foreground">{r.reason}</span>
-            </div>
-          )}
-        />
-        <List
           title="振り返り"
           rows={d.reflections}
           render={(r: any) => (
