@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { PowerBar } from "@/components/RadialGauge";
 import { useTimer, fmtMs } from "@/lib/timer-context";
 import { localDateStr, addDaysStr } from "@/lib/date";
-import { computeMetrics, fmtNum, type BuildingRow } from "@/lib/town-economy";
 import {
   AreaChart,
   Area,
@@ -22,7 +21,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
-import { Timer, Play, Users, Coins, Leaf, Clock3, Flame, Activity } from "lucide-react";
+import { Timer, Play, Clock3, Flame, Activity } from "lucide-react";
 
 const fmtMin = (m: number) => (m >= 60 ? `${Math.floor(m / 60)}h${m % 60}m` : `${m}m`);
 
@@ -36,25 +35,13 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
     staleTime: 60_000,
     queryFn: async () => {
       const since = addDaysStr(new Date(), -59);
-      const [logs, builds, pols, town] = await Promise.all([
-        supabase
+      const { data: logs } = await supabase
           .from("study_logs")
           .select("date, duration_minutes, subject_id, start_time")
           .eq("user_id", user!.id)
           .gte("date", since)
-          .order("date", { ascending: true }),
-        supabase.from("town_buildings").select("id, kind, gx, gz, level").eq("user_id", user!.id),
-        supabase.from("town_policies").select("key, enabled").eq("user_id", user!.id),
-        supabase.from("towns").select("stage").eq("user_id", user!.id).maybeSingle(),
-      ]);
-      return {
-        logs: logs.data ?? [],
-        buildings: (builds.data ?? []) as BuildingRow[],
-        policies: (pols.data ?? [])
-          .filter((p: any) => p.enabled !== false)
-          .map((p: any) => p.key as string),
-        stage: town.data?.stage ?? 1,
-      };
+          .order("date", { ascending: true });
+      return { logs: logs ?? [] };
     },
   });
 
@@ -74,40 +61,10 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
     const base = new Date();
     const todayMin = dayMap.get(today) ?? 0;
 
-    const series: { day: string; minutes: number; population: number; gdp: number; co2: number }[] =
-      [];
+    const series: { day: string; minutes: number }[] = [];
     for (let i = 13; i >= 0; i--) {
       const key = addDaysStr(base, -i);
-      // その日までの直近30日を使って街の指標を再現する
-      let minutes30 = 0,
-        activeDays30 = 0,
-        streak = 0;
-      const subj = new Set<string>();
-      for (let j = 0; j < 30; j++) {
-        const k = addDaysStr(new Date(key + "T00:00:00"), -j);
-        const m = dayMap.get(k) ?? 0;
-        minutes30 += m;
-        if (m > 0) activeDays30++;
-        daySubj.get(k)?.forEach((s) => subj.add(s));
-      }
-      for (let j = 0; j < 120; j++) {
-        const k = addDaysStr(new Date(key + "T00:00:00"), -j);
-        if ((dayMap.get(k) ?? 0) > 0) streak++;
-        else break;
-      }
-      const m = computeMetrics(
-        data?.stage ?? 1,
-        { minutes30, activeDays30, avgScore: 70, subjects: subj.size, goalsDone: 0, streak },
-        data?.buildings ?? [],
-        data?.policies ?? [],
-      );
-      series.push({
-        day: key.slice(5).replace("-", "/"),
-        minutes: dayMap.get(key) ?? 0,
-        population: m.population,
-        gdp: m.gdp,
-        co2: m.co2,
-      });
+      series.push({ day: key.slice(5).replace("-", "/"), minutes: dayMap.get(key) ?? 0 });
     }
 
     const last = series[series.length - 1];
@@ -152,7 +109,7 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
           <div>
             <h2 className="font-bold leading-tight text-lg">タイマー & 学習時間</h2>
             <p className="text-[11px] text-muted-foreground">
-              記録した時間が街の指標に反映されます
+              タイマーで集中した時間が学習記録に反映されます
             </p>
           </div>
         </div>
@@ -233,96 +190,6 @@ export function FocusPanel({ dailyGoal }: { dailyGoal: number }) {
         </div>
       </div>
 
-      {/* 街の指標推移 */}
-      <div>
-        <div className="flex items-center justify-between mb-1">
-          <p className="text-xs font-semibold">街の指標の推移</p>
-          <div className="flex gap-2 text-[10px] text-muted-foreground">
-            <span className="inline-flex items-center gap-1">
-              <Users className="h-3 w-3" />
-              人口
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <Coins className="h-3 w-3" />
-              GDP
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <Leaf className="h-3 w-3" />
-              CO2
-            </span>
-          </div>
-        </div>
-        <div className="h-40">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={view.series} margin={{ top: 4, right: 6, left: -18, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis
-                dataKey="day"
-                tick={{ fontSize: 10 }}
-                interval={1}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} width={34} />
-              <Tooltip
-                contentStyle={{
-                  fontSize: 12,
-                  borderRadius: 10,
-                  background: "var(--popover)",
-                  border: "1px solid var(--border)",
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="population"
-                name="人口"
-                dot={false}
-                strokeWidth={2}
-                stroke="oklch(0.65 0.2 265)"
-              />
-              <Line
-                type="monotone"
-                dataKey="gdp"
-                name="GDP"
-                dot={false}
-                strokeWidth={2}
-                stroke="oklch(0.72 0.16 160)"
-              />
-              <Line
-                type="monotone"
-                dataKey="co2"
-                name="CO2"
-                dot={false}
-                strokeWidth={2}
-                stroke="oklch(0.72 0.16 40)"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-        {view.metrics && (
-          <div className="grid grid-cols-3 gap-2 mt-2">
-            <Metric
-              icon={Users}
-              label="人口"
-              value={fmtNum(view.metrics.population)}
-              delta={view.delta.population}
-            />
-            <Metric
-              icon={Coins}
-              label="GDP"
-              value={`${fmtNum(view.metrics.gdp)}百万`}
-              delta={view.delta.gdp}
-            />
-            <Metric
-              icon={Leaf}
-              label="CO2"
-              value={`${fmtNum(view.metrics.co2)}t`}
-              delta={view.delta.co2}
-              good="down"
-            />
-          </div>
-        )}
-      </div>
     </Card>
   );
 }
@@ -339,32 +206,3 @@ function Mini({ icon: Icon, label, value }: { icon: any; label: string; value: s
   );
 }
 
-function Metric({
-  icon: Icon,
-  label,
-  value,
-  delta,
-  good = "up",
-}: {
-  icon: any;
-  label: string;
-  value: string;
-  delta: number;
-  good?: "up" | "down";
-}) {
-  const positive = good === "up" ? delta > 0 : delta < 0;
-  const tone =
-    delta === 0 ? "text-muted-foreground" : positive ? "text-emerald-600" : "text-amber-600";
-  return (
-    <div className="rounded-xl border bg-card/60 px-3 py-2">
-      <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-        <Icon className="h-3 w-3" />
-        {label}
-      </div>
-      <div className="text-sm font-bold tabular-nums">{value}</div>
-      <div className={`text-[10px] tabular-nums ${tone}`}>
-        {delta === 0 ? "±0" : `${delta > 0 ? "+" : ""}${fmtNum(delta)}`} / 7日
-      </div>
-    </div>
-  );
-}
