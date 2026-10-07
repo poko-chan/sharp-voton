@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Trash2, Package, Layers } from "lucide-react";
+import { ArrowUpRight, CreditCard, Eye, Layers, Package, Plus, Sparkles, Trash2 } from "lucide-react";
 
 type Group = {
   id: string;
@@ -66,8 +68,12 @@ export function PlansAdminTab() {
   const [packs, setPacks] = useState<Pack[]>([]);
   const [packItems, setPackItems] = useState<PackItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [section, setSection] = useState<"plans" | "packs">("plans");
 
-  const load = async () => {
+  const load = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
     const [g, p, f, k, i] = await Promise.all([
       db.from("plan_groups").select("*").order("sort_order"),
       db.from("plans").select("*").order("sort_order"),
@@ -75,20 +81,37 @@ export function PlansAdminTab() {
       db.from("plan_packs").select("*").order("sort_order"),
       db.from("plan_pack_items").select("*").order("sort_order"),
     ]);
+    const failed = [g, p, f, k, i].find((result) => result.error);
+    if (failed?.error) {
+      setLoadError(failed.error.message);
+      setLoading(false);
+      return;
+    }
     setGroups(g.data ?? []);
     setPlans(p.data ?? []);
     setFeatures(f.data ?? []);
     setPacks(k.data ?? []);
     setPackItems(i.data ?? []);
     setLoading(false);
-  };
-  useEffect(() => {
-    load();
   }, []);
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   const patch = async (table: string, id: string, values: Record<string, unknown>) => {
     const { error } = await db.from(table).update(values).eq("id", id);
-    if (error) toast.error(error.message);
+    if (error) {
+      toast.error(`保存できませんでした: ${error.message}`);
+      return;
+    }
+    const updateById = <T extends { id: string }>(items: T[], setItems: (next: T[]) => void) => {
+      setItems(items.map((item) => (item.id === id ? { ...item, ...values } : item)));
+    };
+    if (table === "plan_groups") updateById(groups, setGroups);
+    if (table === "plans") updateById(plans, setPlans);
+    if (table === "plan_features") updateById(features, setFeatures);
+    if (table === "plan_packs") updateById(packs, setPacks);
+    if (table === "plan_pack_items") updateById(packItems, setPackItems);
   };
   const remove = async (table: string, id: string) => {
     const { error } = await db.from(table).delete().eq("id", id);
@@ -99,17 +122,91 @@ export function PlansAdminTab() {
     await load();
   };
 
-  if (loading) return <div className="p-4 text-sm text-muted-foreground">読み込み中…</div>;
+  if (loading && groups.length + plans.length + packs.length === 0)
+    return <div className="p-4 text-sm text-muted-foreground">読み込み中…</div>;
+
+  if (loadError)
+    return (
+      <Card className="space-y-3 p-6">
+        <p className="font-semibold">料金設定を読み込めませんでした</p>
+        <p className="text-sm text-muted-foreground">{loadError}</p>
+        <Button variant="outline" onClick={() => void load()}>
+          再読み込み
+        </Button>
+      </Card>
+    );
 
   return (
-    <div className="space-y-10">
-      <div>
-        <h1 className="text-2xl font-bold">プラン管理</h1>
-        <p className="text-sm text-muted-foreground">
-          表形式で編集できます。行＝項目、列＝プラン。設定内容は利用者の「お支払い」に表示されます。
-        </p>
+    <div className="space-y-7">
+      <div className="relative isolate overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-violet-950 to-slate-900 p-6 text-white shadow-xl sm:p-8">
+        <div className="absolute -right-12 -top-20 -z-10 h-56 w-56 rounded-full bg-violet-500/20 blur-3xl" />
+        <div className="flex flex-wrap items-start justify-between gap-5">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-violet-200">
+              <Sparkles className="h-4 w-4" /> お支払いカタログ
+            </div>
+            <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
+              料金プランをかんたん管理
+            </h1>
+            <p className="mt-2 text-sm leading-relaxed text-white/70">
+              公開内容は利用者のお支払い画面にすぐ反映されます。現在は料金の表示のみで、請求・購入処理は行われません。
+            </p>
+          </div>
+          <Link
+            to="/payments"
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 text-sm font-bold text-white transition hover:bg-white/20"
+          >
+            <Eye className="h-4 w-4" /> 利用者画面をプレビュー
+            <ArrowUpRight className="h-4 w-4" />
+          </Link>
+        </div>
+        <div className="mt-6 grid gap-2 sm:grid-cols-3">
+          <SummaryTile label="プラン群" value={groups.length} detail="料金のまとまり" />
+          <SummaryTile
+            label="公開プラン"
+            value={plans.filter((plan) => plan.active).length}
+            detail={`${plans.length} 件中`}
+          />
+          <SummaryTile
+            label="公開パック"
+            value={
+              packs.filter((pack) => pack.active).length +
+              packItems.filter((item) => item.active).length
+            }
+            detail={`${packs.length} パック・商品`}
+          />
+        </div>
       </div>
 
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="inline-flex rounded-xl border bg-muted/50 p-1">
+          <button
+            type="button"
+            onClick={() => setSection("plans")}
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition ${
+              section === "plans" ? "bg-background shadow-sm" : "text-muted-foreground"
+            }`}
+            aria-pressed={section === "plans"}
+          >
+            <Layers className="h-4 w-4" /> プランと特典
+          </button>
+          <button
+            type="button"
+            onClick={() => setSection("packs")}
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition ${
+              section === "packs" ? "bg-background shadow-sm" : "text-muted-foreground"
+            }`}
+            aria-pressed={section === "packs"}
+          >
+            <Package className="h-4 w-4" /> 追加パック
+          </button>
+        </div>
+        <Badge variant="outline" className="gap-1.5 px-3 py-1.5">
+          <CreditCard className="h-3.5 w-3.5" /> 現在は表示のみ・課金なし
+        </Badge>
+      </div>
+
+      {section === "plans" ? (
       <section className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="flex items-center gap-2 font-semibold">
@@ -146,7 +243,7 @@ export function PlansAdminTab() {
           />
         ))}
       </section>
-
+      ) : (
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="flex items-center gap-2 font-semibold">
@@ -284,6 +381,19 @@ export function PlansAdminTab() {
           );
         })}
       </section>
+      )}
+    </div>
+  );
+}
+
+function SummaryTile({ label, value, detail }: { label: string; value: number; detail: string }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.07] px-4 py-3 backdrop-blur-sm">
+      <p className="text-[11px] font-semibold text-white/60">{label}</p>
+      <p className="mt-0.5 text-xl font-black tabular-nums">
+        {value}
+        <span className="ml-1 text-xs font-medium text-white/60">{detail}</span>
+      </p>
     </div>
   );
 }

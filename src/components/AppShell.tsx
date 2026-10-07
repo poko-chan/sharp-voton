@@ -32,6 +32,7 @@ import {
   BellRing,
   Languages,
   Video,
+  CreditCard,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -93,6 +94,7 @@ export const NAV = [
     icon: NotebookPen,
     override: "Voton Cnote",
   },
+  { to: "/payments", labelKey: "nav.dashboard" as const, icon: CreditCard, override: "お支払い" },
   { to: "/notes", labelKey: "nav.notes" as const, icon: StickyNote },
   { to: "/announcements", labelKey: "nav.announcements" as const, icon: Megaphone },
   { to: "/makron", labelKey: "nav.dashboard" as const, icon: Target, override: "Makron" },
