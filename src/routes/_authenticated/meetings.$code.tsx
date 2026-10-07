@@ -367,6 +367,32 @@ function Room({
     else await document.documentElement.requestFullscreen();
   };
 
+  // Push-to-Talk: ミュート中にSpace長押しで一時発言
+  const setMutedState = room.setMutedState;
+  useEffect(() => {
+    let ptt = false;
+    const typing = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      return !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+    };
+    const down = (e: KeyboardEvent) => {
+      if (e.code !== "Space" || e.repeat || typing(e) || !room.muted) return;
+      e.preventDefault();
+      ptt = true;
+      setMutedState(false);
+    };
+    const up = (e: KeyboardEvent) => {
+      if (e.code !== "Space" || !ptt) return;
+      ptt = false;
+      setMutedState(true);
+    };
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+    };
+  }, [room.muted, setMutedState]);
   const hostName = room.peers.find((p) => p.uid === meeting.host_id)?.name ?? "不在";
 
   const renderTile = (p: Peer) => {
