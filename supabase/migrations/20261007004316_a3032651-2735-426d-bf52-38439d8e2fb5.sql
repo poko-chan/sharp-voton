@@ -1,0 +1,3 @@
+ALTER TABLE public.line_settings ADD COLUMN IF NOT EXISTS is_suspended boolean NOT NULL DEFAULT false;
+CREATE OR REPLACE FUNCTION public.line_is_suspended() RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$ SELECT COALESCE((SELECT is_suspended FROM public.line_settings WHERE id = 1), false) $$;
+GRANT EXECUTE ON FUNCTION public.line_is_suspended() TO authenticated, anon;

@@ -2464,6 +2464,7 @@ export type Database = {
           auto_replies: Json
           created_at: string
           id: number
+          is_suspended: boolean
           liff_id: string | null
           login_channel_id: string | null
           notes: string | null
@@ -2478,6 +2479,7 @@ export type Database = {
           auto_replies?: Json
           created_at?: string
           id?: number
+          is_suspended?: boolean
           liff_id?: string | null
           login_channel_id?: string | null
           notes?: string | null
@@ -2492,6 +2494,7 @@ export type Database = {
           auto_replies?: Json
           created_at?: string
           id?: number
+          is_suspended?: boolean
           liff_id?: string | null
           login_channel_id?: string | null
           notes?: string | null
@@ -8777,6 +8780,7 @@ export type Database = {
       }
       jst_today: { Args: never; Returns: string }
       leave_chat_group: { Args: { _group: string }; Returns: undefined }
+      line_is_suspended: { Args: never; Returns: boolean }
       list_chat_conversations: {
         Args: never
         Returns: {
