@@ -371,8 +371,8 @@ function Room({
 
   const renderTile = (p: Peer) => {
     const isMe = p.uid === userId;
-    const stream = isMe ? (room.screen ?? room.localStream) : room.remoteStreams[p.uid] ?? null;
-    const showVideo = isMe ? !!room.screen || !room.camOff : !p.camOff || p.sharing;
+    const stream = isMe ? room.localStream : room.remoteStreams[p.uid] ?? null;
+    const showVideo = isMe ? !room.camOff : !p.camOff;
     const talking = room.speaking.has(p.uid) && !p.muted;
     const state = room.connState[p.uid];
     return (
@@ -384,7 +384,7 @@ function Room({
       >
         {!isMe && <AudioOnly stream={stream} />}
         {showVideo && stream ? (
-          <VideoEl stream={stream} muted mirror={isMe && !room.screen} />
+          <VideoEl stream={stream} muted mirror={isMe} />
         ) : (
           <div className="grid h-full place-items-center">
             <div className="grid h-16 w-16 place-items-center rounded-full bg-primary/20 text-2xl font-bold text-primary">
@@ -447,7 +447,7 @@ function Room({
                 {sharer.uid === userId ? "あなたの画面を共有中" : `${sharer.name} の画面`}
               </div>
               <div className="aspect-video max-h-[60vh] w-full bg-background">
-                <ShareView stream={sharer.uid === userId ? room.screen : room.remoteStreams[sharer.uid] ?? null} />
+                <ShareView stream={sharer.uid === userId ? room.screen : room.remoteScreens[sharer.uid] ?? null} />
               </div>
             </div>
           )}
