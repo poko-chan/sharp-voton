@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { SectionHeading } from "./shared";
 import { useAuth } from "@/lib/auth-context";
 import { getMyLineStatus, unlinkLine } from "@/lib/line.functions";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DEFAULT_LINE_PREFS,
   getLinePreferences,
@@ -64,6 +65,13 @@ export function LineSection() {
     setLoading(false);
   }, []);
 
+  const [suspended, setSuspended] = useState<boolean | null>(null);
+  useEffect(() => {
+    void (supabase.rpc as any)("line_is_suspended").then(({ data }: any) =>
+      setSuspended(Boolean(data)),
+    );
+  }, []);
+
   useEffect(() => {
     if (user) void load();
   }, [user, load]);
@@ -82,7 +90,23 @@ export function LineSection() {
     setBusy(false);
   };
 
-  if (loading) return <p className="text-sm text-muted-foreground">読み込み中…</p>;
+  if (loading || suspended === null)
+    return <p className="text-sm text-muted-foreground">読み込み中…</p>;
+
+  if (suspended)
+    return (
+      <div className="space-y-4">
+        <SectionHeading title="LINE連携・通知" desc="LINEのトークに学習のお知らせを届けます" />
+        <Card className="space-y-2 border-destructive/40 p-5">
+          <div className="flex items-center gap-2 font-semibold">
+            <MessageCircle className="h-4 w-4 text-destructive" /> LINE機能は現在停止中です
+          </div>
+          <p className="text-sm text-muted-foreground">
+            通知・リマインダーなどのLINE機能は一時的に停止しています。LINEでのログインはこれまで通り使えます。
+          </p>
+        </Card>
+      </div>
+    );
 
   return (
     <div className="space-y-4">
