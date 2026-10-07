@@ -27,6 +27,7 @@ export type Peer = {
 };
 
 export type ChatLine = { id: string; from: string; name: string; text: string; at: number };
+export type Reaction = { id: string; from: string; kind: string };
 
 export const formatCode = (c: string) => {
   const d = c.replace(/\D/g, "");
@@ -108,6 +109,11 @@ export function useMeetingRoom(opts: {
   const [hand, setHand] = useState(false);
   const [chat, setChat] = useState<ChatLine[]>([]);
   const [speaking, setSpeaking] = useState<Set<string>>(new Set());
+  const [reactions, setReactions] = useState<Reaction[]>([]);
+  const addReaction = useCallback((r: Reaction) => {
+    setReactions((x) => [...x.slice(-30), r]);
+    setTimeout(() => setReactions((x) => x.filter((y) => y.id !== r.id)), 3000);
+  }, []);
   const [connState, setConnState] = useState<Record<string, RTCPeerConnectionState>>({});
 
   const chRef = useRef<any>(null);
@@ -380,6 +386,9 @@ export function useMeetingRoom(opts: {
           leave("kicked");
         }
       });
+      ch.on("broadcast", { event: "react" }, ({ payload }: any) => {
+        if (payload?.kind && payload?.from) addReaction({ id: String(payload.id), from: String(payload.from), kind: String(payload.kind).slice(0, 16) });
+      });
       ch.on("broadcast", { event: "chat" }, ({ payload }: any) => {
         if (!payload?.text) return;
         setChat((c) => [...c.slice(-199), payload as ChatLine]);
@@ -523,6 +532,15 @@ export function useMeetingRoom(opts: {
     track();
   }, [track]);
 
+  const sendReaction = useCallback(
+    (kind: string) => {
+      const r: Reaction = { id: crypto.randomUUID(), from: userId, kind };
+      addReaction(r);
+      send("react", r);
+    },
+    [send, userId, addReaction],
+  );
+
   const sendChat = useCallback(
     (text: string) => {
       const t = text.trim().slice(0, 1000);
@@ -572,6 +590,8 @@ export function useMeetingRoom(opts: {
     toggleShare,
     toggleHand,
     sendChat,
+    reactions,
+    sendReaction,
     hostAction,
     muteAll,
     muteOne,

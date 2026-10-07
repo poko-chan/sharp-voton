@@ -26,7 +26,54 @@ import {
   Download,
   Maximize,
   Minimize,
+  Pin,
+  PinOff,
+  LayoutGrid,
+  UserSquare,
+  SmilePlus,
+  ThumbsUp,
+  Heart,
+  PartyPopper,
+  Lightbulb,
+  Sparkles,
 } from "lucide-react";
+
+const REACTIONS = [
+  { k: "clap", label: "拍手", Icon: Sparkles },
+  { k: "like", label: "いいね", Icon: ThumbsUp },
+  { k: "heart", label: "ハート", Icon: Heart },
+  { k: "party", label: "おめでとう", Icon: PartyPopper },
+  { k: "idea", label: "なるほど", Icon: Lightbulb },
+] as const;
+
+function MicLevel({ stream }: { stream: MediaStream | null }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const t = stream?.getAudioTracks()[0];
+    if (!t) return;
+    const ctx = new AudioContext();
+    const an = ctx.createAnalyser();
+    an.fftSize = 256;
+    ctx.createMediaStreamSource(new MediaStream([t])).connect(an);
+    const buf = new Uint8Array(an.frequencyBinCount);
+    let raf = 0;
+    const loop = () => {
+      an.getByteTimeDomainData(buf);
+      let s = 0;
+      for (const v of buf) s += (v - 128) ** 2;
+      const lvl = Math.min(1, Math.sqrt(s / buf.length) / 30);
+      if (ref.current) ref.current.style.transform = `scale(${1 + lvl * 0.9})`;
+      if (ref.current) ref.current.style.opacity = String(0.15 + lvl * 0.6);
+      raf = requestAnimationFrame(loop);
+    };
+    loop();
+    return () => {
+      cancelAnimationFrame(raf);
+      void ctx.close();
+    };
+  }, [stream]);
+  return <span ref={ref} className="pointer-events-none absolute -inset-2 rounded-full bg-primary opacity-0 transition-transform duration-75" />;
+}
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -288,6 +335,10 @@ function Room({
   const [chatText, setChatText] = useState("");
   const [unread, setUnread] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [view, setView] = useState<"gallery" | "speaker">("gallery");
+  const [pinned, setPinned] = useState<string | null>(null);
+  const [reactOpen, setReactOpen] = useState(false);
+  const lastSpeaker = useRef<string | null>(null);
   const seenChat = useRef(0);
   const prevHost = useRef(meeting.host_id);
   const prevHands = useRef(new Set<string>());
@@ -343,6 +394,15 @@ function Room({
   const sharer = room.peers.find((p) => p.sharing);
   const tiles = [me, ...others];
   const cols = tiles.length <= 1 ? 1 : tiles.length <= 4 ? 2 : 3;
+  // ステージ: ピン留め優先 → スピーカービューなら直近の話者
+  const pinnedPeer = pinned ? tiles.find((p) => p.uid === pinned) : undefined;
+  const talkingNow = others.find((p) => room.speaking.has(p.uid) && !p.muted);
+  if (talkingNow) lastSpeaker.current = talkingNow.uid;
+  const stage =
+    tiles.length > 1
+      ? pinnedPeer ??
+        (view === "speaker" ? tiles.find((p) => p.uid === lastSpeaker.current) ?? others[0] : undefined)
+      : undefined;
 
   const mmss = `${String(Math.floor(elapsed / 3600)).padStart(2, "0")}:${String(Math.floor((elapsed % 3600) / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`;
 
@@ -406,7 +466,7 @@ function Room({
     return (
       <div
         key={p.uid}
-        className={`relative aspect-video overflow-hidden rounded-xl bg-muted ring-2 transition ${
+        className={`group relative aspect-video overflow-hidden rounded-xl bg-muted ring-2 transition ${
           talking ? "ring-primary shadow-[0_0_24px_-4px_var(--primary)]" : "ring-transparent"
         }`}
       >
@@ -424,7 +484,19 @@ function Room({
           <span className="flex min-w-0 items-center gap-1 rounded-md bg-background/80 px-2 py-0.5 text-xs backdrop-blur">
             {p.uid === meeting.host_id && <Crown className="h-3 w-3 shrink-0 text-primary" />}
             <span className="truncate">{isMe ? `${p.name}（自分）` : p.name}</span>
-            {p.muted && <MicOff className="h-3 w-3 shrink-0 text-destructive" />}
+            {p.muted ? (
+              <MicOff className="h-3 w-3 shrink-0 text-destructive" />
+            ) : (
+              <span className="flex h-3 items-end gap-px">
+                {[0, 1, 2].map((b) => (
+                  <span
+                    key={b}
+                    className={`w-0.5 rounded-sm bg-primary transition-all ${talking ? "animate-pulse" : ""}`}
+                    style={{ height: talking ? `${[60, 100, 75][b]}%` : "25%", animationDelay: `${b * 120}ms` }}
+                  />
+                ))}
+              </span>
+            )}
           </span>
           {!isMe && state && state !== "connected" && (
             <span className="rounded-md bg-background/80 px-2 py-0.5 text-[10px] text-muted-foreground">
@@ -437,6 +509,32 @@ function Room({
             <Hand className="h-4 w-4" />
           </span>
         )}
+        <button
+          onClick={() => setPinned(pinned === p.uid ? null : p.uid)}
+          title={pinned === p.uid ? "ピン留め解除" : "ピン留め"}
+          className={`absolute left-2 top-2 grid h-7 w-7 place-items-center rounded-full backdrop-blur transition ${
+            pinned === p.uid ? "bg-primary text-primary-foreground" : "bg-background/70 opacity-0 group-hover:opacity-100"
+          }`}
+        >
+          {pinned === p.uid ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
+        </button>
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          {room.reactions
+            .filter((r) => r.from === p.uid)
+            .map((r, i) => {
+              const def = REACTIONS.find((x) => x.k === r.kind);
+              if (!def) return null;
+              return (
+                <span
+                  key={r.id}
+                  className="meeting-float absolute bottom-8 grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg"
+                  style={{ left: `${20 + ((i * 23) % 60)}%` }}
+                >
+                  <def.Icon className="h-5 w-5" />
+                </span>
+              );
+            })}
+        </div>
       </div>
     );
   };
@@ -468,6 +566,20 @@ function Room({
 
       <div className="flex min-h-0 flex-1">
         <main className="min-w-0 flex-1 overflow-auto p-3">
+          <div className="mb-2 flex justify-end">
+            <div className="inline-flex rounded-lg border border-border p-0.5 text-xs">
+              {(["gallery", "speaker"] as const).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  className={`flex items-center gap-1 rounded-md px-2.5 py-1 ${view === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {v === "gallery" ? <LayoutGrid className="h-3.5 w-3.5" /> : <UserSquare className="h-3.5 w-3.5" />}
+                  {v === "gallery" ? "ギャラリー" : "スピーカー"}
+                </button>
+              ))}
+            </div>
+          </div>
           {sharer && (
             <div className="mb-3 overflow-hidden rounded-xl bg-muted">
               <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-muted-foreground">
@@ -479,9 +591,27 @@ function Room({
               </div>
             </div>
           )}
-          <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
-            {tiles.map(renderTile)}
-          </div>
+          {stage ? (
+            <>
+              <div className="mx-auto mb-3 max-w-4xl">{renderTile(stage)}</div>
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {tiles
+                  .filter((p) => p.uid !== stage.uid)
+                  .map((p) => (
+                    <div key={p.uid} className="w-40 shrink-0">
+                      {renderTile(p)}
+                    </div>
+                  ))}
+              </div>
+            </>
+          ) : (
+            <div
+              className="grid gap-3"
+              style={{ gridTemplateColumns: `repeat(${sharer ? Math.min(tiles.length, 4) : cols}, minmax(0, 1fr))` }}
+            >
+              {tiles.map(renderTile)}
+            </div>
+          )}
           {others.length === 0 && (
             <p className="mt-6 text-center text-sm text-muted-foreground">
               ほかの参加者を待っています。上の「招待」から会議コードを共有できます。
@@ -610,7 +740,10 @@ function Room({
 
       <footer className="flex flex-wrap items-center justify-center gap-2 border-t border-border px-3 py-3">
         <CtrlBtn active={!room.muted} danger={room.muted} label={room.muted ? "ミュート中" : "マイク"} onClick={room.toggleMute}>
-          {room.muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+          <span className="relative grid place-items-center">
+            {room.muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+            {!room.muted && <MicLevel stream={room.localStream} />}
+          </span>
         </CtrlBtn>
         <CtrlBtn active={!room.camOff} danger={room.camOff} label="カメラ" onClick={() => void run(room.toggleCam)}>
           {room.camOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
@@ -633,6 +766,28 @@ function Room({
         <CtrlBtn active={room.hand} label="挙手" onClick={room.toggleHand}>
           <Hand className="h-5 w-5" />
         </CtrlBtn>
+        <div className="relative">
+          <CtrlBtn active={reactOpen} label="リアクション" onClick={() => setReactOpen((v) => !v)}>
+            <SmilePlus className="h-5 w-5" />
+          </CtrlBtn>
+          {reactOpen && (
+            <div className="absolute bottom-full left-1/2 mb-2 flex -translate-x-1/2 gap-1 rounded-full border border-border bg-card p-1.5 shadow-lg">
+              {REACTIONS.map((r) => (
+                <button
+                  key={r.k}
+                  title={r.label}
+                  onClick={() => {
+                    room.sendReaction(r.k);
+                    setReactOpen(false);
+                  }}
+                  className="grid h-10 w-10 place-items-center rounded-full text-primary hover:bg-primary/10"
+                >
+                  <r.Icon className="h-5 w-5" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <CtrlBtn active={panel === "chat"} label="チャット" badge={unread} onClick={() => setPanel(panel === "chat" ? null : "chat")}>
           <MessageSquare className="h-5 w-5" />
         </CtrlBtn>
