@@ -127,7 +127,10 @@ function AuthLayout() {
   );
   // Full-screen workspaces must bypass AppShell's scrolling page container.
   const isFullscreenWorkspace =
-    path === "/makron" || path.startsWith("/makron/") || path.startsWith("/meetings/");
+    path === "/makron" ||
+    path.startsWith("/makron/") ||
+    path.startsWith("/meetings/") ||
+    /^\/notebooks\/[^/]+$/.test(path);
   if (isFullscreenWorkspace) {
     return (
       <TimerProvider>

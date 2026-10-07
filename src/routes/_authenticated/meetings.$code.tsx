@@ -36,6 +36,8 @@ import {
   PartyPopper,
   Lightbulb,
   Sparkles,
+  Captions,
+  NotebookPen,
 } from "lucide-react";
 
 const REACTIONS = [
@@ -328,7 +330,7 @@ function Room({
   snap.current.title = meeting.title;
   snap.current.chat = room.chat.map((c) => ({ name: c.from === userId ? "自分" : c.name, text: c.text, at: c.at }));
   room.peers.forEach((p) => p.uid !== userId && snap.current.names.add(p.name));
-  const [panel, setPanel] = useState<"people" | "chat" | null>(null);
+  const [panel, setPanel] = useState<"people" | "chat" | "notes" | null>(null);
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -338,16 +340,98 @@ function Room({
   const [view, setView] = useState<"gallery" | "speaker">("gallery");
   const [pinned, setPinned] = useState<string | null>(null);
   const [reactOpen, setReactOpen] = useState(false);
+  const [captionsOn, setCaptionsOn] = useState(false);
+  const [captionText, setCaptionText] = useState("");
+  const recognitionRef = useRef<any>(null);
+  const noteKey = `meeting-notes:${meeting.id}`;
+  const [meetingNotes, setMeetingNotes] = useState("");
+  const [notesLoaded, setNotesLoaded] = useState(false);
   const lastSpeaker = useRef<string | null>(null);
   const seenChat = useRef(0);
   const prevHost = useRef(meeting.host_id);
   const prevHands = useRef(new Set<string>());
 
   useEffect(() => {
+    try {
+      setMeetingNotes(localStorage.getItem(noteKey) ?? "");
+    } catch {
+      toast.error("保存した会議メモを読み込めませんでした");
+    }
+    setNotesLoaded(true);
+  }, [noteKey]);
+
+  useEffect(() => {
     const t0 = Date.now();
     const iv = setInterval(() => setElapsed(Math.floor((Date.now() - t0) / 1000)), 1000);
     return () => clearInterval(iv);
   }, []);
+
+  useEffect(() => {
+    if (!notesLoaded) return;
+    try {
+      localStorage.setItem(noteKey, meetingNotes);
+    } catch {
+      toast.error("メモを端末に保存できませんでした");
+    }
+  }, [meetingNotes, noteKey, notesLoaded]);
+
+  useEffect(() => {
+    if (!captionsOn || room.muted) {
+      recognitionRef.current?.stop?.();
+      recognitionRef.current = null;
+      return;
+    }
+    const w = window as any;
+    const SpeechRecognition = w.SpeechRecognition || w.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setCaptionsOn(false);
+      toast.error("ライブ字幕はChromeなど対応ブラウザーで利用できます");
+      return;
+    }
+    let active = true;
+    const recognition = new SpeechRecognition();
+    recognition.lang = "ja-JP";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.onresult = (event: any) => {
+      const results = Array.from(event.results as ArrayLike<any>);
+      const latest = results
+        .slice(event.resultIndex)
+        .map((result: any) => result[0]?.transcript ?? "")
+        .join("");
+      if (latest) setCaptionText(latest);
+    };
+    recognition.onerror = (event: any) => {
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        setCaptionsOn(false);
+        toast.error("字幕のマイク利用が許可されていません");
+      }
+    };
+    recognition.onend = () => {
+      if (active) {
+        window.setTimeout(() => {
+          if (!active) return;
+          try {
+            recognition.start();
+          } catch {
+            // すでに再開済みの場合は何もしない
+          }
+        }, 250);
+      }
+    };
+    recognitionRef.current = recognition;
+    try {
+      recognition.start();
+    } catch {
+      setCaptionsOn(false);
+    }
+    return () => {
+      active = false;
+      recognition.onend = null;
+      recognition.stop();
+      recognitionRef.current = null;
+    };
+  }, [captionsOn, room.muted]);
 
   useEffect(() => {
     const updateFullscreen = () => setIsFullscreen(!!document.fullscreenElement);
@@ -411,6 +495,25 @@ function Room({
     const text = `Study# 会議「${meeting.title}」\n会議コード: ${formatCode(meeting.code)}${meeting.has_password ? "\nパスコードは主催者に確認してください" : ""}\n${url}`;
     await navigator.clipboard.writeText(text);
     toast.success("招待情報をコピーしました");
+  };
+
+  const downloadMeetingNotes = () => {
+    const chatText = room.chat
+      .map(
+        (line) =>
+          `[${new Date(line.at).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}] ${line.name}: ${line.text}`,
+      )
+      .join("\n");
+    const blob = new Blob(
+      [`会議: ${meeting.title}\n会議コード: ${formatCode(meeting.code)}\n\n会議メモ\n${meetingNotes}\n\nチャットログ\n${chatText}`],
+      { type: "text/plain;charset=utf-8" },
+    );
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `meeting-${meeting.code}-notes.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   const run = async (fn: () => Promise<unknown> | unknown) => {
@@ -565,7 +668,7 @@ function Room({
       </header>
 
       <div className="flex min-h-0 flex-1">
-        <main className="min-w-0 flex-1 overflow-auto p-3">
+        <main className="relative min-w-0 flex-1 overflow-auto p-3">
           <div className="mb-2 flex justify-end">
             <div className="inline-flex rounded-lg border border-border p-0.5 text-xs">
               {(["gallery", "speaker"] as const).map((v) => (
@@ -617,12 +720,36 @@ function Room({
               ほかの参加者を待っています。上の「招待」から会議コードを共有できます。
             </p>
           )}
+          {captionsOn && (
+            <div className="pointer-events-none absolute inset-x-4 bottom-4 mx-auto max-w-3xl text-center">
+              <div className="inline-block max-w-full rounded-lg bg-black/85 px-4 py-2 text-sm text-white shadow-lg">
+                <span className="mr-2 text-xs text-white/60">自分の字幕</span>
+                {room.muted ? "ミュート中のため一時停止" : captionText || "音声を認識しています…"}
+              </div>
+            </div>
+          )}
         </main>
 
         {panel && (
           <aside className="flex w-full max-w-sm flex-col border-l border-border bg-card max-sm:absolute max-sm:inset-0 max-sm:top-14 max-sm:z-10 max-sm:max-w-none">
             <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
-              <span className="font-semibold">{panel === "people" ? `参加者（${room.peers.length}）` : "チャット"}</span>
+              <span className="font-semibold">
+                {panel === "people"
+                  ? `参加者（${room.peers.length}）`
+                  : panel === "chat"
+                    ? "チャット"
+                    : "会議メモ"}
+              </span>
+              {panel === "notes" && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={downloadMeetingNotes}
+                  title="メモとチャットを書き出す"
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+              )}
               <Button size="icon" variant="ghost" onClick={() => setPanel(null)}>
                 <X className="h-4 w-4" />
               </Button>
@@ -696,7 +823,7 @@ function Room({
                   ))}
                 </ul>
               </div>
-            ) : (
+            ) : panel === "chat" ? (
               <>
                 <div className="flex-1 space-y-2 overflow-auto p-3">
                   {room.chat.length === 0 && (
@@ -733,6 +860,18 @@ function Room({
                   </Button>
                 </form>
               </>
+            ) : (
+              <div className="flex min-h-0 flex-1 flex-col gap-3 p-3">
+                <p className="text-xs text-muted-foreground">この端末に自動保存されます。ほかの参加者には共有されません。</p>
+                <textarea
+                  value={meetingNotes}
+                  onChange={(event) => setMeetingNotes(event.target.value)}
+                  placeholder="議題、決定事項、次のアクションを記録…"
+                  maxLength={12000}
+                  className="min-h-0 flex-1 resize-none rounded-md border border-input bg-background p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+                <div className="text-right text-xs text-muted-foreground">{meetingNotes.length}/12000</div>
+              </div>
             )}
           </aside>
         )}
@@ -790,6 +929,12 @@ function Room({
         </div>
         <CtrlBtn active={panel === "chat"} label="チャット" badge={unread} onClick={() => setPanel(panel === "chat" ? null : "chat")}>
           <MessageSquare className="h-5 w-5" />
+        </CtrlBtn>
+        <CtrlBtn active={panel === "notes"} label="会議メモ" onClick={() => setPanel(panel === "notes" ? null : "notes")}>
+          <NotebookPen className="h-5 w-5" />
+        </CtrlBtn>
+        <CtrlBtn active={captionsOn} label={captionsOn ? "字幕をオフ" : "ライブ字幕"} onClick={() => setCaptionsOn((value) => !value)}>
+          <Captions className="h-5 w-5" />
         </CtrlBtn>
         <CtrlBtn active={panel === "people"} label="参加者" badge={room.peers.length} neutralBadge onClick={() => setPanel(panel === "people" ? null : "people")}>
           <Users className="h-5 w-5" />
