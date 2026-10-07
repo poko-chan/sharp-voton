@@ -202,6 +202,51 @@ export function PaymentSection() {
             </span>
             <span className="mt-3 block font-bold">追加パックを見る</span>
             <span className="mt-1 block text-xs text-muted-foreground">
+              必要な分だけ、気軽に追加。
+            </span>
+          </button>
+        </div>
+      </section>
+
+      {loading ? (
+        <Card className="flex items-center justify-center gap-2 p-10 text-sm text-muted-foreground">
+          <RefreshCw className="h-4 w-4 animate-spin" /> 料金情報を読み込んでいます…
+        </Card>
+      ) : loadError ? (
+        <Card className="space-y-3 p-6 text-center">
+          <p className="font-semibold">料金情報を読み込めませんでした</p>
+          <p className="text-sm text-muted-foreground">{loadError}</p>
+          <Button variant="outline" onClick={() => void load()}>
+            <RefreshCw className="mr-2 h-4 w-4" /> 再読み込み
+          </Button>
+        </Card>
+      ) : selection === "plans" ? (
+        <div className="space-y-8">
+          {hasPlans && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-3">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Zap className="h-4 w-4 text-amber-500" />
+                支払いサイクル
+              </div>
+              <div className="inline-flex rounded-full bg-muted p-1">
+                {(["monthly", "yearly"] as const).map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setCycle(value)}
+                    className={`rounded-full px-4 py-2 text-xs font-bold transition ${
+                      cycle === value
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {value === "monthly" ? "月払い" : "年払い"}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {!hasPlans && (
             <EmptyCatalog
               icon={CreditCard}
               title="プランは準備中です"
