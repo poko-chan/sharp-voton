@@ -40,6 +40,7 @@ export const Route = createFileRoute("/api/public/line/webhook")({
 
         const settings = await loadSettings();
         if (settings && settings.webhook_enabled === false) return new Response("ok");
+        if ((settings as any)?.is_suspended) return new Response("ok");
 
         let payload: any = {};
         try {
