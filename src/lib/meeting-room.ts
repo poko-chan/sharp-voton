@@ -56,6 +56,7 @@ type PeerConn = {
   pendingIce: RTCIceCandidateInit[];
   audioSender?: RTCRtpSender;
   videoSender?: RTCRtpSender;
+  screenSender?: RTCRtpSender;
 };
 
 export async function rpcCreateMeeting(title: string, password: string, muteOnEntry: boolean) {
@@ -99,6 +100,7 @@ export function useMeetingRoom(opts: {
   const [meeting, setMeeting] = useState<MeetingInfo>(opts.meeting);
   const [peers, setPeers] = useState<Peer[]>([]);
   const [remoteStreams, setRemoteStreams] = useState<Record<string, MediaStream>>({});
+  const [remoteScreens, setRemoteScreens] = useState<Record<string, MediaStream>>({});
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [screen, setScreen] = useState<MediaStream | null>(null);
   const [muted, setMuted] = useState(opts.meeting.mute_on_entry && opts.meeting.host_id !== userId);
@@ -130,8 +132,7 @@ export function useMeetingRoom(opts: {
     chRef.current?.send({ type: "broadcast", event, payload });
   }, []);
 
-  const currentVideoTrack = () =>
-    screenRef.current?.getVideoTracks()[0] ?? localRef.current?.getVideoTracks()[0] ?? null;
+  const currentVideoTrack = () => localRef.current?.getVideoTracks()[0] ?? null;
 
   const closePeer = useCallback((uid: string) => {
     const c = conns.current.get(uid);
@@ -147,6 +148,11 @@ export function useMeetingRoom(opts: {
       delete n[uid];
       return n;
     });
+    setRemoteScreens((s) => {
+      const n = { ...s };
+      delete n[uid];
+      return n;
+    });
   }, []);
 
   const makePeer = useCallback(
@@ -155,6 +161,7 @@ export function useMeetingRoom(opts: {
       if (existing) return existing;
       const pc = new RTCPeerConnection(ICE);
       const stream = new MediaStream();
+      const screenStream = new MediaStream();
       const c: PeerConn = { pc, stream, pendingIce: [] };
       conns.current.set(uid, c);
       if (initiator) {
@@ -162,10 +169,19 @@ export function useMeetingRoom(opts: {
         const a = local?.getAudioTracks()[0];
         const ta = pc.addTransceiver(a ?? "audio", { direction: "sendrecv" });
         const tv = pc.addTransceiver(currentVideoTrack() ?? "video", { direction: "sendrecv" });
+        const tsc = pc.addTransceiver(screenRef.current?.getVideoTracks()[0] ?? "video", { direction: "sendrecv" });
         c.audioSender = ta.sender;
         c.videoSender = tv.sender;
+        c.screenSender = tsc.sender;
       }
       pc.ontrack = (e) => {
+        const vids = pc.getTransceivers().filter((t) => t.receiver.track.kind === "video");
+        const isScreen = e.track.kind === "video" && vids.indexOf(e.transceiver) === 1;
+        if (isScreen) {
+          if (!screenStream.getTracks().includes(e.track)) screenStream.addTrack(e.track);
+          setRemoteScreens((s) => ({ ...s, [uid]: screenStream }));
+          return;
+        }
         if (!stream.getTracks().includes(e.track)) stream.addTrack(e.track);
         setRemoteStreams((s) => ({ ...s, [uid]: stream }));
       };
@@ -204,7 +220,9 @@ export function useMeetingRoom(opts: {
         if (!c.audioSender) {
           const ts = pc.getTransceivers();
           const ta = ts.find((t) => t.receiver.track.kind === "audio");
-          const tv = ts.find((t) => t.receiver.track.kind === "video");
+          const vids = ts.filter((t) => t.receiver.track.kind === "video");
+          const tv = vids[0];
+          const tsc = vids[1];
           if (ta) {
             ta.direction = "sendrecv";
             await ta.sender.replaceTrack(localRef.current?.getAudioTracks()[0] ?? null);
@@ -214,6 +232,11 @@ export function useMeetingRoom(opts: {
             tv.direction = "sendrecv";
             await tv.sender.replaceTrack(currentVideoTrack());
             c.videoSender = tv.sender;
+          }
+          if (tsc) {
+            tsc.direction = "sendrecv";
+            await tsc.sender.replaceTrack(screenRef.current?.getVideoTracks()[0] ?? null);
+            c.screenSender = tsc.sender;
           }
         }
         const ans = await pc.createAnswer();
@@ -420,14 +443,22 @@ export function useMeetingRoom(opts: {
   const replaceVideoAll = (t: MediaStreamTrack | null) => {
     conns.current.forEach((c) => void c.videoSender?.replaceTrack(t).catch(() => {}));
   };
+  const replaceScreenAll = (t: MediaStreamTrack | null) => {
+    conns.current.forEach((c) => void c.screenSender?.replaceTrack(t).catch(() => {}));
+  };
 
-  const toggleMute = useCallback(() => {
-    const next = !meRef.current.muted;
-    localRef.current?.getAudioTracks().forEach((t) => (t.enabled = !next));
-    meRef.current.muted = next;
-    setMuted(next);
-    track();
-  }, [track]);
+  const setMutedState = useCallback(
+    (next: boolean) => {
+      if (meRef.current.muted === next) return;
+      localRef.current?.getAudioTracks().forEach((t) => (t.enabled = !next));
+      meRef.current.muted = next;
+      setMuted(next);
+      track();
+    },
+    [track],
+  );
+
+  const toggleMute = useCallback(() => setMutedState(!meRef.current.muted), [setMutedState]);
 
   const toggleCam = useCallback(async () => {
     const local = localRef.current;
@@ -441,7 +472,7 @@ export function useMeetingRoom(opts: {
         vt = vs.getVideoTracks()[0];
         local.addTrack(vt);
         setLocalStream(new MediaStream(local.getTracks()));
-        if (!screenRef.current) replaceVideoAll(vt);
+        replaceVideoAll(vt);
         meRef.current.camOff = false;
         setCamOff(false);
         track();
@@ -461,7 +492,7 @@ export function useMeetingRoom(opts: {
     screenRef.current?.getTracks().forEach((t) => t.stop());
     screenRef.current = null;
     setScreen(null);
-    replaceVideoAll(localRef.current?.getVideoTracks()[0] ?? null);
+    replaceScreenAll(null);
     meRef.current.sharing = false;
     track();
   }, [track]);
@@ -470,12 +501,17 @@ export function useMeetingRoom(opts: {
     if (screenRef.current) return stopShare();
     const m = meetingRef.current;
     if (!m.allow_screen_share && m.host_id !== userId) throw new Error("主催者が画面共有を制限しています");
-    const disp = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+    const disp = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 10, max: 15 } }, audio: false });
     const t = disp.getVideoTracks()[0];
     if (!t) return;
+    try {
+      t.contentHint = "detail";
+    } catch {
+      /* noop */
+    }
     screenRef.current = disp;
     setScreen(disp);
-    replaceVideoAll(t);
+    replaceScreenAll(t);
     t.onended = () => stopShare();
     meRef.current.sharing = true;
     track();
