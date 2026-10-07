@@ -369,6 +369,8 @@ function Room({
 
   // Push-to-Talk: ミュート中にSpace長押しで一時発言
   const setMutedState = room.setMutedState;
+  const mutedRef = useRef(room.muted);
+  mutedRef.current = room.muted;
   useEffect(() => {
     let ptt = false;
     const typing = (e: KeyboardEvent) => {
@@ -376,7 +378,7 @@ function Room({
       return !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
     };
     const down = (e: KeyboardEvent) => {
-      if (e.code !== "Space" || e.repeat || typing(e) || !room.muted) return;
+      if (e.code !== "Space" || e.repeat || typing(e) || !mutedRef.current) return;
       e.preventDefault();
       ptt = true;
       setMutedState(false);
@@ -392,7 +394,7 @@ function Room({
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
     };
-  }, [room.muted, setMutedState]);
+  }, [setMutedState]);
   const hostName = room.peers.find((p) => p.uid === meeting.host_id)?.name ?? "不在";
 
   const renderTile = (p: Peer) => {
