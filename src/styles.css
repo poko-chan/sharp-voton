@@ -1052,6 +1052,124 @@
     color: color-mix(in oklab, var(--foreground) 55%, transparent);
   }
 
+  .payment-glacier-hero {
+    position: relative;
+    isolation: isolate;
+    min-height: 9.5rem;
+    overflow: hidden;
+    border: 1px solid color-mix(in oklab, oklch(0.7 0.12 205) 35%, var(--border));
+    border-radius: 1rem;
+    background: linear-gradient(110deg, oklch(0.96 0.035 185), oklch(0.91 0.055 205));
+  }
+
+  .payment-glacier-scene {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: 54%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .payment-glacier-sun {
+    position: absolute;
+    top: 1.4rem;
+    right: 2.5rem;
+    width: 2.4rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: oklch(0.91 0.11 90 / 75%);
+  }
+
+  .payment-glacier-water {
+    position: absolute;
+    inset: auto 0 0;
+    height: 28%;
+    background: linear-gradient(180deg, oklch(0.72 0.1 205 / 60%), oklch(0.8 0.09 190 / 78%));
+  }
+
+  .payment-glacier-water-line {
+    position: absolute;
+    right: 8%;
+    bottom: 17%;
+    width: 36%;
+    height: 2px;
+    border-radius: 9px;
+    background: oklch(0.98 0.02 195 / 80%);
+  }
+
+  .payment-glacier-peak {
+    position: absolute;
+    bottom: 18%;
+    display: block;
+    clip-path: polygon(0 100%, 26% 42%, 43% 57%, 65% 0, 100% 100%);
+    filter: drop-shadow(0 8px 8px oklch(0.35 0.08 220 / 12%));
+    transform: translateY(120%);
+    animation: payment-glacier-emerge 900ms cubic-bezier(0.2, 0.75, 0.25, 1) forwards;
+  }
+
+  .payment-glacier-peak-back {
+    right: 25%;
+    width: 10rem;
+    height: 6.1rem;
+    background: linear-gradient(145deg, oklch(0.98 0.015 195), oklch(0.79 0.09 205));
+    animation-delay: 120ms;
+  }
+
+  .payment-glacier-peak-main {
+    right: 2%;
+    width: 13rem;
+    height: 7.8rem;
+    background: linear-gradient(115deg, oklch(0.99 0.01 195) 0 39%, oklch(0.85 0.08 200) 40% 62%, oklch(0.7 0.12 205) 63%);
+    animation-delay: 40ms;
+  }
+
+  .payment-glacier-star {
+    position: absolute;
+    z-index: 1;
+    width: 0.6rem;
+    aspect-ratio: 1;
+    background: oklch(0.99 0.01 195);
+    clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+    animation: payment-glacier-twinkle 1.5s ease-in-out 700ms infinite alternate;
+  }
+
+  .payment-glacier-star-one {
+    top: 28%;
+    right: 42%;
+  }
+
+  .payment-glacier-star-two {
+    top: 47%;
+    right: 10%;
+    width: 0.4rem;
+    animation-delay: 1s;
+  }
+
+  @keyframes payment-glacier-emerge {
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes payment-glacier-twinkle {
+    from {
+      opacity: 0.45;
+      transform: scale(0.7) rotate(0deg);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1.15) rotate(25deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .payment-glacier-peak,
+    .payment-glacier-star {
+      animation: none;
+      transform: none;
+    }
+  }
+
   /* ===== Public landing: editorial academic system ===== */
   .landing-premium {
     --primary: oklch(0.45 0.16 251);

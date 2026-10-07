@@ -74,6 +74,22 @@ export function PaymentSection() {
     <div className="space-y-8">
       <SectionHeading title="お支払い" desc="Study#のプランとお支払いを管理します。" />
 
+      <div className="payment-glacier-hero">
+        <div className="relative z-10 max-w-[55%] p-5 sm:p-7">
+          <p className="text-xs font-bold uppercase tracking-wider text-primary">Study# plans</p>
+          <p className="mt-2 text-lg font-extrabold sm:text-xl">自分に合うプランを見つけよう</p>
+        </div>
+        <div className="payment-glacier-scene" aria-hidden="true">
+          <span className="payment-glacier-sun" />
+          <span className="payment-glacier-peak payment-glacier-peak-back" />
+          <span className="payment-glacier-peak payment-glacier-peak-main" />
+          <span className="payment-glacier-star payment-glacier-star-one" />
+          <span className="payment-glacier-star payment-glacier-star-two" />
+          <span className="payment-glacier-water" />
+          <span className="payment-glacier-water-line" />
+        </div>
+      </div>
+
       <div className="flex items-center gap-2 rounded-xl border bg-muted/40 p-4 text-sm">
         <BadgeCheck className="h-4 w-4 shrink-0 text-primary" />
         近日提供予定です。現在は料金の請求や購入手続きは行われません。
@@ -115,6 +131,7 @@ export function PaymentSection() {
           kind: "bool" | "text";
           group: string;
           desc: string | null;
+          sort: number;
         }[] = [];
         for (const f of features.filter((f) => list.some((p) => p.id === f.plan_id))) {
           if (!labels.some((l) => l.label === f.label))
@@ -123,9 +140,15 @@ export function PaymentSection() {
               kind: f.kind,
               group: f.group_label ?? "",
               desc: f.description,
+              sort: f.sort_order,
             });
         }
-        labels.sort((a, b) => a.group.localeCompare(b.group, "ja"));
+        labels.sort(
+          (a, b) =>
+            a.group.localeCompare(b.group, "ja") ||
+            a.sort - b.sort ||
+            a.label.localeCompare(b.label, "ja"),
+        );
         const labelGroups: { group: string; rows: typeof labels }[] = [];
         for (const l of labels) {
           const g = labelGroups.find((x) => x.group === l.group);

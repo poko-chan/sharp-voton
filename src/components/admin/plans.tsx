@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Trash2, Package, Layers } from "lucide-react";
+import { ArrowDown, ArrowUp, Plus, Trash2, Package, Layers } from "lucide-react";
 
 type Group = {
   id: string;
@@ -90,6 +90,25 @@ export function PlansAdminTab() {
     const { error } = await db.from(table).update(values).eq("id", id);
     if (error) toast.error(error.message);
   };
+  const moveOrder = async <T extends { id: string; sort_order: number }>(
+    table: string,
+    items: T[],
+    index: number,
+    direction: -1 | 1,
+  ) => {
+    const otherIndex = index + direction;
+    if (otherIndex < 0 || otherIndex >= items.length) return;
+    const updates = await Promise.all([
+      db.from(table).update({ sort_order: items[otherIndex].sort_order }).eq("id", items[index].id),
+      db.from(table).update({ sort_order: items[index].sort_order }).eq("id", items[otherIndex].id),
+    ]);
+    const error = updates.find((result) => result.error)?.error;
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    await load();
+  };
   const remove = async (table: string, id: string) => {
     const { error } = await db.from(table).delete().eq("id", id);
     if (error) {
@@ -142,6 +161,7 @@ export function PlansAdminTab() {
             features={features}
             onPatch={patch}
             onRemove={remove}
+            onMoveOrder={moveOrder}
             reload={load}
           />
         ))}
@@ -166,7 +186,7 @@ export function PlansAdminTab() {
             パックを追加
           </Button>
         </div>
-        {packs.map((k) => {
+        {packs.map((k, packIndex) => {
           const items = packItems.filter((it) => it.pack_id === k.id);
           return (
             <Card key={k.id} className="space-y-3 p-4">
@@ -189,6 +209,26 @@ export function PlansAdminTab() {
                     onCheckedChange={(v) => patch("plan_packs", k.id, { active: v })}
                   />
                 </label>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="パックを上へ移動"
+                  title="上へ移動"
+                  disabled={packIndex === 0}
+                  onClick={() => moveOrder("plan_packs", packs, packIndex, -1)}
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="パックを下へ移動"
+                  title="下へ移動"
+                  disabled={packIndex === packs.length - 1}
+                  onClick={() => moveOrder("plan_packs", packs, packIndex, 1)}
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </Button>
                 <Button variant="ghost" size="icon" onClick={() => remove("plan_packs", k.id)}>
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
@@ -206,7 +246,7 @@ export function PlansAdminTab() {
                     </tr>
                   </thead>
                   <tbody>
-                    {items.map((it) => (
+                    {items.map((it, itemIndex) => (
                       <tr key={it.id} className="border-t">
                         <td className="p-1.5">
                           <Input
@@ -245,13 +285,36 @@ export function PlansAdminTab() {
                           />
                         </td>
                         <td className="p-1.5">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => remove("plan_pack_items", it.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                          <div className="flex items-center">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              aria-label="商品を上へ移動"
+                              title="上へ移動"
+                              disabled={itemIndex === 0}
+                              onClick={() => moveOrder("plan_pack_items", items, itemIndex, -1)}
+                            >
+                              <ArrowUp className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              aria-label="商品を下へ移動"
+                              title="下へ移動"
+                              disabled={itemIndex === items.length - 1}
+                              onClick={() => moveOrder("plan_pack_items", items, itemIndex, 1)}
+                            >
+                              <ArrowDown className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              aria-label="商品を削除"
+                              onClick={() => remove("plan_pack_items", it.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -294,6 +357,7 @@ function GroupTable({
   features,
   onPatch,
   onRemove,
+  onMoveOrder,
   reload,
 }: {
   group: Group;
@@ -301,6 +365,12 @@ function GroupTable({
   features: Feature[];
   onPatch: (t: string, id: string, v: Record<string, unknown>) => Promise<void>;
   onRemove: (t: string, id: string) => Promise<void>;
+  onMoveOrder: <T extends { id: string; sort_order: number }>(
+    table: string,
+    items: T[],
+    index: number,
+    direction: -1 | 1,
+  ) => Promise<void>;
   reload: () => Promise<void>;
 }) {
   const planIds = plans.map((p) => p.id);
@@ -406,6 +476,29 @@ function GroupTable({
     await reload();
   };
 
+  const moveRow = async (index: number, direction: -1 | 1) => {
+    const otherIndex = index + direction;
+    if (otherIndex < 0 || otherIndex >= rows.length) return;
+    if ((rows[index].group_label ?? "") !== (rows[otherIndex].group_label ?? "")) return;
+    const reordered = [...rows];
+    [reordered[index], reordered[otherIndex]] = [reordered[otherIndex], reordered[index]];
+    const updates = await Promise.all(
+      reordered.flatMap((row, sort_order) =>
+        groupFeatures
+          .filter((feature) => feature.label === row.label)
+          .map((feature) =>
+            (supabase as any).from("plan_features").update({ sort_order }).eq("id", feature.id),
+          ),
+      ),
+    );
+    const error = updates.find((result) => result.error)?.error;
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    await reload();
+  };
+
   return (
     <Card className="space-y-4 p-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -439,7 +532,7 @@ function GroupTable({
               <th className="w-64 p-2 text-left text-xs font-medium text-muted-foreground">
                 項目 / プラン
               </th>
-              {plans.map((p) => (
+              {plans.map((p, planIndex) => (
                 <th key={p.id} className="min-w-[180px] space-y-1 p-2 text-left">
                   <Input
                     className="h-8 font-semibold"
@@ -487,6 +580,28 @@ function GroupTable({
                         onCheckedChange={(v) => onPatch("plans", p.id, { active: v })}
                       />
                     </label>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      aria-label="プランを上へ移動"
+                      title="上へ移動"
+                      disabled={planIndex === 0}
+                      onClick={() => onMoveOrder("plans", plans, planIndex, -1)}
+                    >
+                      <ArrowUp className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      aria-label="プランを下へ移動"
+                      title="下へ移動"
+                      disabled={planIndex === plans.length - 1}
+                      onClick={() => onMoveOrder("plans", plans, planIndex, 1)}
+                    >
+                      <ArrowDown className="h-3.5 w-3.5" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -577,9 +692,41 @@ function GroupTable({
                   );
                 })}
                 <td className="p-2">
-                  <Button variant="ghost" size="icon" onClick={() => deleteRow(row.label)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  <div className="flex items-center">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="項目を上へ移動"
+                      title="上へ移動"
+                      disabled={
+                        idx === 0 || (rows[idx - 1]?.group_label ?? "") !== (row.group_label ?? "")
+                      }
+                      onClick={() => moveRow(idx, -1)}
+                    >
+                      <ArrowUp className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="項目を下へ移動"
+                      title="下へ移動"
+                      disabled={
+                        idx === rows.length - 1 ||
+                        (rows[idx + 1]?.group_label ?? "") !== (row.group_label ?? "")
+                      }
+                      onClick={() => moveRow(idx, 1)}
+                    >
+                      <ArrowDown className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="項目を削除"
+                      onClick={() => deleteRow(row.label)}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))}
