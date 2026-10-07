@@ -98,10 +98,13 @@ export function PlansAdminTab() {
   ) => {
     const otherIndex = index + direction;
     if (otherIndex < 0 || otherIndex >= items.length) return;
-    const updates = await Promise.all([
-      db.from(table).update({ sort_order: items[otherIndex].sort_order }).eq("id", items[index].id),
-      db.from(table).update({ sort_order: items[index].sort_order }).eq("id", items[otherIndex].id),
-    ]);
+    const reordered = [...items];
+    [reordered[index], reordered[otherIndex]] = [reordered[otherIndex], reordered[index]];
+    const updates = await Promise.all(
+      reordered.map((item, sort_order) =>
+        db.from(table).update({ sort_order }).eq("id", item.id),
+      ),
+    );
     const error = updates.find((result) => result.error)?.error;
     if (error) {
       toast.error(error.message);
