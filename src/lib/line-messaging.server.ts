@@ -11,6 +11,17 @@ export async function pushToLineUser(lineUserId: string, messages: LineMessage[]
   const token = process.env["LINE_MESSAGING_ACCESS_TOKEN"];
   if (!token || !lineUserId) return { ok: false, skipped: true };
   try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("line_settings")
+      .select("is_suspended")
+      .eq("id", 1)
+      .maybeSingle();
+    if ((data as any)?.is_suspended) return { ok: false, skipped: true };
+  } catch {
+    /* ignore */
+  }
+  try {
     const res = await fetch(PUSH_URL, {
       method: "POST",
       headers: {

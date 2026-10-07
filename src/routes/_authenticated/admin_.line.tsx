@@ -206,6 +206,26 @@ function AdminLinePage() {
         </div>
       </div>
 
+      <Card className="flex items-center justify-between gap-4 border-destructive/40 p-6">
+        <div>
+          <h2 className="font-semibold">LINE機能を一時停止</h2>
+          <p className="text-xs text-muted-foreground">
+            通知・リマインダー・自動返信・設定を止めます。LINEでログインは引き続き使えます。
+          </p>
+        </div>
+        <Switch
+          checked={Boolean((s as any).is_suspended)}
+          onCheckedChange={async (v) => {
+            setS({ ...s, is_suspended: v } as any);
+            const { error } = await supabase
+              .from("line_settings")
+              .upsert({ id: 1, is_suspended: v } as any);
+            if (error) toast.error(error.message);
+            else toast.success(v ? "LINE機能を停止しました" : "LINE機能を再開しました");
+          }}
+        />
+      </Card>
+
       <Card className="space-y-4 p-6">
         <h2 className="font-semibold">LINE Developers に貼り付けるURL</h2>
         {[
