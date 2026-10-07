@@ -138,6 +138,12 @@ export function PlansAdminTab() {
   const patch = async (table: string, id: string, values: Record<string, unknown>) => {
     const { error } = await db.from(table).update(values).eq("id", id);
     if (error) {
+      if (error.message.includes("Could not find the 'options' column")) {
+        toast.error(
+          "料金設定DBが未更新です。Supabaseに 20261007120000_add_plan_feature_choice_options.sql を適用してください。",
+        );
+        return;
+      }
       toast.error(`保存できませんでした: ${error.message}`);
       return;
     }

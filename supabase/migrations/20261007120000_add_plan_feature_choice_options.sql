@@ -8,3 +8,5 @@ ALTER TABLE public.plan_features
 ALTER TABLE public.plan_features
   ADD COLUMN IF NOT EXISTS options jsonb NOT NULL DEFAULT '[]'::jsonb,
   ADD COLUMN IF NOT EXISTS show_check boolean NOT NULL DEFAULT true;
+
+NOTIFY pgrst, 'reload schema';
