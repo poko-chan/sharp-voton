@@ -104,14 +104,13 @@ export function PlansAdminTab() {
       toast.error(`保存できませんでした: ${error.message}`);
       return;
     }
-    const updateById = <T extends { id: string }>(items: T[], setItems: (next: T[]) => void) => {
-      setItems(items.map((item) => (item.id === id ? { ...item, ...values } : item)));
-    };
-    if (table === "plan_groups") updateById(groups, setGroups);
-    if (table === "plans") updateById(plans, setPlans);
-    if (table === "plan_features") updateById(features, setFeatures);
-    if (table === "plan_packs") updateById(packs, setPacks);
-    if (table === "plan_pack_items") updateById(packItems, setPackItems);
+    const updateById = <T extends { id: string }>(items: T[]) =>
+      items.map((item) => (item.id === id ? { ...item, ...values } : item));
+    if (table === "plan_groups") setGroups(updateById);
+    if (table === "plans") setPlans(updateById);
+    if (table === "plan_features") setFeatures(updateById);
+    if (table === "plan_packs") setPacks(updateById);
+    if (table === "plan_pack_items") setPackItems(updateById);
   };
   const remove = async (table: string, id: string) => {
     const { error } = await db.from(table).delete().eq("id", id);
@@ -164,16 +163,18 @@ export function PlansAdminTab() {
           <SummaryTile label="プラン群" value={groups.length} detail="料金のまとまり" />
           <SummaryTile
             label="公開プラン"
-            value={plans.filter((plan) => plan.active).length}
+            value={
+              plans.filter(
+                (plan) =>
+                  plan.active && groups.some((group) => group.id === plan.group_id && group.active),
+              ).length
+            }
             detail={`${plans.length} 件中`}
           />
           <SummaryTile
             label="公開パック"
-            value={
-              packs.filter((pack) => pack.active).length +
-              packItems.filter((item) => item.active).length
-            }
-            detail={`${packs.length} パック・商品`}
+            value={packs.filter((pack) => pack.active).length}
+            detail={`${packItems.filter((item) => item.active).length} 商品が公開中`}
           />
         </div>
       </div>
@@ -205,6 +206,10 @@ export function PlansAdminTab() {
           <CreditCard className="h-3.5 w-3.5" /> 現在は表示のみ・課金なし
         </Badge>
       </div>
+      <p className="text-xs text-muted-foreground">
+        入力欄はフォーカスを外すと保存され、公開スイッチは切り替えと同時に反映されます。
+        まず非公開のまま内容を整え、準備ができた項目だけ公開してください。
+      </p>
 
       {section === "plans" ? (
       <section className="space-y-6">
