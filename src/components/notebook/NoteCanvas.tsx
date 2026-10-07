@@ -89,6 +89,7 @@ export function NoteCanvas({
   const redoRef = useRef<{ strokes: Stroke[]; texts: TextBox[] }[]>([]);
   const [, force] = useState(0);
   const drawing = useRef<Stroke | null>(null);
+  const hasInitialFit = useRef(false);
   const activePointer = useRef<number | null>(null);
   const erasing = useRef(false);
   const panning = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
@@ -114,13 +115,21 @@ export function NoteCanvas({
   // 初期表示は幅にフィット
   const fit = useCallback(() => {
     const v = viewRef.current;
-    if (!v) return;
+    if (!v || v.clientWidth <= 0) return;
     const z = Math.min(1.6, Math.max(0.25, (v.clientWidth - 32) / PAGE_W));
     setZoom(z);
     setPan({ x: (v.clientWidth - PAGE_W * z) / 2, y: 16 });
+    hasInitialFit.current = true;
   }, []);
   useEffect(() => {
     fit();
+    const view = viewRef.current;
+    if (!view) return;
+    const observer = new ResizeObserver(() => {
+      if (!hasInitialFit.current) fit();
+    });
+    observer.observe(view);
+    return () => observer.disconnect();
   }, [fit]);
 
   // ホイール／ピンチでのズームとスクロール
@@ -417,7 +426,7 @@ export function NoteCanvas({
     <div className="flex h-full min-h-0 w-full">
       {/* 左：常設ツールバー（持ち替えのために戻る必要なし） */}
       {!readOnly && (
-        <div className="flex w-14 shrink-0 flex-col items-center gap-1 border-r bg-card/90 py-2 backdrop-blur">
+        <div className="flex w-full shrink-0 flex-row items-center gap-1 overflow-x-auto border-b bg-card/90 px-2 py-1 backdrop-blur md:w-14 md:flex-col md:overflow-x-visible md:border-b-0 md:border-r md:px-0 md:py-2">
           {TOOLS.map((t) => (
             <button
               key={t.key}
@@ -458,7 +467,7 @@ export function NoteCanvas({
           <button
             title="ページを消去"
             onClick={clearPage}
-            className="mt-auto flex h-9 w-10 items-center justify-center rounded-lg text-destructive hover:bg-destructive/10"
+            className="ml-auto flex h-9 w-10 shrink-0 items-center justify-center rounded-lg text-destructive hover:bg-destructive/10 md:ml-0 md:mt-auto"
           >
             <Trash2 className="h-[18px] w-[18px]" />
           </button>

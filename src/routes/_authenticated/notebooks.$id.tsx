@@ -64,9 +64,11 @@ function NotebookEditor() {
   const [showSettings, setShowSettings] = useState(false);
   const [showPageRail, setShowPageRail] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [pageLoadError, setPageLoadError] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const load = useCallback(async () => {
+    setPageLoadError(null);
     const { data: n, error } = await supabase
       .from("notebooks")
       .select("*")
@@ -77,11 +79,16 @@ function NotebookEditor() {
       return;
     }
     setNb(n as unknown as Notebook);
-    const { data: ps } = await supabase
+    const { data: ps, error: pagesError } = await supabase
       .from("notebook_pages")
       .select("*")
       .eq("notebook_id", id)
       .order("page_index");
+    if (pagesError) {
+      setPageLoadError(pagesError.message);
+      setLoading(false);
+      return;
+    }
     let list = ((ps as any[]) ?? []).map((p) => ({
       id: p.id,
       page_index: p.page_index,
@@ -90,23 +97,47 @@ function NotebookEditor() {
       texts: (p.texts ?? []) as TextBox[],
     })) as NotePage[];
     if (list.length === 0) {
-      const { data: created } = await supabase
+      const { data: created, error: createError } = await supabase
         .from("notebook_pages")
         .insert({ notebook_id: id, page_index: 0 })
         .select()
         .single();
-      if (created)
-        list = [
-          {
-            id: (created as any).id,
-            page_index: 0,
-            title: (created as any).title || "ページ 1",
-            strokes: [],
-            texts: [],
-          },
-        ];
+      if (createError || !created) {
+        setPageLoadError(createError?.message ?? "ページを作成できませんでした");
+        setLoading(false);
+        return;
+      }
+      list = [
+        {
+          id: (created as any).id,
+          page_index: 0,
+          title: (created as any).title || "ページ 1",
+          strokes: [],
+          texts: [],
+        },
+      ];
     }
-    setPages(list);
+    let restoredDraft = false;
+    const pagesWithDrafts = list.map((p) => {
+      try {
+        const rawDraft = localStorage.getItem(`cnote.draft.${p.id}`);
+        if (!rawDraft) return p;
+        const draft = JSON.parse(rawDraft) as Partial<NotePage>;
+        if (draft.id !== p.id || !Array.isArray(draft.strokes) || !Array.isArray(draft.texts))
+          return p;
+        restoredDraft = true;
+        return {
+          ...p,
+          title: typeof draft.title === "string" ? draft.title : p.title,
+          strokes: draft.strokes,
+          texts: draft.texts,
+        };
+      } catch {
+        return p;
+      }
+    });
+    setPages(pagesWithDrafts);
+    if (restoredDraft) setSaving("dirty");
     const { data: sh } = await supabase.from("notebook_shares").select("*").eq("notebook_id", id);
     const rows = (sh as unknown as ShareRow[]) ?? [];
     const profs = rows.length ? await fetchPublicProfiles(rows.map((r) => r.user_id)) : [];
@@ -532,7 +563,15 @@ function NotebookEditor() {
             </aside>
           )}
           <div className="min-h-0 min-w-0 flex-1">
-            {page && (
+            {pageLoadError ? (
+              <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+                <p className="font-medium">ノートのページを表示できませんでした</p>
+                <p className="max-w-lg text-sm text-muted-foreground">{pageLoadError}</p>
+                <Button variant="outline" onClick={() => void load()}>
+                  再読み込み
+                </Button>
+              </div>
+            ) : page ? (
               <NoteCanvas
                 key={page.id}
                 strokes={page.strokes}
@@ -543,7 +582,7 @@ function NotebookEditor() {
                 onChange={onChange}
                 title={nb.title}
               />
-            )}
+            ) : null}
           </div>
         </div>
 

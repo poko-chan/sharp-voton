@@ -119,6 +119,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const screenStreamRef = useRef<MediaStream | null>(null);
   const screenSenderRef = useRef<RTCRtpSender | null>(null);
   const remoteScreenIdRef = useRef<string | null>(null);
+  const remoteStreamRef = useRef<MediaStream | null>(null);
+  const remoteMediaStreamsRef = useRef(new Map<string, MediaStream>());
   const pendingIce = useRef<any[]>([]);
   const connectedRef = useRef(false);
 
@@ -153,6 +155,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       screenStreamRef.current = null;
       screenSenderRef.current = null;
       remoteScreenIdRef.current = null;
+      remoteStreamRef.current = null;
+      remoteMediaStreamsRef.current.clear();
       if (pairChRef.current) {
         supabase.removeChannel(pairChRef.current);
         pairChRef.current = null;
@@ -237,16 +241,21 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       });
 
       const remote = new MediaStream();
+      remoteStreamRef.current = remote;
       setRemoteStream(remote);
       pc.ontrack = (ev) => {
-        const st = ev.streams[0];
-        // 画面共有用ストリームはカメラ映像と分けて保持する
-        if (st && remoteScreenIdRef.current && st.id === remoteScreenIdRef.current) {
-          setRemoteScreen(new MediaStream(st.getTracks()));
+        const stream = ev.streams[0] ?? new MediaStream([ev.track]);
+        remoteMediaStreamsRef.current.set(stream.id, stream);
+        // 画面共有の通知と映像トラックは別々に届くため、どちらの順序でも振り分ける。
+        if (remoteScreenIdRef.current === stream.id) {
+          setRemoteScreen(new MediaStream(stream.getTracks()));
+          stream.getTracks().forEach((track) => remote.removeTrack(track));
+          setRemoteStream(new MediaStream(remote.getTracks()));
           ev.track.onended = () => setRemoteScreen(null);
           return;
         }
-        st?.getTracks().forEach((t) => remote.addTrack(t));
+        if (!remote.getTracks().some((track) => track.id === ev.track.id))
+          remote.addTrack(ev.track);
         setRemoteStream(new MediaStream(remote.getTracks()));
       };
       pc.onicecandidate = (ev) => {
@@ -331,7 +340,17 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         else pendingIce.current.push(s.candidate);
       } else if (s.t === "share") {
         remoteScreenIdRef.current = s.on ? s.streamId : null;
-        if (!s.on) setRemoteScreen(null);
+        if (!s.on) {
+          setRemoteScreen(null);
+        } else {
+          const stream = remoteMediaStreamsRef.current.get(s.streamId);
+          if (stream) {
+            setRemoteScreen(new MediaStream(stream.getTracks()));
+            const remote = remoteStreamRef.current;
+            stream.getTracks().forEach((track) => remote?.removeTrack(track));
+            if (remote) setRemoteStream(new MediaStream(remote.getTracks()));
+          }
+        }
       } else if (s.t === "decline") {
         toast.info("相手が応答しませんでした");
         cleanup({ record: "declined" });

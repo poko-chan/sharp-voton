@@ -112,6 +112,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     scripts: [
       {
         src: "https://api.dashboard.instatus.com/widget?host=sharp-voton.instatus.com&code=938bdd4a&locale=ja",
+        async: true,
       },
       {
         type: "application/ld+json",

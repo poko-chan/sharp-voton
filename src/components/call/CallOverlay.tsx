@@ -14,6 +14,9 @@ import {
   Signal,
   SignalLow,
   SignalMedium,
+  Maximize2,
+  Minimize2,
+  PictureInPicture2,
 } from "lucide-react";
 import { useCall } from "@/lib/call-context";
 
@@ -72,6 +75,8 @@ export function CallOverlay() {
   const remoteRef = useRef<HTMLVideoElement>(null);
   const screenRef = useRef<HTMLVideoElement>(null);
   const localScreenRef = useRef<HTMLVideoElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const elapsed = useElapsed(call.startedAt);
   useRingtone(call.status === "incoming", "incoming");
   useRingtone(call.status === "outgoing", "outgoing");
@@ -91,6 +96,25 @@ export function CallOverlay() {
       remoteRef.current.muted = call.speakerOff;
     }
   }, [call.remoteStream, call.speakerOff]);
+  useEffect(() => {
+    const updateFullscreen = () => setIsFullscreen(document.fullscreenElement === stageRef.current);
+    document.addEventListener("fullscreenchange", updateFullscreen);
+    return () => document.removeEventListener("fullscreenchange", updateFullscreen);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
+    else await stageRef.current?.requestFullscreen().catch(() => {});
+  };
+
+  const togglePictureInPicture = async () => {
+    const video = call.remoteScreen ? screenRef.current : remoteRef.current;
+    if (document.pictureInPictureElement) {
+      await document.exitPictureInPicture().catch(() => {});
+    } else if (video && document.pictureInPictureEnabled) {
+      await video.requestPictureInPicture().catch(() => {});
+    }
+  };
 
   if (call.status === "idle") return null;
 
@@ -151,7 +175,7 @@ export function CallOverlay() {
         </span>
       </div>
 
-      <div className="relative flex-1 overflow-hidden">
+      <div ref={stageRef} className="relative flex-1 overflow-hidden">
         {/* メイン表示: 共有画面があればそれ、無ければ相手のカメラ */}
         <video
           ref={screenRef}
@@ -201,6 +225,29 @@ export function CallOverlay() {
             {call.remoteScreen ? `${call.peerName} の画面` : "あなたの画面を共有中"}
           </span>
         )}
+        <div className="absolute right-4 top-4 flex gap-2">
+          {call.status === "active" && (
+            <Button
+              size="icon"
+              variant="outline"
+              className="h-9 w-9 border-white/20 bg-black/50 text-white hover:bg-black/70 hover:text-white"
+              onClick={() => void togglePictureInPicture()}
+              title="ピクチャー イン ピクチャー"
+              disabled={!document.pictureInPictureEnabled}
+            >
+              <PictureInPicture2 className="h-4 w-4" />
+            </Button>
+          )}
+          <Button
+            size="icon"
+            variant="outline"
+            className="h-9 w-9 border-white/20 bg-black/50 text-white hover:bg-black/70 hover:text-white"
+            onClick={() => void toggleFullscreen()}
+            title={isFullscreen ? "全画面表示を終了" : "全画面表示"}
+          >
+            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          </Button>
+        </div>
       </div>
 
       <div className="flex items-center justify-center gap-3 p-5">
