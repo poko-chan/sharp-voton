@@ -66,6 +66,7 @@ function NotebookEditor() {
   const [loading, setLoading] = useState(true);
   const [pageLoadError, setPageLoadError] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const load = useCallback(async () => {
     setPageLoadError(null);
@@ -151,6 +152,7 @@ function NotebookEditor() {
   useEffect(
     () => () => {
       if (timer.current) clearTimeout(timer.current);
+      if (draftTimer.current) clearTimeout(draftTimer.current);
     },
     [],
   );
@@ -176,6 +178,7 @@ function NotebookEditor() {
       if (requested && !pendingRef.current) pendingRef.current = requested;
       if (saveLoopRef.current) return;
       saveLoopRef.current = true;
+      let drainPending = true;
       try {
         while (pendingRef.current) {
           const p = pendingRef.current;
@@ -194,8 +197,9 @@ function NotebookEditor() {
             })
             .eq("id", p.id);
           if (error) {
-            pendingRef.current = p;
+            if (!pendingRef.current) pendingRef.current = p;
             setSaving("dirty");
+            drainPending = false;
             toast.error("保存に失敗しました");
             return;
           }
@@ -217,26 +221,46 @@ function NotebookEditor() {
         setSaving("saved");
       } finally {
         saveLoopRef.current = false;
-        if (pendingRef.current) void savePage();
+        if (drainPending && pendingRef.current) void savePage();
       }
     },
     [id, user?.id],
+  );
+
+  const queuePageSave = useCallback(
+    (updated: NotePage) => {
+      pendingRef.current = updated;
+      setSaving("dirty");
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = setTimeout(() => void savePage(), 800);
+      if (draftTimer.current) clearTimeout(draftTimer.current);
+      draftTimer.current = setTimeout(() => {
+        try {
+          localStorage.setItem(`cnote.draft.${updated.id}`, JSON.stringify(updated));
+        } catch {
+          toast.error("下書きを端末に保存できませんでした");
+        }
+      }, 250);
+    },
+    [savePage],
+  );
+
+  const flushPageSave = useCallback(
+    (requested?: NotePage) => {
+      if (timer.current) clearTimeout(timer.current);
+      if (draftTimer.current) clearTimeout(draftTimer.current);
+      void savePage(requested);
+    },
+    [savePage],
   );
 
   const onChange = (next: { strokes: Stroke[]; texts: TextBox[] }) => {
     const currentPage = pagesRef.current.find((candidate) => candidate.id === page?.id);
     if (!currentPage) return;
     const updated = { ...currentPage, ...next };
-    pendingRef.current = updated;
     pagesRef.current = pagesRef.current.map((p) => (p.id === updated.id ? updated : p));
     setPages(pagesRef.current);
-    setSaving("dirty");
-    // 自動保存はしない。「保存」ボタンを押したときだけ書き込む。
-    try {
-      localStorage.setItem(`cnote.draft.${updated.id}`, JSON.stringify(updated));
-    } catch {
-      /* noop */
-    }
+    queuePageSave(updated);
   };
 
   // ページを離れる／タブを隠すときに未保存分だけ保存する
@@ -386,11 +410,11 @@ function NotebookEditor() {
       }
       subtitle={
         saving === "saving"
-          ? "保存中..."
+          ? "自動保存中..."
           : saving === "saved"
-            ? "保存済み"
+            ? "自動保存済み"
             : saving === "dirty"
-              ? "未保存の変更"
+              ? "変更を自動保存します..."
               : `${idx + 1} / ${pages.length} ページ`
       }
       right={
@@ -400,8 +424,7 @@ function NotebookEditor() {
               size="sm"
               variant={saving === "dirty" ? "default" : "outline"}
               onClick={() => {
-                if (timer.current) clearTimeout(timer.current);
-                savePage(page);
+                flushPageSave(page);
               }}
             >
               <Save className="mr-1 h-4 w-4" />
@@ -594,18 +617,26 @@ function NotebookEditor() {
                 readOnly={readOnly}
                 onChange={(e) => {
                   const title = e.target.value;
-                  setPages((current) =>
-                    current.map((p) => (p.id === page.id ? { ...p, title } : p)),
+                  const currentPage = pagesRef.current.find((p) => p.id === page.id);
+                  if (!currentPage) return;
+                  const updated = { ...currentPage, title };
+                  pagesRef.current = pagesRef.current.map((p) =>
+                    p.id === page.id ? updated : p,
                   );
-                  pendingRef.current = { ...page, title };
-                  setSaving("dirty");
+                  setPages(pagesRef.current);
+                  queuePageSave(updated);
                 }}
                 onBlur={() => {
-                  const title = page.title.trim() || `ページ ${page.page_index + 1}`;
-                  setPages((current) =>
-                    current.map((p) => (p.id === page.id ? { ...p, title } : p)),
+                  const currentPage = pagesRef.current.find((p) => p.id === page.id);
+                  if (!currentPage) return;
+                  const title =
+                    currentPage.title.trim() || `ページ ${currentPage.page_index + 1}`;
+                  const updated = { ...currentPage, title };
+                  pagesRef.current = pagesRef.current.map((p) =>
+                    p.id === page.id ? updated : p,
                   );
-                  void savePage({ ...page, title });
+                  setPages(pagesRef.current);
+                  flushPageSave(updated);
                 }}
                 placeholder="ページ名"
                 aria-label="ページ名"

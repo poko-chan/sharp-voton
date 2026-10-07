@@ -72,6 +72,7 @@ export function NoteCanvas({
   title?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const viewRef = useRef<HTMLDivElement>(null);
   const [tool, setTool] = useState<Tool>("pen");
   const [color, setColor] = useState("#111827");
@@ -89,6 +90,7 @@ export function NoteCanvas({
   const redoRef = useRef<{ strokes: Stroke[]; texts: TextBox[] }[]>([]);
   const [, force] = useState(0);
   const drawing = useRef<Stroke | null>(null);
+  const previewFrame = useRef<number | null>(null);
   const hasInitialFit = useRef(false);
   const activePointer = useRef<number | null>(null);
   const erasing = useRef(false);
@@ -105,12 +107,41 @@ export function NoteCanvas({
     const ctx = c.getContext("2d");
     if (!ctx) return;
     renderPage(ctx, { strokes, texts: [] }, paper, paperColor);
-    if (drawing.current) drawStroke(ctx, drawing.current);
   }, [strokes, paper, paperColor]);
 
   useEffect(() => {
     redraw();
   }, [redraw]);
+
+  const clearPreview = () => {
+    if (previewFrame.current !== null) {
+      cancelAnimationFrame(previewFrame.current);
+      previewFrame.current = null;
+    }
+    const canvas = previewCanvasRef.current;
+    canvas?.getContext("2d")?.clearRect(0, 0, PAGE_W, PAGE_H);
+  };
+
+  const schedulePreview = () => {
+    if (previewFrame.current !== null) return;
+    previewFrame.current = requestAnimationFrame(() => {
+      previewFrame.current = null;
+      const canvas = previewCanvasRef.current;
+      const ctx = canvas?.getContext("2d");
+      if (!canvas || !ctx) return;
+      ctx.clearRect(0, 0, PAGE_W, PAGE_H);
+      if (drawing.current) drawStroke(ctx, drawing.current);
+    });
+  };
+
+  useEffect(
+    () => () => {
+      if (previewFrame.current !== null) cancelAnimationFrame(previewFrame.current);
+      const canvas = previewCanvasRef.current;
+      canvas?.getContext("2d")?.clearRect(0, 0, PAGE_W, PAGE_H);
+    },
+    [],
+  );
 
   // 初期表示は幅にフィット
   const fit = useCallback(() => {
@@ -261,6 +292,7 @@ export function NoteCanvas({
       width: tool === "highlighter" ? width * 8 : tool === "marker" ? width * 2.2 : width,
       points: [pt],
     };
+    schedulePreview();
   };
 
   const erase = (x: number, y: number) => {
@@ -278,7 +310,7 @@ export function NoteCanvas({
       return;
     }
     const pt = eventPoint(e);
-    setCursor({ x: pt.x, y: pt.y });
+    if (tool === "eraser") setCursor({ x: pt.x, y: pt.y });
     if (readOnly) return;
     // ボタン／指が離れている間は絶対に描かない
     if (e.buttons === 0) return;
@@ -304,7 +336,7 @@ export function NoteCanvas({
         if (dist >= 0.7) d.points.push(samplePoint);
       }
     }
-    redraw();
+    schedulePreview();
   };
 
   const finishStroke = () => {
@@ -313,6 +345,7 @@ export function NoteCanvas({
     erasing.current = false;
     const d = drawing.current;
     drawing.current = null;
+    clearPreview();
     if (d && d.points.length > 0) commit({ strokes: [...strokes, d], texts });
   };
 
@@ -326,6 +359,7 @@ export function NoteCanvas({
     panning.current = null;
     drawing.current = null;
     erasing.current = false;
+    clearPreview();
     try {
       (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
     } catch {
@@ -622,6 +656,13 @@ export function NoteCanvas({
                         ? "default"
                         : "crosshair",
               }}
+            />
+            <canvas
+              ref={previewCanvasRef}
+              width={PAGE_W}
+              height={PAGE_H}
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 h-full w-full"
             />
             {tool === "eraser" && cursor && !readOnly && (
               <div
