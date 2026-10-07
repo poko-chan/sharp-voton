@@ -7,11 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-<<<<<<< HEAD
-import { ArrowDown, ArrowUp, Plus, Trash2, Package, Layers } from "lucide-react";
-=======
-import { ArrowUpRight, CreditCard, Eye, Layers, Package, Plus, Sparkles, Trash2 } from "lucide-react";
->>>>>>> 757e9c14f5158836dc6a0bfccc90028607a991ff
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpRight,
+  CreditCard,
+  Eye,
+  Layers,
+  Package,
+  Plus,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
 
 type Group = {
   id: string;

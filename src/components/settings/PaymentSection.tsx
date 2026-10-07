@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import {
   BadgeCheck,
   Check,
@@ -102,15 +102,8 @@ export function PaymentSection() {
   const hasPacks = packs.length > 0;
 
   return (
-<<<<<<< HEAD
-    <div className="space-y-8">
-      <SectionHeading title="お支払い" desc="Study#のプランとお支払いを管理します。" />
-
-      <div className="payment-glacier-hero">
-        <div className="relative z-10 max-w-[55%] p-5 sm:p-7">
-          <p className="text-xs font-bold uppercase tracking-wider text-primary">Study# plans</p>
-          <p className="mt-2 text-lg font-extrabold sm:text-xl">自分に合うプランを見つけよう</p>
-        </div>
+    <div className="space-y-7">
+      <section className="payment-glacier-hero px-6 py-6 sm:p-9">
         <div className="payment-glacier-scene" aria-hidden="true">
           <span className="payment-glacier-sun" />
           <span className="payment-glacier-peak payment-glacier-peak-back" />
@@ -120,109 +113,33 @@ export function PaymentSection() {
           <span className="payment-glacier-water" />
           <span className="payment-glacier-water-line" />
         </div>
-      </div>
-
-      <div className="flex items-center gap-2 rounded-xl border bg-muted/40 p-4 text-sm">
-        <BadgeCheck className="h-4 w-4 shrink-0 text-primary" />
-        近日提供予定です。現在は料金の請求や購入手続きは行われません。
-      </div>
-
-      {!hasPlans && (
-        <Card className="p-6">
-          <CreditCard className="mb-3 h-6 w-6 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            プランは現在準備中です。すべての機能を無料でご利用いただけます。
-          </p>
-        </Card>
-      )}
-
-      {hasPlans && (
-        <div className="flex justify-center">
-          <div className="inline-flex rounded-full border bg-muted/50 p-1 text-sm">
-            {(["monthly", "yearly"] as const).map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCycle(c)}
-                className={`rounded-full px-4 py-1.5 transition ${
-                  cycle === c ? "bg-background font-semibold shadow-sm" : "text-muted-foreground"
-                }`}
-              >
-                {c === "monthly" ? "月払い" : "年払い"}
-              </button>
-            ))}
-=======
-    <div className="space-y-7">
-      <section className="relative isolate overflow-hidden rounded-[2rem] bg-gradient-to-br from-violet-600 via-indigo-600 to-sky-500 p-6 text-white shadow-xl shadow-indigo-900/15 sm:p-9">
-        <div className="absolute -right-14 -top-20 -z-10 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
-        <div className="absolute -bottom-24 right-1/4 -z-10 h-56 w-56 rounded-full bg-cyan-300/20 blur-3xl" />
-        <div className="flex max-w-3xl items-start gap-4">
-          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/15 ring-1 ring-white/20">
+        <div className="relative z-10 flex max-w-3xl items-start gap-4">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
             <Wallet className="h-6 w-6" />
           </div>
-          <div>
-            <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-white/75">
+          <div className="max-w-[55%]">
+            <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-primary">
               Study# Plus
             </p>
             <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
               学びに合わせて、選ぼう。
             </h1>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/85">
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-foreground/80">
               毎日じっくり使うならプランを。必要な分だけ使いたいときは追加パックを。
               あなたに合う形を、ここから見つけられます。
             </p>
->>>>>>> 757e9c14f5158836dc6a0bfccc90028607a991ff
           </div>
         </div>
-        <div className="mt-6 flex flex-wrap gap-2 text-xs font-semibold">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 ring-1 ring-white/20">
+        <div className="relative z-10 mt-6 flex flex-wrap gap-2 text-xs font-semibold">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-primary">
             <Sparkles className="h-3.5 w-3.5" /> いつでも内容を確認
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 ring-1 ring-white/20">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-primary">
             <BadgeCheck className="h-3.5 w-3.5" /> 料金を事前に表示
           </span>
         </div>
       </section>
 
-<<<<<<< HEAD
-      {groups.map((g) => {
-        const list = plans.filter((p) => p.group_id === g.id);
-        if (list.length === 0) return null;
-        const labels: {
-          label: string;
-          kind: "bool" | "text";
-          group: string;
-          desc: string | null;
-          sort: number;
-        }[] = [];
-        for (const f of features.filter((f) => list.some((p) => p.id === f.plan_id))) {
-          if (!labels.some((l) => l.label === f.label))
-            labels.push({
-              label: f.label,
-              kind: f.kind,
-              group: f.group_label ?? "",
-              desc: f.description,
-              sort: f.sort_order,
-            });
-        }
-        labels.sort(
-          (a, b) =>
-            a.group.localeCompare(b.group, "ja") ||
-            a.sort - b.sort ||
-            a.label.localeCompare(b.label, "ja"),
-        );
-        const labelGroups: { group: string; rows: typeof labels }[] = [];
-        for (const l of labels) {
-          const g = labelGroups.find((x) => x.group === l.group);
-          if (g) g.rows.push(l);
-          else labelGroups.push({ group: l.group, rows: [l] });
-        }
-        return (
-          <section key={g.id} className="space-y-5">
-            <div className="text-center">
-              <h3 className="text-lg font-bold">{g.name}</h3>
-              {g.description && <p className="text-sm text-muted-foreground">{g.description}</p>}
-=======
       <div className="flex items-start gap-3 rounded-2xl border border-amber-300/60 bg-amber-50/80 p-4 text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
         <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-300" />
         <div>
@@ -285,57 +202,6 @@ export function PaymentSection() {
             </span>
             <span className="mt-3 block font-bold">追加パックを見る</span>
             <span className="mt-1 block text-xs text-muted-foreground">
-              必要な分だけ、気軽に追加。
-            </span>
-          </button>
-        </div>
-      </section>
-
-      {loading ? (
-        <Card className="flex items-center justify-center gap-2 p-10 text-sm text-muted-foreground">
-          <RefreshCw className="h-4 w-4 animate-spin" /> 料金情報を読み込んでいます…
-        </Card>
-      ) : loadError ? (
-        <Card className="space-y-3 p-6 text-center">
-          <p className="font-semibold">料金情報を読み込めませんでした</p>
-          <p className="text-sm text-muted-foreground">{loadError}</p>
-          <Button variant="outline" onClick={() => void load()}>
-            <RefreshCw className="mr-2 h-4 w-4" /> 再読み込み
-          </Button>
-        </Card>
-      ) : selection === "plans" ? (
-        <div className="space-y-8">
-          {hasPlans && (
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-3">
-              <div className="flex items-center gap-2 text-sm font-semibold">
-                <Zap className="h-4 w-4 text-amber-500" />
-                支払いサイクル
-              </div>
-              <div className="inline-flex rounded-full bg-muted p-1">
-                {(["monthly", "yearly"] as const).map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setCycle(value)}
-                    className={`rounded-full px-4 py-2 text-xs font-bold transition ${
-                      cycle === value
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {value === "monthly" ? "月払い" : "年払い"}
-                    {value === "yearly" && (
-                      <span className="ml-1.5 text-emerald-600 dark:text-emerald-400">
-                        年額
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
->>>>>>> 757e9c14f5158836dc6a0bfccc90028607a991ff
-            </div>
-          )}
-          {!hasPlans && (
             <EmptyCatalog
               icon={CreditCard}
               title="プランは準備中です"
