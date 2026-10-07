@@ -28,15 +28,24 @@ type Plan = {
 type Feature = {
   id: string;
   plan_id: string;
-  kind: "bool" | "text";
+  kind: "bool" | "tri" | "quad" | "stars" | "custom" | "text";
   label: string;
   bool_value: boolean;
   text_value: string | null;
   sort_order: number;
   description: string | null;
   group_label: string | null;
+  options: FeatureOption[];
+  show_check: boolean;
 };
-type Pack = { id: string; name: string; description: string | null; price: number; currency: string };
+type FeatureOption = { value: string; label: string; description: string };
+type Pack = {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  currency: string;
+};
 type PackItem = {
   id: string;
   pack_id: string;
@@ -55,6 +64,10 @@ type Catalog = {
 
 const db = supabase as any;
 const EMPTY_CATALOG: Catalog = { groups: [], plans: [], features: [], packs: [], packItems: [] };
+const defaultBoolOptions: FeatureOption[] = [
+  { value: "yes", label: "◯", description: "" },
+  { value: "no", label: "×", description: "" },
+];
 
 function yen(n: number) {
   return n === 0 ? "¥0" : `¥${n.toLocaleString("ja-JP")}`;
@@ -267,8 +280,17 @@ export function PaymentSection() {
               }, [])
               .sort((a, b) => {
                 const groupOrder = (a.group_label ?? "").localeCompare(b.group_label ?? "", "ja");
-                return groupOrder || a.sort_order - b.sort_order;
+                return (
+                  groupOrder || a.sort_order - b.sort_order || a.label.localeCompare(b.label, "ja")
+                );
               });
+            const featureGroups = new Map<string, Feature[]>();
+            for (const feature of groupFeatures) {
+              const key = feature.group_label ?? "";
+              const rows = featureGroups.get(key) ?? [];
+              rows.push(feature);
+              featureGroups.set(key, rows);
+            }
             return (
               <section key={group.id} className="space-y-4">
                 <div>
@@ -277,117 +299,147 @@ export function PaymentSection() {
                     <p className="mt-1 text-sm text-muted-foreground">{group.description}</p>
                   )}
                 </div>
-                <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {groupPlans.map((plan) => {
-                    const price = cycle === "monthly" ? plan.price_monthly : plan.price_yearly;
-                    const monthlyEquivalent =
-                      cycle === "yearly" ? Math.round(plan.price_yearly / 12) : null;
-                    const discount =
-                      plan.price_monthly > 0 && plan.price_yearly > 0
-                        ? Math.max(
-                            0,
-                            Math.round(
-                              (1 - plan.price_yearly / (plan.price_monthly * 12)) * 100,
-                            ),
-                          )
-                        : 0;
-                    return (
-                      <Card
-                        key={plan.id}
-                        className={`relative flex flex-col overflow-hidden rounded-3xl p-5 transition hover:-translate-y-1 hover:shadow-lg ${
-                          plan.id === featured?.id
-                            ? "border-violet-500/60 bg-gradient-to-b from-violet-500/[0.08] to-card shadow-md shadow-violet-500/10 ring-1 ring-violet-500/25"
-                            : "bg-card"
-                        }`}
-                      >
-                        {plan.highlight && (
-                          <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-violet-600 to-indigo-500 px-2.5 py-1 text-[10px] font-extrabold text-white shadow-sm">
-                            <Sparkles className="h-3 w-3" /> 人気
-                          </span>
-                        )}
-                        <div className="min-h-16 pr-16">
-                          <h4 className="text-xl font-black">{plan.name}</h4>
-                          {plan.description && (
-                            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                              {plan.description}
-                            </p>
-                          )}
-                        </div>
-                        <div className="mt-5 border-b pb-5">
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-3xl font-black tracking-tight">{yen(price)}</span>
-                            <span className="text-xs font-medium text-muted-foreground">
-                              /{cycle === "monthly" ? "月" : "年"}
-                            </span>
-                          </div>
-                          {cycle === "yearly" && (
-                            <p className="mt-1 text-xs text-muted-foreground">
-                              月あたり {yen(monthlyEquivalent ?? 0)}
-                              {discount > 0 && (
-                                <span className="ml-2 font-bold text-emerald-600 dark:text-emerald-400">
-                                  月払いより約{discount}%お得
+                <div className="overflow-x-auto rounded-2xl border bg-card shadow-sm">
+                  <table className="w-full min-w-[640px] border-separate border-spacing-0 text-sm">
+                    <thead>
+                      <tr>
+                        <th className="sticky left-0 z-10 min-w-48 bg-card p-4 text-left text-xs font-bold text-muted-foreground">
+                          項目
+                        </th>
+                        {groupPlans.map((plan) => {
+                          const price =
+                            cycle === "monthly" ? plan.price_monthly : plan.price_yearly;
+                          return (
+                            <th
+                              key={plan.id}
+                              className={`min-w-40 border-l p-4 text-center align-top ${
+                                plan.id === featured?.id ? "bg-primary/5" : ""
+                              }`}
+                            >
+                              {plan.highlight && (
+                                <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary">
+                                  <Sparkles className="h-3 w-3" /> おすすめ
                                 </span>
                               )}
-                            </p>
+                              <div className="font-black">{plan.name}</div>
+                              {plan.description && (
+                                <div className="mt-1 text-xs font-normal text-muted-foreground">
+                                  {plan.description}
+                                </div>
+                              )}
+                              <div className="mt-3 text-xl font-black">{yen(price)}</div>
+                              <div className="text-[11px] text-muted-foreground">
+                                /{cycle === "monthly" ? "月" : "年"}
+                              </div>
+                              <Button
+                                disabled
+                                size="sm"
+                                variant={plan.id === featured?.id ? "default" : "outline"}
+                                className="mt-3 w-full text-xs"
+                              >
+                                まもなく利用できます
+                              </Button>
+                            </th>
+                          );
+                        })}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Array.from(featureGroups, ([groupLabel, rows]) => (
+                        <Fragment key={groupLabel || "ungrouped"}>
+                          {groupLabel && (
+                            <tr>
+                              <th
+                                colSpan={groupPlans.length + 1}
+                                className="border-t bg-muted/50 px-4 py-2 text-left text-xs font-bold text-primary"
+                              >
+                                {groupLabel}
+                              </th>
+                            </tr>
                           )}
-                        </div>
-                        <ul className="my-4 flex-1 space-y-2.5">
-                          {groupFeatures.length ? (
-                            groupFeatures.map((feature) => {
-                              const value = features.find(
-                                (item) =>
-                                  item.plan_id === plan.id && item.label === feature.label,
-                              );
-                              const enabled =
-                                feature.kind === "bool"
-                                  ? (value?.bool_value ?? false)
-                                  : !!value?.text_value;
-                              return (
-                                <li
-                                  key={feature.label}
-                                  className={`flex gap-2 text-sm ${enabled ? "" : "text-muted-foreground/60"}`}
-                                >
-                                  {enabled ? (
-                                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                                  ) : (
-                                    <X className="mt-0.5 h-4 w-4 shrink-0" />
-                                  )}
-                                  <span>
-                                    <span className="font-semibold">{feature.label}</span>
-                                    {feature.kind === "text" && value?.text_value && (
-                                      <span className="ml-1 text-muted-foreground">
-                                        {value.text_value}
-                                      </span>
-                                    )}
-                                    {feature.description && (
-                                      <span className="mt-0.5 block text-xs text-muted-foreground">
-                                        {feature.description}
-                                      </span>
-                                    )}
+                          {rows.map((feature) => (
+                            <tr key={feature.label} className="transition-colors hover:bg-muted/30">
+                              <th className="sticky left-0 z-10 border-t bg-card p-4 text-left align-top">
+                                <span className="font-semibold">{feature.label}</span>
+                                {feature.description && (
+                                  <span className="mt-1 block text-xs font-normal text-muted-foreground">
+                                    {feature.description}
                                   </span>
-                                </li>
-                              );
-                            })
-                          ) : (
-                            <li className="text-xs text-muted-foreground">
-                              プランの詳細は準備中です。
-                            </li>
-                          )}
-                        </ul>
-                        <Button
-                          disabled
-                          className={`w-full rounded-xl font-bold ${
-                            plan.id === featured?.id
-                              ? "bg-gradient-to-r from-violet-600 to-indigo-500 text-white hover:opacity-90"
-                              : ""
-                          }`}
-                          variant={plan.id === featured?.id ? "default" : "outline"}
-                        >
-                          まもなく利用できます
-                        </Button>
-                      </Card>
-                    );
-                  })}
+                                )}
+                              </th>
+                              {groupPlans.map((plan) => {
+                                const value = features.find(
+                                  (item) =>
+                                    item.plan_id === plan.id && item.label === feature.label,
+                                );
+                                const options =
+                                  feature.options?.length > 0
+                                    ? feature.options
+                                    : feature.kind === "bool"
+                                      ? defaultBoolOptions
+                                      : [];
+                                const selectedOption = options.find(
+                                  (option) =>
+                                    option.value ===
+                                    (feature.kind === "bool"
+                                      ? value?.bool_value
+                                        ? "yes"
+                                        : "no"
+                                      : value?.text_value),
+                                );
+                                return (
+                                  <td
+                                    key={plan.id}
+                                    className={`border-l border-t p-4 text-center align-top ${
+                                      plan.id === featured?.id ? "bg-primary/5" : ""
+                                    }`}
+                                  >
+                                    {feature.kind === "text" ? (
+                                      <div className="flex items-start justify-center gap-2">
+                                        {feature.show_check &&
+                                          (value?.bool_value ? (
+                                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                                          ) : (
+                                            <X className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/50" />
+                                          ))}
+                                        <div>
+                                          <span className="font-semibold">
+                                            {value?.text_value || "—"}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    ) : feature.kind === "bool" ? (
+                                      <div>
+                                        <span className="text-lg font-bold">
+                                          {value?.bool_value ? "◯" : "×"}
+                                        </span>
+                                        {selectedOption?.description && (
+                                          <span className="mt-1 block text-xs text-muted-foreground">
+                                            {selectedOption.description}
+                                          </span>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <div>
+                                        <span className="font-bold">
+                                          {selectedOption?.label ?? "—"}
+                                        </span>
+                                        {selectedOption?.description && (
+                                          <span className="mt-1 block text-xs text-muted-foreground">
+                                            {selectedOption.description}
+                                          </span>
+                                        )}
+                                      </div>
+                                    )}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </Fragment>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </section>
             );

@@ -42,13 +42,39 @@ type Plan = {
 type Feature = {
   id: string;
   plan_id: string;
-  kind: "bool" | "text";
+  kind: "bool" | "tri" | "quad" | "stars" | "custom" | "text";
   label: string;
   bool_value: boolean;
   text_value: string | null;
   sort_order: number;
   description: string | null;
   group_label: string | null;
+  options: FeatureOption[];
+  show_check: boolean;
+};
+type FeatureOption = { value: string; label: string; description: string };
+
+const featurePresets: Record<string, FeatureOption[]> = {
+  bool: [
+    { value: "yes", label: "◯", description: "" },
+    { value: "no", label: "×", description: "" },
+  ],
+  tri: [
+    { value: "yes", label: "◯", description: "" },
+    { value: "no", label: "×", description: "" },
+    { value: "partial", label: "△", description: "" },
+  ],
+  quad: [
+    { value: "excellent", label: "◎", description: "" },
+    { value: "yes", label: "◯", description: "" },
+    { value: "partial", label: "△", description: "" },
+    { value: "no", label: "×", description: "" },
+  ],
+  stars: Array.from({ length: 5 }, (_, index) => ({
+    value: String(index + 1),
+    label: "★".repeat(index + 1),
+    description: "",
+  })),
 };
 type Pack = {
   id: string;
@@ -512,10 +538,12 @@ function GroupTable({
       string,
       {
         label: string;
-        kind: "bool" | "text";
+        kind: Feature["kind"];
         sort: number;
         description: string | null;
         group_label: string | null;
+        options: FeatureOption[];
+        show_check: boolean;
       }
     >();
     for (const f of groupFeatures) {
@@ -527,6 +555,8 @@ function GroupTable({
           sort: f.sort_order,
           description: f.description,
           group_label: f.group_label,
+          options: f.options?.length ? f.options : (featurePresets[f.kind] ?? []),
+          show_check: f.show_check ?? true,
         });
       }
     }
@@ -541,12 +571,19 @@ function GroupTable({
   const cell = (label: string, planId: string) =>
     groupFeatures.find((f) => f.label === label && f.plan_id === planId);
 
-  const ensureCell = async (label: string, kind: "bool" | "text", planId: string, sort: number) => {
+  const ensureCell = async (label: string, kind: Feature["kind"], planId: string, sort: number) => {
     const existing = cell(label, planId);
     if (existing) return existing;
     const { data, error } = await (supabase as any)
       .from("plan_features")
-      .insert({ plan_id: planId, label, kind, sort_order: sort })
+      .insert({
+        plan_id: planId,
+        label,
+        kind,
+        sort_order: sort,
+        options: featurePresets[kind] ?? [],
+        show_check: true,
+      })
       .select()
       .single();
     if (error) {
@@ -558,7 +595,7 @@ function GroupTable({
 
   const setCellValue = async (
     label: string,
-    kind: "bool" | "text",
+    kind: Feature["kind"],
     planId: string,
     sort: number,
     values: Record<string, unknown>,
@@ -577,17 +614,54 @@ function GroupTable({
     await reload();
   };
 
-  const setRowKind = async (label: string, kind: "bool" | "text") => {
+  const setRowKind = async (label: string, kind: Feature["kind"]) => {
+    const options =
+      kind === "custom"
+        ? rows.find((row) => row.label === label)?.options.length
+          ? rows.find((row) => row.label === label)?.options
+          : [
+              { value: crypto.randomUUID(), label: "選択肢 1", description: "" },
+              { value: crypto.randomUUID(), label: "選択肢 2", description: "" },
+            ]
+        : (featurePresets[kind] ?? []);
     for (const f of groupFeatures.filter((x) => x.label === label)) {
-      await onPatch("plan_features", f.id, { kind });
+      await onPatch("plan_features", f.id, { kind, options });
     }
     await reload();
   };
 
   const setRowMeta = async (label: string, values: Record<string, unknown>) => {
-    for (const f of groupFeatures.filter((x) => x.label === label)) {
-      await onPatch("plan_features", f.id, values);
-    }
+    await Promise.all(
+      groupFeatures
+        .filter((feature) => feature.label === label)
+        .map((feature) => onPatch("plan_features", feature.id, values)),
+    );
+  };
+
+  const updateOption = (
+    row: (typeof rows)[number],
+    index: number,
+    values: Partial<FeatureOption>,
+  ) => {
+    const options = row.options.map((option, optionIndex) =>
+      optionIndex === index ? { ...option, ...values } : option,
+    );
+    void setRowMeta(row.label, { options });
+  };
+
+  const addOption = (row: (typeof rows)[number]) => {
+    void setRowMeta(row.label, {
+      options: [
+        ...row.options,
+        { value: crypto.randomUUID(), label: `選択肢 ${row.options.length + 1}`, description: "" },
+      ],
+    });
+  };
+
+  const removeOption = (row: (typeof rows)[number], index: number) => {
+    void setRowMeta(row.label, {
+      options: row.options.filter((_, optionIndex) => optionIndex !== index),
+    });
   };
 
   const deleteRow = async (label: string) => {
@@ -600,9 +674,16 @@ function GroupTable({
   const addRow = async () => {
     if (plans.length === 0) return toast.error("先にプランを追加してください。");
     const label = `新しい項目 ${rows.length + 1}`;
-    const { error } = await (supabase as any)
-      .from("plan_features")
-      .insert(plans.map((p) => ({ plan_id: p.id, label, kind: "bool", sort_order: rows.length })));
+    const { error } = await (supabase as any).from("plan_features").insert(
+      plans.map((p) => ({
+        plan_id: p.id,
+        label,
+        kind: "bool",
+        options: featurePresets.bool,
+        show_check: true,
+        sort_order: rows.length,
+      })),
+    );
     if (error) return toast.error(error.message);
     await reload();
   };
@@ -789,12 +870,74 @@ function GroupTable({
                     <select
                       className="h-7 rounded-md border bg-background px-2 text-xs"
                       value={row.kind}
-                      onChange={(e) => setRowKind(row.label, e.target.value as "bool" | "text")}
+                      onChange={(event) =>
+                        setRowKind(row.label, event.target.value as Feature["kind"])
+                      }
                     >
                       <option value="bool">◯×</option>
+                      <option value="tri">◯×△</option>
+                      <option value="quad">◎◯△×</option>
+                      <option value="stars">★ 5段階</option>
+                      <option value="custom">自由選択肢</option>
                       <option value="text">短答</option>
                     </select>
                   </div>
+                  {row.kind === "text" && (
+                    <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Switch
+                        checked={row.show_check}
+                        onCheckedChange={(checked) =>
+                          setRowMeta(row.label, { show_check: checked })
+                        }
+                      />
+                      チェック欄を表示
+                    </label>
+                  )}
+                  {row.kind !== "text" && (
+                    <div className="space-y-1.5 rounded-md border bg-muted/20 p-2">
+                      <div className="text-[11px] font-semibold text-muted-foreground">
+                        選択肢と説明
+                      </div>
+                      {(row.options.length ? row.options : (featurePresets[row.kind] ?? [])).map(
+                        (option, optionIndex) => (
+                          <div key={option.value} className="space-y-1">
+                            <div className="flex items-center gap-1">
+                              <Input
+                                className="h-7 min-w-0"
+                                aria-label={`選択肢 ${optionIndex + 1} の表示名`}
+                                defaultValue={option.label}
+                                onBlur={(event) =>
+                                  updateOption(row, optionIndex, { label: event.target.value })
+                                }
+                              />
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 shrink-0"
+                                aria-label={`選択肢 ${optionIndex + 1} を削除`}
+                                disabled={row.options.length <= 2}
+                                onClick={() => removeOption(row, optionIndex)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                              </Button>
+                            </div>
+                            <Input
+                              className="h-7 text-xs"
+                              aria-label={`選択肢 ${optionIndex + 1} の説明`}
+                              placeholder="説明（例: 全部利用可能）"
+                              defaultValue={option.description}
+                              onBlur={(event) =>
+                                updateOption(row, optionIndex, { description: event.target.value })
+                              }
+                            />
+                          </div>
+                        ),
+                      )}
+                      <Button size="sm" variant="outline" onClick={() => addOption(row)}>
+                        <Plus className="mr-1 h-3.5 w-3.5" /> 選択肢を追加
+                      </Button>
+                    </div>
+                  )}
                 </td>
                 {plans.map((p) => {
                   const f = cell(row.label, p.id);
@@ -807,17 +950,51 @@ function GroupTable({
                             setCellValue(row.label, row.kind, p.id, idx, { bool_value: v })
                           }
                         />
+                      ) : row.kind === "text" ? (
+                        <div className="flex min-w-28 items-center gap-2">
+                          {row.show_check && (
+                            <Switch
+                              checked={f?.bool_value ?? false}
+                              aria-label={`${row.label}のチェック状態`}
+                              onCheckedChange={(checked) =>
+                                setCellValue(row.label, row.kind, p.id, idx, {
+                                  bool_value: checked,
+                                })
+                              }
+                            />
+                          )}
+                          <Input
+                            className="h-8 min-w-20"
+                            placeholder="回答"
+                            defaultValue={f?.text_value ?? ""}
+                            onBlur={(event) =>
+                              setCellValue(row.label, row.kind, p.id, idx, {
+                                text_value: event.target.value || null,
+                              })
+                            }
+                          />
+                        </div>
                       ) : (
-                        <Input
-                          className="h-8"
-                          placeholder="例: 赤"
-                          defaultValue={f?.text_value ?? ""}
-                          onBlur={(e) =>
+                        <select
+                          className="h-9 max-w-full rounded-md border bg-background px-2 text-sm"
+                          value={f?.text_value ?? ""}
+                          aria-label={`${row.label}の選択肢`}
+                          onChange={(event) =>
                             setCellValue(row.label, row.kind, p.id, idx, {
-                              text_value: e.target.value || null,
+                              text_value: event.target.value || null,
                             })
                           }
-                        />
+                        >
+                          <option value="">未設定</option>
+                          {(row.options.length
+                            ? row.options
+                            : (featurePresets[row.kind] ?? [])
+                          ).map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
                       )}
                     </td>
                   );
