@@ -115,6 +115,17 @@ const groups: { title: string; items: AdminItem[] }[] = [
     ],
   },
   {
+    title: "サービスと料金",
+    items: [
+      {
+        tab: "plans",
+        label: "お支払い設定",
+        description: "プラン・特典・追加パックと利用者向け表示を管理",
+        icon: CreditCard,
+      },
+    ],
+  },
+  {
     title: "システム",
     items: [
       {
@@ -134,12 +145,6 @@ const groups: { title: string; items: AdminItem[] }[] = [
         label: "バージョン",
         description: "アプリのバージョン情報",
         icon: Settings,
-      },
-      {
-        tab: "plans",
-        label: "プラン管理",
-        description: "プラン・料金・内容・追加パック",
-        icon: CreditCard,
       },
       {
         tab: "line",
