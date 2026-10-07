@@ -243,224 +243,228 @@ export function PlansAdminTab() {
       </p>
 
       {section === "plans" ? (
-      <section className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="flex items-center gap-2 font-semibold">
-            <Layers className="h-4 w-4" /> プラン群
-          </h2>
-          <Button
-            size="sm"
-            onClick={async () => {
-              const { error } = await db
-                .from("plan_groups")
-                .insert({ name: "新しいプラン群", sort_order: groups.length });
-              if (error) return toast.error(error.message);
-              load();
-            }}
-          >
-            <Plus className="mr-1 h-4 w-4" />
-            プラン群を追加
-          </Button>
-        </div>
+        <section className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="flex items-center gap-2 font-semibold">
+              <Layers className="h-4 w-4" /> プラン群
+            </h2>
+            <Button
+              size="sm"
+              onClick={async () => {
+                const { error } = await db
+                  .from("plan_groups")
+                  .insert({ name: "新しいプラン群", sort_order: groups.length });
+                if (error) return toast.error(error.message);
+                load();
+              }}
+            >
+              <Plus className="mr-1 h-4 w-4" />
+              プラン群を追加
+            </Button>
+          </div>
 
-        {groups.length === 0 && (
-          <p className="text-sm text-muted-foreground">まだプラン群がありません。</p>
-        )}
+          {groups.length === 0 && (
+            <p className="text-sm text-muted-foreground">まだプラン群がありません。</p>
+          )}
 
-        {groups.map((g) => (
-          <GroupTable
-            key={g.id}
-            group={g}
-            plans={plans.filter((p) => p.group_id === g.id)}
-            features={features}
-            onPatch={patch}
-            onRemove={remove}
-            onMoveOrder={moveOrder}
-            reload={load}
-          />
-        ))}
-      </section>
+          {groups.map((g) => (
+            <GroupTable
+              key={g.id}
+              group={g}
+              plans={plans.filter((p) => p.group_id === g.id)}
+              features={features}
+              onPatch={patch}
+              onRemove={remove}
+              onMoveOrder={moveOrder}
+              reload={load}
+            />
+          ))}
+        </section>
       ) : (
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="flex items-center gap-2 font-semibold">
-            <Package className="h-4 w-4" /> 追加パック
-          </h2>
-          <Button
-            size="sm"
-            onClick={async () => {
-              const { error } = await db
-                .from("plan_packs")
-                .insert({ name: "新しいパック", sort_order: packs.length });
-              if (error) return toast.error(error.message);
-              load();
-            }}
-          >
-            <Plus className="mr-1 h-4 w-4" />
-            パックを追加
-          </Button>
-        </div>
-        {packs.map((k, packIndex) => {
-          const items = packItems.filter((it) => it.pack_id === k.id);
-          return (
-            <Card key={k.id} className="space-y-3 p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <Input
-                  className="w-48"
-                  defaultValue={k.name}
-                  onBlur={(e) => patch("plan_packs", k.id, { name: e.target.value })}
-                />
-                <Input
-                  className="min-w-[180px] flex-1"
-                  placeholder="説明（任意）"
-                  defaultValue={k.description ?? ""}
-                  onBlur={(e) => patch("plan_packs", k.id, { description: e.target.value || null })}
-                />
-                <label className="flex items-center gap-2 text-xs">
-                  公開
-                  <Switch
-                    defaultChecked={k.active}
-                    onCheckedChange={(v) => patch("plan_packs", k.id, { active: v })}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="flex items-center gap-2 font-semibold">
+              <Package className="h-4 w-4" /> 追加パック
+            </h2>
+            <Button
+              size="sm"
+              onClick={async () => {
+                const { error } = await db
+                  .from("plan_packs")
+                  .insert({ name: "新しいパック", sort_order: packs.length });
+                if (error) return toast.error(error.message);
+                load();
+              }}
+            >
+              <Plus className="mr-1 h-4 w-4" />
+              パックを追加
+            </Button>
+          </div>
+          {packs.map((k, packIndex) => {
+            const items = packItems.filter((it) => it.pack_id === k.id);
+            return (
+              <Card key={k.id} className="space-y-3 p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Input
+                    className="w-48"
+                    defaultValue={k.name}
+                    onBlur={(e) => patch("plan_packs", k.id, { name: e.target.value })}
                   />
-                </label>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="パックを上へ移動"
-                  title="上へ移動"
-                  disabled={packIndex === 0}
-                  onClick={() => moveOrder("plan_packs", packs, packIndex, -1)}
-                >
-                  <ArrowUp className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="パックを下へ移動"
-                  title="下へ移動"
-                  disabled={packIndex === packs.length - 1}
-                  onClick={() => moveOrder("plan_packs", packs, packIndex, 1)}
-                >
-                  <ArrowDown className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => remove("plan_packs", k.id)}>
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
-              </div>
+                  <Input
+                    className="min-w-[180px] flex-1"
+                    placeholder="説明（任意）"
+                    defaultValue={k.description ?? ""}
+                    onBlur={(e) =>
+                      patch("plan_packs", k.id, { description: e.target.value || null })
+                    }
+                  />
+                  <label className="flex items-center gap-2 text-xs">
+                    公開
+                    <Switch
+                      defaultChecked={k.active}
+                      onCheckedChange={(v) => patch("plan_packs", k.id, { active: v })}
+                    />
+                  </label>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="パックを上へ移動"
+                    title="上へ移動"
+                    disabled={packIndex === 0}
+                    onClick={() => moveOrder("plan_packs", packs, packIndex, -1)}
+                  >
+                    <ArrowUp className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="パックを下へ移動"
+                    title="下へ移動"
+                    disabled={packIndex === packs.length - 1}
+                    onClick={() => moveOrder("plan_packs", packs, packIndex, 1)}
+                  >
+                    <ArrowDown className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => remove("plan_packs", k.id)}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
 
-              <div className="overflow-x-auto rounded-lg border">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50 text-xs text-muted-foreground">
-                    <tr>
-                      <th className="p-2 text-left font-medium">商品名</th>
-                      <th className="p-2 text-left font-medium">内容（例: 1,000クレジット）</th>
-                      <th className="p-2 text-left font-medium">金額</th>
-                      <th className="p-2 text-left font-medium">公開</th>
-                      <th className="w-10" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map((it, itemIndex) => (
-                      <tr key={it.id} className="border-t">
-                        <td className="p-1.5">
-                          <Input
-                            className="h-8"
-                            defaultValue={it.name}
-                            onBlur={(e) =>
-                              patch("plan_pack_items", it.id, { name: e.target.value })
-                            }
-                          />
-                        </td>
-                        <td className="p-1.5">
-                          <Input
-                            className="h-8"
-                            defaultValue={it.amount_label ?? ""}
-                            onBlur={(e) =>
-                              patch("plan_pack_items", it.id, {
-                                amount_label: e.target.value || null,
-                              })
-                            }
-                          />
-                        </td>
-                        <td className="p-1.5">
-                          <Input
-                            type="number"
-                            className="h-8 w-28"
-                            defaultValue={it.price}
-                            onBlur={(e) =>
-                              patch("plan_pack_items", it.id, { price: Number(e.target.value) })
-                            }
-                          />
-                        </td>
-                        <td className="p-1.5">
-                          <Switch
-                            defaultChecked={it.active}
-                            onCheckedChange={(v) => patch("plan_pack_items", it.id, { active: v })}
-                          />
-                        </td>
-                        <td className="p-1.5">
-                          <div className="flex items-center">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label="商品を上へ移動"
-                              title="上へ移動"
-                              disabled={itemIndex === 0}
-                              onClick={() => moveOrder("plan_pack_items", items, itemIndex, -1)}
-                            >
-                              <ArrowUp className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label="商品を下へ移動"
-                              title="下へ移動"
-                              disabled={itemIndex === items.length - 1}
-                              onClick={() => moveOrder("plan_pack_items", items, itemIndex, 1)}
-                            >
-                              <ArrowDown className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label="商品を削除"
-                              onClick={() => remove("plan_pack_items", it.id)}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                    {items.length === 0 && (
+                <div className="overflow-x-auto rounded-lg border">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/50 text-xs text-muted-foreground">
                       <tr>
-                        <td className="p-3 text-xs text-muted-foreground" colSpan={5}>
-                          このパックにはまだ商品がありません。
-                        </td>
+                        <th className="p-2 text-left font-medium">商品名</th>
+                        <th className="p-2 text-left font-medium">内容（例: 1,000クレジット）</th>
+                        <th className="p-2 text-left font-medium">金額</th>
+                        <th className="p-2 text-left font-medium">公開</th>
+                        <th className="w-10" />
                       </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {items.map((it, itemIndex) => (
+                        <tr key={it.id} className="border-t">
+                          <td className="p-1.5">
+                            <Input
+                              className="h-8"
+                              defaultValue={it.name}
+                              onBlur={(e) =>
+                                patch("plan_pack_items", it.id, { name: e.target.value })
+                              }
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <Input
+                              className="h-8"
+                              defaultValue={it.amount_label ?? ""}
+                              onBlur={(e) =>
+                                patch("plan_pack_items", it.id, {
+                                  amount_label: e.target.value || null,
+                                })
+                              }
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <Input
+                              type="number"
+                              className="h-8 w-28"
+                              defaultValue={it.price}
+                              onBlur={(e) =>
+                                patch("plan_pack_items", it.id, { price: Number(e.target.value) })
+                              }
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <Switch
+                              defaultChecked={it.active}
+                              onCheckedChange={(v) =>
+                                patch("plan_pack_items", it.id, { active: v })
+                              }
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <div className="flex items-center">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label="商品を上へ移動"
+                                title="上へ移動"
+                                disabled={itemIndex === 0}
+                                onClick={() => moveOrder("plan_pack_items", items, itemIndex, -1)}
+                              >
+                                <ArrowUp className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label="商品を下へ移動"
+                                title="下へ移動"
+                                disabled={itemIndex === items.length - 1}
+                                onClick={() => moveOrder("plan_pack_items", items, itemIndex, 1)}
+                              >
+                                <ArrowDown className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label="商品を削除"
+                                onClick={() => remove("plan_pack_items", it.id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      {items.length === 0 && (
+                        <tr>
+                          <td className="p-3 text-xs text-muted-foreground" colSpan={5}>
+                            このパックにはまだ商品がありません。
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
 
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={async () => {
-                  const { error } = await db
-                    .from("plan_pack_items")
-                    .insert({ pack_id: k.id, sort_order: items.length });
-                  if (error) return toast.error(error.message);
-                  load();
-                }}
-              >
-                <Plus className="mr-1 h-4 w-4" />
-                商品を追加
-              </Button>
-            </Card>
-          );
-        })}
-      </section>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={async () => {
+                    const { error } = await db
+                      .from("plan_pack_items")
+                      .insert({ pack_id: k.id, sort_order: items.length });
+                    if (error) return toast.error(error.message);
+                    load();
+                  }}
+                >
+                  <Plus className="mr-1 h-4 w-4" />
+                  商品を追加
+                </Button>
+              </Card>
+            );
+          })}
+        </section>
       )}
     </div>
   );
