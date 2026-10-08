@@ -9,9 +9,14 @@ function rp() {
   return { origin: u.origin, rpID: u.hostname };
 }
 
-// ライブラリ内部の generateChallenge は SSR バンドルで初期化順エラーになるため自前で生成
-function newChallenge() {
-  return crypto.getRandomValues(new Uint8Array(32));
+// ライブラリの generate*Options は初期化順エラー(_generateChallengeInternals)を起こすため使わず、
+// WebAuthn 標準のオプションJSONを自前で組み立てる。検証は passkey.server.ts のみで行う。
+async function lib() {
+  return await import("./passkey.server");
+}
+async function newChallenge() {
+  const { b64urlFromBytes } = await lib();
+  return b64urlFromBytes(crypto.getRandomValues(new Uint8Array(32)));
 }
 
 async function admin() {
@@ -38,7 +43,7 @@ async function takeChallenge(id: string) {
 export const passkeyRegisterOptions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { generateRegistrationOptions } = await import("@simplewebauthn/server");
+    const { b64urlFromBytes } = await lib();
     const { rpID } = rp();
     const db = await admin();
     const { data: existing } = await db
@@ -46,16 +51,32 @@ export const passkeyRegisterOptions = createServerFn({ method: "POST" })
       .select("id")
       .eq("user_id", context.userId);
     const email = (context.claims as { email?: string }).email ?? "user";
-    const options = await generateRegistrationOptions({
-      rpName: "Study#",
-      rpID,
-      userName: email,
-      userID: new TextEncoder().encode(context.userId),
-      attestationType: "none",
-      challenge: newChallenge(),
-      excludeCredentials: ((existing ?? []) as { id: string }[]).map((c) => ({ id: c.id })),
-      authenticatorSelection: { residentKey: "required", userVerification: "preferred" },
-    });
+    const options = {
+      challenge: await newChallenge(),
+      rp: { name: "Study#", id: rpID },
+      user: {
+        id: b64urlFromBytes(new TextEncoder().encode(context.userId)),
+        name: email,
+        displayName: email,
+      },
+      pubKeyCredParams: [
+        { alg: -8, type: "public-key" },
+        { alg: -7, type: "public-key" },
+        { alg: -257, type: "public-key" },
+      ],
+      timeout: 60000,
+      attestation: "none",
+      excludeCredentials: ((existing ?? []) as { id: string }[]).map((c) => ({
+        id: c.id,
+        type: "public-key",
+      })),
+      authenticatorSelection: {
+        residentKey: "required",
+        requireResidentKey: true,
+        userVerification: "preferred",
+      },
+      extensions: { credProps: true },
+    };
     const { data: ch } = await db
       .from("webauthn_challenges" as never)
       .insert({ user_id: context.userId, challenge: options.challenge } as never)
@@ -75,12 +96,11 @@ export const passkeyRegisterVerify = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { verifyRegistrationResponse } = await import("@simplewebauthn/server");
-    const { isoBase64URL } = await import("@simplewebauthn/server/helpers");
+    const { verifyRegistration, b64urlFromBytes } = await lib();
     const ch = await takeChallenge(data.challengeId);
     if (ch.user_id !== context.userId) throw new Error("不正なリクエストです");
     const { origin, rpID } = rp();
-    const v = await verifyRegistrationResponse({
+    const v = await verifyRegistration({
       response: data.response,
       expectedChallenge: ch.challenge,
       expectedOrigin: origin,
@@ -92,7 +112,7 @@ export const passkeyRegisterVerify = createServerFn({ method: "POST" })
     const { error } = await db.from("user_passkeys" as never).insert({
       id: c.id,
       user_id: context.userId,
-      public_key: isoBase64URL.fromBuffer(c.publicKey),
+      public_key: b64urlFromBytes(c.publicKey),
       counter: c.counter,
       transports: c.transports ?? null,
       label: data.label || "この端末",
@@ -102,13 +122,13 @@ export const passkeyRegisterVerify = createServerFn({ method: "POST" })
   });
 
 export const passkeyLoginOptions = createServerFn({ method: "POST" }).handler(async () => {
-  const { generateAuthenticationOptions } = await import("@simplewebauthn/server");
   const { rpID } = rp();
-  const options = await generateAuthenticationOptions({
-    rpID,
+  const options = {
+    challenge: await newChallenge(),
+    rpId: rpID,
+    timeout: 60000,
     userVerification: "preferred",
-    challenge: newChallenge(),
-  });
+  };
   const db = await admin();
   const { data: ch } = await db
     .from("webauthn_challenges" as never)
@@ -124,8 +144,7 @@ export const passkeyLoginOptions = createServerFn({ method: "POST" }).handler(as
 export const passkeyLoginVerify = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ challengeId: z.string().uuid(), response: z.any() }).parse(d))
   .handler(async ({ data }) => {
-    const { verifyAuthenticationResponse } = await import("@simplewebauthn/server");
-    const { isoBase64URL } = await import("@simplewebauthn/server/helpers");
+    const { verifyAuthentication, bytesFromB64url } = await lib();
     const ch = await takeChallenge(data.challengeId);
     const db = await admin();
     const credId = String(data.response?.id ?? "");
@@ -143,16 +162,16 @@ export const passkeyLoginVerify = createServerFn({ method: "POST" })
     } | null;
     if (!cred) return { error: "このパスキーは登録されていません" };
     const { origin, rpID } = rp();
-    const v = await verifyAuthenticationResponse({
+    const v = await verifyAuthentication({
       response: data.response,
       expectedChallenge: ch.challenge,
       expectedOrigin: origin,
       expectedRPID: rpID,
       credential: {
         id: cred.id,
-        publicKey: isoBase64URL.toBuffer(cred.public_key),
+        publicKey: bytesFromB64url(cred.public_key),
         counter: Number(cred.counter),
-        transports: (cred.transports ?? undefined) as never,
+        transports: cred.transports ?? undefined,
       },
     });
     if (!v.verified) return { error: "認証に失敗しました" };
