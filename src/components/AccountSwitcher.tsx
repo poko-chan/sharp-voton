@@ -1,14 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Check, UserPlus, Users, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -75,8 +68,8 @@ export function AccountSwitcher() {
 
   if (!session) return null;
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+    <Popover>
+      <PopoverTrigger asChild>
         <button
           aria-label="アカウント切り替え"
           title="アカウント切り替え"
@@ -84,19 +77,17 @@ export function AccountSwitcher() {
         >
           <Users className="h-4 w-4" />
         </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64">
-        <DropdownMenuLabel>アカウント切り替え</DropdownMenuLabel>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-64 p-1">
+        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">アカウント切り替え</div>
         {list.map((a) => {
           const current = a.id === session.user.id;
           return (
-            <DropdownMenuItem
+            <div
               key={a.id}
-              onSelect={(e) => {
-                if (current) return e.preventDefault();
-                switchTo(a);
-              }}
-              className="flex items-center gap-2"
+              role="button"
+              onClick={() => !current && switchTo(a)}
+              className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent cursor-pointer"
             >
               <span className="flex-1 truncate">{a.label}</span>
               {current ? (
@@ -115,14 +106,14 @@ export function AccountSwitcher() {
                   <X className="h-3.5 w-3.5" />
                 </span>
               )}
-            </DropdownMenuItem>
+            </div>
           );
         })}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={add}>
+        <div className="my-1 h-px bg-border" />
+        <button onClick={add} className="flex w-full items-center rounded-md px-2 py-1.5 text-sm hover:bg-accent">
           <UserPlus className="mr-2 h-4 w-4" /> 別のアカウントを追加
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </button>
+      </PopoverContent>
+    </Popover>
   );
 }
