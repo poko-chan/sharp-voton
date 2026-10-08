@@ -82,6 +82,9 @@ export function PaymentSection() {
   const [selection, setSelection] = useState<"plans" | "packs">("plans");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [faqs, setFaqs] = useState<Faq[]>([]);
+  const [openFaq, setOpenFaq] = useState<string | null>(null);
+  const [sub, setSub] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -107,13 +110,27 @@ export function PaymentSection() {
       packItems: i.data ?? [],
     });
     setLoading(false);
+    const q = await db.from("plan_faqs").select("id, question, answer").eq("active", true).order("sort_order");
+    setFaqs(q.data ?? []);
   }, []);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  const { groups, plans, features, packs, packItems } = catalog;
+  const { groups, features, packs, packItems } = catalog;
+  const subGroups = Array.from(
+    new Set(catalog.plans.map((p) => p.sub_group?.trim() || "")),
+  );
+  const hasSubTabs = subGroups.length > 1 || (subGroups.length === 1 && subGroups[0] !== "");
+  const activeSub = sub !== null && subGroups.includes(sub) ? sub : (subGroups[0] ?? "");
+  const plans = hasSubTabs
+    ? catalog.plans.filter((p) => (p.sub_group?.trim() || "") === activeSub)
+    : catalog.plans;
+  const maxSaving = catalog.plans.reduce((m, p) => {
+    if (p.price_monthly <= 0 || p.price_yearly <= 0) return m;
+    return Math.max(m, Math.round((1 - p.price_yearly / (p.price_monthly * 12)) * 100));
+  }, 0);
   const hasPlans = groups.some((group) => plans.some((plan) => plan.group_id === group.id));
   const hasPacks = packs.length > 0;
 
