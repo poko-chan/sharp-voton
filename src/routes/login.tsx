@@ -16,6 +16,7 @@ import {
   MessageCircle,
   QrCode,
   Fingerprint,
+  Mail,
   Heart,
   Smartphone,
   MoreHorizontal,
