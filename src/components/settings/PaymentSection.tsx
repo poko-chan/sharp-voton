@@ -255,11 +255,34 @@ export function PaymentSection() {
         </Card>
       ) : selection === "plans" ? (
         <div className="space-y-8">
+          {hasSubTabs && (
+            <div className="flex flex-wrap justify-center gap-2">
+              {subGroups.map((name) => (
+                <button
+                  key={name || "default"}
+                  type="button"
+                  onClick={() => setSub(name)}
+                  className={`rounded-full border px-5 py-2.5 text-sm font-bold transition ${
+                    activeSub === name
+                      ? "border-primary bg-primary text-primary-foreground shadow-md"
+                      : "bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                  }`}
+                >
+                  {name || "標準プラン"}
+                </button>
+              ))}
+            </div>
+          )}
           {hasPlans && (
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-3">
               <div className="flex items-center gap-2 text-sm font-semibold">
-                <Zap className="h-4 w-4 text-amber-500" />
+                <Zap className="h-4 w-4 text-primary" />
                 支払いサイクル
+                {maxSaving > 0 && (
+                  <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold text-primary">
+                    年払いで最大{maxSaving}%お得
+                  </span>
+                )}
               </div>
               <div className="inline-flex rounded-full bg-muted p-1">
                 {(["monthly", "yearly"] as const).map((value) => (
@@ -319,7 +342,92 @@ export function PaymentSection() {
                     <p className="mt-1 text-sm text-muted-foreground">{group.description}</p>
                   )}
                 </div>
-                <div className="overflow-x-auto rounded-2xl border bg-card shadow-sm">
+                <div
+                  className={`grid gap-4 ${
+                    groupPlans.length >= 3 ? "md:grid-cols-3" : groupPlans.length === 2 ? "md:grid-cols-2" : ""
+                  }`}
+                >
+                  {groupPlans.map((plan) => {
+                    const isFeatured = plan.id === featured?.id && groupPlans.length > 1;
+                    const price = cycle === "monthly" ? plan.price_monthly : plan.price_yearly;
+                    const saving =
+                      plan.price_monthly > 0 && plan.price_yearly > 0
+                        ? plan.price_monthly * 12 - plan.price_yearly
+                        : 0;
+                    const highlights = features
+                      .filter((f) => f.plan_id === plan.id)
+                      .filter((f) =>
+                        f.kind === "text" ? !!f.text_value : f.kind === "bool" ? f.bool_value : !!f.text_value && f.text_value !== "no",
+                      )
+                      .slice(0, 5);
+                    return (
+                      <div
+                        key={plan.id}
+                        className={`relative flex flex-col rounded-3xl border p-6 transition hover:-translate-y-1 hover:shadow-xl ${
+                          isFeatured
+                            ? "border-primary bg-gradient-to-b from-primary/10 via-card to-card shadow-lg ring-2 ring-primary/30"
+                            : "bg-card"
+                        }`}
+                      >
+                        {isFeatured && (
+                          <span className="absolute -top-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full bg-primary px-3 py-1 text-[11px] font-bold text-primary-foreground shadow">
+                            <Sparkles className="h-3 w-3" /> いちばん人気
+                          </span>
+                        )}
+                        {plan.tagline && (
+                          <span className="mb-2 w-fit rounded-full bg-muted px-2.5 py-1 text-[11px] font-bold text-muted-foreground">
+                            {plan.tagline}
+                          </span>
+                        )}
+                        <h4 className="text-xl font-black">{plan.name}</h4>
+                        {plan.description && (
+                          <p className="mt-1 text-sm text-muted-foreground">{plan.description}</p>
+                        )}
+                        <div className="mt-5 flex items-end gap-1">
+                          <span className="text-4xl font-black tracking-tight tabular-nums">
+                            {yen(price)}
+                          </span>
+                          <span className="pb-1 text-sm text-muted-foreground">
+                            /{cycle === "monthly" ? "月" : "年"}
+                          </span>
+                        </div>
+                        <p className="mt-1 h-4 text-xs font-semibold text-primary">
+                          {cycle === "yearly" && saving > 0
+                            ? `月換算 ${yen(Math.round(plan.price_yearly / 12))}・年間 ${yen(saving)} お得`
+                            : cycle === "monthly" && saving > 0
+                              ? `年払いなら年間 ${yen(saving)} お得`
+                              : ""}
+                        </p>
+                        <ul className="mt-5 flex-1 space-y-2.5 text-sm">
+                          {highlights.map((f) => (
+                            <li key={f.id} className="flex items-start gap-2">
+                              <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                              <span>
+                                {f.label}
+                                {f.kind === "text" && f.text_value && (
+                                  <span className="text-muted-foreground">：{f.text_value}</span>
+                                )}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                        <Button
+                          disabled
+                          variant={isFeatured ? "default" : "outline"}
+                          className="mt-6 w-full rounded-xl font-bold"
+                        >
+                          まもなく利用できます
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+                <details className="group rounded-2xl border bg-card/50">
+                  <summary className="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-bold">
+                    すべての機能を詳しく比べる
+                    <span className="text-muted-foreground transition group-open:rotate-180">▾</span>
+                  </summary>
+                <div className="overflow-x-auto rounded-b-2xl border-t bg-card">
                   <table className="w-full min-w-[640px] border-separate border-spacing-0 text-sm">
                     <thead>
                       <tr>
