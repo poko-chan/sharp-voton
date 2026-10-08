@@ -9,6 +9,11 @@ function rp() {
   return { origin: u.origin, rpID: u.hostname };
 }
 
+// ライブラリ内部の generateChallenge は SSR バンドルで初期化順エラーになるため自前で生成
+function newChallenge() {
+  return crypto.getRandomValues(new Uint8Array(32));
+}
+
 async function admin() {
   return (await import("@/integrations/supabase/client.server")).supabaseAdmin;
 }
@@ -47,6 +52,7 @@ export const passkeyRegisterOptions = createServerFn({ method: "POST" })
       userName: email,
       userID: new TextEncoder().encode(context.userId),
       attestationType: "none",
+      challenge: newChallenge(),
       excludeCredentials: ((existing ?? []) as { id: string }[]).map((c) => ({ id: c.id })),
       authenticatorSelection: { residentKey: "required", userVerification: "preferred" },
     });
@@ -98,7 +104,11 @@ export const passkeyRegisterVerify = createServerFn({ method: "POST" })
 export const passkeyLoginOptions = createServerFn({ method: "POST" }).handler(async () => {
   const { generateAuthenticationOptions } = await import("@simplewebauthn/server");
   const { rpID } = rp();
-  const options = await generateAuthenticationOptions({ rpID, userVerification: "preferred" });
+  const options = await generateAuthenticationOptions({
+    rpID,
+    userVerification: "preferred",
+    challenge: newChallenge(),
+  });
   const db = await admin();
   const { data: ch } = await db
     .from("webauthn_challenges" as never)

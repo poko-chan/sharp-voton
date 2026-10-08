@@ -16,6 +16,9 @@ import {
   MessageCircle,
   QrCode,
   Fingerprint,
+  Heart,
+  Smartphone,
+  MoreHorizontal,
 } from "lucide-react";
 import { QrScannerDialog } from "@/components/QrScannerDialog";
 
@@ -205,6 +208,65 @@ function LoginPage() {
     if (r.error) toast.error("Googleログインに失敗しました");
     setBusy(false);
   };
+  const [showAll, setShowAll] = useState(false);
+  const [phoneOpen, setPhoneOpen] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const toE164 = (v: string) => {
+    const d = v.replace(/[^0-9+]/g, "");
+    return d.startsWith("+") ? d : d.startsWith("0") ? "+81" + d.slice(1) : "+" + d;
+  };
+  const phoneLogin = async () => {
+    setBusy(true);
+    try {
+      if (!otpSent) {
+        const { error } = await supabase.auth.signInWithOtp({ phone: toE164(phone) });
+        if (error) throw error;
+        setOtpSent(true);
+        toast.success("SMSでコードを送りました");
+      } else {
+        const { error } = await supabase.auth.verifyOtp({ phone: toE164(phone), token: otp.trim(), type: "sms" });
+        if (error) throw error;
+        window.location.href = "/dashboard";
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "電話番号でログインできませんでした");
+    } finally {
+      setBusy(false);
+    }
+  };
+  const passkeyLogin = async () => {
+    try {
+      const { startAuthentication } = await import("@simplewebauthn/browser");
+      const { passkeyLoginOptions, passkeyLoginVerify } = await import("@/lib/passkey.functions");
+      const { options, challengeId } = await passkeyLoginOptions();
+      const response = await startAuthentication({ optionsJSON: options });
+      const r = await passkeyLoginVerify({ data: { challengeId, response } });
+      if ("error" in r && r.error) throw new Error(r.error);
+      const { error } = await supabase.auth.verifyOtp({
+        token_hash: (r as { tokenHash: string }).tokenHash,
+        type: "magiclink",
+      });
+      if (error) throw error;
+      window.location.href = "/dashboard";
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "パスキーでログインできませんでした");
+    }
+  };
+  const oauth = async (provider: "apple" | "microsoft" | "lovable") => {
+    setBusy(true);
+    try {
+      sessionStorage.setItem("login.pendingOauth", "1");
+    } catch {
+      /* noop */
+    }
+    const r = await lovable.auth.signInWithOAuth(provider, {
+      redirect_uri: `${window.location.origin}/login`,
+    });
+    if (r.error) toast.error("ログインに失敗しました");
+    setBusy(false);
+  };
   const apple = async () => {
     setBusy(true);
     try {
@@ -342,65 +404,69 @@ function LoginPage() {
             </div>
 
             <Button onClick={google} variant="outline" className="w-full" disabled={busy}>
-              <img
-                src={googleLogo.url}
-                alt=""
-                width={18}
-                height={18}
-                className="mr-2 h-[18px] w-[18px]"
-              />
+              <img src={googleLogo.url} alt="" width={18} height={18} className="mr-2 h-[18px] w-[18px]" />
               Googleで{mode === "signin" ? "ログイン" : "登録"}
             </Button>
-            <div className="grid gap-2">
-              <Button onClick={apple} variant="outline" disabled={busy}>
-                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17.05 12.04c-.03-2.6 2.13-3.86 2.23-3.92-1.21-1.77-3.1-2.02-3.77-2.05-1.6-.16-3.13.94-3.94.94-.83 0-2.07-.92-3.41-.9-1.75.03-3.37 1.02-4.27 2.59-1.82 3.16-.46 7.83 1.31 10.39.86 1.26 1.88 2.66 3.22 2.61 1.3-.05 1.79-.84 3.36-.84s2.01.84 3.39.81c1.4-.02 2.28-1.27 3.14-2.53.99-1.45 1.39-2.86 1.41-2.93-.03-.01-2.7-1.04-2.73-4.12zM14.62 4.39c.71-.87 1.2-2.06 1.07-3.27-1.03.04-2.29.69-3.03 1.55-.66.77-1.25 2-1.09 3.16 1.16.09 2.34-.59 3.05-1.44z" />
-                </svg>
-                Apple
-              </Button>
-              <Button
-                variant="outline"
-                disabled={busy}
-                onClick={() => {
-                  window.location.href = "/line-liff/login";
-                }}
-              >
-                <MessageCircle className="mr-2 h-4 w-4 text-[#06C755]" />
-                LINEでログイン
-              </Button>
-              <Button variant="outline" disabled={busy} onClick={() => setQrOpen(true)}>
-                <QrCode className="mr-2 h-4 w-4" />
-                QRコードでログイン
-              </Button>
-              <Button
-                variant="outline"
-                disabled={busy}
-                onClick={async () => {
-                  try {
-                    const { startAuthentication } = await import("@simplewebauthn/browser");
-                    const { passkeyLoginOptions, passkeyLoginVerify } =
-                      await import("@/lib/passkey.functions");
-                    const { options, challengeId } = await passkeyLoginOptions();
-                    const response = await startAuthentication({ optionsJSON: options });
-                    const r = await passkeyLoginVerify({ data: { challengeId, response } });
-                    if ("error" in r && r.error) throw new Error(r.error);
-                    const { error } = await supabase.auth.verifyOtp({
-                      token_hash: (r as { tokenHash: string }).tokenHash,
-                      type: "magiclink",
-                    });
-                    if (error) throw error;
-                    window.location.href = "/dashboard";
-                  } catch (e) {
-                    toast.error(
-                      e instanceof Error ? e.message : "パスキーでログインできませんでした",
-                    );
-                  }
-                }}
-              >
-                <Fingerprint className="mr-2 h-4 w-4" />
-                パスキーでログイン
-              </Button>
-            </div>
+            <Button onClick={() => oauth("apple")} variant="outline" className="w-full" disabled={busy}>
+              <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.05 12.04c-.03-2.6 2.13-3.86 2.23-3.92-1.21-1.77-3.1-2.02-3.77-2.05-1.6-.16-3.13.94-3.94.94-.83 0-2.07-.92-3.41-.9-1.75.03-3.37 1.02-4.27 2.59-1.82 3.16-.46 7.83 1.31 10.39.86 1.26 1.88 2.66 3.22 2.61 1.3-.05 1.79-.84 3.36-.84s2.01.84 3.39.81c1.4-.02 2.28-1.27 3.14-2.53.99-1.45 1.39-2.86 1.41-2.93-.03-.01-2.7-1.04-2.73-4.12zM14.62 4.39c.71-.87 1.2-2.06 1.07-3.27-1.03.04-2.29.69-3.03 1.55-.66.77-1.25 2-1.09 3.16 1.16.09 2.34-.59 3.05-1.44z" />
+              </svg>
+              Appleで{mode === "signin" ? "ログイン" : "登録"}
+            </Button>
+            <Button onClick={() => oauth("microsoft")} variant="outline" className="w-full" disabled={busy}>
+              <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden>
+                <path fill="#F25022" d="M2 2h9.5v9.5H2z" />
+                <path fill="#7FBA00" d="M12.5 2H22v9.5h-9.5z" />
+                <path fill="#00A4EF" d="M2 12.5h9.5V22H2z" />
+                <path fill="#FFB900" d="M12.5 12.5H22V22h-9.5z" />
+              </svg>
+              Microsoftで{mode === "signin" ? "ログイン" : "登録"}
+            </Button>
+            {(() => {
+              const methods = [
+                { key: "line", label: "LINE", icon: <MessageCircle className="h-4 w-4 text-[#06C755]" />, run: () => { window.location.href = "/line-liff/login"; } },
+                { key: "qr", label: "QRコード", icon: <QrCode className="h-4 w-4" />, run: () => setQrOpen(true) },
+                { key: "passkey", label: "パスキー", icon: <Fingerprint className="h-4 w-4" />, run: passkeyLogin },
+                { key: "lovable", label: "Lovable", icon: <Heart className="h-4 w-4 text-primary" />, run: () => oauth("lovable") },
+                { key: "phone", label: "携帯電話番号", icon: <Smartphone className="h-4 w-4" />, run: () => setPhoneOpen((v) => !v) },
+              ];
+              return showAll ? (
+                <div className="grid grid-cols-2 gap-2">
+                  {methods.map((m) => (
+                    <Button key={m.key} variant="outline" disabled={busy} onClick={m.run} className="justify-start">
+                      <span className="mr-2">{m.icon}</span>
+                      {m.label}でログイン
+                    </Button>
+                  ))}
+                  <Button variant="ghost" className="col-span-2" onClick={() => setShowAll(false)}>
+                    閉じる
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-2">
+                  {methods.map((m) => (
+                    <Button key={m.key} variant="outline" size="icon" disabled={busy} onClick={m.run} title={`${m.label}でログイン`} aria-label={`${m.label}でログイン`}>
+                      {m.icon}
+                    </Button>
+                  ))}
+                  <Button variant="ghost" size="icon" title="すべて表示" aria-label="すべてのログイン方法を表示" onClick={() => setShowAll(true)}>
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </div>
+              );
+            })()}
+            {phoneOpen && (
+              <div className="space-y-2 rounded-xl border p-3">
+                <Label>携帯電話番号</Label>
+                <Input type="tel" placeholder="09012345678" value={phone} onChange={(e) => setPhone(e.target.value)} disabled={otpSent} />
+                {otpSent && (
+                  <Input inputMode="numeric" placeholder="SMSの6桁コード" value={otp} onChange={(e) => setOtp(e.target.value)} />
+                )}
+                <Button className="w-full" disabled={busy} onClick={phoneLogin}>
+                  {otpSent ? "コードを確認してログイン" : "SMSでコードを受け取る"}
+                </Button>
+              </div>
+            )}
 
             <QrScannerDialog
               open={qrOpen}
