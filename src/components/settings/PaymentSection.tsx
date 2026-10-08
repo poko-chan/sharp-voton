@@ -24,7 +24,10 @@ type Plan = {
   price_yearly: number;
   currency: string;
   highlight: boolean;
+  sub_group: string | null;
+  tagline: string | null;
 };
+type Faq = { id: string; question: string; answer: string };
 type Feature = {
   id: string;
   plan_id: string;
