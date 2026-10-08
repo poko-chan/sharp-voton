@@ -209,3 +209,18 @@ export const deletePasskey = createServerFn({ method: "POST" })
       .eq("user_id", context.userId);
     return { ok: true };
   });
+
+export const renamePasskey = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({ id: z.string().max(512), label: z.string().trim().min(1).max(40) }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("user_passkeys" as never)
+      .update({ label: data.label } as never)
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
+    if (error) throw new Error("名前を変更できませんでした");
+    return { ok: true };
+  });
