@@ -1124,3 +1124,111 @@ function GroupTable({
     </Card>
   );
 }
+
+function FaqEditor() {
+  const [faqs, setFaqs] = useState<Faq[]>([]);
+  const load = useCallback(async () => {
+    const { data, error } = await db.from("plan_faqs").select("*").order("sort_order");
+    if (error) return toast.error(error.message);
+    setFaqs(data ?? []);
+  }, []);
+  useEffect(() => {
+    void load();
+  }, [load]);
+  const patch = async (id: string, values: Partial<Faq>) => {
+    const { error } = await db.from("plan_faqs").update(values).eq("id", id);
+    if (error) return toast.error(error.message);
+    setFaqs((rows) => rows.map((r) => (r.id === id ? { ...r, ...values } : r)));
+  };
+  const move = async (index: number, dir: -1 | 1) => {
+    const j = index + dir;
+    if (j < 0 || j >= faqs.length) return;
+    const next = [...faqs];
+    [next[index], next[j]] = [next[j], next[index]];
+    await Promise.all(next.map((f, i) => db.from("plan_faqs").update({ sort_order: i }).eq("id", f.id)));
+    await load();
+  };
+  const add = async (question = "新しい質問", answer = "") => {
+    const { error } = await db
+      .from("plan_faqs")
+      .insert({ question, answer, sort_order: faqs.length });
+    if (error) return toast.error(error.message);
+    await load();
+  };
+  const starters: [string, string][] = [
+    ["いつでも解約できますか？", "はい。次回の更新日までにいつでも解約でき、更新日以降の請求は発生しません。"],
+    ["年払いと月払いの違いは？", "年払いは1年分をまとめてお支払いいただく分、月払いよりお得な料金になります。"],
+    ["学校・組織でまとめて導入できますか？", "はい。組織プランをご用意しています。組織の申請ページからお問い合わせください。"],
+  ];
+  return (
+    <section className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="flex items-center gap-2 font-semibold">
+          <HelpCircle className="h-4 w-4" /> お支払いのよくある質問
+        </h2>
+        <div className="flex gap-2">
+          {faqs.length === 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={async () => {
+                for (const [q, a] of starters) await add(q, a);
+              }}
+            >
+              <Sparkles className="mr-1 h-4 w-4" /> ひな形を追加
+            </Button>
+          )}
+          <Button size="sm" onClick={() => add()}>
+            <Plus className="mr-1 h-4 w-4" /> 質問を追加
+          </Button>
+        </div>
+      </div>
+      {faqs.length === 0 && (
+        <p className="text-sm text-muted-foreground">まだ質問がありません。</p>
+      )}
+      {faqs.map((f, i) => (
+        <Card key={f.id} className="space-y-2 p-4">
+          <div className="flex items-center gap-2">
+            <Input
+              className="font-semibold"
+              defaultValue={f.question}
+              onBlur={(e) => patch(f.id, { question: e.target.value })}
+            />
+            <label className="flex items-center gap-1 text-xs">
+              公開
+              <Switch checked={f.active} onCheckedChange={(v) => patch(f.id, { active: v })} />
+            </label>
+            <Button variant="ghost" size="icon" disabled={i === 0} onClick={() => move(i, -1)}>
+              <ArrowUp className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled={i === faqs.length - 1}
+              onClick={() => move(i, 1)}
+            >
+              <ArrowDown className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={async () => {
+                const { error } = await db.from("plan_faqs").delete().eq("id", f.id);
+                if (error) return toast.error(error.message);
+                await load();
+              }}
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
+          <textarea
+            className="min-h-20 w-full rounded-md border bg-background p-2 text-sm"
+            placeholder="回答"
+            defaultValue={f.answer}
+            onBlur={(e) => patch(f.id, { answer: e.target.value })}
+          />
+        </Card>
+      ))}
+    </section>
+  );
+}
