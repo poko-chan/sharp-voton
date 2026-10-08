@@ -569,6 +569,7 @@ export function PaymentSection() {
                     </tbody>
                   </table>
                 </div>
+                </details>
               </section>
             );
           })}
@@ -650,6 +651,47 @@ export function PaymentSection() {
               })}
             </div>
           )}
+        </section>
+      )}
+
+      {faqs.length > 0 && (
+        <section className="space-y-4">
+          <div className="text-center">
+            <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-primary">FAQ</p>
+            <h2 className="mt-1 text-2xl font-black tracking-tight">よくあるご質問</h2>
+          </div>
+          <div className="mx-auto max-w-3xl divide-y rounded-3xl border bg-card">
+            {faqs.map((f) => {
+              const open = openFaq === f.id;
+              return (
+                <div key={f.id}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(open ? null : f.id)}
+                    className="flex w-full items-center justify-between gap-4 p-5 text-left font-bold"
+                    aria-expanded={open}
+                  >
+                    <span className="flex items-start gap-3">
+                      <span className="text-primary">Q.</span>
+                      {f.question}
+                    </span>
+                    <span
+                      className={`grid h-7 w-7 shrink-0 place-items-center rounded-full bg-muted text-sm transition ${
+                        open ? "rotate-45 bg-primary text-primary-foreground" : ""
+                      }`}
+                    >
+                      +
+                    </span>
+                  </button>
+                  {open && (
+                    <p className="whitespace-pre-wrap px-5 pb-5 pl-11 text-sm leading-relaxed text-muted-foreground">
+                      {f.answer}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </section>
       )}
 
