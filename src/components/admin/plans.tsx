@@ -7,7 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowUpRight, CreditCard, Eye, Layers, Package, Plus, Sparkles, Trash2 } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpRight,
+  Copy,
+  CreditCard,
+  HelpCircle,
+  Eye,
+  Layers,
+  Package,
+  Plus,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
 
 type Group = {
   id: string;
@@ -27,17 +40,46 @@ type Plan = {
   highlight: boolean;
   sort_order: number;
   active: boolean;
+  sub_group: string | null;
+  tagline: string | null;
 };
+type Faq = { id: string; question: string; answer: string; sort_order: number; active: boolean };
 type Feature = {
   id: string;
   plan_id: string;
-  kind: "bool" | "text";
+  kind: "bool" | "tri" | "quad" | "stars" | "custom" | "text";
   label: string;
   bool_value: boolean;
   text_value: string | null;
   sort_order: number;
   description: string | null;
   group_label: string | null;
+  options: FeatureOption[];
+  show_check: boolean;
+};
+type FeatureOption = { value: string; label: string; description: string };
+
+const featurePresets: Record<string, FeatureOption[]> = {
+  bool: [
+    { value: "yes", label: "◯", description: "" },
+    { value: "no", label: "×", description: "" },
+  ],
+  tri: [
+    { value: "yes", label: "◯", description: "" },
+    { value: "no", label: "×", description: "" },
+    { value: "partial", label: "△", description: "" },
+  ],
+  quad: [
+    { value: "excellent", label: "◎", description: "" },
+    { value: "yes", label: "◯", description: "" },
+    { value: "partial", label: "△", description: "" },
+    { value: "no", label: "×", description: "" },
+  ],
+  stars: Array.from({ length: 5 }, (_, index) => ({
+    value: String(index + 1),
+    label: "★".repeat(index + 1),
+    description: "",
+  })),
 };
 type Pack = {
   id: string;
@@ -69,7 +111,7 @@ export function PlansAdminTab() {
   const [packItems, setPackItems] = useState<PackItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [section, setSection] = useState<"plans" | "packs">("plans");
+  const [section, setSection] = useState<"plans" | "packs" | "faq">("plans");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -101,6 +143,12 @@ export function PlansAdminTab() {
   const patch = async (table: string, id: string, values: Record<string, unknown>) => {
     const { error } = await db.from(table).update(values).eq("id", id);
     if (error) {
+      if (error.message.includes("Could not find the 'options' column")) {
+        toast.error(
+          "料金設定DBが未更新です。Supabaseに 20261007120000_add_plan_feature_choice_options.sql を適用してください。",
+        );
+        return;
+      }
       toast.error(`保存できませんでした: ${error.message}`);
       return;
     }
@@ -111,6 +159,26 @@ export function PlansAdminTab() {
     if (table === "plan_features") setFeatures(updateById);
     if (table === "plan_packs") setPacks(updateById);
     if (table === "plan_pack_items") setPackItems(updateById);
+  };
+  const moveOrder = async <T extends { id: string; sort_order: number }>(
+    table: string,
+    items: T[],
+    index: number,
+    direction: -1 | 1,
+  ) => {
+    const otherIndex = index + direction;
+    if (otherIndex < 0 || otherIndex >= items.length) return;
+    const reordered = [...items];
+    [reordered[index], reordered[otherIndex]] = [reordered[otherIndex], reordered[index]];
+    const updates = await Promise.all(
+      reordered.map((item, sort_order) => db.from(table).update({ sort_order }).eq("id", item.id)),
+    );
+    const error = updates.find((result) => result.error)?.error;
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    await load();
   };
   const remove = async (table: string, id: string) => {
     const { error } = await db.from(table).delete().eq("id", id);
@@ -201,6 +269,16 @@ export function PlansAdminTab() {
           >
             <Package className="h-4 w-4" /> 追加パック
           </button>
+          <button
+            type="button"
+            onClick={() => setSection("faq")}
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition ${
+              section === "faq" ? "bg-background shadow-sm" : "text-muted-foreground"
+            }`}
+            aria-pressed={section === "faq"}
+          >
+            <HelpCircle className="h-4 w-4" /> よくある質問
+          </button>
         </div>
         <Badge variant="outline" className="gap-1.5 px-3 py-1.5">
           <CreditCard className="h-3.5 w-3.5" /> 現在は表示のみ・課金なし
@@ -208,185 +286,234 @@ export function PlansAdminTab() {
       </div>
       <p className="text-xs text-muted-foreground">
         入力欄はフォーカスを外すと保存され、公開スイッチは切り替えと同時に反映されます。
-        まず非公開のまま内容を整え、準備ができた項目だけ公開してください。
+        プランの「サブプラン群」に同じ名前を入れると、利用者画面でタブとしてまとまります。
       </p>
 
-      {section === "plans" ? (
-      <section className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="flex items-center gap-2 font-semibold">
-            <Layers className="h-4 w-4" /> プラン群
-          </h2>
-          <Button
-            size="sm"
-            onClick={async () => {
-              const { error } = await db
-                .from("plan_groups")
-                .insert({ name: "新しいプラン群", sort_order: groups.length });
-              if (error) return toast.error(error.message);
-              load();
-            }}
-          >
-            <Plus className="mr-1 h-4 w-4" />
-            プラン群を追加
-          </Button>
-        </div>
+      {section === "faq" ? null : section === "plans" ? (
+        <section className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="flex items-center gap-2 font-semibold">
+              <Layers className="h-4 w-4" /> プラン群
+            </h2>
+            <Button
+              size="sm"
+              onClick={async () => {
+                const { error } = await db
+                  .from("plan_groups")
+                  .insert({ name: "新しいプラン群", sort_order: groups.length });
+                if (error) return toast.error(error.message);
+                load();
+              }}
+            >
+              <Plus className="mr-1 h-4 w-4" />
+              プラン群を追加
+            </Button>
+          </div>
 
-        {groups.length === 0 && (
-          <p className="text-sm text-muted-foreground">まだプラン群がありません。</p>
-        )}
+          {groups.length === 0 && (
+            <p className="text-sm text-muted-foreground">まだプラン群がありません。</p>
+          )}
 
-        {groups.map((g) => (
-          <GroupTable
-            key={g.id}
-            group={g}
-            plans={plans.filter((p) => p.group_id === g.id)}
-            features={features}
-            onPatch={patch}
-            onRemove={remove}
-            reload={load}
-          />
-        ))}
-      </section>
+          {groups.map((g) => (
+            <GroupTable
+              key={g.id}
+              group={g}
+              plans={plans.filter((p) => p.group_id === g.id)}
+              features={features}
+              onPatch={patch}
+              onRemove={remove}
+              onMoveOrder={moveOrder}
+              reload={load}
+            />
+          ))}
+        </section>
       ) : (
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="flex items-center gap-2 font-semibold">
-            <Package className="h-4 w-4" /> 追加パック
-          </h2>
-          <Button
-            size="sm"
-            onClick={async () => {
-              const { error } = await db
-                .from("plan_packs")
-                .insert({ name: "新しいパック", sort_order: packs.length });
-              if (error) return toast.error(error.message);
-              load();
-            }}
-          >
-            <Plus className="mr-1 h-4 w-4" />
-            パックを追加
-          </Button>
-        </div>
-        {packs.map((k) => {
-          const items = packItems.filter((it) => it.pack_id === k.id);
-          return (
-            <Card key={k.id} className="space-y-3 p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <Input
-                  className="w-48"
-                  defaultValue={k.name}
-                  onBlur={(e) => patch("plan_packs", k.id, { name: e.target.value })}
-                />
-                <Input
-                  className="min-w-[180px] flex-1"
-                  placeholder="説明（任意）"
-                  defaultValue={k.description ?? ""}
-                  onBlur={(e) => patch("plan_packs", k.id, { description: e.target.value || null })}
-                />
-                <label className="flex items-center gap-2 text-xs">
-                  公開
-                  <Switch
-                    defaultChecked={k.active}
-                    onCheckedChange={(v) => patch("plan_packs", k.id, { active: v })}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="flex items-center gap-2 font-semibold">
+              <Package className="h-4 w-4" /> 追加パック
+            </h2>
+            <Button
+              size="sm"
+              onClick={async () => {
+                const { error } = await db
+                  .from("plan_packs")
+                  .insert({ name: "新しいパック", sort_order: packs.length });
+                if (error) return toast.error(error.message);
+                load();
+              }}
+            >
+              <Plus className="mr-1 h-4 w-4" />
+              パックを追加
+            </Button>
+          </div>
+          {packs.map((k, packIndex) => {
+            const items = packItems.filter((it) => it.pack_id === k.id);
+            return (
+              <Card key={k.id} className="space-y-3 p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Input
+                    className="w-48"
+                    defaultValue={k.name}
+                    onBlur={(e) => patch("plan_packs", k.id, { name: e.target.value })}
                   />
-                </label>
-                <Button variant="ghost" size="icon" onClick={() => remove("plan_packs", k.id)}>
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
-              </div>
+                  <Input
+                    className="min-w-[180px] flex-1"
+                    placeholder="説明（任意）"
+                    defaultValue={k.description ?? ""}
+                    onBlur={(e) =>
+                      patch("plan_packs", k.id, { description: e.target.value || null })
+                    }
+                  />
+                  <label className="flex items-center gap-2 text-xs">
+                    公開
+                    <Switch
+                      defaultChecked={k.active}
+                      onCheckedChange={(v) => patch("plan_packs", k.id, { active: v })}
+                    />
+                  </label>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="パックを上へ移動"
+                    title="上へ移動"
+                    disabled={packIndex === 0}
+                    onClick={() => moveOrder("plan_packs", packs, packIndex, -1)}
+                  >
+                    <ArrowUp className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="パックを下へ移動"
+                    title="下へ移動"
+                    disabled={packIndex === packs.length - 1}
+                    onClick={() => moveOrder("plan_packs", packs, packIndex, 1)}
+                  >
+                    <ArrowDown className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => remove("plan_packs", k.id)}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
 
-              <div className="overflow-x-auto rounded-lg border">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50 text-xs text-muted-foreground">
-                    <tr>
-                      <th className="p-2 text-left font-medium">商品名</th>
-                      <th className="p-2 text-left font-medium">内容（例: 1,000クレジット）</th>
-                      <th className="p-2 text-left font-medium">金額</th>
-                      <th className="p-2 text-left font-medium">公開</th>
-                      <th className="w-10" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map((it) => (
-                      <tr key={it.id} className="border-t">
-                        <td className="p-1.5">
-                          <Input
-                            className="h-8"
-                            defaultValue={it.name}
-                            onBlur={(e) =>
-                              patch("plan_pack_items", it.id, { name: e.target.value })
-                            }
-                          />
-                        </td>
-                        <td className="p-1.5">
-                          <Input
-                            className="h-8"
-                            defaultValue={it.amount_label ?? ""}
-                            onBlur={(e) =>
-                              patch("plan_pack_items", it.id, {
-                                amount_label: e.target.value || null,
-                              })
-                            }
-                          />
-                        </td>
-                        <td className="p-1.5">
-                          <Input
-                            type="number"
-                            className="h-8 w-28"
-                            defaultValue={it.price}
-                            onBlur={(e) =>
-                              patch("plan_pack_items", it.id, { price: Number(e.target.value) })
-                            }
-                          />
-                        </td>
-                        <td className="p-1.5">
-                          <Switch
-                            defaultChecked={it.active}
-                            onCheckedChange={(v) => patch("plan_pack_items", it.id, { active: v })}
-                          />
-                        </td>
-                        <td className="p-1.5">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => remove("plan_pack_items", it.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                    {items.length === 0 && (
+                <div className="overflow-x-auto rounded-lg border">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/50 text-xs text-muted-foreground">
                       <tr>
-                        <td className="p-3 text-xs text-muted-foreground" colSpan={5}>
-                          このパックにはまだ商品がありません。
-                        </td>
+                        <th className="p-2 text-left font-medium">商品名</th>
+                        <th className="p-2 text-left font-medium">内容（例: 1,000クレジット）</th>
+                        <th className="p-2 text-left font-medium">金額</th>
+                        <th className="p-2 text-left font-medium">公開</th>
+                        <th className="w-10" />
                       </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {items.map((it, itemIndex) => (
+                        <tr key={it.id} className="border-t">
+                          <td className="p-1.5">
+                            <Input
+                              className="h-8"
+                              defaultValue={it.name}
+                              onBlur={(e) =>
+                                patch("plan_pack_items", it.id, { name: e.target.value })
+                              }
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <Input
+                              className="h-8"
+                              defaultValue={it.amount_label ?? ""}
+                              onBlur={(e) =>
+                                patch("plan_pack_items", it.id, {
+                                  amount_label: e.target.value || null,
+                                })
+                              }
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <Input
+                              type="number"
+                              className="h-8 w-28"
+                              defaultValue={it.price}
+                              onBlur={(e) =>
+                                patch("plan_pack_items", it.id, { price: Number(e.target.value) })
+                              }
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <Switch
+                              defaultChecked={it.active}
+                              onCheckedChange={(v) =>
+                                patch("plan_pack_items", it.id, { active: v })
+                              }
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <div className="flex items-center">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label="商品を上へ移動"
+                                title="上へ移動"
+                                disabled={itemIndex === 0}
+                                onClick={() => moveOrder("plan_pack_items", items, itemIndex, -1)}
+                              >
+                                <ArrowUp className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label="商品を下へ移動"
+                                title="下へ移動"
+                                disabled={itemIndex === items.length - 1}
+                                onClick={() => moveOrder("plan_pack_items", items, itemIndex, 1)}
+                              >
+                                <ArrowDown className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label="商品を削除"
+                                onClick={() => remove("plan_pack_items", it.id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      {items.length === 0 && (
+                        <tr>
+                          <td className="p-3 text-xs text-muted-foreground" colSpan={5}>
+                            このパックにはまだ商品がありません。
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
 
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={async () => {
-                  const { error } = await db
-                    .from("plan_pack_items")
-                    .insert({ pack_id: k.id, sort_order: items.length });
-                  if (error) return toast.error(error.message);
-                  load();
-                }}
-              >
-                <Plus className="mr-1 h-4 w-4" />
-                商品を追加
-              </Button>
-            </Card>
-          );
-        })}
-      </section>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={async () => {
+                    const { error } = await db
+                      .from("plan_pack_items")
+                      .insert({ pack_id: k.id, sort_order: items.length });
+                    if (error) return toast.error(error.message);
+                    load();
+                  }}
+                >
+                  <Plus className="mr-1 h-4 w-4" />
+                  商品を追加
+                </Button>
+              </Card>
+            );
+          })}
+        </section>
       )}
+      {section === "faq" && <FaqEditor />}
     </div>
   );
 }
@@ -409,6 +536,7 @@ function GroupTable({
   features,
   onPatch,
   onRemove,
+  onMoveOrder,
   reload,
 }: {
   group: Group;
@@ -416,6 +544,12 @@ function GroupTable({
   features: Feature[];
   onPatch: (t: string, id: string, v: Record<string, unknown>) => Promise<void>;
   onRemove: (t: string, id: string) => Promise<void>;
+  onMoveOrder: <T extends { id: string; sort_order: number }>(
+    table: string,
+    items: T[],
+    index: number,
+    direction: -1 | 1,
+  ) => Promise<void>;
   reload: () => Promise<void>;
 }) {
   const planIds = plans.map((p) => p.id);
@@ -426,10 +560,12 @@ function GroupTable({
       string,
       {
         label: string;
-        kind: "bool" | "text";
+        kind: Feature["kind"];
         sort: number;
         description: string | null;
         group_label: string | null;
+        options: FeatureOption[];
+        show_check: boolean;
       }
     >();
     for (const f of groupFeatures) {
@@ -441,6 +577,8 @@ function GroupTable({
           sort: f.sort_order,
           description: f.description,
           group_label: f.group_label,
+          options: f.options?.length ? f.options : (featurePresets[f.kind] ?? []),
+          show_check: f.show_check ?? true,
         });
       }
     }
@@ -455,12 +593,19 @@ function GroupTable({
   const cell = (label: string, planId: string) =>
     groupFeatures.find((f) => f.label === label && f.plan_id === planId);
 
-  const ensureCell = async (label: string, kind: "bool" | "text", planId: string, sort: number) => {
+  const ensureCell = async (label: string, kind: Feature["kind"], planId: string, sort: number) => {
     const existing = cell(label, planId);
     if (existing) return existing;
     const { data, error } = await (supabase as any)
       .from("plan_features")
-      .insert({ plan_id: planId, label, kind, sort_order: sort })
+      .insert({
+        plan_id: planId,
+        label,
+        kind,
+        sort_order: sort,
+        options: featurePresets[kind] ?? [],
+        show_check: true,
+      })
       .select()
       .single();
     if (error) {
@@ -472,7 +617,7 @@ function GroupTable({
 
   const setCellValue = async (
     label: string,
-    kind: "bool" | "text",
+    kind: Feature["kind"],
     planId: string,
     sort: number,
     values: Record<string, unknown>,
@@ -491,17 +636,54 @@ function GroupTable({
     await reload();
   };
 
-  const setRowKind = async (label: string, kind: "bool" | "text") => {
+  const setRowKind = async (label: string, kind: Feature["kind"]) => {
+    const options =
+      kind === "custom"
+        ? rows.find((row) => row.label === label)?.options.length
+          ? rows.find((row) => row.label === label)?.options
+          : [
+              { value: crypto.randomUUID(), label: "選択肢 1", description: "" },
+              { value: crypto.randomUUID(), label: "選択肢 2", description: "" },
+            ]
+        : (featurePresets[kind] ?? []);
     for (const f of groupFeatures.filter((x) => x.label === label)) {
-      await onPatch("plan_features", f.id, { kind });
+      await onPatch("plan_features", f.id, { kind, options });
     }
     await reload();
   };
 
   const setRowMeta = async (label: string, values: Record<string, unknown>) => {
-    for (const f of groupFeatures.filter((x) => x.label === label)) {
-      await onPatch("plan_features", f.id, values);
-    }
+    await Promise.all(
+      groupFeatures
+        .filter((feature) => feature.label === label)
+        .map((feature) => onPatch("plan_features", feature.id, values)),
+    );
+  };
+
+  const updateOption = (
+    row: (typeof rows)[number],
+    index: number,
+    values: Partial<FeatureOption>,
+  ) => {
+    const options = row.options.map((option, optionIndex) =>
+      optionIndex === index ? { ...option, ...values } : option,
+    );
+    void setRowMeta(row.label, { options });
+  };
+
+  const addOption = (row: (typeof rows)[number]) => {
+    void setRowMeta(row.label, {
+      options: [
+        ...row.options,
+        { value: crypto.randomUUID(), label: `選択肢 ${row.options.length + 1}`, description: "" },
+      ],
+    });
+  };
+
+  const removeOption = (row: (typeof rows)[number], index: number) => {
+    void setRowMeta(row.label, {
+      options: row.options.filter((_, optionIndex) => optionIndex !== index),
+    });
   };
 
   const deleteRow = async (label: string) => {
@@ -514,10 +696,40 @@ function GroupTable({
   const addRow = async () => {
     if (plans.length === 0) return toast.error("先にプランを追加してください。");
     const label = `新しい項目 ${rows.length + 1}`;
-    const { error } = await (supabase as any)
-      .from("plan_features")
-      .insert(plans.map((p) => ({ plan_id: p.id, label, kind: "bool", sort_order: rows.length })));
+    const { error } = await (supabase as any).from("plan_features").insert(
+      plans.map((p) => ({
+        plan_id: p.id,
+        label,
+        kind: "bool",
+        options: featurePresets.bool,
+        show_check: true,
+        sort_order: rows.length,
+      })),
+    );
     if (error) return toast.error(error.message);
+    await reload();
+  };
+
+  const moveRow = async (index: number, direction: -1 | 1) => {
+    const otherIndex = index + direction;
+    if (otherIndex < 0 || otherIndex >= rows.length) return;
+    if ((rows[index].group_label ?? "") !== (rows[otherIndex].group_label ?? "")) return;
+    const reordered = [...rows];
+    [reordered[index], reordered[otherIndex]] = [reordered[otherIndex], reordered[index]];
+    const updates = await Promise.all(
+      reordered.flatMap((row, sort_order) =>
+        groupFeatures
+          .filter((feature) => feature.label === row.label)
+          .map((feature) =>
+            (supabase as any).from("plan_features").update({ sort_order }).eq("id", feature.id),
+          ),
+      ),
+    );
+    const error = updates.find((result) => result.error)?.error;
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     await reload();
   };
 
@@ -554,7 +766,7 @@ function GroupTable({
               <th className="w-64 p-2 text-left text-xs font-medium text-muted-foreground">
                 項目 / プラン
               </th>
-              {plans.map((p) => (
+              {plans.map((p, planIndex) => (
                 <th key={p.id} className="min-w-[180px] space-y-1 p-2 text-left">
                   <Input
                     className="h-8 font-semibold"
@@ -587,7 +799,53 @@ function GroupTable({
                       }
                     />
                   </div>
+                  {p.price_monthly > 0 && p.price_yearly > 0 && (
+                    <p className="text-[10px] font-normal text-muted-foreground">
+                      年払いは月換算 ¥{Math.round(p.price_yearly / 12).toLocaleString("ja-JP")}
+                      {p.price_yearly < p.price_monthly * 12 &&
+                        `（${Math.round((1 - p.price_yearly / (p.price_monthly * 12)) * 100)}%お得）`}
+                    </p>
+                  )}
+                  <Input
+                    className="h-7 text-xs"
+                    placeholder="サブプラン群（例: 個人 / 組織）"
+                    defaultValue={p.sub_group ?? ""}
+                    onBlur={(e) => onPatch("plans", p.id, { sub_group: e.target.value.trim() || null })}
+                  />
+                  <Input
+                    className="h-7 text-xs"
+                    placeholder="対象タグ（例: 受験生向け）"
+                    defaultValue={p.tagline ?? ""}
+                    onBlur={(e) => onPatch("plans", p.id, { tagline: e.target.value.trim() || null })}
+                  />
                   <div className="flex items-center gap-2 text-[11px] font-normal">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      title="プランを複製"
+                      aria-label="プランを複製"
+                      onClick={async () => {
+                        const { id: _id, ...rest } = p;
+                        const { data, error } = await db
+                          .from("plans")
+                          .insert({ ...rest, name: `${p.name}（コピー）`, active: false, sort_order: plans.length })
+                          .select()
+                          .single();
+                        if (error) return toast.error(error.message);
+                        const copies = features
+                          .filter((f) => f.plan_id === p.id)
+                          .map(({ id: _fid, ...f }) => ({ ...f, plan_id: data.id }));
+                        if (copies.length) {
+                          const r = await db.from("plan_features").insert(copies);
+                          if (r.error) toast.error(r.error.message);
+                        }
+                        toast.success("複製しました（非公開）");
+                        await reload();
+                      }}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
                     <label className="flex items-center gap-1">
                       おすすめ
                       <Switch
@@ -602,6 +860,28 @@ function GroupTable({
                         onCheckedChange={(v) => onPatch("plans", p.id, { active: v })}
                       />
                     </label>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      aria-label="プランを上へ移動"
+                      title="上へ移動"
+                      disabled={planIndex === 0}
+                      onClick={() => onMoveOrder("plans", plans, planIndex, -1)}
+                    >
+                      <ArrowUp className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      aria-label="プランを下へ移動"
+                      title="下へ移動"
+                      disabled={planIndex === plans.length - 1}
+                      onClick={() => onMoveOrder("plans", plans, planIndex, 1)}
+                    >
+                      <ArrowDown className="h-3.5 w-3.5" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -658,12 +938,74 @@ function GroupTable({
                     <select
                       className="h-7 rounded-md border bg-background px-2 text-xs"
                       value={row.kind}
-                      onChange={(e) => setRowKind(row.label, e.target.value as "bool" | "text")}
+                      onChange={(event) =>
+                        setRowKind(row.label, event.target.value as Feature["kind"])
+                      }
                     >
                       <option value="bool">◯×</option>
+                      <option value="tri">◯×△</option>
+                      <option value="quad">◎◯△×</option>
+                      <option value="stars">★ 5段階</option>
+                      <option value="custom">自由選択肢</option>
                       <option value="text">短答</option>
                     </select>
                   </div>
+                  {row.kind === "text" && (
+                    <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Switch
+                        checked={row.show_check}
+                        onCheckedChange={(checked) =>
+                          setRowMeta(row.label, { show_check: checked })
+                        }
+                      />
+                      チェック欄を表示
+                    </label>
+                  )}
+                  {row.kind !== "text" && (
+                    <div className="space-y-1.5 rounded-md border bg-muted/20 p-2">
+                      <div className="text-[11px] font-semibold text-muted-foreground">
+                        選択肢と説明
+                      </div>
+                      {(row.options.length ? row.options : (featurePresets[row.kind] ?? [])).map(
+                        (option, optionIndex) => (
+                          <div key={option.value} className="space-y-1">
+                            <div className="flex items-center gap-1">
+                              <Input
+                                className="h-7 min-w-0"
+                                aria-label={`選択肢 ${optionIndex + 1} の表示名`}
+                                defaultValue={option.label}
+                                onBlur={(event) =>
+                                  updateOption(row, optionIndex, { label: event.target.value })
+                                }
+                              />
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 shrink-0"
+                                aria-label={`選択肢 ${optionIndex + 1} を削除`}
+                                disabled={row.options.length <= 2}
+                                onClick={() => removeOption(row, optionIndex)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                              </Button>
+                            </div>
+                            <Input
+                              className="h-7 text-xs"
+                              aria-label={`選択肢 ${optionIndex + 1} の説明`}
+                              placeholder="説明（例: 全部利用可能）"
+                              defaultValue={option.description}
+                              onBlur={(event) =>
+                                updateOption(row, optionIndex, { description: event.target.value })
+                              }
+                            />
+                          </div>
+                        ),
+                      )}
+                      <Button size="sm" variant="outline" onClick={() => addOption(row)}>
+                        <Plus className="mr-1 h-3.5 w-3.5" /> 選択肢を追加
+                      </Button>
+                    </div>
+                  )}
                 </td>
                 {plans.map((p) => {
                   const f = cell(row.label, p.id);
@@ -676,25 +1018,91 @@ function GroupTable({
                             setCellValue(row.label, row.kind, p.id, idx, { bool_value: v })
                           }
                         />
+                      ) : row.kind === "text" ? (
+                        <div className="flex min-w-28 items-center gap-2">
+                          {row.show_check && (
+                            <Switch
+                              checked={f?.bool_value ?? false}
+                              aria-label={`${row.label}のチェック状態`}
+                              onCheckedChange={(checked) =>
+                                setCellValue(row.label, row.kind, p.id, idx, {
+                                  bool_value: checked,
+                                })
+                              }
+                            />
+                          )}
+                          <Input
+                            className="h-8 min-w-20"
+                            placeholder="回答"
+                            defaultValue={f?.text_value ?? ""}
+                            onBlur={(event) =>
+                              setCellValue(row.label, row.kind, p.id, idx, {
+                                text_value: event.target.value || null,
+                              })
+                            }
+                          />
+                        </div>
                       ) : (
-                        <Input
-                          className="h-8"
-                          placeholder="例: 赤"
-                          defaultValue={f?.text_value ?? ""}
-                          onBlur={(e) =>
+                        <select
+                          className="h-9 max-w-full rounded-md border bg-background px-2 text-sm"
+                          value={f?.text_value ?? ""}
+                          aria-label={`${row.label}の選択肢`}
+                          onChange={(event) =>
                             setCellValue(row.label, row.kind, p.id, idx, {
-                              text_value: e.target.value || null,
+                              text_value: event.target.value || null,
                             })
                           }
-                        />
+                        >
+                          <option value="">未設定</option>
+                          {(row.options.length
+                            ? row.options
+                            : (featurePresets[row.kind] ?? [])
+                          ).map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
                       )}
                     </td>
                   );
                 })}
                 <td className="p-2">
-                  <Button variant="ghost" size="icon" onClick={() => deleteRow(row.label)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  <div className="flex items-center">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="項目を上へ移動"
+                      title="上へ移動"
+                      disabled={
+                        idx === 0 || (rows[idx - 1]?.group_label ?? "") !== (row.group_label ?? "")
+                      }
+                      onClick={() => moveRow(idx, -1)}
+                    >
+                      <ArrowUp className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="項目を下へ移動"
+                      title="下へ移動"
+                      disabled={
+                        idx === rows.length - 1 ||
+                        (rows[idx + 1]?.group_label ?? "") !== (row.group_label ?? "")
+                      }
+                      onClick={() => moveRow(idx, 1)}
+                    >
+                      <ArrowDown className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="項目を削除"
+                      onClick={() => deleteRow(row.label)}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -714,5 +1122,113 @@ function GroupTable({
         項目を追加
       </Button>
     </Card>
+  );
+}
+
+function FaqEditor() {
+  const [faqs, setFaqs] = useState<Faq[]>([]);
+  const load = useCallback(async () => {
+    const { data, error } = await db.from("plan_faqs").select("*").order("sort_order");
+    if (error) return toast.error(error.message);
+    setFaqs(data ?? []);
+  }, []);
+  useEffect(() => {
+    void load();
+  }, [load]);
+  const patch = async (id: string, values: Partial<Faq>) => {
+    const { error } = await db.from("plan_faqs").update(values).eq("id", id);
+    if (error) return toast.error(error.message);
+    setFaqs((rows) => rows.map((r) => (r.id === id ? { ...r, ...values } : r)));
+  };
+  const move = async (index: number, dir: -1 | 1) => {
+    const j = index + dir;
+    if (j < 0 || j >= faqs.length) return;
+    const next = [...faqs];
+    [next[index], next[j]] = [next[j], next[index]];
+    await Promise.all(next.map((f, i) => db.from("plan_faqs").update({ sort_order: i }).eq("id", f.id)));
+    await load();
+  };
+  const add = async (question = "新しい質問", answer = "") => {
+    const { error } = await db
+      .from("plan_faqs")
+      .insert({ question, answer, sort_order: faqs.length });
+    if (error) return toast.error(error.message);
+    await load();
+  };
+  const starters: [string, string][] = [
+    ["いつでも解約できますか？", "はい。次回の更新日までにいつでも解約でき、更新日以降の請求は発生しません。"],
+    ["年払いと月払いの違いは？", "年払いは1年分をまとめてお支払いいただく分、月払いよりお得な料金になります。"],
+    ["学校・組織でまとめて導入できますか？", "はい。組織プランをご用意しています。組織の申請ページからお問い合わせください。"],
+  ];
+  return (
+    <section className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="flex items-center gap-2 font-semibold">
+          <HelpCircle className="h-4 w-4" /> お支払いのよくある質問
+        </h2>
+        <div className="flex gap-2">
+          {faqs.length === 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={async () => {
+                for (const [q, a] of starters) await add(q, a);
+              }}
+            >
+              <Sparkles className="mr-1 h-4 w-4" /> ひな形を追加
+            </Button>
+          )}
+          <Button size="sm" onClick={() => add()}>
+            <Plus className="mr-1 h-4 w-4" /> 質問を追加
+          </Button>
+        </div>
+      </div>
+      {faqs.length === 0 && (
+        <p className="text-sm text-muted-foreground">まだ質問がありません。</p>
+      )}
+      {faqs.map((f, i) => (
+        <Card key={f.id} className="space-y-2 p-4">
+          <div className="flex items-center gap-2">
+            <Input
+              className="font-semibold"
+              defaultValue={f.question}
+              onBlur={(e) => patch(f.id, { question: e.target.value })}
+            />
+            <label className="flex items-center gap-1 text-xs">
+              公開
+              <Switch checked={f.active} onCheckedChange={(v) => patch(f.id, { active: v })} />
+            </label>
+            <Button variant="ghost" size="icon" disabled={i === 0} onClick={() => move(i, -1)}>
+              <ArrowUp className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled={i === faqs.length - 1}
+              onClick={() => move(i, 1)}
+            >
+              <ArrowDown className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={async () => {
+                const { error } = await db.from("plan_faqs").delete().eq("id", f.id);
+                if (error) return toast.error(error.message);
+                await load();
+              }}
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
+          <textarea
+            className="min-h-20 w-full rounded-md border bg-background p-2 text-sm"
+            placeholder="回答"
+            defaultValue={f.answer}
+            onBlur={(e) => patch(f.id, { answer: e.target.value })}
+          />
+        </Card>
+      ))}
+    </section>
   );
 }

@@ -6236,6 +6236,33 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_faqs: {
+        Row: {
+          active: boolean
+          answer: string
+          created_at: string
+          id: string
+          question: string
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          answer?: string
+          created_at?: string
+          id?: string
+          question?: string
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          answer?: string
+          created_at?: string
+          id?: string
+          question?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       plan_features: {
         Row: {
           bool_value: boolean
@@ -6244,7 +6271,9 @@ export type Database = {
           id: string
           kind: string
           label: string
+          options: Json
           plan_id: string
+          show_check: boolean
           sort_order: number
           text_value: string | null
         }
@@ -6255,7 +6284,9 @@ export type Database = {
           id?: string
           kind?: string
           label: string
+          options?: Json
           plan_id: string
+          show_check?: boolean
           sort_order?: number
           text_value?: string | null
         }
@@ -6266,7 +6297,9 @@ export type Database = {
           id?: string
           kind?: string
           label?: string
+          options?: Json
           plan_id?: string
+          show_check?: boolean
           sort_order?: number
           text_value?: string | null
         }
@@ -6430,6 +6463,8 @@ export type Database = {
           price_monthly: number
           price_yearly: number
           sort_order: number
+          sub_group: string | null
+          tagline: string | null
         }
         Insert: {
           active?: boolean
@@ -6443,6 +6478,8 @@ export type Database = {
           price_monthly?: number
           price_yearly?: number
           sort_order?: number
+          sub_group?: string | null
+          tagline?: string | null
         }
         Update: {
           active?: boolean
@@ -6456,6 +6493,8 @@ export type Database = {
           price_monthly?: number
           price_yearly?: number
           sort_order?: number
+          sub_group?: string | null
+          tagline?: string | null
         }
         Relationships: [
           {
