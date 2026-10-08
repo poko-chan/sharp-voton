@@ -111,7 +111,7 @@ export function PlansAdminTab() {
   const [packItems, setPackItems] = useState<PackItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [section, setSection] = useState<"plans" | "packs">("plans");
+  const [section, setSection] = useState<"plans" | "packs" | "faq">("plans");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -269,6 +269,16 @@ export function PlansAdminTab() {
           >
             <Package className="h-4 w-4" /> 追加パック
           </button>
+          <button
+            type="button"
+            onClick={() => setSection("faq")}
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition ${
+              section === "faq" ? "bg-background shadow-sm" : "text-muted-foreground"
+            }`}
+            aria-pressed={section === "faq"}
+          >
+            <HelpCircle className="h-4 w-4" /> よくある質問
+          </button>
         </div>
         <Badge variant="outline" className="gap-1.5 px-3 py-1.5">
           <CreditCard className="h-3.5 w-3.5" /> 現在は表示のみ・課金なし
@@ -276,10 +286,10 @@ export function PlansAdminTab() {
       </div>
       <p className="text-xs text-muted-foreground">
         入力欄はフォーカスを外すと保存され、公開スイッチは切り替えと同時に反映されます。
-        まず非公開のまま内容を整え、準備ができた項目だけ公開してください。
+        プランの「サブプラン群」に同じ名前を入れると、利用者画面でタブとしてまとまります。
       </p>
 
-      {section === "plans" ? (
+      {section === "faq" ? null : section === "plans" ? (
         <section className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="flex items-center gap-2 font-semibold">
@@ -503,6 +513,7 @@ export function PlansAdminTab() {
           })}
         </section>
       )}
+      {section === "faq" && <FaqEditor />}
     </div>
   );
 }
