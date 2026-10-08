@@ -11,7 +11,9 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpRight,
+  Copy,
   CreditCard,
+  HelpCircle,
   Eye,
   Layers,
   Package,
@@ -38,7 +40,10 @@ type Plan = {
   highlight: boolean;
   sort_order: number;
   active: boolean;
+  sub_group: string | null;
+  tagline: string | null;
 };
+type Faq = { id: string; question: string; answer: string; sort_order: number; active: boolean };
 type Feature = {
   id: string;
   plan_id: string;
@@ -783,7 +788,53 @@ function GroupTable({
                       }
                     />
                   </div>
+                  {p.price_monthly > 0 && p.price_yearly > 0 && (
+                    <p className="text-[10px] font-normal text-muted-foreground">
+                      年払いは月換算 ¥{Math.round(p.price_yearly / 12).toLocaleString("ja-JP")}
+                      {p.price_yearly < p.price_monthly * 12 &&
+                        `（${Math.round((1 - p.price_yearly / (p.price_monthly * 12)) * 100)}%お得）`}
+                    </p>
+                  )}
+                  <Input
+                    className="h-7 text-xs"
+                    placeholder="サブプラン群（例: 個人 / 組織）"
+                    defaultValue={p.sub_group ?? ""}
+                    onBlur={(e) => onPatch("plans", p.id, { sub_group: e.target.value.trim() || null })}
+                  />
+                  <Input
+                    className="h-7 text-xs"
+                    placeholder="対象タグ（例: 受験生向け）"
+                    defaultValue={p.tagline ?? ""}
+                    onBlur={(e) => onPatch("plans", p.id, { tagline: e.target.value.trim() || null })}
+                  />
                   <div className="flex items-center gap-2 text-[11px] font-normal">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      title="プランを複製"
+                      aria-label="プランを複製"
+                      onClick={async () => {
+                        const { id: _id, ...rest } = p;
+                        const { data, error } = await db
+                          .from("plans")
+                          .insert({ ...rest, name: `${p.name}（コピー）`, active: false, sort_order: plans.length })
+                          .select()
+                          .single();
+                        if (error) return toast.error(error.message);
+                        const copies = features
+                          .filter((f) => f.plan_id === p.id)
+                          .map(({ id: _fid, ...f }) => ({ ...f, plan_id: data.id }));
+                        if (copies.length) {
+                          const r = await db.from("plan_features").insert(copies);
+                          if (r.error) toast.error(r.error.message);
+                        }
+                        toast.success("複製しました（非公開）");
+                        await reload();
+                      }}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
                     <label className="flex items-center gap-1">
                       おすすめ
                       <Switch
