@@ -6244,9 +6244,7 @@ export type Database = {
           id: string
           kind: string
           label: string
-          options: Json
           plan_id: string
-          show_check: boolean
           sort_order: number
           text_value: string | null
         }
@@ -6257,9 +6255,7 @@ export type Database = {
           id?: string
           kind?: string
           label: string
-          options?: Json
           plan_id: string
-          show_check?: boolean
           sort_order?: number
           text_value?: string | null
         }
@@ -6270,9 +6266,7 @@ export type Database = {
           id?: string
           kind?: string
           label?: string
-          options?: Json
           plan_id?: string
-          show_check?: boolean
           sort_order?: number
           text_value?: string | null
         }
