@@ -11,7 +11,9 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpRight,
+  Copy,
   CreditCard,
+  HelpCircle,
   Eye,
   Layers,
   Package,
@@ -38,7 +40,10 @@ type Plan = {
   highlight: boolean;
   sort_order: number;
   active: boolean;
+  sub_group: string | null;
+  tagline: string | null;
 };
+type Faq = { id: string; question: string; answer: string; sort_order: number; active: boolean };
 type Feature = {
   id: string;
   plan_id: string;
@@ -106,7 +111,7 @@ export function PlansAdminTab() {
   const [packItems, setPackItems] = useState<PackItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [section, setSection] = useState<"plans" | "packs">("plans");
+  const [section, setSection] = useState<"plans" | "packs" | "faq">("plans");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -264,6 +269,16 @@ export function PlansAdminTab() {
           >
             <Package className="h-4 w-4" /> 追加パック
           </button>
+          <button
+            type="button"
+            onClick={() => setSection("faq")}
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition ${
+              section === "faq" ? "bg-background shadow-sm" : "text-muted-foreground"
+            }`}
+            aria-pressed={section === "faq"}
+          >
+            <HelpCircle className="h-4 w-4" /> よくある質問
+          </button>
         </div>
         <Badge variant="outline" className="gap-1.5 px-3 py-1.5">
           <CreditCard className="h-3.5 w-3.5" /> 現在は表示のみ・課金なし
@@ -271,10 +286,10 @@ export function PlansAdminTab() {
       </div>
       <p className="text-xs text-muted-foreground">
         入力欄はフォーカスを外すと保存され、公開スイッチは切り替えと同時に反映されます。
-        まず非公開のまま内容を整え、準備ができた項目だけ公開してください。
+        プランの「サブプラン群」に同じ名前を入れると、利用者画面でタブとしてまとまります。
       </p>
 
-      {section === "plans" ? (
+      {section === "faq" ? null : section === "plans" ? (
         <section className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="flex items-center gap-2 font-semibold">
@@ -498,6 +513,7 @@ export function PlansAdminTab() {
           })}
         </section>
       )}
+      {section === "faq" && <FaqEditor />}
     </div>
   );
 }
@@ -783,7 +799,53 @@ function GroupTable({
                       }
                     />
                   </div>
+                  {p.price_monthly > 0 && p.price_yearly > 0 && (
+                    <p className="text-[10px] font-normal text-muted-foreground">
+                      年払いは月換算 ¥{Math.round(p.price_yearly / 12).toLocaleString("ja-JP")}
+                      {p.price_yearly < p.price_monthly * 12 &&
+                        `（${Math.round((1 - p.price_yearly / (p.price_monthly * 12)) * 100)}%お得）`}
+                    </p>
+                  )}
+                  <Input
+                    className="h-7 text-xs"
+                    placeholder="サブプラン群（例: 個人 / 組織）"
+                    defaultValue={p.sub_group ?? ""}
+                    onBlur={(e) => onPatch("plans", p.id, { sub_group: e.target.value.trim() || null })}
+                  />
+                  <Input
+                    className="h-7 text-xs"
+                    placeholder="対象タグ（例: 受験生向け）"
+                    defaultValue={p.tagline ?? ""}
+                    onBlur={(e) => onPatch("plans", p.id, { tagline: e.target.value.trim() || null })}
+                  />
                   <div className="flex items-center gap-2 text-[11px] font-normal">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      title="プランを複製"
+                      aria-label="プランを複製"
+                      onClick={async () => {
+                        const { id: _id, ...rest } = p;
+                        const { data, error } = await db
+                          .from("plans")
+                          .insert({ ...rest, name: `${p.name}（コピー）`, active: false, sort_order: plans.length })
+                          .select()
+                          .single();
+                        if (error) return toast.error(error.message);
+                        const copies = features
+                          .filter((f) => f.plan_id === p.id)
+                          .map(({ id: _fid, ...f }) => ({ ...f, plan_id: data.id }));
+                        if (copies.length) {
+                          const r = await db.from("plan_features").insert(copies);
+                          if (r.error) toast.error(r.error.message);
+                        }
+                        toast.success("複製しました（非公開）");
+                        await reload();
+                      }}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
                     <label className="flex items-center gap-1">
                       おすすめ
                       <Switch
@@ -1060,5 +1122,113 @@ function GroupTable({
         項目を追加
       </Button>
     </Card>
+  );
+}
+
+function FaqEditor() {
+  const [faqs, setFaqs] = useState<Faq[]>([]);
+  const load = useCallback(async () => {
+    const { data, error } = await db.from("plan_faqs").select("*").order("sort_order");
+    if (error) return toast.error(error.message);
+    setFaqs(data ?? []);
+  }, []);
+  useEffect(() => {
+    void load();
+  }, [load]);
+  const patch = async (id: string, values: Partial<Faq>) => {
+    const { error } = await db.from("plan_faqs").update(values).eq("id", id);
+    if (error) return toast.error(error.message);
+    setFaqs((rows) => rows.map((r) => (r.id === id ? { ...r, ...values } : r)));
+  };
+  const move = async (index: number, dir: -1 | 1) => {
+    const j = index + dir;
+    if (j < 0 || j >= faqs.length) return;
+    const next = [...faqs];
+    [next[index], next[j]] = [next[j], next[index]];
+    await Promise.all(next.map((f, i) => db.from("plan_faqs").update({ sort_order: i }).eq("id", f.id)));
+    await load();
+  };
+  const add = async (question = "新しい質問", answer = "") => {
+    const { error } = await db
+      .from("plan_faqs")
+      .insert({ question, answer, sort_order: faqs.length });
+    if (error) return toast.error(error.message);
+    await load();
+  };
+  const starters: [string, string][] = [
+    ["いつでも解約できますか？", "はい。次回の更新日までにいつでも解約でき、更新日以降の請求は発生しません。"],
+    ["年払いと月払いの違いは？", "年払いは1年分をまとめてお支払いいただく分、月払いよりお得な料金になります。"],
+    ["学校・組織でまとめて導入できますか？", "はい。組織プランをご用意しています。組織の申請ページからお問い合わせください。"],
+  ];
+  return (
+    <section className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="flex items-center gap-2 font-semibold">
+          <HelpCircle className="h-4 w-4" /> お支払いのよくある質問
+        </h2>
+        <div className="flex gap-2">
+          {faqs.length === 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={async () => {
+                for (const [q, a] of starters) await add(q, a);
+              }}
+            >
+              <Sparkles className="mr-1 h-4 w-4" /> ひな形を追加
+            </Button>
+          )}
+          <Button size="sm" onClick={() => add()}>
+            <Plus className="mr-1 h-4 w-4" /> 質問を追加
+          </Button>
+        </div>
+      </div>
+      {faqs.length === 0 && (
+        <p className="text-sm text-muted-foreground">まだ質問がありません。</p>
+      )}
+      {faqs.map((f, i) => (
+        <Card key={f.id} className="space-y-2 p-4">
+          <div className="flex items-center gap-2">
+            <Input
+              className="font-semibold"
+              defaultValue={f.question}
+              onBlur={(e) => patch(f.id, { question: e.target.value })}
+            />
+            <label className="flex items-center gap-1 text-xs">
+              公開
+              <Switch checked={f.active} onCheckedChange={(v) => patch(f.id, { active: v })} />
+            </label>
+            <Button variant="ghost" size="icon" disabled={i === 0} onClick={() => move(i, -1)}>
+              <ArrowUp className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled={i === faqs.length - 1}
+              onClick={() => move(i, 1)}
+            >
+              <ArrowDown className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={async () => {
+                const { error } = await db.from("plan_faqs").delete().eq("id", f.id);
+                if (error) return toast.error(error.message);
+                await load();
+              }}
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
+          <textarea
+            className="min-h-20 w-full rounded-md border bg-background p-2 text-sm"
+            placeholder="回答"
+            defaultValue={f.answer}
+            onBlur={(e) => patch(f.id, { answer: e.target.value })}
+          />
+        </Card>
+      ))}
+    </section>
   );
 }
