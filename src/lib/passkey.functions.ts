@@ -9,6 +9,11 @@ function rp() {
   return { origin: u.origin, rpID: u.hostname };
 }
 
+// ライブラリ内部の generateChallenge は SSR バンドルで初期化順エラーになるため自前で生成
+function newChallenge() {
+  return crypto.getRandomValues(new Uint8Array(32));
+}
+
 async function admin() {
   return (await import("@/integrations/supabase/client.server")).supabaseAdmin;
 }

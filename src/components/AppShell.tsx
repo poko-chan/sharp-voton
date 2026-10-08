@@ -56,6 +56,7 @@ import { useAdminNavConfig } from "@/lib/admin-nav";
 import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
 import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import { AppLauncher } from "@/components/AppLauncher";
+import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { CommandPalette } from "@/components/CommandPalette";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { recordVisit } from "@/lib/recent-activity";
@@ -669,6 +670,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <ChromeAiStatusBadge compact />
 
               <div className="mx-2 h-4 w-px bg-border/70" />
+              <AccountSwitcher />
               <AppLauncher />
               <GoogleTranslateWidget />
             </div>
@@ -703,6 +705,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <ClockHeader version={version} compact />
             <div className="ml-auto flex items-center gap-1.5">
               <ParentBarButton compact />
+              <AccountSwitcher />
               <AppLauncher />
               <SearchBar />
 
