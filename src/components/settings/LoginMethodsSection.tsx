@@ -9,16 +9,20 @@ import { Label } from "@/components/ui/label";
 import { KeyRound, Link2, Unlink, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { SectionHeading } from "./shared";
+import { MfaCard } from "./MfaCard";
 import { MessageCircle } from "lucide-react";
 import { getMyLineStatus, unlinkLine } from "@/lib/line.functions";
 import googleLogo from "@/assets/google-logo.svg.asset.json";
 
 type Identity = { identity_id: string; id: string; provider: string; identity_data?: any };
 
-const PROVIDERS: Array<{ id: "google" | "apple"; label: string }> = [
+type Prov = "google" | "apple" | "microsoft";
+const PROVIDERS: Array<{ id: Prov; label: string }> = [
   { id: "google", label: "Google" },
   { id: "apple", label: "Apple" },
+  { id: "microsoft", label: "Microsoft" },
 ];
+const providerKey = (p: Prov) => (p === "microsoft" ? "azure" : p);
 
 export function LoginMethodsSection() {
   const { user } = useAuth();
@@ -49,10 +53,10 @@ export function LoginMethodsSection() {
   const linked = (p: string) => identities.some((i) => i.provider === p);
   const hasPassword = linked("email");
 
-  const link = async (provider: "google" | "apple") => {
+  const link = async (provider: Prov) => {
     setBusy(provider);
     const { error } = await supabase.auth.linkIdentity({
-      provider,
+      provider: providerKey(provider) as "google",
       options: { redirectTo: `${window.location.origin}/settings` },
     });
     if (error) {
@@ -73,7 +77,8 @@ export function LoginMethodsSection() {
   };
 
   const unlink = async (provider: string) => {
-    const target = identities.find((i) => i.provider === provider);
+    const key = provider === "microsoft" ? "azure" : provider;
+    const target = identities.find((i) => i.provider === key);
     if (!target) return;
     if (identities.length <= 1) {
       toast.error("ログイン方法が1つしかないため解除できません");
@@ -108,7 +113,7 @@ export function LoginMethodsSection() {
 
   return (
     <div className="space-y-6">
-      <SectionHeading title="ログイン方法" desc="パスワード・Google・Apple の連携を管理します" />
+      <SectionHeading title="ログイン方法" desc="パスワード・Google・Apple・Microsoft・LINE の連携と二段階認証を管理します" />
 
       <Card className="p-6 space-y-4">
         <div className="flex items-center gap-2 font-semibold">
@@ -132,6 +137,13 @@ export function LoginMethodsSection() {
               <div className="flex items-center gap-3">
                 {p.id === "google" ? (
                   <img src={googleLogo.url} alt="" width={20} height={20} className="h-5 w-5" />
+                ) : p.id === "microsoft" ? (
+                  <svg className="h-5 w-5" viewBox="0 0 23 23" aria-hidden>
+                    <path fill="#f35325" d="M1 1h10v10H1z" />
+                    <path fill="#81bc06" d="M12 1h10v10H12z" />
+                    <path fill="#05a6f0" d="M1 12h10v10H1z" />
+                    <path fill="#ffba08" d="M12 12h10v10H12z" />
+                  </svg>
                 ) : (
                   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                     <path d="M17.05 12.04c-.03-2.6 2.13-3.86 2.23-3.92-1.21-1.77-3.1-2.02-3.77-2.05-1.6-.16-3.13.94-3.94.94-.83 0-2.07-.92-3.41-.9-1.75.03-3.37 1.02-4.27 2.59-1.82 3.16-.46 7.83 1.31 10.39.86 1.26 1.88 2.66 3.22 2.61 1.3-.05 1.79-.84 3.36-.84s2.01.84 3.39.81c1.4-.02 2.28-1.27 3.14-2.53.99-1.45 1.39-2.86 1.41-2.93-.03-.01-2.7-1.04-2.73-4.12zM14.62 4.39c.71-.87 1.2-2.06 1.07-3.27-1.03.04-2.29.69-3.03 1.55-.66.77-1.25 2-1.09 3.16 1.16.09 2.34-.59 3.05-1.44z" />
@@ -140,11 +152,11 @@ export function LoginMethodsSection() {
                 <div>
                   <div className="text-sm font-medium">{p.label}</div>
                   <div className="text-xs text-muted-foreground">
-                    {linked(p.id) ? "連携済み" : "未連携"}
+                    {linked(providerKey(p.id)) ? "連携済み" : "未連携"}
                   </div>
                 </div>
               </div>
-              {linked(p.id) ? (
+              {linked(providerKey(p.id)) ? (
                 <Button
                   variant="outline"
                   size="sm"
@@ -208,6 +220,8 @@ export function LoginMethodsSection() {
           安全のため、ログイン方法を最低 1 つは残す必要があります。
         </p>
       </Card>
+
+      <MfaCard />
 
       <Card className="p-6 space-y-4">
         <div className="flex items-center gap-2 font-semibold">

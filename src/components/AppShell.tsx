@@ -57,6 +57,7 @@ import { ChromeAiStatusBadge } from "@/components/ChromeAiStatusBadge";
 import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import { AppLauncher } from "@/components/AppLauncher";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
+import { MfaGate } from "@/components/auth/MfaGate";
 import { CommandPalette } from "@/components/CommandPalette";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { recordVisit } from "@/lib/recent-activity";
@@ -671,6 +672,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
               <div className="mx-2 h-4 w-px bg-border/70" />
               <AccountSwitcher />
+              <MfaGate />
               <AppLauncher />
               <GoogleTranslateWidget />
             </div>

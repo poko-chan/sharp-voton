@@ -3,11 +3,13 @@ import { toast } from "sonner";
 import { startRegistration } from "@simplewebauthn/browser";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   deletePasskey,
   listMyPasskeys,
   passkeyRegisterOptions,
   passkeyRegisterVerify,
+  renamePasskey,
 } from "@/lib/passkey.functions";
 import {
   getVapidPublicKey,
@@ -27,6 +29,9 @@ export function DeviceSection() {
   const [keys, setKeys] = useState<{ id: string; label: string | null; created_at: string }[]>([]);
   const [pushOn, setPushOn] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
 
   const reload = () =>
     listMyPasskeys()
@@ -58,7 +63,7 @@ export function DeviceSection() {
     run(async () => {
       const { options, challengeId } = await passkeyRegisterOptions();
       const response = await startRegistration({ optionsJSON: options });
-      const label = /iPhone|iPad/.test(navigator.userAgent)
+      const auto = /iPhone|iPad/.test(navigator.userAgent)
         ? "iPhone / iPad"
         : /Android/.test(navigator.userAgent)
           ? "Android"
@@ -67,7 +72,9 @@ export function DeviceSection() {
             : /Windows/.test(navigator.userAgent)
               ? "Windows"
               : "この端末";
+      const label = newName.trim().slice(0, 40) || auto;
       await passkeyRegisterVerify({ data: { challengeId, response, label } });
+      setNewName("");
       await reload();
     }, "パスキーを登録しました");
 
@@ -117,24 +124,67 @@ export function DeviceSection() {
             key={k.id}
             className="flex items-center justify-between rounded-lg border p-2 text-sm"
           >
-            <span>
-              {k.label ?? "端末"}（{new Date(k.created_at).toLocaleDateString("ja-JP")}）
-            </span>
-            <Button
-              size="sm"
-              variant="ghost"
-              disabled={busy}
-              onClick={() =>
-                run(async () => {
-                  await deletePasskey({ data: { id: k.id } });
-                  await reload();
-                }, "削除しました")
-              }
-            >
-              削除
-            </Button>
+            {editId === k.id ? (
+              <div className="flex flex-1 gap-2">
+                <Input value={editName} maxLength={40} onChange={(e) => setEditName(e.target.value)} />
+                <Button
+                  size="sm"
+                  disabled={busy || !editName.trim()}
+                  onClick={() =>
+                    run(async () => {
+                      await renamePasskey({ data: { id: k.id, label: editName } });
+                      setEditId(null);
+                      await reload();
+                    }, "名前を変更しました")
+                  }
+                >
+                  保存
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setEditId(null)}>
+                  取消
+                </Button>
+              </div>
+            ) : (
+              <>
+                <span>
+                  {k.label ?? "端末"}（{new Date(k.created_at).toLocaleDateString("ja-JP")}）
+                </span>
+                <div className="flex gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    disabled={busy}
+                    onClick={() => {
+                      setEditId(k.id);
+                      setEditName(k.label ?? "");
+                    }}
+                  >
+                    名前変更
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    disabled={busy}
+                    onClick={() =>
+                      run(async () => {
+                        await deletePasskey({ data: { id: k.id } });
+                        await reload();
+                      }, "削除しました")
+                    }
+                  >
+                    削除
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         ))}
+        <Input
+          placeholder="パスキーの名前（例: 自宅のMac）"
+          value={newName}
+          maxLength={40}
+          onChange={(e) => setNewName(e.target.value)}
+        />
         <Button disabled={busy} onClick={addPasskey}>
           この端末をパスキーに登録
         </Button>
