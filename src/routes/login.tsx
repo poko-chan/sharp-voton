@@ -213,6 +213,34 @@ function LoginPage() {
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  const [mailOpen, setMailOpen] = useState(false);
+  const [mailAddr, setMailAddr] = useState("");
+  const [mailCode, setMailCode] = useState("");
+  const [mailSent, setMailSent] = useState(false);
+  const emailOtpLogin = async () => {
+    setBusy(true);
+    try {
+      const addr = mailAddr.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr)) throw new Error("メールアドレスを確認してください");
+      if (!mailSent) {
+        const { error } = await supabase.auth.signInWithOtp({
+          email: addr,
+          options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/login` },
+        });
+        if (error) throw error;
+        setMailSent(true);
+        toast.success("確認メールを送りました。メール内のコードを入力するか、リンクを開いてください");
+      } else {
+        const { error } = await supabase.auth.verifyOtp({ email: addr, token: mailCode.trim(), type: "email" });
+        if (error) throw error;
+        window.location.href = "/dashboard";
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "メール認証でログインできませんでした");
+    } finally {
+      setBusy(false);
+    }
+  };
   const toE164 = (v: string) => {
     const d = v.replace(/[^0-9+]/g, "");
     return d.startsWith("+") ? d : d.startsWith("0") ? "+81" + d.slice(1) : "+" + d;
@@ -428,6 +456,7 @@ function LoginPage() {
                 { key: "qr", label: "QRコード", icon: <QrCode className="h-4 w-4" />, run: () => setQrOpen(true) },
                 { key: "passkey", label: "パスキー", icon: <Fingerprint className="h-4 w-4" />, run: passkeyLogin },
                 { key: "lovable", label: "Lovable", icon: <Heart className="h-4 w-4 text-primary" />, run: () => oauth("lovable") },
+                { key: "mail", label: "メール認証", icon: <Mail className="h-4 w-4" />, run: () => setMailOpen((v) => !v) },
                 { key: "phone", label: "携帯電話番号", icon: <Smartphone className="h-4 w-4" />, run: () => setPhoneOpen((v) => !v) },
               ];
               return showAll ? (
@@ -455,6 +484,23 @@ function LoginPage() {
                 </div>
               );
             })()}
+            {mailOpen && (
+              <div className="space-y-2 rounded-xl border p-3">
+                <Label>メールアドレス（登録済み）</Label>
+                <Input type="email" autoComplete="email" value={mailAddr} onChange={(e) => setMailAddr(e.target.value)} disabled={mailSent} />
+                {mailSent && (
+                  <Input inputMode="numeric" autoComplete="one-time-code" placeholder="メールに届いたコード" value={mailCode} onChange={(e) => setMailCode(e.target.value)} />
+                )}
+                <Button className="w-full" disabled={busy} onClick={emailOtpLogin}>
+                  {mailSent ? "コードを確認してログイン" : "確認メールを受け取る"}
+                </Button>
+                {mailSent && (
+                  <button type="button" className="w-full text-xs text-muted-foreground hover:underline" onClick={() => { setMailSent(false); setMailCode(""); }}>
+                    メールアドレスを変更・再送する
+                  </button>
+                )}
+              </div>
+            )}
             {phoneOpen && (
               <div className="space-y-2 rounded-xl border p-3">
                 <Label>携帯電話番号</Label>
