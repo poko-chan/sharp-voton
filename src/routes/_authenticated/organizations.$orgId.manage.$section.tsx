@@ -5,6 +5,7 @@ import { OrgProfileFields } from "@/components/org/OrgProfileFields";
 import { OrgRoster } from "@/components/org/OrgRoster";
 import { useOrg } from "@/lib/org-apps";
 import { OrgRoles } from "@/components/org/OrgRoles";
+import { OrgYearRoster } from "@/components/org/OrgYearRoster";
 
 export const Route = createFileRoute("/_authenticated/organizations/$orgId/manage/$section")({
   component: ManagePage,
@@ -15,6 +16,13 @@ function ManagePage() {
   const { isStaff, loading, canManage } = useOrg(orgId);
   const canAdmin = canManage(section);
   if (loading) return <div className="p-6 text-sm text-muted-foreground">読み込み中…</div>;
+  if (section === "yearbook") {
+    return isStaff ? (
+      <OrgYearRoster orgId={orgId} />
+    ) : (
+      <div className="p-6 text-sm text-muted-foreground">年度別名簿は教師以上のみ編集できます。</div>
+    );
+  }
   if (section === "roster") {
     return isStaff ? (
       <OrgRoster orgId={orgId} />
