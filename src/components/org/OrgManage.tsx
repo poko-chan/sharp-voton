@@ -180,13 +180,13 @@ export function OrgManage({
     load();
   };
   const transfer = async (userId: string) => {
-    if (!confirm("経営者権限を移譲しますか？あなたは共同管理者になります。")) return;
+    if (!confirm("所有者権限を移譲しますか？あなたは共同管理者になります。")) return;
     const { error } = await (supabase as any).rpc("org_transfer_ownership", {
       _org: orgId,
       _user: userId,
     });
     if (error) return toast.error(error.message);
-    toast.success("経営者を移譲しました");
+    toast.success("所有者を移譲しました");
     load();
   };
   const reviewReq = async (id: string, approve: boolean, role = "member") => {
@@ -343,9 +343,9 @@ export function OrgManage({
                   value={m.role}
                   onValueChange={(v) => {
                     if (v === "owner")
-                      return toast.error("経営者は「経営者に移譲」から変更してください");
+                      return toast.error("所有者は「所有者に移譲」から変更してください");
                     if (m.role === "owner")
-                      return toast.error("経営者の役割は移譲でのみ変更できます");
+                      return toast.error("所有者の役割は移譲でのみ変更できます");
                     updateMember(m.id, { role: v });
                   }}
                 >
@@ -364,7 +364,7 @@ export function OrgManage({
               {isOwner && m.role !== "owner" && (
                 <Button size="sm" variant="outline" onClick={() => transfer(m.user_id)}>
                   <Crown className="h-3 w-3 mr-1" />
-                  経営者に移譲
+                  所有者に移譲
                 </Button>
               )}
               {canAdmin && m.role !== "owner" && (

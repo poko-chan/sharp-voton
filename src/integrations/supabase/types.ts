@@ -5552,6 +5552,56 @@ export type Database = {
           },
         ]
       }
+      org_student_records: {
+        Row: {
+          class_name: string | null
+          created_at: string
+          grade: string | null
+          id: string
+          note: string | null
+          organization_id: string
+          school_year: number
+          student_number: string | null
+          updated_at: string
+          updated_by: string | null
+          user_id: string
+        }
+        Insert: {
+          class_name?: string | null
+          created_at?: string
+          grade?: string | null
+          id?: string
+          note?: string | null
+          organization_id: string
+          school_year: number
+          student_number?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          user_id: string
+        }
+        Update: {
+          class_name?: string | null
+          created_at?: string
+          grade?: string | null
+          id?: string
+          note?: string | null
+          organization_id?: string
+          school_year?: number
+          student_number?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_student_records_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       org_survey_responses: {
         Row: {
           answers: Json
@@ -9120,6 +9170,7 @@ export type Database = {
         Args: { _message?: string; _org: string; _role?: string; _user: string }
         Returns: string
       }
+      org_is_staff: { Args: { _org: string; _uid: string }; Returns: boolean }
       org_join_by_code: { Args: { _code: string }; Returns: string }
       org_member_stats: {
         Args: { _org: string }

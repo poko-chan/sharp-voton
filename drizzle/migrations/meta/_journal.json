@@ -15,6 +15,13 @@
       "when": 1791546332094,
       "tag": "0001_org_application_review_anytime",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791546483226,
+      "tag": "0002_org_student_year_records",
+      "breakpoints": true
     }
   ]
 }
