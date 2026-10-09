@@ -134,6 +134,7 @@ export const APP_STATUS_LABEL: Record<string, string> = {
 export interface OrgApplicationDraft {
   org_type: OrgType | null;
   org_type_other: string;
+  sub_types: string[];
   org_name: string;
   rep_last_name: string;
   rep_first_name: string;
@@ -153,6 +154,7 @@ export interface OrgApplicationDraft {
 export const EMPTY_DRAFT: OrgApplicationDraft = {
   org_type: null,
   org_type_other: "",
+  sub_types: [],
   org_name: "",
   rep_last_name: "",
   rep_first_name: "",
