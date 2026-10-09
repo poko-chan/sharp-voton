@@ -17,6 +17,7 @@ import {
   COUNTRIES,
   EMPTY_DRAFT,
   ORG_TYPES,
+  ORG_SUBTYPES,
   PREFECTURES,
   departmentLabel,
   orgNameLabel,
@@ -80,6 +81,8 @@ export function OrgApplyForm() {
     const { error } = await (supabase as any).rpc("org_application_submit", {
       _payload: {
         ...draft,
+        note:
+          (draft.sub_types.length ? `【詳細種別】${draft.sub_types.join("・")}\n` : "") + draft.note,
         expected_users: draft.expected_users.trim() === "" ? null : draft.expected_users.trim(),
       },
     });
@@ -136,7 +139,10 @@ export function OrgApplyForm() {
               <button
                 key={t.value}
                 type="button"
-                onClick={() => set("org_type", t.value as OrgType)}
+                onClick={() => {
+                  set("org_type", t.value as OrgType);
+                  set("sub_types", []);
+                }}
                 className={`rounded-xl border p-3 text-left transition ${
                   draft.org_type === t.value
                     ? "border-primary bg-primary/10"
@@ -148,6 +154,31 @@ export function OrgApplyForm() {
               </button>
             ))}
           </div>
+          {draft.org_type && ORG_SUBTYPES[draft.org_type].length > 0 && (
+            <div className="space-y-2">
+              <Label>詳細（複数選択可・一貫校などはすべて選択）</Label>
+              <div className="flex flex-wrap gap-2">
+                {ORG_SUBTYPES[draft.org_type].map((s) => {
+                  const on = draft.sub_types.includes(s);
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() =>
+                        set("sub_types", on ? draft.sub_types.filter((x) => x !== s) : [...draft.sub_types, s])
+                      }
+                      className={`rounded-full border px-3 py-1 text-xs transition ${
+                        on ? "border-primary bg-primary/10 font-bold text-primary" : "border-border/60 hover:bg-muted/50"
+                      }`}
+                    >
+                      {on && <Check className="mr-1 inline h-3 w-3" />}
+                      {s}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           {draft.org_type === "other" && (
             <div className="space-y-1">
               <Label>種別の内容</Label>
@@ -359,6 +390,7 @@ export function OrgApplyForm() {
                   ? `その他（${draft.org_type_other}）`
                   : (ORG_TYPES.find((t) => t.value === draft.org_type)?.label ?? "-"),
               ],
+              ["詳細種別", draft.sub_types.join("・") || "-"],
               [
                 "代表者名",
                 `${draft.rep_last_name} ${draft.rep_first_name}${draft.rep_last_kana || draft.rep_first_kana ? `（${draft.rep_last_kana} ${draft.rep_first_kana}）` : ""}`,
