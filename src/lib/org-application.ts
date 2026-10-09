@@ -12,6 +12,15 @@ export const ORG_TYPE_LABEL: Record<string, string> = Object.fromEntries(
   ORG_TYPES.map((t) => [t.value, t.label]),
 );
 
+/** 種別ごとの詳細区分（一貫校などのため複数選択可）。 */
+export const ORG_SUBTYPES: Record<OrgType, string[]> = {
+  school: ["小学校", "中学校", "高等学校", "中等教育学校", "義務教育学校", "高等専門学校", "短期大学", "大学", "大学院", "専門学校", "特別支援学校", "インターナショナルスクール", "フリースクール"],
+  cram_school: ["受験塾（中学受験）", "受験塾（高校受験）", "受験塾（大学受験）", "補習塾", "個別指導", "予備校", "オンライン塾", "家庭教師センター", "英会話・語学", "プログラミング教室"],
+  company: ["社内研修", "資格取得支援", "教育事業者"],
+  club: ["部活動", "学習コミュニティ", "NPO・ボランティア", "サークル"],
+  other: [],
+};
+
 export const COUNTRIES = [
   "日本",
   "アメリカ合衆国",
