@@ -79,7 +79,8 @@ export function OrgsAdminTab() {
       _note: notes[id]?.trim() || null,
     });
     if (error) return toast.error(error.message);
-    toast.success(approve ? "承認して組織を作成しました" : "却下しました");
+    toast.success(approve ? "承認しました" : "非承認にしました");
+    setNotes((n) => ({ ...n, [id]: "" }));
     load();
   };
   return (
@@ -120,24 +121,37 @@ export function OrgsAdminTab() {
               {a.note && <div className="sm:col-span-2">連絡事項: {a.note}</div>}
               <div>申請者: {a.profile?.display_name ?? a.profile?.username ?? "—"}</div>
             </div>
-            {a.status === "pending" && (
-              <div className="flex flex-wrap items-center gap-2">
-                <Input
-                  className="max-w-xs"
-                  placeholder="申請者へのメモ（任意）"
-                  value={notes[a.id] ?? ""}
-                  onChange={(e) => setNotes((n) => ({ ...n, [a.id]: e.target.value }))}
-                />
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                className="max-w-xs"
+                placeholder="申請者へのメッセージ（任意・スレッドに送信）"
+                value={notes[a.id] ?? ""}
+                onChange={(e) => setNotes((n) => ({ ...n, [a.id]: e.target.value }))}
+              />
+              {a.status !== "approved" && (
                 <Button size="sm" onClick={() => reviewApp(a.id, true)}>
                   <Check className="h-4 w-4 mr-1" />
                   承認
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => reviewApp(a.id, false)}>
+              )}
+              {a.status !== "rejected" && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    if (
+                      a.status === "approved" &&
+                      !confirm("承認済みの組織を非承認にします。組織は利用できなくなります。よろしいですか？")
+                    )
+                      return;
+                    reviewApp(a.id, false);
+                  }}
+                >
                   <X className="h-4 w-4 mr-1" />
-                  却下
+                  非承認
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
             <Button
               size="sm"
               variant="ghost"
