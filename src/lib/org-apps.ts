@@ -42,25 +42,11 @@ export const ORG_APPS: {
     color: "#7B6CFF",
   },
   {
-    key: "surveys",
-    label: "アンケート",
-    desc: "組織・グループへ配信",
-    icon: "ClipboardList",
-    color: "#34D7B5",
-  },
-  {
     key: "calendar",
     label: "カレンダー",
     desc: "組織・グループの予定",
     icon: "CalendarDays",
     color: "#38bdf8",
-  },
-  {
-    key: "digitalid",
-    label: "デジタル証",
-    desc: "学生証・入退室バーコード",
-    icon: "IdCard",
-    color: "#f472b6",
   },
   {
     key: "chat",
@@ -69,70 +55,8 @@ export const ORG_APPS: {
     icon: "MessagesSquare",
     color: "#a78bfa",
   },
-  {
-    key: "makron",
-    label: "Makron for school",
-    desc: "組織専用の問題集・課題",
-    icon: "BookOpen",
-    color: "#fb923c",
-  },
-  {
-    key: "edu",
-    label: "Makron for education",
-    desc: "学年・クラス別の組織専用教材",
-    icon: "GraduationCap",
-    color: "#22c55e",
-  },
-  {
-    key: "attendance",
-    label: "出欠・欠席連絡",
-    desc: "毎日の出欠記録と欠席連絡の受付",
-    icon: "ClipboardCheck",
-    color: "#ef4444",
-  },
-  {
-    key: "timetable",
-    label: "時間割",
-    desc: "曜日・時限ごとの授業表",
-    icon: "Table",
-    color: "#0ea5e9",
-  },
-  {
-    key: "grades",
-    label: "成績",
-    desc: "テスト結果の登録と公開",
-    icon: "BarChart3",
-    color: "#8b5cf6",
-  },
-  {
-    key: "meetings",
-    label: "面談",
-    desc: "面談の予約・記録",
-    icon: "CalendarClock",
-    color: "#14b8a6",
-  },
-  {
-    key: "health",
-    label: "保健室",
-    desc: "来室記録・体温・対応",
-    icon: "HeartPulse",
-    color: "#fb7185",
-  },
-  {
-    key: "consult",
-    label: "相談・報告",
-    desc: "匿名でも送れる相談窓口",
-    icon: "ShieldAlert",
-    color: "#f59e0b",
-  },
-  {
-    key: "monitor",
-    label: "見守り一覧",
-    desc: "学習量・出欠・気づきをまとめて確認（先生のみ）",
-    icon: "Eye",
-    color: "#64748b",
-  },
 ];
+// 再構築のため、アンケート・デジタル証・Makron for school/education・出欠・時間割・成績・面談・保健室・相談・見守りは一旦撤去。
 
 export const GROUP_PERMS: { key: string; label: string; app: string }[] = [
   { key: "post_create", label: "一般が投稿できる", app: "投稿" },
