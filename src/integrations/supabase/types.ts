@@ -1873,6 +1873,7 @@ export type Database = {
       }
       flashcard_decks: {
         Row: {
+          archived: boolean
           color: string
           created_at: string
           description: string
@@ -1884,6 +1885,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          archived?: boolean
           color?: string
           created_at?: string
           description?: string
@@ -1895,6 +1897,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          archived?: boolean
           color?: string
           created_at?: string
           description?: string

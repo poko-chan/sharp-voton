@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Layers, Pencil, Trash2 } from "lucide-react";
+import { Plus, Layers, Pencil, Trash2, Archive, ArchiveRestore } from "lucide-react";
 import type { FlashcardDeck } from "@/lib/flashcards.functions";
 
 type Props = {
@@ -11,9 +11,11 @@ type Props = {
   onEdit: (deck: FlashcardDeck) => void;
   onDelete: (deck: FlashcardDeck) => void;
   onCreate: () => void;
+  onArchive: (deck: FlashcardDeck) => void;
+  showCreate?: boolean;
 };
 
-export function DeckGrid({ decks, counts, onOpen, onEdit, onDelete, onCreate }: Props) {
+export function DeckGrid({ decks, counts, onOpen, onEdit, onDelete, onCreate, onArchive, showCreate = true }: Props) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {decks.map((deck) => {
@@ -57,6 +59,18 @@ export function DeckGrid({ decks, counts, onOpen, onEdit, onDelete, onCreate }: 
               <Button size="sm" variant="ghost" onClick={() => onEdit(deck)}>
                 <Pencil className="h-3.5 w-3.5" />
               </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                title={deck.archived ? "復元" : "アーカイブ"}
+                onClick={() => onArchive(deck)}
+              >
+                {deck.archived ? (
+                  <ArchiveRestore className="h-3.5 w-3.5" />
+                ) : (
+                  <Archive className="h-3.5 w-3.5" />
+                )}
+              </Button>
               <Button size="sm" variant="ghost" onClick={() => onDelete(deck)}>
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
@@ -64,6 +78,7 @@ export function DeckGrid({ decks, counts, onOpen, onEdit, onDelete, onCreate }: 
           </Card>
         );
       })}
+      {showCreate && (
       <Card
         className="p-4 flex flex-col items-center justify-center gap-2 min-h-[150px] cursor-pointer border-dashed hover:bg-muted/50 transition-colors"
         onClick={onCreate}
@@ -71,6 +86,7 @@ export function DeckGrid({ decks, counts, onOpen, onEdit, onDelete, onCreate }: 
         <Plus className="h-6 w-6 text-muted-foreground" />
         <span className="text-sm text-muted-foreground">新しいデッキを作成</span>
       </Card>
+      )}
     </div>
   );
 }

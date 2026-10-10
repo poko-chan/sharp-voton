@@ -119,9 +119,16 @@ export function DeckDetail({ userId, deck, onBack, onEdit }: Props) {
     }
   };
 
-  const startStudy = async (mode: "due" | "all", shuffled: boolean) => {
+  const [studyReverse, setStudyReverse] = useState(false);
+  const startStudy = async (mode: "due" | "all" | "weak", shuffled: boolean, reverse = false) => {
     try {
-      const list = mode === "due" ? await fetchDueCardsForDeck(userId, deck.id) : activeCards;
+      const list =
+        mode === "due"
+          ? await fetchDueCardsForDeck(userId, deck.id)
+          : mode === "weak"
+            ? activeCards.filter((c) => (c.reviews ?? 0) > 0 && c.interval_days <= 1)
+            : activeCards;
+      setStudyReverse(reverse);
       if (list.length === 0) {
         toast.info("学習できるカードがありません");
         return;
@@ -150,6 +157,8 @@ export function DeckDetail({ userId, deck, onBack, onEdit }: Props) {
         deckName={deck.name}
         cards={studyCards}
         shuffled={studyShuffled}
+        reverse={studyReverse}
+        userId={userId}
         onExit={() => {
           setStudyCards(null);
           load();
@@ -212,6 +221,12 @@ export function DeckDetail({ userId, deck, onBack, onEdit }: Props) {
         <Button size="sm" variant="secondary" onClick={() => startStudy("all", false)}>
           <Repeat className="h-4 w-4 mr-1" />
           全カードで繰り返し
+        </Button>
+        <Button size="sm" variant="secondary" disabled={weakCount === 0} onClick={() => startStudy("weak", true)}>
+          苦手特訓 ({weakCount})
+        </Button>
+        <Button size="sm" variant="secondary" onClick={() => startStudy("all", true, true)}>
+          反転モード（答え→問題）
         </Button>
         <Button
           size="sm"

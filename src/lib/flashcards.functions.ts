@@ -8,6 +8,7 @@ export type FlashcardDeck = {
   subject: string;
   series: string;
   color: string;
+  archived?: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -103,6 +104,14 @@ export async function updateDeck(
     .single();
   if (error) throw error;
   return data as FlashcardDeck;
+}
+
+export async function setDeckArchived(id: string, archived: boolean) {
+  const { error } = await supabase
+    .from("flashcard_decks")
+    .update({ archived, updated_at: new Date().toISOString() } as any)
+    .eq("id", id);
+  if (error) throw error;
 }
 
 export async function deleteDeck(id: string) {
