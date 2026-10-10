@@ -1878,7 +1878,6 @@ export type Database = {
           description: string
           id: string
           name: string
-          series: string
           subject: string
           updated_at: string
           user_id: string
@@ -1889,7 +1888,6 @@ export type Database = {
           description?: string
           id?: string
           name: string
-          series?: string
           subject?: string
           updated_at?: string
           user_id: string
@@ -1900,7 +1898,6 @@ export type Database = {
           description?: string
           id?: string
           name?: string
-          series?: string
           subject?: string
           updated_at?: string
           user_id?: string
@@ -1909,7 +1906,6 @@ export type Database = {
       }
       flashcards: {
         Row: {
-          archived: boolean
           back: string
           created_at: string
           deck: string
@@ -1925,7 +1921,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          archived?: boolean
           back: string
           created_at?: string
           deck?: string
@@ -1941,7 +1936,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          archived?: boolean
           back?: string
           created_at?: string
           deck?: string
