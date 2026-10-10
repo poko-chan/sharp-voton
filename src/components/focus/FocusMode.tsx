@@ -4,6 +4,7 @@ import {
   Crosshair,
   Settings2,
   Maximize2,
+  Minimize2,
   PictureInPicture2,
   StickyNote,
   LogOut,
@@ -37,12 +38,16 @@ export const FOCUS_APPS = [
 ] as const;
 
 type Visual = "normal" | "mono" | "dim";
+type AmbientSound = "off" | "rain" | "brown";
 type Settings = {
   fullscreen: boolean;
   wakeLock: boolean;
   leaveLog: boolean;
   blockLeave: boolean;
   titleTimer: boolean;
+  completionNotice: boolean;
+  ambientSound: AmbientSound;
+  ambientVolume: number;
   edgeGauge: boolean;
   memo: boolean;
   visual: Visual;
@@ -65,6 +70,9 @@ const DEFAULTS: Settings = {
   leaveLog: true,
   blockLeave: true,
   titleTimer: true,
+  completionNotice: false,
+  ambientSound: "off",
+  ambientVolume: 18,
   edgeGauge: true,
   memo: true,
   visual: "normal",
@@ -106,17 +114,28 @@ export function FocusMode() {
   const [summary, setSummary] = useState<(Session & { endedAt: number }) | null>(null);
   const [now, setNow] = useState(Date.now());
   const [isFs, setIsFs] = useState(true);
+  const [isVisible, setIsVisible] = useState(true);
   const hiddenAt = useRef<number | null>(null);
-  const wake = useRef<any>(null);
+  const wake = useRef<{ release: () => Promise<void> } | null>(null);
   const pip = useRef<Window | null>(null);
+  const ambientGain = useRef<GainNode | null>(null);
   const baseTitle = useRef<string>("");
 
   useEffect(() => {
-    setSession(load<Session>(KEY));
+    setSession(() => {
+      const restored = load<Session>(KEY);
+      return restored ? { ...restored, settings: { ...DEFAULTS, ...restored.settings } } : null;
+    });
     openStartDialog = () => setStartOpen(true);
     return () => {
       openStartDialog = null;
     };
+  }, []);
+
+  useEffect(() => {
+    const onVisibilityChange = () => setIsVisible(document.visibilityState === "visible");
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
   }, []);
 
   const save = useCallback((s: Session | null) => {
@@ -143,7 +162,8 @@ export function FocusMode() {
     if (!session) return;
     setSummary({ ...session, endedAt: Date.now() });
     save(null);
-    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    if (document.fullscreenElement)
+      document.exitFullscreen().catch(() => toast.error("全画面表示を終了できませんでした"));
     pip.current?.close();
   }, [session, save]);
 
@@ -151,9 +171,23 @@ export function FocusMode() {
   useEffect(() => {
     if (remaining !== null && remaining <= 0 && !session?.pausedAt) {
       toast.success("集中時間が終了しました");
+      if (st?.completionNotice && "Notification" in window && Notification.permission === "granted") {
+        try {
+          const notification = new Notification("集中時間が終了しました", {
+            body: "おつかれさまでした。集中セッションが完了しました。",
+            tag: "studysharp-focus-complete",
+          });
+          notification.onclick = () => {
+            window.focus();
+            notification.close();
+          };
+        } catch {
+          toast.error("ブラウザー通知を表示できませんでした");
+        }
+      }
       finish();
     }
-  }, [remaining, finish, session?.pausedAt]);
+  }, [remaining, finish, session?.pausedAt, st?.completionNotice]);
 
   // 全画面監視
   useEffect(() => {
@@ -165,24 +199,101 @@ export function FocusMode() {
 
   // スリープ防止
   useEffect(() => {
-    if (!active || !st?.wakeLock) return;
-    const nav: any = navigator;
+    if (!active || !st?.wakeLock || session?.pausedAt) return;
+    const nav = (navigator as Navigator & {
+      wakeLock?: { request: (type: "screen") => Promise<{ release: () => Promise<void> }> };
+    }).wakeLock;
+    if (!nav) {
+      toast.warning("このブラウザーはスリープ防止に対応していません");
+      return;
+    }
     const req = async () => {
       try {
-        if (document.visibilityState === "visible" && nav.wakeLock)
-          wake.current = await nav.wakeLock.request("screen");
+        if (document.visibilityState === "visible") wake.current = await nav.request("screen");
       } catch {
-        /* 非対応 */
+        toast.error("スリープ防止を有効にできませんでした");
       }
     };
     req();
     document.addEventListener("visibilitychange", req);
     return () => {
       document.removeEventListener("visibilitychange", req);
-      wake.current?.release?.().catch?.(() => {});
+      wake.current?.release().catch(() => toast.error("スリープ防止を解除できませんでした"));
       wake.current = null;
     };
-  }, [active, st?.wakeLock]);
+  }, [active, st?.wakeLock, session?.pausedAt]);
+
+  // 集中中だけブラウザー内で環境音を生成する
+  useEffect(() => {
+    if (!active || session?.pausedAt || !isVisible || !st?.ambientSound || st.ambientSound === "off")
+      return;
+    const AudioContextClass = window.AudioContext;
+    if (!AudioContextClass) {
+      toast.error("このブラウザーは環境音の再生に対応していません");
+      return;
+    }
+
+    let context: AudioContext;
+    try {
+      context = new AudioContextClass();
+    } catch {
+      toast.error("環境音を開始できませんでした");
+      return;
+    }
+
+    try {
+      const seconds = 3;
+      const buffer = context.createBuffer(1, context.sampleRate * seconds, context.sampleRate);
+      const samples = buffer.getChannelData(0);
+      let brown = 0;
+      for (let i = 0; i < samples.length; i++) {
+        const white = Math.random() * 2 - 1;
+        brown = (brown + 0.02 * white) / 1.02;
+        samples[i] = st.ambientSound === "brown" ? brown * 3.5 : white;
+      }
+
+      const source = context.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
+      const filter = context.createBiquadFilter();
+      filter.type = st.ambientSound === "rain" ? "bandpass" : "lowpass";
+      filter.frequency.value = st.ambientSound === "rain" ? 1800 : 650;
+      filter.Q.value = st.ambientSound === "rain" ? 0.35 : 0.7;
+      const gain = context.createGain();
+      ambientGain.current = gain;
+      gain.gain.setValueAtTime(0, context.currentTime);
+      source.connect(filter);
+      filter.connect(gain);
+      gain.connect(context.destination);
+      source.start();
+      void context.resume().catch(() => toast.error("環境音の再生を開始できませんでした"));
+
+      return () => {
+        if (ambientGain.current === gain) ambientGain.current = null;
+        const endAt = context.currentTime + 0.35;
+        gain.gain.cancelScheduledValues(context.currentTime);
+        gain.gain.setTargetAtTime(0, context.currentTime, 0.08);
+        try {
+          source.stop(endAt);
+        } catch {
+          toast.error("環境音を停止できませんでした");
+        }
+        window.setTimeout(() => {
+          void context.close().catch(() => toast.error("環境音の音声リソースを解放できませんでした"));
+        }, 500);
+      };
+    } catch {
+      void context.close().catch(() => toast.error("環境音の音声リソースを解放できませんでした"));
+      toast.error("環境音を開始できませんでした");
+    }
+  }, [active, isVisible, session?.pausedAt, st?.ambientSound]);
+
+  useEffect(() => {
+    const gain = ambientGain.current;
+    if (!gain) return;
+    const volume = (Math.max(0, Math.min(100, st?.ambientVolume ?? 0)) / 100) * 0.16;
+    gain.gain.setTargetAtTime(volume, gain.context.currentTime, 0.12);
+  }, [active, isVisible, session?.pausedAt, st?.ambientVolume, st?.ambientSound]);
 
   // 離脱検知（無音）
   useEffect(() => {
@@ -219,16 +330,14 @@ export function FocusMode() {
 
   // タブタイトル
   useEffect(() => {
-    if (!active || !st?.titleTimer) return;
-    if (!baseTitle.current) baseTitle.current = document.title.replace(/^\[.*?\]\s*/, "");
-    document.title = `[${remaining !== null ? fmt(remaining) : fmt(elapsed)} 集中中] ${baseTitle.current}`;
-  });
-  useEffect(() => {
-    if (!active && baseTitle.current) {
+    if (active && st?.titleTimer) {
+      if (!baseTitle.current) baseTitle.current = document.title.replace(/^\[.*?\]\s*/, "");
+      document.title = `[${remaining !== null ? fmt(remaining) : fmt(elapsed)} 集中中] ${baseTitle.current}`;
+    } else if (baseTitle.current) {
       document.title = baseTitle.current;
       baseTitle.current = "";
     }
-  }, [active]);
+  }, [active, st?.titleTimer, remaining, elapsed]);
 
   // 視覚モード
   useEffect(() => {
@@ -244,32 +353,106 @@ export function FocusMode() {
     if (!w || w.closed) return;
     const el = w.document.getElementById("t");
     if (el) el.textContent = remaining !== null ? fmt(remaining) : fmt(elapsed);
-  });
+    const bar = w.document.getElementById("progress");
+    if (bar) bar.style.width = `${progress * 100}%`;
+    const pause = w.document.getElementById("pause");
+    if (pause) pause.textContent = session?.pausedAt ? "再開" : "一時停止";
+    const status = w.document.getElementById("status");
+    if (status) status.textContent = session?.pausedAt ? "一時停止中" : "集中中";
+  }, [elapsed, progress, remaining, session?.pausedAt]);
 
   const openPip = async () => {
-    const dp = (window as any).documentPictureInPicture;
-    if (!dp) return toast.error("このブラウザはミニ表示に対応していません");
-    const w: Window = await dp.requestWindow({ width: 220, height: 110 });
-    w.document.body.style.cssText =
-      "margin:0;display:grid;place-items:center;font-family:system-ui;background:#0b2b2a;color:#d9fffb";
-    w.document.body.innerHTML =
-      '<div style="text-align:center"><div style="font-size:12px;opacity:.7">Study# 集中中</div><div id="t" style="font-size:36px;font-weight:700;font-variant-numeric:tabular-nums">--:--</div></div>';
-    pip.current = w;
+    if (pip.current && !pip.current.closed) {
+      pip.current.focus();
+      return;
+    }
+    const dp = (window as Window & {
+      documentPictureInPicture?: { requestWindow: (options: { width: number; height: number }) => Promise<Window> };
+    }).documentPictureInPicture;
+    if (!dp) return toast.error("このブラウザーはミニ表示に対応していません");
+    try {
+      const w = await dp.requestWindow({ width: 260, height: 150 });
+      const doc = w.document;
+      doc.title = "集中モード";
+      doc.body.replaceChildren();
+      doc.body.style.cssText =
+        "margin:0;padding:14px;box-sizing:border-box;font-family:system-ui;background:#0b2b2a;color:#d9fffb";
+      const panel = doc.createElement("main");
+      panel.style.cssText =
+        "height:100%;display:flex;flex-direction:column;justify-content:center;gap:8px;text-align:center";
+      const status = doc.createElement("div");
+      status.id = "status";
+      status.style.cssText = "font-size:12px;opacity:.75";
+      status.textContent = "集中中";
+      const timer = doc.createElement("div");
+      timer.id = "t";
+      timer.style.cssText = "font-size:36px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1";
+      timer.textContent = remaining !== null ? fmt(remaining) : fmt(elapsed);
+      const track = doc.createElement("div");
+      track.style.cssText = "height:4px;border-radius:9px;background:#ffffff30;overflow:hidden";
+      const bar = doc.createElement("div");
+      bar.id = "progress";
+      bar.style.cssText = `height:100%;width:${progress * 100}%;background:#72e6c1;transition:width .4s`;
+      track.append(bar);
+      const actions = doc.createElement("div");
+      actions.style.cssText = "display:flex;justify-content:center;gap:8px";
+      const pause = doc.createElement("button");
+      pause.id = "pause";
+      pause.textContent = session?.pausedAt ? "再開" : "一時停止";
+      pause.style.cssText =
+        "border:0;border-radius:99px;padding:6px 12px;background:#ffffff20;color:inherit;cursor:pointer";
+      pause.onclick = () => window.dispatchEvent(new Event("studysharp-focus-pause"));
+      const end = doc.createElement("button");
+      end.textContent = "終了";
+      end.style.cssText =
+        "border:0;border-radius:99px;padding:6px 12px;background:#72e6c1;color:#0b2b2a;cursor:pointer";
+      end.onclick = () => window.dispatchEvent(new Event("studysharp-focus-finish"));
+      actions.append(pause, end);
+      panel.append(status, timer, track, actions);
+      doc.body.append(panel);
+      pip.current = w;
+      w.addEventListener(
+        "pagehide",
+        () => {
+          if (pip.current === w) pip.current = null;
+        },
+        { once: true },
+      );
+    } catch {
+      toast.error("ミニ表示を開けませんでした。ブラウザーの設定をご確認ください");
+    }
+  };
+
+  const requestCompletionNotice = () => {
+    if (!("Notification" in window)) {
+      toast.warning("このブラウザーは通知に対応していません");
+    } else if (Notification.permission === "default") {
+      void Notification.requestPermission()
+        .then((permission) => {
+          if (permission !== "granted")
+            toast.warning("ブラウザー通知が許可されていないため、終了通知は表示されません");
+        })
+        .catch(() => toast.error("ブラウザー通知の許可を確認できませんでした"));
+    } else if (Notification.permission === "denied") {
+      toast.warning("ブラウザー通知が許可されていないため、終了通知は表示されません");
+    }
   };
 
   const update = (patch: Partial<Settings>) => {
     if (!session) return;
+    if (patch.completionNotice) requestCompletionNotice();
     const settings = { ...session.settings, ...patch };
     localStorage.setItem(PREF, JSON.stringify(settings));
     save({ ...session, settings });
     if (patch.fullscreen && !document.fullscreenElement)
-      document.documentElement.requestFullscreen?.().catch(() => {});
+      document.documentElement.requestFullscreen?.().catch(() => toast.error("全画面表示にできませんでした"));
     if (patch.fullscreen === false && document.fullscreenElement)
-      document.exitFullscreen().catch(() => {});
+      document.exitFullscreen().catch(() => toast.error("全画面表示を終了できませんでした"));
   };
 
   const start = (durationMin: number, settings: Settings) => {
     localStorage.setItem(PREF, JSON.stringify(settings));
+    if (settings.completionNotice) requestCompletionNotice();
     save({
       startedAt: Date.now(),
       durationMin,
@@ -280,15 +463,58 @@ export function FocusMode() {
       settings,
     });
     setStartOpen(false);
-    if (settings.fullscreen) document.documentElement.requestFullscreen?.().catch(() => {});
+    if (settings.fullscreen)
+      document.documentElement.requestFullscreen?.().catch(() => toast.error("全画面表示にできませんでした"));
   };
 
-  const togglePause = () => {
-    if (!session) return;
-    if (session.pausedAt)
-      save({ ...session, pausedMs: session.pausedMs + Date.now() - session.pausedAt, pausedAt: null });
-    else save({ ...session, pausedAt: Date.now() });
-  };
+  const togglePause = useCallback(() => {
+    setSession((prev) => {
+      if (!prev) return prev;
+      const next = prev.pausedAt
+        ? { ...prev, pausedMs: prev.pausedMs + Date.now() - prev.pausedAt, pausedAt: null }
+        : { ...prev, pausedAt: Date.now() };
+      localStorage.setItem(KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!active) return;
+    const onPause = () => togglePause();
+    const onFinish = () => finish();
+    window.addEventListener("studysharp-focus-pause", onPause);
+    window.addEventListener("studysharp-focus-finish", onFinish);
+    return () => {
+      window.removeEventListener("studysharp-focus-pause", onPause);
+      window.removeEventListener("studysharp-focus-finish", onFinish);
+    };
+  }, [active, finish, togglePause]);
+
+  useEffect(() => {
+    if (!active) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
+      ) return;
+      if (!event.altKey || !event.shiftKey || event.ctrlKey || event.metaKey) return;
+      const key = event.key.toLowerCase();
+      if (key === "p") {
+        event.preventDefault();
+        togglePause();
+      } else if (key === "f") {
+        event.preventDefault();
+        if (document.fullscreenElement) {
+          void document.exitFullscreen().catch(() => toast.error("全画面表示を終了できませんでした"));
+        } else {
+          void document.documentElement.requestFullscreen().catch(() => toast.error("全画面表示にできませんでした"));
+        }
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [active, togglePause]);
 
   const allowed =
     !session ||
@@ -330,11 +556,40 @@ export function FocusMode() {
               {remaining !== null ? fmt(remaining) : fmt(elapsed)}
             </span>
             {session.pausedAt && <span className="text-xs text-muted-foreground">一時停止</span>}
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={togglePause} title="一時停止/再開">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7"
+              onClick={togglePause}
+              title="一時停止/再開 (Alt+Shift+P)"
+              aria-label="一時停止または再開"
+            >
               {session.pausedAt ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
             </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7"
+              onClick={() => {
+                if (document.fullscreenElement)
+                  void document.exitFullscreen().catch(() => toast.error("全画面表示を終了できませんでした"));
+                else
+                  void document.documentElement.requestFullscreen().catch(() => toast.error("全画面表示にできませんでした"));
+              }}
+              title={isFs ? "全画面表示を終了 (Alt+Shift+F)" : "全画面表示 (Alt+Shift+F)"}
+              aria-label={isFs ? "全画面表示を終了" : "全画面表示"}
+            >
+              {isFs ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+            </Button>
             {st.memo && <MemoButton session={session} save={save} />}
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={openPip} title="最前面ミニ表示">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7"
+              onClick={openPip}
+              title="最前面ミニ表示"
+              aria-label="最前面ミニ表示を開く"
+            >
               <PictureInPicture2 className="h-3.5 w-3.5" />
             </Button>
             <Popover>
@@ -352,12 +607,15 @@ export function FocusMode() {
 
           {st.fullscreen && !isFs && (
             <button
-              onClick={() => document.documentElement.requestFullscreen?.().catch(() => {})}
+              onClick={() =>
+                document.documentElement.requestFullscreen?.().catch(() => toast.error("全画面表示にできませんでした"))
+              }
               className="fixed left-1/2 top-14 z-[200] -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-xs text-primary-foreground shadow"
             >
               <Maximize2 className="h-3.5 w-3.5" /> 全画面に戻る
             </button>
           )}
+          <span className="sr-only">ショートカット: Alt+Shift+P で一時停止または再開、Alt+Shift+F で全画面表示を切り替え</span>
 
           {!allowed && (
             <div className="fixed inset-0 z-[185] grid place-items-center bg-background/95 p-6 backdrop-blur">
@@ -402,6 +660,7 @@ function SettingsForm({
     ["leaveLog", "離脱の記録", "別タブ・別アプリへの移動を記録（無音）"],
     ["blockLeave", "タブ閉じの確認", "閉じる・外部サイト移動の前に確認"],
     ["titleTimer", "タブに残り時間", "タブのタイトルに時間を表示"],
+    ["completionNotice", "セッション完了通知", "時間終了時に別タブでも通知"],
     ["edgeGauge", "画面枠ゲージ", "画面のふちが時間とともに濃くなる"],
     ["memo", "あとで調べるメモ", "浮かんだ雑念を書いて封印"],
   ];
@@ -417,6 +676,47 @@ function SettingsForm({
           <Switch checked={!!value[k]} onCheckedChange={(v) => onChange({ [k]: v } as any)} />
         </div>
       ))}
+      <div className="space-y-2 rounded-lg border p-3">
+        <div>
+          <Label className="text-sm">ブラウザー環境音</Label>
+          <p className="text-xs text-muted-foreground">音声はこの端末内で生成し、外部へ送信しません</p>
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {(
+            [
+              ["off", "オフ"],
+              ["rain", "雨音風"],
+              ["brown", "低音ノイズ"],
+            ] as [AmbientSound, string][]
+          ).map(([sound, label]) => (
+            <Button
+              key={sound}
+              size="sm"
+              variant={value.ambientSound === sound ? "default" : "outline"}
+              onClick={() => onChange({ ambientSound: sound })}
+            >
+              {label}
+            </Button>
+          ))}
+        </div>
+        {value.ambientSound !== "off" && (
+          <label className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span>音量</span>
+            <input
+              aria-label="環境音の音量"
+              className="min-w-0 flex-1 accent-primary"
+              type="range"
+              min={0}
+              max={60}
+              value={Math.min(60, Math.max(0, value.ambientVolume))}
+              onChange={(event) => onChange({ ambientVolume: Number(event.target.value) })}
+            />
+            <span className="w-8 text-right tabular-nums">
+              {Math.min(60, Math.max(0, value.ambientVolume))}%
+            </span>
+          </label>
+        )}
+      </div>
       <div>
         <Label className="text-sm">見た目</Label>
         <div className="mt-1 flex gap-1">
