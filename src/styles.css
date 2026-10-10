@@ -1535,3 +1535,7 @@ body {
   100% { transform: translateY(-160px) scale(1); opacity: 0; }
 }
 .meeting-float { animation: meeting-float 2.8s ease-out forwards; }
+
+/* 集中モード: 見た目 */
+html.focus-mono body { filter: grayscale(1); }
+html.focus-dim body { filter: saturate(0.4) brightness(0.92); }

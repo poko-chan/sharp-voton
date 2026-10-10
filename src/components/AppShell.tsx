@@ -63,6 +63,7 @@ import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { recordVisit } from "@/lib/recent-activity";
 import { toast } from "sonner";
 import { useMaintenance } from "@/lib/maintenance-context";
+import { FocusMode } from "@/components/focus/FocusMode";
 
 export const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
@@ -656,6 +657,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </button>
             {!navOpen && <img src={logoUrl} alt="" className="h-7 w-7 rounded-lg shadow-sm" />}
             <div className="ml-auto flex items-center gap-2">
+              <FocusMode />
               <SearchBar />
               {supportDock?.includes("feedback") !== false && <FeedbackWidget compact />}
               <Link
