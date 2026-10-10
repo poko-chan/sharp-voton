@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Brain } from "lucide-react";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -17,6 +18,7 @@ import {
   fetchDeckCardCounts,
   fetchDecks,
   updateDeck,
+  setDeckArchived,
   type FlashcardDeck,
 } from "@/lib/flashcards.functions";
 import { DeckGrid } from "@/components/flashcards/DeckGrid";
@@ -34,6 +36,7 @@ function FlashcardsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingDeck, setEditingDeck] = useState<FlashcardDeck | null>(null);
   const [seriesFilter, setSeriesFilter] = useState("all");
+  const [showArchived, setShowArchived] = useState(false);
 
   const load = async () => {
     if (!user) return;
@@ -60,6 +63,7 @@ function FlashcardsPage() {
     (a, b) => a.localeCompare(b, "ja"),
   );
   const visibleDecks = decks.filter((deck) => {
+    if (!!deck.archived !== showArchived) return false;
     if (seriesFilter === "all") return true;
     if (seriesFilter === "__none__") return !deck.series.trim();
     return deck.series === seriesFilter;
@@ -86,6 +90,16 @@ function FlashcardsPage() {
       toast.error(
         e?.message?.includes("duplicate") ? "同じ名前のデッキが既にあります" : "保存に失敗しました",
       );
+    }
+  };
+
+  const handleArchive = async (deck: FlashcardDeck) => {
+    try {
+      await setDeckArchived(deck.id, !deck.archived);
+      toast.success(deck.archived ? "デッキを復元しました" : "デッキをアーカイブしました");
+      await load();
+    } catch {
+      toast.error("更新に失敗しました");
     }
   };
 
@@ -134,6 +148,14 @@ function FlashcardsPage() {
         <>
           {decks.length > 0 && (
             <div className="flex flex-wrap items-center gap-3">
+              <div className="flex rounded-md border p-0.5">
+                <Button size="sm" variant={showArchived ? "ghost" : "secondary"} onClick={() => setShowArchived(false)}>
+                  使用中
+                </Button>
+                <Button size="sm" variant={showArchived ? "secondary" : "ghost"} onClick={() => setShowArchived(true)}>
+                  アーカイブ ({decks.filter((d) => d.archived).length})
+                </Button>
+              </div>
               <Label htmlFor="series-filter">シリーズ</Label>
               <Select value={seriesFilter} onValueChange={setSeriesFilter}>
                 <SelectTrigger id="series-filter" className="w-[240px] max-w-full">
@@ -160,6 +182,8 @@ function FlashcardsPage() {
               setDialogOpen(true);
             }}
             onDelete={handleDelete}
+            onArchive={handleArchive}
+            showCreate={!showArchived}
             onCreate={() => {
               setEditingDeck(null);
               setDialogOpen(true);
