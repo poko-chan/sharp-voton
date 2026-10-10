@@ -6,6 +6,7 @@ export type FlashcardDeck = {
   name: string;
   description: string;
   subject: string;
+  series: string;
   color: string;
   created_at: string;
   updated_at: string;
@@ -23,6 +24,7 @@ export type Flashcard = {
   next_review_at: string;
   last_reviewed_at: string | null;
   reviews: number;
+  archived: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -60,7 +62,8 @@ export async function fetchDeckCardCounts(userId: string) {
   const { data, error } = await supabase
     .from("flashcards")
     .select("deck_id, next_review_at")
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .eq("archived", false);
   if (error) throw error;
   const counts = new Map<string, { total: number; due: number }>();
   const now = new Date();
@@ -77,7 +80,7 @@ export async function fetchDeckCardCounts(userId: string) {
 
 export async function createDeck(
   userId: string,
-  input: { name: string; description: string; subject: string; color: string },
+  input: { name: string; description: string; subject: string; series: string; color: string },
 ) {
   const { data, error } = await supabase
     .from("flashcard_decks")
@@ -90,7 +93,7 @@ export async function createDeck(
 
 export async function updateDeck(
   id: string,
-  input: { name: string; description: string; subject: string; color: string },
+  input: { name: string; description: string; subject: string; series: string; color: string },
 ) {
   const { data, error } = await supabase
     .from("flashcard_decks")
@@ -126,6 +129,7 @@ export async function fetchDueCardsForDeck(userId: string, deckId: string) {
     .select("*")
     .eq("user_id", userId)
     .eq("deck_id", deckId)
+    .eq("archived", false)
     .lte("next_review_at", new Date().toISOString())
     .order("next_review_at", { ascending: true });
   if (error) throw error;
@@ -180,6 +184,14 @@ export async function updateCard(id: string, front: string, back: string) {
 
 export async function deleteCard(id: string) {
   const { error } = await supabase.from("flashcards").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function setCardArchived(id: string, archived: boolean) {
+  const { error } = await supabase
+    .from("flashcards")
+    .update({ archived, updated_at: new Date().toISOString() })
+    .eq("id", id);
   if (error) throw error;
 }
 

@@ -3,6 +3,14 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { Brain } from "lucide-react";
 import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   createDeck,
   deleteDeck,
@@ -25,6 +33,7 @@ function FlashcardsPage() {
   const [selectedDeck, setSelectedDeck] = useState<FlashcardDeck | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingDeck, setEditingDeck] = useState<FlashcardDeck | null>(null);
+  const [seriesFilter, setSeriesFilter] = useState("all");
 
   const load = async () => {
     if (!user) return;
@@ -47,10 +56,20 @@ function FlashcardsPage() {
     load();
   }, [user?.id]);
 
+  const seriesOptions = [...new Set(decks.map((deck) => deck.series.trim()).filter(Boolean))].sort(
+    (a, b) => a.localeCompare(b, "ja"),
+  );
+  const visibleDecks = decks.filter((deck) => {
+    if (seriesFilter === "all") return true;
+    if (seriesFilter === "__none__") return !deck.series.trim();
+    return deck.series === seriesFilter;
+  });
+
   const handleSubmit = async (input: {
     name: string;
     description: string;
     subject: string;
+    series: string;
     color: string;
   }) => {
     if (!user) return;
@@ -100,6 +119,10 @@ function FlashcardsPage() {
         <DeckDetail
           userId={user!.id}
           deck={selectedDeck}
+          onEdit={() => {
+            setEditingDeck(selectedDeck);
+            setDialogOpen(true);
+          }}
           onBack={() => {
             setSelectedDeck(null);
             load();
@@ -108,20 +131,41 @@ function FlashcardsPage() {
       ) : loading ? (
         <div className="text-sm text-muted-foreground">読み込み中...</div>
       ) : (
-        <DeckGrid
-          decks={decks}
-          counts={counts}
-          onOpen={setSelectedDeck}
-          onEdit={(deck) => {
-            setEditingDeck(deck);
-            setDialogOpen(true);
-          }}
-          onDelete={handleDelete}
-          onCreate={() => {
-            setEditingDeck(null);
-            setDialogOpen(true);
-          }}
-        />
+        <>
+          {decks.length > 0 && (
+            <div className="flex flex-wrap items-center gap-3">
+              <Label htmlFor="series-filter">シリーズ</Label>
+              <Select value={seriesFilter} onValueChange={setSeriesFilter}>
+                <SelectTrigger id="series-filter" className="w-[240px] max-w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">すべてのシリーズ</SelectItem>
+                  <SelectItem value="__none__">シリーズ未設定</SelectItem>
+                  {seriesOptions.map((series) => (
+                    <SelectItem key={series} value={series}>
+                      {series}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <DeckGrid
+            decks={visibleDecks}
+            counts={counts}
+            onOpen={setSelectedDeck}
+            onEdit={(deck) => {
+              setEditingDeck(deck);
+              setDialogOpen(true);
+            }}
+            onDelete={handleDelete}
+            onCreate={() => {
+              setEditingDeck(null);
+              setDialogOpen(true);
+            }}
+          />
+        </>
       )}
 
       <DeckDialog

@@ -34,6 +34,11 @@ export function DeckGrid({ decks, counts, onOpen, onEdit, onDelete, onCreate }: 
                 <div className="text-xs text-muted-foreground truncate">
                   {deck.description || "説明なし"}
                 </div>
+                {deck.series && (
+                  <Badge variant="outline" className="mt-1 max-w-full truncate">
+                    {deck.series}
+                  </Badge>
+                )}
               </div>
               <Badge variant="secondary" className="shrink-0">
                 {deck.subject}

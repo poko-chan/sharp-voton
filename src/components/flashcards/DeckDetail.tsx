@@ -12,6 +12,8 @@ import {
   Shuffle,
   RotateCcw,
   Repeat,
+  Archive,
+  ArchiveRestore,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -22,6 +24,7 @@ import {
   updateCard,
   bulkCreateCards,
   resetDeckProgress,
+  setCardArchived,
   type Flashcard,
   type FlashcardDeck,
 } from "@/lib/flashcards.functions";
@@ -33,9 +36,10 @@ type Props = {
   userId: string;
   deck: FlashcardDeck;
   onBack: () => void;
+  onEdit: () => void;
 };
 
-export function DeckDetail({ userId, deck, onBack }: Props) {
+export function DeckDetail({ userId, deck, onBack, onEdit }: Props) {
   const [cards, setCards] = useState<Flashcard[]>([]);
   const [loading, setLoading] = useState(true);
   const [cardDialogOpen, setCardDialogOpen] = useState(false);
@@ -43,6 +47,7 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
   const [importOpen, setImportOpen] = useState(false);
   const [studyCards, setStudyCards] = useState<Flashcard[] | null>(null);
   const [studyShuffled, setStudyShuffled] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -60,10 +65,12 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
     load();
   }, [deck.id]);
 
-  const dueCount = cards.filter((c) => new Date(c.next_review_at) <= new Date()).length;
-  const totalReviews = cards.reduce((sum, c) => sum + (c.reviews ?? 0), 0);
-  const studiedCount = cards.filter((c) => (c.reviews ?? 0) > 0).length;
-  const weakCount = cards.filter((c) => (c.reviews ?? 0) > 0 && c.interval_days <= 1).length;
+  const activeCards = cards.filter((card) => !card.archived);
+  const visibleCards = cards.filter((card) => card.archived === showArchived);
+  const dueCount = activeCards.filter((c) => new Date(c.next_review_at) <= new Date()).length;
+  const totalReviews = activeCards.reduce((sum, c) => sum + (c.reviews ?? 0), 0);
+  const studiedCount = activeCards.filter((c) => (c.reviews ?? 0) > 0).length;
+  const weakCount = activeCards.filter((c) => (c.reviews ?? 0) > 0 && c.interval_days <= 1).length;
 
   const handleCreateOrUpdate = async (front: string, back: string) => {
     try {
@@ -89,6 +96,19 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
     }
   };
 
+  const handleArchive = async (card: Flashcard) => {
+    const archived = !card.archived;
+    try {
+      await setCardArchived(card.id, archived);
+      setCards((current) =>
+        current.map((item) => (item.id === card.id ? { ...item, archived } : item)),
+      );
+      toast.success(archived ? "カードをアーカイブしました" : "アーカイブを解除しました");
+    } catch {
+      toast.error("アーカイブの更新に失敗しました");
+    }
+  };
+
   const handleImport = async (pairs: { front: string; back: string }[]) => {
     try {
       await bulkCreateCards(userId, deck.id, deck.name, pairs);
@@ -101,7 +121,7 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
 
   const startStudy = async (mode: "due" | "all", shuffled: boolean) => {
     try {
-      const list = mode === "due" ? await fetchDueCardsForDeck(userId, deck.id) : cards;
+      const list = mode === "due" ? await fetchDueCardsForDeck(userId, deck.id) : activeCards;
       if (list.length === 0) {
         toast.info("学習できるカードがありません");
         return;
@@ -155,6 +175,9 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
             <div className="text-xs text-muted-foreground truncate">
               {deck.description || "説明なし"}
             </div>
+            {deck.series && (
+              <div className="text-xs text-muted-foreground">シリーズ: {deck.series}</div>
+            )}
           </div>
           <Badge variant="secondary">{deck.subject}</Badge>
         </div>
@@ -162,6 +185,10 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
           {dueCount > 0 && (
             <Badge className="bg-primary text-primary-foreground">今日 {dueCount}枚</Badge>
           )}
+          <Button variant="outline" onClick={onEdit}>
+            <Pencil className="h-4 w-4 mr-1" />
+            デッキを編集
+          </Button>
           <Button onClick={() => startStudy("due", false)} disabled={dueCount === 0}>
             <PlayCircle className="h-4 w-4 mr-1" />
             学習を始める
@@ -170,10 +197,10 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
       </Card>
 
       <Card className="p-3 flex flex-wrap gap-4 text-xs text-muted-foreground">
-        <span>カード {cards.length}枚</span>
+        <span>カード {activeCards.length}枚</span>
         <span>解いた回数 {totalReviews}回</span>
         <span>学習済み {studiedCount}枚</span>
-        <span>未学習 {cards.length - studiedCount}枚</span>
+        <span>未学習 {activeCards.length - studiedCount}枚</span>
         <span className="text-destructive">要復習 {weakCount}枚</span>
       </Card>
 
@@ -207,29 +234,65 @@ export function DeckDetail({ userId, deck, onBack }: Props) {
       </div>
 
       <div className="space-y-2">
-        <div className="font-semibold text-sm">カード一覧 ({cards.length})</div>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="font-semibold text-sm">
+            {showArchived ? "アーカイブ済み" : "カード一覧"} ({visibleCards.length})
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowArchived((current) => !current)}
+          >
+            {showArchived ? (
+              <>
+                <ArchiveRestore className="h-4 w-4 mr-1" />
+                通常カードを表示
+              </>
+            ) : (
+              <>
+                <Archive className="h-4 w-4 mr-1" />
+                アーカイブ ({cards.filter((card) => card.archived).length})
+              </>
+            )}
+          </Button>
+        </div>
         {loading ? (
           <div className="text-sm text-muted-foreground">読み込み中...</div>
-        ) : cards.length === 0 ? (
+        ) : visibleCards.length === 0 ? (
           <Card className="p-6 text-center text-sm text-muted-foreground">
-            まだカードがありません
+            {showArchived ? "アーカイブ済みのカードはありません" : "まだカードがありません"}
           </Card>
         ) : (
-          cards.map((c) => (
+          visibleCards.map((c) => (
             <Card key={c.id} className="p-3 flex items-center gap-2 text-sm">
               <div className="flex-1 min-w-0 truncate">
                 {c.front} → {c.back}
               </div>
               <span className="text-xs text-muted-foreground shrink-0">×{c.reviews}</span>
+              {!showArchived && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  aria-label="カードを編集"
+                  onClick={() => {
+                    setEditingCard(c);
+                    setCardDialogOpen(true);
+                  }}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
+              )}
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => {
-                  setEditingCard(c);
-                  setCardDialogOpen(true);
-                }}
+                aria-label={showArchived ? "アーカイブを解除" : "カードをアーカイブ"}
+                onClick={() => handleArchive(c)}
               >
-                <Pencil className="h-3.5 w-3.5" />
+                {showArchived ? (
+                  <ArchiveRestore className="h-3.5 w-3.5" />
+                ) : (
+                  <Archive className="h-3.5 w-3.5" />
+                )}
               </Button>
               <Button size="sm" variant="ghost" onClick={() => handleDelete(c)}>
                 <Trash2 className="h-3.5 w-3.5" />
