@@ -200,7 +200,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
               <span className="landing-title-accent">もっとスマートに。</span>
             </h1>
             <p className="mx-auto mt-7 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
-              記録、集中、演習、AI、計画をひとつに。Study#は、毎日の学習を整理し、次にやるべきことへ迷わず進める総合学習プラットフォームです。
+              記録、集中、演習、暗記、計画をひとつに。Study#は、安定した質の教育を誰もが無料で使えることを目指す、広告のない総合学習プラットフォームです。
             </p>
             <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
               <Button asChild size="lg" className="h-12 rounded-lg px-8 text-base shadow-lg">
@@ -231,8 +231,8 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
             {[
               [`${SERVICE_COUNT}+`, "搭載機能"],
               ["0円", "主要機能は無料"],
-              ["24h", "AIチャット"],
-              ["4段階", "組織の役割管理"],
+              ["0件", "広告表示"],
+              ["1つ", "アカウントで全部"],
             ].map(([v, l]) => (
               <div key={l} className="px-3 py-5 sm:border-l sm:first:border-l-0">
                 <dt className="font-display text-2xl font-bold text-primary">{v}</dt>
@@ -253,7 +253,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
                 学習のすべてをひとつに
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                記録、集中、演習、AI、計画をVoton Study Sharpに集約します。
+                記録、集中、演習、暗記、計画をVoton Study Sharpに集約します。
               </p>
             </article>
             <article className="landing-value p-6">
@@ -291,6 +291,37 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
                 これからのAIを見る <ArrowRight />
               </Link>
             </Button>
+          </div>
+        </section>
+
+        {/* Mission */}
+        <section className="border-y border-border/60 bg-muted/30">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
+            <p className="section-eyebrow">Mission</p>
+            <h2 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl">
+              {MISSION.title}
+            </h2>
+            <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+              {MISSION.body}
+            </p>
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {PROMISES.map((p) => (
+                <article key={p.t} className="landing-value p-6">
+                  <Check className="mb-4 h-6 w-6 text-primary" aria-hidden />
+                  <h3 className="font-display text-base font-black">{p.t}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{p.d}</p>
+                </article>
+              ))}
+            </div>
+            <h3 className="mt-14 font-display text-xl font-black">なぜ無料で続けられるのか</h3>
+            <div className="mt-5 grid gap-4 sm:grid-cols-3">
+              {WHY_FREE.map((w) => (
+                <article key={w.t} className="rounded-xl border border-border/60 bg-card p-5">
+                  <h4 className="text-sm font-bold">{w.t}</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{w.d}</p>
+                </article>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -473,7 +504,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
               },
               {
                 t: "学校・塾の先生",
-                d: "生徒の勉強時間の管理、お知らせの配布、アンケートの配信を始めとする本格的な実装です。",
+                d: "お知らせ・カレンダー・チャットと年度ごとの名簿を、1クラスから無料で始められます。",
               },
               {
                 t: "保護者",
