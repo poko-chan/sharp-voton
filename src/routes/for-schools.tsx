@@ -124,6 +124,9 @@ function ForSchoolsPage() {
             <a href="#apply" className="cta cta-signal">
               導入を申請する
             </a>
+            <a href="#pricing" className="cta-ghost cta-ghost-ink">
+              料金を見る（基本無料）
+            </a>
             <Link to="/all-services" className="cta-ghost cta-ghost-ink">
               全機能を見る
             </Link>
@@ -133,7 +136,7 @@ function ForSchoolsPage() {
               ["4段階", "役割ベースの権限"],
               ["年度単位", "学年・クラス管理"],
               ["インストール不要", "スマホのブラウザで参加"],
-              ["申請制", "運営が審査して承認"],
+              ["基本無料", "大規模導入は要相談"],
             ].map(([v, l]) => (
               <div
                 key={l}
@@ -257,6 +260,83 @@ function ForSchoolsPage() {
               </div>
             ))}
           </div>
+        </section>
+
+        {/* 料金 */}
+        <section id="pricing" className="mt-20 scroll-mt-24">
+          <p className="section-eyebrow">Pricing</p>
+          <h2 className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">
+            料金は<span className="text-gradient">基本無料</span>。規模やご要望に合わせてご相談ください。
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            組織の作成と主な機能は無料でお使いいただけます。人数が多い場合や個別の対応が必要な場合は、内容をうかがってからご案内します。
+          </p>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="surface relative overflow-hidden p-7 ring-2 ring-primary/30">
+              <span className="chip text-[10px]">まずはここから</span>
+              <h3 className="mt-3 font-display text-xl font-extrabold">基本プラン</h3>
+              <p className="mt-3 font-display text-4xl font-black text-gradient">
+                ¥0<span className="ml-1 text-sm font-bold text-muted-foreground">／ 基本無料</span>
+              </p>
+              <ul className="mt-5 space-y-2 text-sm">
+                {[
+                  "お知らせ・投稿・カレンダー・チャット",
+                  "役割と権限の設定",
+                  "年度ごとの学年・クラス管理",
+                  "参加コード・招待でメンバー追加",
+                  "運営とのチャットでの相談",
+                ].map((x) => (
+                  <li key={x} className="flex gap-2">
+                    <span className="text-primary">✓</span>
+                    <span>{x}</span>
+                  </li>
+                ))}
+              </ul>
+              <a href="#apply" className="cta cta-signal mt-6 inline-flex">
+                無料で申請する
+              </a>
+            </div>
+            <div className="surface p-7">
+              <span className="chip text-[10px]">大規模・個別対応</span>
+              <h3 className="mt-3 font-display text-xl font-extrabold">カスタム導入</h3>
+              <p className="mt-3 font-display text-4xl font-black">
+                要相談
+              </p>
+              <ul className="mt-5 space-y-2 text-sm">
+                {[
+                  "学校全体・複数校舎での一括導入",
+                  "名簿の一括登録や年度更新のお手伝い",
+                  "組織専用の教材・問題の準備",
+                  "導入説明会・先生向けの使い方案内",
+                  "その他ご要望に合わせた対応",
+                ].map((x) => (
+                  <li key={x} className="flex gap-2">
+                    <span className="text-primary">✓</span>
+                    <span>{x}</span>
+                  </li>
+                ))}
+              </ul>
+              <a href="#apply" className="cta-ghost mt-6 inline-flex">
+                相談する
+              </a>
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            ※ 費用が発生する場合は、必ず事前にお見積りをお伝えし、ご同意いただいてから進めます。勝手に請求されることはありません。
+          </p>
+        </section>
+
+        {/* 最後のひと押し */}
+        <section className="ink-panel mt-20 px-6 py-12 text-center sm:px-12">
+          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">
+            まずは<span className="text-gradient">1クラス・1機能</span>から。
+          </h2>
+          <p className="muted-on-ink mx-auto mt-3 max-w-xl text-sm leading-relaxed">
+            無料で始めて、合わなければやめられます。小さく試して、うまくいった分だけ広げてください。
+          </p>
+          <a href="#apply" className="cta cta-signal mt-6 inline-flex">
+            無料で始める
+          </a>
         </section>
 
         <section id="apply" className="mt-20 scroll-mt-24">
