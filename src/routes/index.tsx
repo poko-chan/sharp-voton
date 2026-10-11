@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, BarChart3, BookOpenCheck, Check, Sparkles } from "lucide-react";
 import {
   CORE,
+  MISSION,
+  PROMISES,
+  WHY_FREE,
   MORE,
   STEPS,
   FAQ,
