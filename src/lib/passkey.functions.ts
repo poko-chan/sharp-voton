@@ -216,7 +216,8 @@ export const renamePasskey = createServerFn({ method: "POST" })
     z.object({ id: z.string().max(512), label: z.string().trim().min(1).max(40) }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
+    const db = await admin();
+    const { error } = await db
       .from("user_passkeys" as never)
       .update({ label: data.label } as never)
       .eq("id", data.id)

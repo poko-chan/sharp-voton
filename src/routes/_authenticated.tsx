@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { AppShell } from "@/components/AppShell";
+import { FocusMode } from "@/components/focus/FocusMode";
 import { TimerProvider } from "@/lib/timer-context";
 import { ServiceGate } from "@/components/ServiceGate";
 import { LoginWelcomeOverlay } from "@/components/LoginWelcomeOverlay";
@@ -136,6 +137,9 @@ function AuthLayout() {
       <TimerProvider>
         <CallProvider>
           {content}
+          <div className="fixed bottom-3 left-3 z-40 hidden rounded-lg border bg-card/90 shadow md:block">
+            <FocusMode />
+          </div>
           {tutorial}
           <LoginWelcomeOverlay />
           <CallOverlay />

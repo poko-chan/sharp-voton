@@ -55,8 +55,12 @@ export function AccountSwitcher() {
   };
 
   const add = async () => {
-    // 端末内だけログアウト（保存したトークンは他端末同様に有効なまま）
-    await supabase.auth.signOut({ scope: "local" });
+    // サーバー側のセッションを終了させず、この端末の保存だけ消す（保存トークンを有効なまま残す）
+    const storageKey = (supabase.auth as unknown as { storageKey?: string }).storageKey;
+    if (storageKey) localStorage.removeItem(storageKey);
+    for (const k of Object.keys(localStorage)) {
+      if (k.startsWith("sb-") && k.endsWith("-auth-token")) localStorage.removeItem(k);
+    }
     window.location.href = "/login";
   };
 
