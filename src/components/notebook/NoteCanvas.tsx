@@ -457,7 +457,7 @@ export function NoteCanvas({
     tool === "pen" || tool === "pencil" || tool === "marker" || tool === "highlighter";
 
   return (
-    <div className="flex h-full min-h-0 w-full">
+    <div className="flex h-full min-h-0 w-full flex-col md:flex-row">
       {/* 左：常設ツールバー（持ち替えのために戻る必要なし） */}
       {!readOnly && (
         <div className="flex w-full shrink-0 flex-row items-center gap-1 overflow-x-auto border-b bg-card/90 px-2 py-1 backdrop-blur md:w-14 md:flex-col md:overflow-x-visible md:border-b-0 md:border-r md:px-0 md:py-2">

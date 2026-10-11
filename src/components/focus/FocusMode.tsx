@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Crosshair,
@@ -536,7 +537,7 @@ export function FocusMode() {
 
       <StartDialog open={startOpen} onOpenChange={setStartOpen} onStart={start} />
 
-      {session && st && (
+      {session && st && typeof document !== "undefined" && createPortal(
         <>
           {st.edgeGauge && (
             <div
@@ -635,7 +636,8 @@ export function FocusMode() {
               </div>
             </div>
           )}
-        </>
+        </>,
+        document.body,
       )}
 
       <SummaryDialog data={summary} onClose={() => setSummary(null)} userId={user?.id} />
