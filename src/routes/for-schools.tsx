@@ -5,7 +5,7 @@ import { SCHOOL_OBJECTIONS, SCHOOL_OUTCOMES, TRUST } from "@/content/services";
 
 const TITLE = "学校・塾の方へ（組織機能） | Study#";
 const DESC =
-  "Study# の組織機能なら、お知らせ・課題・アンケート・チャット・共有カレンダー・組織専用教材までを1つのポータルで運用できます。学年やクラスは年度単位で管理。導入は申請・承認制です。";
+  "Study# の組織機能なら、お知らせ・共有カレンダー・チャット・年度ごとの名簿を1つのポータルで無料で運用できます。学年やクラスは年度単位で管理。導入は申請・承認制です。";
 
 export const Route = createFileRoute("/for-schools")({
   head: () => ({
@@ -86,7 +86,7 @@ const FLOW = [
   {
     n: "04",
     t: "運用を始める",
-    d: "まずは1機能から。課題かアンケートを1回配信し、うまくいった範囲だけを広げるのがおすすめです。",
+    d: "まずは1機能から。お知らせを1回配信し、うまくいった範囲だけを広げるのがおすすめです。",
     when: "翌週から",
   },
 ];
@@ -123,7 +123,7 @@ function ForSchoolsPage() {
           </div>
           <dl className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
-              ["4段階", "役割ベースの権限"],
+              ["自由", "役割と権限の設定"],
               ["年度単位", "学年・クラス管理"],
               ["インストール不要", "スマホのブラウザで参加"],
               ["基本無料", "大規模導入は要相談"],
@@ -182,7 +182,7 @@ function ForSchoolsPage() {
         <section className="mt-20">
           <p className="section-eyebrow">Roles</p>
           <h2 className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">
-            4段階の役割
+            役割と権限
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             誰が何をできるかを、はっきり分けて運用できます。
