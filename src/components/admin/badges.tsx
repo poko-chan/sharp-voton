@@ -282,7 +282,7 @@ function GrantDialog({ badge, onClose }: { badge: BadgeRow | null; onClose: () =
     ].filter(Boolean);
     if (names.length === 0) return toast.error("ユーザーを選んでください");
     setBusy(true);
-    const { data, error } = await supabase.rpc("admin_grant_badge", { _code: badge.code, _usernames: names, _note: note || null });
+    const { data, error } = await supabase.rpc("admin_grant_badge", { _code: badge.code, _usernames: names, _note: note || undefined });
     setBusy(false);
     if (error) return toast.error(error.message);
     const r = data as any;
