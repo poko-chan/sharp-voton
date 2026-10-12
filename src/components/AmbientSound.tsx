@@ -50,6 +50,7 @@ export function AmbientSound() {
   const [marketTracks, setMarketTracks] = useState<MarketTrack[]>([]);
   const [favoriteTrackIds, setFavoriteTrackIds] = useState<string[]>([]);
   const [musicView, setMusicView] = useState<"favorites" | "market">("favorites");
+  const [coverUrls, setCoverUrls] = useState<Record<string, string>>({});
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ctxRef = useRef<AudioContext | null>(null);
   const gainRef = useRef<GainNode | null>(null);
@@ -80,7 +81,23 @@ export function AmbientSound() {
       if (!active) return;
       if (tracksResult.error) toast.error(tracksResult.error.message);
       if (favoritesResult.error) toast.error(favoritesResult.error.message);
-      setMarketTracks(tracksResult.data ?? []);
+      const tracks = tracksResult.data ?? [];
+      setMarketTracks(tracks);
+      if (tracks.length) {
+        const { data: signed } = await supabase.storage
+          .from("timer-music")
+          .createSignedUrls(
+            tracks.map((t) => t.cover_path),
+            60 * 60 * 6,
+          );
+        if (active && signed) {
+          const map: Record<string, string> = {};
+          signed.forEach((s) => {
+            if (s.path && s.signedUrl) map[s.path] = s.signedUrl;
+          });
+          setCoverUrls(map);
+        }
+      }
       setFavoriteTrackIds((favoritesResult.data ?? []).map((favorite) => favorite.track_id));
     };
     void loadMarketplace();
@@ -136,15 +153,18 @@ export function AmbientSound() {
     setPlayingCustomId(c.id);
   };
 
-  const playMarketplaceTrack = (track: MarketTrack) => {
+  const playMarketplaceTrack = async (track: MarketTrack) => {
     if (playingTrackId === track.id) {
       stop();
       return;
     }
     stop();
     setPreset("off");
-    const url = supabase.storage.from("timer-music").getPublicUrl(track.audio_path).data.publicUrl;
-    const audio = new Audio(url);
+    const { data, error } = await supabase.storage
+      .from("timer-music")
+      .createSignedUrl(track.audio_path, 60 * 60 * 6);
+    if (error || !data) return toast.error("曲を読み込めませんでした");
+    const audio = new Audio(data.signedUrl);
     audio.loop = true;
     audio.volume = vol;
     audio.play().catch(() => toast.error("曲を再生できませんでした"));
@@ -395,7 +415,7 @@ export function AmbientSound() {
         {playingTrackId === track.id ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
       </button>
       <img
-        src={supabase.storage.from("timer-music").getPublicUrl(track.cover_path).data.publicUrl}
+        src={coverUrls[track.cover_path]}
         alt=""
         className="h-9 w-9 rounded object-cover"
       />
