@@ -13,6 +13,7 @@ import { CallProvider } from "@/lib/call-context";
 import { CallOverlay } from "@/components/call/CallOverlay";
 import { useMaintenance } from "@/lib/maintenance-context";
 import { LowDataNotice } from "@/components/LowDataNotice";
+import { PresenceProvider } from "@/lib/presence";
 
 // Map URL prefix -> service key (must match SERVICES in restriction-context).
 const ROUTE_SERVICE: Array<[string, string]> = [
@@ -134,6 +135,7 @@ function AuthLayout() {
     /^\/notebooks\/[^/]+$/.test(path);
   if (isFullscreenWorkspace) {
     return (
+      <PresenceProvider>
       <TimerProvider>
         <CallProvider>
           {content}
@@ -145,10 +147,12 @@ function AuthLayout() {
           <CallOverlay />
         </CallProvider>
       </TimerProvider>
+      </PresenceProvider>
     );
   }
   return (
-    <TimerProvider>
+    <PresenceProvider>
+      <TimerProvider>
       <CallProvider>
         <AppShell>{content}</AppShell>
         {lowDataNotice}
@@ -157,5 +161,6 @@ function AuthLayout() {
         <CallOverlay />
       </CallProvider>
     </TimerProvider>
+      </PresenceProvider>
   );
 }

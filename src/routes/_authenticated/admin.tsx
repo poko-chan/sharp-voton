@@ -16,6 +16,8 @@ import {
   HelpCircle,
   Megaphone,
   MessageCircle,
+  Award,
+  Image as ImageIcon,
   Settings,
   Shield,
   Users,
@@ -34,6 +36,7 @@ import { OrgsAdminTab } from "@/components/admin/commerce";
 import { MaterialsReviewTab } from "@/components/admin/materials";
 import { NotificationsAdminTab } from "@/components/admin/notifications";
 import { PlansAdminTab } from "@/components/admin/plans";
+import { BadgesAdminTab, BannersAdminTab } from "@/components/admin/badges";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   validateSearch: (s: Record<string, unknown>): { tab?: string } =>
@@ -55,7 +58,9 @@ type AdminTab =
   | "notifications"
   | "lowdata"
   | "plans"
-  | "line";
+  | "line"
+  | "badges"
+  | "banners";
 
 type AdminItem = {
   tab: AdminTab;
@@ -111,6 +116,8 @@ const groups: { title: string; items: AdminItem[] }[] = [
         description: "ログイン前に表示する掲示板",
         icon: Megaphone,
       },
+      { tab: "badges", label: "バッジ", description: "バッジ作成と一括付与", icon: Award },
+      { tab: "banners", label: "ダッシュボードバナー", description: "ホーム上部の画像バナー", icon: ImageIcon },
       { tab: "materials", label: "教材承認", description: "投稿された教材を確認", icon: BookOpen },
     ],
   },
@@ -269,5 +276,9 @@ function renderTab(tab: AdminTab) {
       return <PlansAdminTab />;
     case "line":
       return null;
+    case "badges":
+      return <BadgesAdminTab />;
+    case "banners":
+      return <BannersAdminTab />;
   }
 }

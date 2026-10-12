@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { emitProfileChange } from "@/lib/profile-events";
 import { useI18n } from "@/lib/i18n";
 import { SectionHeading } from "./shared";
+import { ProfileExtrasSection } from "./ProfileExtrasSection";
 
 export function AccountSection() {
   const { user } = useAuth();
@@ -123,6 +124,7 @@ export function AccountSection() {
         <Button onClick={saveProfile}>{t("settings.saveProfile")}</Button>
       </Card>
 
+      <ProfileExtrasSection />
       <PlanPanel />
       <InvitePanel />
     </div>
