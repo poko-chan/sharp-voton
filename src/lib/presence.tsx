@@ -87,7 +87,12 @@ export function PresenceProvider({ children }: { children: ReactNode }) {
       const raw = ch.presenceState() as Record<string, any[]>;
       const next: Record<string, PresenceInfo> = {};
       for (const [k, arr] of Object.entries(raw)) {
-        const v = arr[arr.length - 1];
+        const v =
+          arr.find((entry) => entry.state === "online") ??
+          arr.reduce(
+            (latest, entry) => (entry.at > (latest?.at ?? 0) ? entry : latest),
+            null as any,
+          );
         if (v) next[k] = { state: v.state, activity: v.activity ?? null, scope: v.scope, at: v.at };
       }
       if (alive) setPeers(next);

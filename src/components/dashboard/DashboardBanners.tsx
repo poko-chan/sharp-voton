@@ -9,7 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { ChevronLeft, ChevronRight, ExternalLink, Eye, EyeOff } from "lucide-react";
 
 type Banner = {
   id: string;
@@ -23,12 +23,21 @@ type Banner = {
 };
 
 const isInternal = (u: string) => u.startsWith("/") && !u.startsWith("//");
+const bannerImageCache = new Map<string, HTMLImageElement>();
+
+function preloadBannerImage(url: string) {
+  if (bannerImageCache.has(url)) return;
+  const image = new Image();
+  image.src = url;
+  bannerImageCache.set(url, image);
+}
 
 export function DashboardBanners() {
   const navigate = useNavigate();
   const [items, setItems] = useState<Banner[]>([]);
   const [i, setI] = useState(0);
   const [modal, setModal] = useState<Banner | null>(null);
+  const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
     const now = new Date().toISOString();
@@ -39,16 +48,31 @@ export function DashboardBanners() {
       .or(`starts_at.is.null,starts_at.lte.${now}`)
       .or(`ends_at.is.null,ends_at.gt.${now}`)
       .order("sort_order")
-      .then(({ data }) => setItems((data ?? []) as Banner[]));
+      .then(({ data }) => {
+        const banners = (data ?? []) as Banner[];
+        banners.forEach((banner) => preloadBannerImage(banner.image_url));
+        setItems(banners);
+      });
   }, []);
 
   useEffect(() => {
-    if (items.length < 2) return;
-    const t = setInterval(() => setI((x) => (x + 1) % items.length), 3000);
+    if (items.length < 2 || hidden) return;
+    const t = setInterval(() => setI((x) => (x + 1) % items.length), 5000);
     return () => clearInterval(t);
-  }, [items.length]);
+  }, [hidden, items.length]);
 
   if (items.length === 0) return null;
+  if (hidden) {
+    return (
+      <button
+        type="button"
+        onClick={() => setHidden(false)}
+        className="inline-flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <Eye className="h-4 w-4" /> バナーを再表示
+      </button>
+    );
+  }
   const b = items[i % items.length];
 
   const openUrl = (u: string, newTab: boolean) => {
@@ -63,6 +87,15 @@ export function DashboardBanners() {
 
   return (
     <div className="relative group">
+      <button
+        type="button"
+        onClick={() => setHidden(true)}
+        className="absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full border bg-background/90 shadow-md transition-colors hover:bg-background"
+        aria-label="バナーを一時的に非表示"
+        title="バナーを一時的に非表示"
+      >
+        <EyeOff className="h-4 w-4" />
+      </button>
       <button
         onClick={click}
         className={`block w-full overflow-hidden rounded-2xl border ${b.action_type === "none" ? "cursor-default" : ""}`}
