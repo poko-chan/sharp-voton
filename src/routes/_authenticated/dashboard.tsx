@@ -81,6 +81,7 @@ import { GettingStartedCard } from "@/components/dashboard/GettingStartedCard";
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { useOrderedSubjects } from "@/lib/subjects";
 import { toast } from "sonner";
+import { DashboardBanners } from "@/components/dashboard/DashboardBanners";
 import { useMaintenance } from "@/lib/maintenance-context";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -594,6 +595,7 @@ function FullDashboard() {
 
   return (
     <div className="dashboard-page p-4 md:p-8 lg:p-10 space-y-8 max-w-[1480px] mx-auto">
+      <DashboardBanners />
       {/* ===== 一番上: 左=1日の目標 / 右=あなたの街 ===== */}
       <div className="grid gap-6 items-start">
         {/* ===== ヒーロー ===== */}

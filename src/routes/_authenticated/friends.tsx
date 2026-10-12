@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { fetchPublicProfiles } from "@/lib/public-profiles";
+import { UserProfileDialog } from "@/components/profile/UserProfileDialog";
 
 export const Route = createFileRoute("/_authenticated/friends")({ component: FriendsPage });
 
@@ -509,36 +510,11 @@ function FriendsPage() {
         </Card>
       )}
 
-      <Dialog open={!!profileTarget} onOpenChange={(v) => !v && setProfileTarget(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>プロフィール</DialogTitle>
-          </DialogHeader>
-          {profileTarget && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-14 w-14">
-                  <AvatarImage src={profileTarget.avatar_url ?? undefined} />
-                  <AvatarFallback>{initials(profileTarget)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="text-lg font-bold">{profileTarget.display_name}</div>
-                  <div className="text-sm text-muted-foreground">@{profileTarget.username}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">{relationBadge(profileTarget)}</div>
-              <Card className="p-3 text-sm">
-                今週の学習時間: <b>{stats[profileTarget.id]?.minutes7d ?? 0}分</b>
-              </Card>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setProfileTarget(null)}>
-              閉じる
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <UserProfileDialog
+        userId={profileTarget?.id ?? null}
+        onOpenChange={(v) => !v && setProfileTarget(null)}
+        onChanged={load}
+      />
     </div>
   );
 }
