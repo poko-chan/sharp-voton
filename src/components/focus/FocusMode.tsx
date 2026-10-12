@@ -551,7 +551,7 @@ export function FocusMode() {
             />
           )}
 
-          <div className="fixed left-1/2 top-2 z-[200] -translate-x-1/2 flex items-center gap-1 rounded-full border bg-card/95 px-2 py-1 shadow-lg backdrop-blur">
+          <div className="fixed right-2 top-2 z-[200] flex max-w-[calc(100vw-17rem)] items-center gap-1 overflow-x-auto rounded-full border bg-card/95 px-2 py-1 shadow-lg backdrop-blur max-md:max-w-[calc(100vw-1rem)]">
             <Crosshair className="ml-1 h-4 w-4 text-primary" />
             <span className="px-1 font-mono text-sm font-semibold tabular-nums">
               {remaining !== null ? fmt(remaining) : fmt(elapsed)}
