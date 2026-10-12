@@ -43,6 +43,13 @@
       "when": 1791769553265,
       "tag": "0005_profile_badges_banners",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791790790071,
+      "tag": "0006_timer_music_marketplace",
+      "breakpoints": true
     }
   ]
 }
