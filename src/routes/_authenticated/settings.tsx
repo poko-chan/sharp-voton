@@ -178,17 +178,9 @@ const CATEGORIES: SettingsCategory[] = [
   },
   {
     id: "advanced",
-    label: "詳細設定",
+    label: "操作・表示",
     icon: Search,
-    keywords: [
-      "詳細",
-      "おやすみ",
-      "ポモドーロ",
-      "公開範囲",
-      "ショートカット",
-      "目標時間",
-      "advanced",
-    ],
+    keywords: ["操作", "表示", "ショートカット", "advanced"],
   },
   {
     id: "danger",

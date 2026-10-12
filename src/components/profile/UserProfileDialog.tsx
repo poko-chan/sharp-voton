@@ -169,7 +169,7 @@ export function UserProfileDialog({
 
   return (
     <Dialog open={!!userId} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg p-0 overflow-hidden max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[calc(100vw-1rem)] max-w-lg max-h-[85dvh] overflow-x-hidden overflow-y-auto p-0">
         <DialogTitle className="sr-only">プロフィール</DialogTitle>
         {loading && !data && <div className="p-10 text-center text-sm text-muted-foreground">読み込み中…</div>}
         {data && (
@@ -195,11 +195,13 @@ export function UserProfileDialog({
                 ))}
               </div>
             </div>
-            <div className="px-5 pt-2 pb-5 space-y-4">
+            <div className="min-w-0 px-5 pt-2 pb-5 space-y-4">
               <div>
-                <div className="text-xl font-bold">{data.display_name ?? data.username}</div>
-                <div className="text-sm text-muted-foreground">@{data.username}</div>
-                <div className="text-xs mt-1 flex items-center gap-1.5">
+                <div className="break-words text-xl font-bold">
+                  {data.display_name ?? data.username}
+                </div>
+                <div className="break-all text-sm text-muted-foreground">@{data.username}</div>
+                <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs">
                   {presence ? (
                     <span className="text-primary font-medium">
                       {presence.state === "online" ? "オンライン" : "離席中"}
@@ -208,17 +210,19 @@ export function UserProfileDialog({
                   ) : (
                     <span className="text-muted-foreground">オフライン</span>
                   )}
-                  <span className="text-muted-foreground">・ {fmtDate(data.joined_at)} から利用</span>
+                  <span className="text-muted-foreground">
+                    ・ {fmtDate(data.joined_at)} から利用
+                  </span>
                 </div>
               </div>
 
               {data.status_message && (
-                <div className="rounded-lg bg-primary/10 px-3 py-2 text-sm">
+                <div className="break-words rounded-lg bg-primary/10 px-3 py-2 text-sm">
                   <span className="text-xs text-primary font-semibold mr-2">今日のひとこと</span>
                   {data.status_message}
                 </div>
               )}
-              {data.bio && <p className="text-sm whitespace-pre-wrap">{data.bio}</p>}
+              {data.bio && <p className="break-words text-sm whitespace-pre-wrap">{data.bio}</p>}
               {data.study_tags?.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {data.study_tags.map((t) => (
@@ -280,9 +284,9 @@ export function UserProfileDialog({
                           <div key={s.name} style={{ flex: s.m, background: s.color ?? "var(--primary)" }} />
                         ))}
                       </div>
-                      <div className="flex flex-wrap gap-x-3 text-xs mt-1">
+                      <div className="mt-1 flex flex-wrap gap-x-3 text-xs">
                         {data.stats.top_subjects.map((s) => (
-                          <span key={s.name}>{s.name} {fmtMin(s.m)}</span>
+                          <span key={s.name} className="break-words">{s.name} {fmtMin(s.m)}</span>
                         ))}
                       </div>
                     </div>
@@ -324,7 +328,9 @@ export function UserProfileDialog({
                         <div className={st === "earned" ? "" : "grayscale opacity-40"}>
                           <BadgeIcon b={b} size={44} />
                         </div>
-                        <span className="text-[10px] leading-tight line-clamp-2">{b.name}</span>
+                        <span className="w-full break-words text-[10px] leading-tight line-clamp-2">
+                          {b.name}
+                        </span>
                       </button>
                     );
                   })}
@@ -346,9 +352,9 @@ export function BadgeDetail({ b }: { b: BadgeView }) {
       <div className={st === "earned" ? "" : "grayscale opacity-50"}>
         <BadgeIcon b={b} size={48} />
       </div>
-      <div className="text-sm space-y-0.5 min-w-0">
-        <div className="font-semibold">{b.name}</div>
-        {b.description && <div className="text-muted-foreground">{b.description}</div>}
+      <div className="min-w-0 space-y-0.5 text-sm">
+        <div className="break-words font-semibold">{b.name}</div>
+        {b.description && <div className="break-words text-muted-foreground">{b.description}</div>}
         <div className="text-xs">
           {st === "earned" && <span className="text-primary">{fmtDate(b.earned_at!)} に獲得</span>}
           {st === "open" && (
@@ -371,11 +377,11 @@ export function BadgeDetail({ b }: { b: BadgeView }) {
 
 function Stat({ icon: Icon, label, value }: { icon: typeof Clock; label: string; value: string }) {
   return (
-    <div className="rounded-lg border p-2">
+    <div className="min-w-0 rounded-lg border p-2">
       <div className="text-[10px] text-muted-foreground flex items-center gap-1">
         <Icon className="h-3 w-3" /> {label}
       </div>
-      <div className="font-bold text-sm">{value}</div>
+      <div className="break-words text-sm font-bold">{value}</div>
     </div>
   );
 }

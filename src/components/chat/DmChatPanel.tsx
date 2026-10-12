@@ -21,6 +21,8 @@ import { ChatComposer, ChatSearchBar } from "./ChatComposer";
 import { playSendSound } from "@/lib/chat-sound";
 import { useLocalPrefs } from "@/lib/user-prefs";
 import { CallButtons } from "@/components/call/CallOverlay";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserProfileDialog } from "@/components/profile/UserProfileDialog";
 
 export function DmChatPanel({
   userId,
@@ -40,7 +42,22 @@ export function DmChatPanel({
   const [editText, setEditText] = useState("");
   const [replyTo, setReplyToMsg] = useState<DmMessage | null>(null);
   const [query, setQuery] = useState("");
+  const [profileOpen, setProfileOpen] = useState(false);
   const { prefs } = useLocalPrefs();
+
+  const partnerProfile = useQuery({
+    queryKey: ["chat-dm-partner-profile", partnerId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("avatar_url")
+        .eq("id", partnerId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!partnerId,
+  });
 
   const messages = useQuery({
     queryKey: ["chat-dm", partnerId],
@@ -169,6 +186,18 @@ export function DmChatPanel({
   return (
     <>
       <div className="border-b p-3 font-medium flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setProfileOpen(true)}
+          aria-label={`${partnerName}のプロフィールを見る`}
+          title="プロフィールを見る"
+          className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Avatar className="h-9 w-9">
+            <AvatarImage src={partnerProfile.data?.avatar_url ?? undefined} alt={partnerName} />
+            <AvatarFallback>{partnerName.slice(0, 1) || "?"}</AvatarFallback>
+          </Avatar>
+        </button>
         <span className="truncate flex-1 min-w-0">{partnerName}</span>
         <ChatSearchBar value={query} onChange={setQuery} />
         <CallButtons peerId={partnerId} peerName={partnerName} size="icon" />
@@ -355,6 +384,10 @@ export function DmChatPanel({
             toast.error(e.message ?? "画像の送信に失敗しました");
           }
         }}
+      />
+      <UserProfileDialog
+        userId={profileOpen ? partnerId : null}
+        onOpenChange={(open) => setProfileOpen(open)}
       />
     </>
   );

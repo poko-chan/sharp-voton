@@ -64,6 +64,7 @@ import { recordVisit } from "@/lib/recent-activity";
 import { toast } from "sonner";
 import { useMaintenance } from "@/lib/maintenance-context";
 import { FocusMode } from "@/components/focus/FocusMode";
+import { UserProfileDialog } from "@/components/profile/UserProfileDialog";
 
 export const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
@@ -147,6 +148,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   } | null>(null);
   const [level, setLevel] = useState<number>(1);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileTarget, setProfileTarget] = useState<string | null>(null);
   const [navOpen, setNavOpen] = useState(true);
   useEffect(() => {
     try {
@@ -499,10 +501,20 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
       <div className="mx-5 border-t border-border/60" />
       <div className="px-5 py-4 flex items-center gap-3">
-        <Avatar className="h-11 w-11">
-          {profile?.avatar_url ? <AvatarImage src={profile.avatar_url} alt={displayName} /> : null}
-          <AvatarFallback>{initial}</AvatarFallback>
-        </Avatar>
+        <button
+          type="button"
+          onClick={() => user && setProfileTarget(user.id)}
+          aria-label="自分のプロフィールを見る"
+          title="自分のプロフィールを見る"
+          className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Avatar className="h-11 w-11">
+            {profile?.avatar_url ? (
+              <AvatarImage src={profile.avatar_url} alt={displayName} />
+            ) : null}
+            <AvatarFallback>{initial}</AvatarFallback>
+          </Avatar>
+        </button>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <div className="text-sm font-medium leading-tight truncate">{displayName}</div>
@@ -723,12 +735,20 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <HelpCircle className="h-4 w-4" />
               </Link>
               <GoogleTranslateWidget />
-              <Avatar className="h-9 w-9 ring-2 ring-primary/25">
-                {profile?.avatar_url ? (
-                  <AvatarImage src={profile.avatar_url} alt={displayName} />
-                ) : null}
-                <AvatarFallback>{initial}</AvatarFallback>
-              </Avatar>
+              <button
+                type="button"
+                onClick={() => user && setProfileTarget(user.id)}
+                aria-label="自分のプロフィールを見る"
+                title="自分のプロフィールを見る"
+                className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Avatar className="h-9 w-9 ring-2 ring-primary/25">
+                  {profile?.avatar_url ? (
+                    <AvatarImage src={profile.avatar_url} alt={displayName} />
+                  ) : null}
+                  <AvatarFallback>{initial}</AvatarFallback>
+                </Avatar>
+              </button>
             </div>
           </header>
         )}
@@ -766,6 +786,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
         )}
       </main>
+      <UserProfileDialog
+        userId={profileTarget}
+        onOpenChange={(open) => !open && setProfileTarget(null)}
+      />
     </div>
   );
 }

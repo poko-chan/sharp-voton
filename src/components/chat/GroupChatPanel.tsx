@@ -25,6 +25,7 @@ import { ReactionBar, ReactionPicker } from "./MessageReactions";
 import { ChatComposer, ChatSearchBar } from "./ChatComposer";
 import { playSendSound } from "@/lib/chat-sound";
 import { useLocalPrefs } from "@/lib/user-prefs";
+import { UserProfileDialog } from "@/components/profile/UserProfileDialog";
 
 export function GroupChatPanel({
   userId,
@@ -46,6 +47,7 @@ export function GroupChatPanel({
   const [editText, setEditText] = useState("");
   const [replyTo, setReplyToMsg] = useState<GroupMessage | null>(null);
   const [query, setQuery] = useState("");
+  const [profileTarget, setProfileTarget] = useState<string | null>(null);
   const { prefs } = useLocalPrefs();
 
   const messages = useQuery({
@@ -231,9 +233,14 @@ export function GroupChatPanel({
                   className={`max-w-[80%] sm:max-w-[70%] space-y-0.5 ${mine ? "items-end" : "items-start"} flex flex-col`}
                 >
                   {!mine && (
-                    <span className="text-[11px] text-muted-foreground px-1">
+                    <button
+                      type="button"
+                      onClick={() => setProfileTarget(m.sender_id)}
+                      aria-label={`${nameOf(m.sender_id)}のプロフィールを見る`}
+                      className="px-1 text-left text-[11px] text-muted-foreground hover:text-foreground hover:underline"
+                    >
                       {nameOf(m.sender_id)}
-                    </span>
+                    </button>
                   )}
                   <Card
                     className={`px-3 py-2 ${mine ? "!bg-primary !text-primary-foreground border-primary" : ""} ${isDeleted ? "opacity-60 italic" : ""}`}
@@ -381,6 +388,10 @@ export function GroupChatPanel({
             toast.error(e.message ?? "画像の送信に失敗しました");
           }
         }}
+      />
+      <UserProfileDialog
+        userId={profileTarget}
+        onOpenChange={(open) => !open && setProfileTarget(null)}
       />
     </>
   );
