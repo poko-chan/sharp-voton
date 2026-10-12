@@ -36,6 +36,13 @@
       "when": 1791636293084,
       "tag": "0004_flashcard_decks_archived",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791769553265,
+      "tag": "0005_profile_badges_banners",
+      "breakpoints": true
     }
   ]
 }

@@ -364,29 +364,53 @@ export type Database = {
       }
       badges: {
         Row: {
+          available_from: string | null
+          available_until: string | null
           code: string
+          color: string
           created_at: string
+          created_by: string | null
           description: string | null
+          how_to_earn: string | null
           icon: string | null
           id: string
+          image_url: string | null
+          is_hidden: boolean
+          is_manual: boolean
           name: string
           rarity: string | null
         }
         Insert: {
+          available_from?: string | null
+          available_until?: string | null
           code: string
+          color?: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
+          how_to_earn?: string | null
           icon?: string | null
           id?: string
+          image_url?: string | null
+          is_hidden?: boolean
+          is_manual?: boolean
           name: string
           rarity?: string | null
         }
         Update: {
+          available_from?: string | null
+          available_until?: string | null
           code?: string
+          color?: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
+          how_to_earn?: string | null
           icon?: string | null
           id?: string
+          image_url?: string | null
+          is_hidden?: boolean
+          is_manual?: boolean
           name?: string
           rarity?: string | null
         }
@@ -1506,6 +1530,54 @@ export type Database = {
           id?: string
           question_id?: string
           slot?: number
+        }
+        Relationships: []
+      }
+      dashboard_banners: {
+        Row: {
+          action_type: string
+          created_at: string
+          ends_at: string | null
+          id: string
+          image_url: string
+          is_active: boolean
+          link_url: string | null
+          modal_body: string | null
+          modal_title: string | null
+          open_new_tab: boolean
+          sort_order: number
+          starts_at: string | null
+          title: string
+        }
+        Insert: {
+          action_type?: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          image_url: string
+          is_active?: boolean
+          link_url?: string | null
+          modal_body?: string | null
+          modal_title?: string | null
+          open_new_tab?: boolean
+          sort_order?: number
+          starts_at?: string | null
+          title?: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          link_url?: string | null
+          modal_body?: string | null
+          modal_title?: string | null
+          open_new_tab?: boolean
+          sort_order?: number
+          starts_at?: string | null
+          title?: string
         }
         Relationships: []
       }
@@ -6641,7 +6713,11 @@ export type Database = {
           active_frame: string | null
           active_theme: string | null
           active_title: string | null
+          avatar_config: Json | null
+          avatar_type: string
           avatar_url: string | null
+          banner_url: string | null
+          bio: string | null
           created_at: string
           current_plan: string
           deletion_code: string | null
@@ -6657,8 +6733,14 @@ export type Database = {
           notify_email: boolean
           notify_streak_break: boolean
           onboarded_at: string | null
+          pinned_badge_codes: string[]
+          privacy_activity: string
+          privacy_online: string
+          privacy_stats: string
           referral_code: string | null
           reminder_time: string
+          status_message: string | null
+          study_tags: string[]
           theme: string
           tutorial_done: boolean
           updated_at: string
@@ -6669,7 +6751,11 @@ export type Database = {
           active_frame?: string | null
           active_theme?: string | null
           active_title?: string | null
+          avatar_config?: Json | null
+          avatar_type?: string
           avatar_url?: string | null
+          banner_url?: string | null
+          bio?: string | null
           created_at?: string
           current_plan?: string
           deletion_code?: string | null
@@ -6685,8 +6771,14 @@ export type Database = {
           notify_email?: boolean
           notify_streak_break?: boolean
           onboarded_at?: string | null
+          pinned_badge_codes?: string[]
+          privacy_activity?: string
+          privacy_online?: string
+          privacy_stats?: string
           referral_code?: string | null
           reminder_time?: string
+          status_message?: string | null
+          study_tags?: string[]
           theme?: string
           tutorial_done?: boolean
           updated_at?: string
@@ -6697,7 +6789,11 @@ export type Database = {
           active_frame?: string | null
           active_theme?: string | null
           active_title?: string | null
+          avatar_config?: Json | null
+          avatar_type?: string
           avatar_url?: string | null
+          banner_url?: string | null
+          bio?: string | null
           created_at?: string
           current_plan?: string
           deletion_code?: string | null
@@ -6713,8 +6809,14 @@ export type Database = {
           notify_email?: boolean
           notify_streak_break?: boolean
           onboarded_at?: string | null
+          pinned_badge_codes?: string[]
+          privacy_activity?: string
+          privacy_online?: string
+          privacy_stats?: string
           referral_code?: string | null
           reminder_time?: string
+          status_message?: string | null
+          study_tags?: string[]
           theme?: string
           tutorial_done?: boolean
           updated_at?: string
@@ -8103,19 +8205,25 @@ export type Database = {
         Row: {
           badge_code: string
           earned_at: string
+          granted_by: string | null
           id: string
+          note: string | null
           user_id: string
         }
         Insert: {
           badge_code: string
           earned_at?: string
+          granted_by?: string | null
           id?: string
+          note?: string | null
           user_id: string
         }
         Update: {
           badge_code?: string
           earned_at?: string
+          granted_by?: string | null
           id?: string
+          note?: string | null
           user_id?: string
         }
         Relationships: []
@@ -8599,6 +8707,10 @@ export type Database = {
         Args: { _approve: boolean; _note: string; _req_id: string }
         Returns: undefined
       }
+      admin_grant_badge: {
+        Args: { _code: string; _note?: string; _usernames: string[] }
+        Returns: Json
+      }
       admin_grant_coins: {
         Args: { _amount: number; _message: string; _user_id: string }
         Returns: undefined
@@ -8701,6 +8813,10 @@ export type Database = {
       can_read_chat_image: { Args: { _path: string }; Returns: boolean }
       can_see_chat_message: {
         Args: { _message_id: string; _scope: string }
+        Returns: boolean
+      }
+      can_see_level: {
+        Args: { _level: string; _owner: string; _viewer: string }
         Returns: boolean
       }
       can_see_org_post: {
@@ -9247,6 +9363,7 @@ export type Database = {
           votes: number
         }[]
       }
+      profile_card: { Args: { _id: string }; Returns: Json }
       public_profiles_by_ids: {
         Args: { _ids: string[] }
         Returns: {
