@@ -7749,6 +7749,62 @@ export type Database = {
         }
         Relationships: []
       }
+      timer_music_favorites: {
+        Row: {
+          created_at: string
+          track_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          track_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          track_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timer_music_favorites_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "timer_music_tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      timer_music_tracks: {
+        Row: {
+          audio_path: string
+          cover_path: string
+          created_at: string
+          id: string
+          is_active: boolean
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          audio_path: string
+          cover_path: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          audio_path?: string
+          cover_path?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+          title?: string
+        }
+        Relationships: []
+      }
       today_activities: {
         Row: {
           category: string
