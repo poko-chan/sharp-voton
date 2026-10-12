@@ -26,9 +26,6 @@ type Track = {
   created_at: string;
 };
 
-function publicUrl(path: string) {
-  return supabase.storage.from("timer-music").getPublicUrl(path).data.publicUrl;
-}
 
 export function TimerMusicAdminTab() {
   const { user } = useAuth();
@@ -41,6 +38,7 @@ export function TimerMusicAdminTab() {
   const coverRef = useRef<HTMLInputElement>(null);
   const audioRef = useRef<HTMLInputElement>(null);
 
+  const [coverUrls, setCoverUrls] = useState<Record<string, string>>({});
   const load = async () => {
     const { data, error } = await supabase
       .from("timer_music_tracks")
@@ -48,7 +46,21 @@ export function TimerMusicAdminTab() {
       .order("sort_order")
       .order("created_at", { ascending: false });
     if (error) return toast.error(error.message);
-    setTracks(data ?? []);
+    const list = data ?? [];
+    setTracks(list);
+    if (list.length) {
+      const { data: signed } = await supabase.storage
+        .from("timer-music")
+        .createSignedUrls(
+          list.map((t) => t.cover_path),
+          60 * 60,
+        );
+      const map: Record<string, string> = {};
+      (signed ?? []).forEach((s) => {
+        if (s.path && s.signedUrl) map[s.path] = s.signedUrl;
+      });
+      setCoverUrls(map);
+    }
   };
 
   useEffect(() => {
@@ -141,7 +153,7 @@ export function TimerMusicAdminTab() {
         {tracks.map((track) => (
           <Card key={track.id} className="flex items-center gap-3 p-3">
             <img
-              src={publicUrl(track.cover_path)}
+              src={coverUrls[track.cover_path]}
               alt=""
               className="h-14 w-14 rounded object-cover"
             />
