@@ -7,7 +7,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CharacterAvatar } from "./CharacterAvatar";
-import { Award, Clock, Flame, Lock, UserPlus, UserCheck, Hourglass, BookOpen, Pin } from "lucide-react";
+import { Award, Clock, Flame, Lock, UserPlus, UserCheck, Hourglass, BookOpen, Pin, Pencil, Crown, Trophy, Target, HandHeart, Send } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ProfileEditDialog } from "@/components/settings/ProfileExtrasSection";
 import { toast } from "sonner";
 
 export type BadgeView = {
@@ -171,21 +173,39 @@ export function UserProfileDialog({
 }) {
   const { user } = useAuth();
   const [data, setData] = useState<ProfileCardData | null>(null);
+  const [extra, setExtra] = useState<ProfileExtra | null>(null);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<BadgeView | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [msg, setMsg] = useState("");
 
   const load = async () => {
     if (!userId) return;
     setLoading(true);
-    const { data: d } = await supabase.rpc("profile_card", { _id: userId });
+    const [{ data: d }, { data: x }] = await Promise.all([
+      supabase.rpc("profile_card", { _id: userId }),
+      supabase.rpc("profile_card_extra" as any, { _id: userId }),
+    ]);
     setData((d as any) ?? null);
+    setExtra((x as any) ?? null);
     setLoading(false);
   };
   useEffect(() => {
     setData(null);
+    setExtra(null);
     setSelected(null);
+    setMsg("");
     load();
   }, [userId]);
+
+  const cheer = async (kind: string, message?: string) => {
+    if (!userId) return;
+    const { error } = await supabase.rpc("send_profile_cheer" as any, { _to: userId, _kind: kind, _message: message ?? null });
+    if (error) return toast.error(error.message);
+    toast.success("エールを送りました");
+    setMsg("");
+    load();
+  };
 
   const isFriend = data?.relation === "friend" || data?.relation === "self";
   const presence = usePresence(userId, isFriend);
