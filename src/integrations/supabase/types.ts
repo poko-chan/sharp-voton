@@ -6707,6 +6707,36 @@ export type Database = {
           },
         ]
       }
+      profile_cheers: {
+        Row: {
+          created_at: string
+          created_on: string
+          from_user: string
+          id: string
+          kind: string
+          message: string | null
+          to_user: string
+        }
+        Insert: {
+          created_at?: string
+          created_on?: string
+          from_user: string
+          id?: string
+          kind: string
+          message?: string | null
+          to_user: string
+        }
+        Update: {
+          created_at?: string
+          created_on?: string
+          from_user?: string
+          id?: string
+          kind?: string
+          message?: string | null
+          to_user?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_kind: string
@@ -6725,6 +6755,8 @@ export type Database = {
           deletion_scheduled_at: string | null
           display_name: string | null
           email: string | null
+          goal_date: string | null
+          goal_text: string | null
           id: string
           line_user_id: string | null
           notify_announcements: boolean
@@ -6737,6 +6769,8 @@ export type Database = {
           privacy_activity: string
           privacy_online: string
           privacy_stats: string
+          profile_frame: string
+          profile_title: string | null
           referral_code: string | null
           reminder_time: string
           status_message: string | null
@@ -6763,6 +6797,8 @@ export type Database = {
           deletion_scheduled_at?: string | null
           display_name?: string | null
           email?: string | null
+          goal_date?: string | null
+          goal_text?: string | null
           id: string
           line_user_id?: string | null
           notify_announcements?: boolean
@@ -6775,6 +6811,8 @@ export type Database = {
           privacy_activity?: string
           privacy_online?: string
           privacy_stats?: string
+          profile_frame?: string
+          profile_title?: string | null
           referral_code?: string | null
           reminder_time?: string
           status_message?: string | null
@@ -6801,6 +6839,8 @@ export type Database = {
           deletion_scheduled_at?: string | null
           display_name?: string | null
           email?: string | null
+          goal_date?: string | null
+          goal_text?: string | null
           id?: string
           line_user_id?: string | null
           notify_announcements?: boolean
@@ -6813,6 +6853,8 @@ export type Database = {
           privacy_activity?: string
           privacy_online?: string
           privacy_stats?: string
+          profile_frame?: string
+          profile_title?: string | null
           referral_code?: string | null
           reminder_time?: string
           status_message?: string | null
@@ -9420,6 +9462,7 @@ export type Database = {
         }[]
       }
       profile_card: { Args: { _id: string }; Returns: Json }
+      profile_card_extra: { Args: { _id: string }; Returns: Json }
       public_profiles_by_ids: {
         Args: { _ids: string[] }
         Returns: {
@@ -9459,6 +9502,10 @@ export type Database = {
       send_group_message: {
         Args: { _content: string; _group: string }
         Returns: string
+      }
+      send_profile_cheer: {
+        Args: { _kind: string; _message?: string; _to: string }
+        Returns: undefined
       }
       share_study_summary: {
         Args: { _token: string }

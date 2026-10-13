@@ -50,6 +50,13 @@
       "when": 1791790790071,
       "tag": "0006_timer_music_marketplace",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791876111975,
+      "tag": "0007_profile_editor_cheers",
+      "breakpoints": true
     }
   ]
 }
