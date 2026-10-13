@@ -56,13 +56,70 @@ export const BANNER_PRESETS: Record<string, string> = {
   "preset:grid":
     "repeating-linear-gradient(0deg, color-mix(in oklab, var(--primary) 18%, transparent) 0 1px, transparent 1px 16px), repeating-linear-gradient(90deg, color-mix(in oklab, var(--primary) 18%, transparent) 0 1px, transparent 1px 16px), var(--muted)",
   "preset:sakura": "linear-gradient(135deg, oklch(0.9 0.06 350), oklch(0.8 0.1 320))",
+  "preset:aurora": "linear-gradient(120deg, oklch(0.55 0.13 190), oklch(0.6 0.15 150), oklch(0.5 0.14 260), oklch(0.6 0.13 200))",
+  "preset:stars":
+    "radial-gradient(1.5px 1.5px at 20% 30%, oklch(0.98 0 0), transparent), radial-gradient(1.5px 1.5px at 70% 20%, oklch(0.98 0 0), transparent), radial-gradient(1px 1px at 40% 70%, oklch(0.98 0 0), transparent), radial-gradient(1px 1px at 85% 60%, oklch(0.98 0 0), transparent), radial-gradient(1.5px 1.5px at 55% 45%, oklch(0.98 0 0), transparent), linear-gradient(160deg, oklch(0.25 0.06 270), oklch(0.35 0.1 240))",
+  "preset:sunset": "linear-gradient(120deg, oklch(0.75 0.15 40), oklch(0.65 0.18 10), oklch(0.55 0.15 320), oklch(0.75 0.15 40))",
+};
+export const ANIMATED_BANNERS: Record<string, string> = {
+  "preset:aurora": "動くオーロラ",
+  "preset:stars": "またたく星空",
+  "preset:sunset": "動く夕焼け",
 };
 
 export function bannerStyle(url: string | null | undefined): React.CSSProperties {
   if (!url) return { background: BANNER_PRESETS["preset:teal"] };
-  if (url.startsWith("preset:")) return { background: BANNER_PRESETS[url] ?? BANNER_PRESETS["preset:teal"] };
+  if (url.startsWith("preset:")) {
+    const bg = BANNER_PRESETS[url] ?? BANNER_PRESETS["preset:teal"];
+    if (url === "preset:stars") return { background: bg, animation: "profile-twinkle 4s ease-in-out infinite" };
+    if (ANIMATED_BANNERS[url]) return { background: bg, backgroundSize: "300% 300%", animation: "profile-pan 14s ease infinite" };
+    return { background: bg };
+  }
   return { backgroundImage: `url(${url})`, backgroundSize: "cover", backgroundPosition: "center" };
 }
+
+export type FrameTier = "none" | "bronze" | "silver" | "gold" | "aura";
+export const FRAMES: { key: FrameTier; label: string; color: string; need: string; streak: number; badges: number }[] = [
+  { key: "none", label: "なし", color: "transparent", need: "", streak: 0, badges: 0 },
+  { key: "bronze", label: "ブロンズ", color: "oklch(0.65 0.11 55)", need: "3日連続 または バッジ1つ", streak: 3, badges: 1 },
+  { key: "silver", label: "シルバー", color: "oklch(0.8 0.02 250)", need: "7日連続 または バッジ3つ", streak: 7, badges: 3 },
+  { key: "gold", label: "ゴールド", color: "oklch(0.82 0.15 85)", need: "14日連続 または バッジ6つ", streak: 14, badges: 6 },
+  { key: "aura", label: "オーラ", color: "oklch(0.75 0.15 180)", need: "30日連続 または バッジ10個", streak: 30, badges: 10 },
+];
+export function unlockedFrames(streak: number, badges: number): FrameTier[] {
+  return FRAMES.filter((f) => streak >= f.streak || badges >= f.badges).map((f) => f.key);
+}
+export function resolveFrame(choice: string | null | undefined, streak: number, badges: number): FrameTier {
+  const ok = unlockedFrames(streak, badges);
+  if (!choice || choice === "auto") return ok[ok.length - 1] ?? "none";
+  return ok.includes(choice as FrameTier) ? (choice as FrameTier) : (ok[ok.length - 1] ?? "none");
+}
+export function frameStyle(t: FrameTier): React.CSSProperties {
+  const f = FRAMES.find((x) => x.key === t)!;
+  if (t === "none") return {};
+  if (t === "aura")
+    return { ["--frame-color" as any]: f.color, animation: "profile-aura 3s ease-in-out infinite" };
+  return { boxShadow: `0 0 0 3px ${f.color}` };
+}
+
+export const CHEERS: { key: string; label: string }[] = [
+  { key: "fight", label: "ファイト" },
+  { key: "nice", label: "ナイス集中" },
+  { key: "otsukare", label: "おつかれさま" },
+  { key: "sugoi", label: "すごい" },
+  { key: "issho", label: "一緒にがんばろう" },
+];
+
+export type ProfileExtra = {
+  title: string | null;
+  frame: string;
+  goal_text: string | null;
+  goal_date: string | null;
+  streak: number | null;
+  cheers: Record<string, number>;
+  my_cheers_today: string[];
+  messages: { name: string; message: string; at: string }[];
+};
 
 export function badgeStatus(b: BadgeView): "earned" | "open" | "closed" | "upcoming" {
   if (b.earned_at) return "earned";
