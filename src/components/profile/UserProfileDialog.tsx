@@ -508,6 +508,14 @@ export function UserProfileDialog({
           </div>
         )}
       </DialogContent>
+      <ProfileEditDialog
+        open={editing}
+        onOpenChange={setEditing}
+        onSaved={() => {
+          load();
+          onChanged?.();
+        }}
+      />
     </Dialog>
   );
 }
