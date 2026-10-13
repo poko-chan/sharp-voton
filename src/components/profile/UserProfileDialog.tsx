@@ -224,6 +224,13 @@ export function UserProfileDialog({
     return { k, m: heatMap.get(k) ?? 0 };
   });
 
+  const tier = resolveFrame(extra?.frame, extra?.streak ?? 0, earnedCount);
+  const tierInfo = FRAMES.find((f) => f.key === tier)!;
+  const goalDays = extra?.goal_date
+    ? Math.ceil((new Date(extra.goal_date + "T00:00:00").getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000)
+    : null;
+  const totalCheers = Object.values(extra?.cheers ?? {}).reduce((a, b) => a + b, 0);
+
   return (
     <Dialog open={!!userId} onOpenChange={onOpenChange}>
       <DialogContent className="w-[calc(100vw-1rem)] max-w-lg max-h-[85dvh] overflow-x-hidden overflow-y-auto p-0">
@@ -231,10 +238,16 @@ export function UserProfileDialog({
         {loading && !data && <div className="p-10 text-center text-sm text-muted-foreground">読み込み中…</div>}
         {data && (
           <div>
-            <div className="h-28" style={bannerStyle(data.banner_url)} />
+            <div className="relative h-28 profile-anim" style={bannerStyle(data.banner_url)}>
+              {data.relation === "self" && (
+                <Button size="sm" variant="secondary" className="absolute right-3 top-3" onClick={() => setEditing(true)}>
+                  <Pencil className="h-3.5 w-3.5 mr-1" /> 編集
+                </Button>
+              )}
+            </div>
             <div className="px-5 -mt-10 flex items-end gap-3">
               <div className="relative">
-                <div className="rounded-full ring-4 ring-background bg-background">
+                <div className="rounded-full ring-4 ring-background bg-background profile-anim" style={frameStyle(tier)}>
                   <ProfileAvatar p={data} size={84} />
                 </div>
                 {presence && (
@@ -244,16 +257,19 @@ export function UserProfileDialog({
                   />
                 )}
               </div>
-              <div className="flex gap-1 pb-1">
-                {pinned.slice(0, 3).map((b) => (
-                  <button key={b.code} onClick={() => setSelected(b)} title={b.name}>
-                    <BadgeIcon b={b} size={30} />
-                  </button>
-                ))}
-              </div>
+              {tier !== "none" && (
+                <span className="mb-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold" style={{ borderColor: tierInfo.color }}>
+                  {tierInfo.label}フレーム
+                </span>
+              )}
             </div>
             <div className="min-w-0 px-5 pt-2 pb-5 space-y-4">
               <div>
+                {extra?.title && (
+                  <div className="mb-1 inline-flex items-center gap-1 rounded-md bg-primary px-2 py-0.5 text-[11px] font-bold text-primary-foreground">
+                    <Crown className="h-3 w-3" /> {extra.title}
+                  </div>
+                )}
                 <div className="break-words text-xl font-bold">
                   {data.display_name ?? data.username}
                 </div>
@@ -270,13 +286,48 @@ export function UserProfileDialog({
                   <span className="text-muted-foreground">
                     ・ {fmtDate(data.joined_at)} から利用
                   </span>
+                  {extra?.streak != null && extra.streak > 0 && (
+                    <span className="text-primary font-medium">・ {extra.streak}日連続</span>
+                  )}
                 </div>
               </div>
+
+              {pinned.length > 0 && (
+                <div className="rounded-xl border bg-muted/40 p-3">
+                  <div className="mb-2 flex items-center gap-1 text-xs font-semibold">
+                    <Trophy className="h-3.5 w-3.5 text-primary" /> トロフィー棚
+                  </div>
+                  <div className="flex justify-around">
+                    {pinned.slice(0, 3).map((b) => (
+                      <button key={b.code} onClick={() => setSelected(b)} className="flex w-20 flex-col items-center gap-1">
+                        <BadgeIcon b={b} size={52} />
+                        <div className="h-1.5 w-14 rounded-full bg-border" />
+                        <span className="w-full truncate text-center text-[10px]">{b.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {data.status_message && (
                 <div className="break-words rounded-lg bg-primary/10 px-3 py-2 text-sm">
                   <span className="text-xs text-primary font-semibold mr-2">今日のひとこと</span>
                   {data.status_message}
+                </div>
+              )}
+              {extra?.goal_text && (
+                <div className="flex items-center gap-3 rounded-lg border px-3 py-2">
+                  <Target className="h-5 w-5 shrink-0 text-primary" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[10px] text-muted-foreground">目標</div>
+                    <div className="break-words text-sm font-semibold">{extra.goal_text}</div>
+                  </div>
+                  {goalDays != null && (
+                    <div className="text-right">
+                      <div className="text-[10px] text-muted-foreground">{goalDays >= 0 ? "あと" : "終了"}</div>
+                      <div className="text-lg font-bold text-primary">{goalDays >= 0 ? `${goalDays}日` : "-"}</div>
+                    </div>
+                  )}
                 </div>
               )}
               {data.bio && <p className="break-words text-sm whitespace-pre-wrap">{data.bio}</p>}
@@ -287,6 +338,45 @@ export function UserProfileDialog({
                   ))}
                 </div>
               )}
+
+              {extra && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1 text-xs font-semibold">
+                    <HandHeart className="h-3.5 w-3.5 text-primary" /> もらったエール {totalCheers}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {CHEERS.map((c) => {
+                      const sent = extra.my_cheers_today.includes(c.key);
+                      const n = extra.cheers[c.key] ?? 0;
+                      return data.relation === "friend" ? (
+                        <Button key={c.key} size="sm" variant={sent ? "default" : "outline"} className="h-7 text-xs" disabled={sent} onClick={() => cheer(c.key)}>
+                          {c.label} {n > 0 && <span className="ml-1 opacity-70">{n}</span>}
+                        </Button>
+                      ) : n > 0 ? (
+                        <Badge key={c.key} variant="secondary">{c.label} {n}</Badge>
+                      ) : null;
+                    })}
+                  </div>
+                  {data.relation === "friend" && (
+                    <div className="flex gap-2">
+                      <Input value={msg} maxLength={80} placeholder="ひとこと応援メッセージ（80文字まで）" className="h-8 text-xs" onChange={(e) => setMsg(e.target.value)} />
+                      <Button size="sm" className="h-8" disabled={!msg.trim()} onClick={() => cheer("issho", msg)}>
+                        <Send className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  )}
+                  {extra.messages.length > 0 && (
+                    <div className="space-y-1">
+                      {extra.messages.map((m, i) => (
+                        <div key={i} className="break-words rounded-md bg-muted px-2 py-1 text-xs">
+                          <span className="font-semibold">{m.name}</span>：{m.message}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
 
               {data.relation !== "self" && data.relation !== "blocked" && (
                 <div className="flex gap-2">
