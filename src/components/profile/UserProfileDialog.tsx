@@ -7,7 +7,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CharacterAvatar } from "./CharacterAvatar";
-import { Award, Clock, Flame, Lock, UserPlus, UserCheck, Hourglass, BookOpen, Pin } from "lucide-react";
+import { Award, Clock, Flame, Lock, UserPlus, UserCheck, Hourglass, BookOpen, Pin, Pencil, Crown, Trophy, Target, HandHeart, Send } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ProfileEditDialog } from "@/components/settings/ProfileExtrasSection";
 import { toast } from "sonner";
 
 export type BadgeView = {
@@ -56,13 +58,70 @@ export const BANNER_PRESETS: Record<string, string> = {
   "preset:grid":
     "repeating-linear-gradient(0deg, color-mix(in oklab, var(--primary) 18%, transparent) 0 1px, transparent 1px 16px), repeating-linear-gradient(90deg, color-mix(in oklab, var(--primary) 18%, transparent) 0 1px, transparent 1px 16px), var(--muted)",
   "preset:sakura": "linear-gradient(135deg, oklch(0.9 0.06 350), oklch(0.8 0.1 320))",
+  "preset:aurora": "linear-gradient(120deg, oklch(0.55 0.13 190), oklch(0.6 0.15 150), oklch(0.5 0.14 260), oklch(0.6 0.13 200))",
+  "preset:stars":
+    "radial-gradient(1.5px 1.5px at 20% 30%, oklch(0.98 0 0), transparent), radial-gradient(1.5px 1.5px at 70% 20%, oklch(0.98 0 0), transparent), radial-gradient(1px 1px at 40% 70%, oklch(0.98 0 0), transparent), radial-gradient(1px 1px at 85% 60%, oklch(0.98 0 0), transparent), radial-gradient(1.5px 1.5px at 55% 45%, oklch(0.98 0 0), transparent), linear-gradient(160deg, oklch(0.25 0.06 270), oklch(0.35 0.1 240))",
+  "preset:sunset": "linear-gradient(120deg, oklch(0.75 0.15 40), oklch(0.65 0.18 10), oklch(0.55 0.15 320), oklch(0.75 0.15 40))",
+};
+export const ANIMATED_BANNERS: Record<string, string> = {
+  "preset:aurora": "動くオーロラ",
+  "preset:stars": "またたく星空",
+  "preset:sunset": "動く夕焼け",
 };
 
 export function bannerStyle(url: string | null | undefined): React.CSSProperties {
   if (!url) return { background: BANNER_PRESETS["preset:teal"] };
-  if (url.startsWith("preset:")) return { background: BANNER_PRESETS[url] ?? BANNER_PRESETS["preset:teal"] };
+  if (url.startsWith("preset:")) {
+    const bg = BANNER_PRESETS[url] ?? BANNER_PRESETS["preset:teal"];
+    if (url === "preset:stars") return { background: bg, animation: "profile-twinkle 4s ease-in-out infinite" };
+    if (ANIMATED_BANNERS[url]) return { background: bg, backgroundSize: "300% 300%", animation: "profile-pan 14s ease infinite" };
+    return { background: bg };
+  }
   return { backgroundImage: `url(${url})`, backgroundSize: "cover", backgroundPosition: "center" };
 }
+
+export type FrameTier = "none" | "bronze" | "silver" | "gold" | "aura";
+export const FRAMES: { key: FrameTier; label: string; color: string; need: string; streak: number; badges: number }[] = [
+  { key: "none", label: "なし", color: "transparent", need: "", streak: 0, badges: 0 },
+  { key: "bronze", label: "ブロンズ", color: "oklch(0.65 0.11 55)", need: "3日連続 または バッジ1つ", streak: 3, badges: 1 },
+  { key: "silver", label: "シルバー", color: "oklch(0.8 0.02 250)", need: "7日連続 または バッジ3つ", streak: 7, badges: 3 },
+  { key: "gold", label: "ゴールド", color: "oklch(0.82 0.15 85)", need: "14日連続 または バッジ6つ", streak: 14, badges: 6 },
+  { key: "aura", label: "オーラ", color: "oklch(0.75 0.15 180)", need: "30日連続 または バッジ10個", streak: 30, badges: 10 },
+];
+export function unlockedFrames(streak: number, badges: number): FrameTier[] {
+  return FRAMES.filter((f) => streak >= f.streak || badges >= f.badges).map((f) => f.key);
+}
+export function resolveFrame(choice: string | null | undefined, streak: number, badges: number): FrameTier {
+  const ok = unlockedFrames(streak, badges);
+  if (!choice || choice === "auto") return ok[ok.length - 1] ?? "none";
+  return ok.includes(choice as FrameTier) ? (choice as FrameTier) : (ok[ok.length - 1] ?? "none");
+}
+export function frameStyle(t: FrameTier): React.CSSProperties {
+  const f = FRAMES.find((x) => x.key === t)!;
+  if (t === "none") return {};
+  if (t === "aura")
+    return { ["--frame-color" as any]: f.color, animation: "profile-aura 3s ease-in-out infinite" };
+  return { boxShadow: `0 0 0 3px ${f.color}` };
+}
+
+export const CHEERS: { key: string; label: string }[] = [
+  { key: "fight", label: "ファイト" },
+  { key: "nice", label: "ナイス集中" },
+  { key: "otsukare", label: "おつかれさま" },
+  { key: "sugoi", label: "すごい" },
+  { key: "issho", label: "一緒にがんばろう" },
+];
+
+export type ProfileExtra = {
+  title: string | null;
+  frame: string;
+  goal_text: string | null;
+  goal_date: string | null;
+  streak: number | null;
+  cheers: Record<string, number>;
+  my_cheers_today: string[];
+  messages: { name: string; message: string; at: string }[];
+};
 
 export function badgeStatus(b: BadgeView): "earned" | "open" | "closed" | "upcoming" {
   if (b.earned_at) return "earned";
@@ -114,21 +173,39 @@ export function UserProfileDialog({
 }) {
   const { user } = useAuth();
   const [data, setData] = useState<ProfileCardData | null>(null);
+  const [extra, setExtra] = useState<ProfileExtra | null>(null);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<BadgeView | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [msg, setMsg] = useState("");
 
   const load = async () => {
     if (!userId) return;
     setLoading(true);
-    const { data: d } = await supabase.rpc("profile_card", { _id: userId });
+    const [{ data: d }, { data: x }] = await Promise.all([
+      supabase.rpc("profile_card", { _id: userId }),
+      supabase.rpc("profile_card_extra" as any, { _id: userId }),
+    ]);
     setData((d as any) ?? null);
+    setExtra((x as any) ?? null);
     setLoading(false);
   };
   useEffect(() => {
     setData(null);
+    setExtra(null);
     setSelected(null);
+    setMsg("");
     load();
   }, [userId]);
+
+  const cheer = async (kind: string, message?: string) => {
+    if (!userId) return;
+    const { error } = await supabase.rpc("send_profile_cheer" as any, { _to: userId, _kind: kind, _message: message ?? null });
+    if (error) return toast.error(error.message);
+    toast.success("エールを送りました");
+    setMsg("");
+    load();
+  };
 
   const isFriend = data?.relation === "friend" || data?.relation === "self";
   const presence = usePresence(userId, isFriend);
@@ -167,6 +244,13 @@ export function UserProfileDialog({
     return { k, m: heatMap.get(k) ?? 0 };
   });
 
+  const tier = resolveFrame(extra?.frame, extra?.streak ?? 0, earnedCount);
+  const tierInfo = FRAMES.find((f) => f.key === tier)!;
+  const goalDays = extra?.goal_date
+    ? Math.ceil((new Date(extra.goal_date + "T00:00:00").getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000)
+    : null;
+  const totalCheers = Object.values(extra?.cheers ?? {}).reduce((a, b) => a + b, 0);
+
   return (
     <Dialog open={!!userId} onOpenChange={onOpenChange}>
       <DialogContent className="w-[calc(100vw-1rem)] max-w-lg max-h-[85dvh] overflow-x-hidden overflow-y-auto p-0">
@@ -174,10 +258,16 @@ export function UserProfileDialog({
         {loading && !data && <div className="p-10 text-center text-sm text-muted-foreground">読み込み中…</div>}
         {data && (
           <div>
-            <div className="h-28" style={bannerStyle(data.banner_url)} />
+            <div className="relative h-28 profile-anim" style={bannerStyle(data.banner_url)}>
+              {data.relation === "self" && (
+                <Button size="sm" variant="secondary" className="absolute right-3 top-3" onClick={() => setEditing(true)}>
+                  <Pencil className="h-3.5 w-3.5 mr-1" /> 編集
+                </Button>
+              )}
+            </div>
             <div className="px-5 -mt-10 flex items-end gap-3">
               <div className="relative">
-                <div className="rounded-full ring-4 ring-background bg-background">
+                <div className="rounded-full ring-4 ring-background bg-background profile-anim" style={frameStyle(tier)}>
                   <ProfileAvatar p={data} size={84} />
                 </div>
                 {presence && (
@@ -187,16 +277,19 @@ export function UserProfileDialog({
                   />
                 )}
               </div>
-              <div className="flex gap-1 pb-1">
-                {pinned.slice(0, 3).map((b) => (
-                  <button key={b.code} onClick={() => setSelected(b)} title={b.name}>
-                    <BadgeIcon b={b} size={30} />
-                  </button>
-                ))}
-              </div>
+              {tier !== "none" && (
+                <span className="mb-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold" style={{ borderColor: tierInfo.color }}>
+                  {tierInfo.label}フレーム
+                </span>
+              )}
             </div>
             <div className="min-w-0 px-5 pt-2 pb-5 space-y-4">
               <div>
+                {extra?.title && (
+                  <div className="mb-1 inline-flex items-center gap-1 rounded-md bg-primary px-2 py-0.5 text-[11px] font-bold text-primary-foreground">
+                    <Crown className="h-3 w-3" /> {extra.title}
+                  </div>
+                )}
                 <div className="break-words text-xl font-bold">
                   {data.display_name ?? data.username}
                 </div>
@@ -213,13 +306,48 @@ export function UserProfileDialog({
                   <span className="text-muted-foreground">
                     ・ {fmtDate(data.joined_at)} から利用
                   </span>
+                  {extra?.streak != null && extra.streak > 0 && (
+                    <span className="text-primary font-medium">・ {extra.streak}日連続</span>
+                  )}
                 </div>
               </div>
+
+              {pinned.length > 0 && (
+                <div className="rounded-xl border bg-muted/40 p-3">
+                  <div className="mb-2 flex items-center gap-1 text-xs font-semibold">
+                    <Trophy className="h-3.5 w-3.5 text-primary" /> トロフィー棚
+                  </div>
+                  <div className="flex justify-around">
+                    {pinned.slice(0, 3).map((b) => (
+                      <button key={b.code} onClick={() => setSelected(b)} className="flex w-20 flex-col items-center gap-1">
+                        <BadgeIcon b={b} size={52} />
+                        <div className="h-1.5 w-14 rounded-full bg-border" />
+                        <span className="w-full truncate text-center text-[10px]">{b.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {data.status_message && (
                 <div className="break-words rounded-lg bg-primary/10 px-3 py-2 text-sm">
                   <span className="text-xs text-primary font-semibold mr-2">今日のひとこと</span>
                   {data.status_message}
+                </div>
+              )}
+              {extra?.goal_text && (
+                <div className="flex items-center gap-3 rounded-lg border px-3 py-2">
+                  <Target className="h-5 w-5 shrink-0 text-primary" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[10px] text-muted-foreground">目標</div>
+                    <div className="break-words text-sm font-semibold">{extra.goal_text}</div>
+                  </div>
+                  {goalDays != null && (
+                    <div className="text-right">
+                      <div className="text-[10px] text-muted-foreground">{goalDays >= 0 ? "あと" : "終了"}</div>
+                      <div className="text-lg font-bold text-primary">{goalDays >= 0 ? `${goalDays}日` : "-"}</div>
+                    </div>
+                  )}
                 </div>
               )}
               {data.bio && <p className="break-words text-sm whitespace-pre-wrap">{data.bio}</p>}
@@ -230,6 +358,45 @@ export function UserProfileDialog({
                   ))}
                 </div>
               )}
+
+              {extra && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1 text-xs font-semibold">
+                    <HandHeart className="h-3.5 w-3.5 text-primary" /> もらったエール {totalCheers}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {CHEERS.map((c) => {
+                      const sent = extra.my_cheers_today.includes(c.key);
+                      const n = extra.cheers[c.key] ?? 0;
+                      return data.relation === "friend" ? (
+                        <Button key={c.key} size="sm" variant={sent ? "default" : "outline"} className="h-7 text-xs" disabled={sent} onClick={() => cheer(c.key)}>
+                          {c.label} {n > 0 && <span className="ml-1 opacity-70">{n}</span>}
+                        </Button>
+                      ) : n > 0 ? (
+                        <Badge key={c.key} variant="secondary">{c.label} {n}</Badge>
+                      ) : null;
+                    })}
+                  </div>
+                  {data.relation === "friend" && (
+                    <div className="flex gap-2">
+                      <Input value={msg} maxLength={80} placeholder="ひとこと応援メッセージ（80文字まで）" className="h-8 text-xs" onChange={(e) => setMsg(e.target.value)} />
+                      <Button size="sm" className="h-8" disabled={!msg.trim()} onClick={() => cheer("issho", msg)}>
+                        <Send className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  )}
+                  {extra.messages.length > 0 && (
+                    <div className="space-y-1">
+                      {extra.messages.map((m, i) => (
+                        <div key={i} className="break-words rounded-md bg-muted px-2 py-1 text-xs">
+                          <span className="font-semibold">{m.name}</span>：{m.message}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
 
               {data.relation !== "self" && data.relation !== "blocked" && (
                 <div className="flex gap-2">
@@ -341,6 +508,14 @@ export function UserProfileDialog({
           </div>
         )}
       </DialogContent>
+      <ProfileEditDialog
+        open={editing}
+        onOpenChange={setEditing}
+        onSaved={() => {
+          load();
+          onChanged?.();
+        }}
+      />
     </Dialog>
   );
 }
