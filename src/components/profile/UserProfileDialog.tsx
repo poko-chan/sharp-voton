@@ -7,24 +7,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CharacterAvatar } from "./CharacterAvatar";
-<<<<<<< HEAD
-import {
-  Award,
-  Clock,
-  Flame,
-  Lock,
-  UserPlus,
-  UserCheck,
-  Hourglass,
-  BookOpen,
-  Pin,
-  Target,
-} from "lucide-react";
-=======
 import { Award, Clock, Flame, Lock, UserPlus, UserCheck, Hourglass, BookOpen, Pin, Pencil, Crown, Trophy, Target, HandHeart, Send } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ProfileEditDialog } from "@/components/settings/ProfileExtrasSection";
->>>>>>> e6aee8e6903074d0054ade00f9d1112fe81bf8a7
 import { toast } from "sonner";
 
 export type BadgeView = {
@@ -62,18 +47,11 @@ export type ProfileCardData = {
     top_subjects: { name: string; color: string | null; m: number }[];
     top_materials: { name: string; m: number }[];
   };
-  weekly_goal: null | {
-    target_minutes: number;
-    note: string | null;
-    week_minutes: number;
-    shared: boolean;
-  };
   badges: BadgeView[];
 };
 
 export const BANNER_PRESETS: Record<string, string> = {
-  "preset:teal":
-    "linear-gradient(135deg, var(--primary), color-mix(in oklab, var(--primary) 40%, var(--accent)))",
+  "preset:teal": "linear-gradient(135deg, var(--primary), color-mix(in oklab, var(--primary) 40%, var(--accent)))",
   "preset:night": "linear-gradient(135deg, oklch(0.32 0.08 260), oklch(0.45 0.12 230))",
   "preset:sunrise": "linear-gradient(135deg, oklch(0.85 0.12 70), oklch(0.75 0.15 30))",
   "preset:forest": "linear-gradient(135deg, oklch(0.55 0.1 160), oklch(0.75 0.12 130))",
@@ -93,17 +71,12 @@ export const ANIMATED_BANNERS: Record<string, string> = {
 
 export function bannerStyle(url: string | null | undefined): React.CSSProperties {
   if (!url) return { background: BANNER_PRESETS["preset:teal"] };
-<<<<<<< HEAD
-  if (url.startsWith("preset:"))
-    return { background: BANNER_PRESETS[url] ?? BANNER_PRESETS["preset:teal"] };
-=======
   if (url.startsWith("preset:")) {
     const bg = BANNER_PRESETS[url] ?? BANNER_PRESETS["preset:teal"];
     if (url === "preset:stars") return { background: bg, animation: "profile-twinkle 4s ease-in-out infinite" };
     if (ANIMATED_BANNERS[url]) return { background: bg, backgroundSize: "300% 300%", animation: "profile-pan 14s ease infinite" };
     return { background: bg };
   }
->>>>>>> e6aee8e6903074d0054ade00f9d1112fe81bf8a7
   return { backgroundImage: `url(${url})`, backgroundSize: "cover", backgroundPosition: "center" };
 }
 
@@ -158,13 +131,7 @@ export function badgeStatus(b: BadgeView): "earned" | "open" | "closed" | "upcom
   return "open";
 }
 
-export function BadgeIcon({
-  b,
-  size = 48,
-}: {
-  b: Pick<BadgeView, "icon" | "image_url" | "color" | "name">;
-  size?: number;
-}) {
+export function BadgeIcon({ b, size = 48 }: { b: Pick<BadgeView, "icon" | "image_url" | "color" | "name">; size?: number }) {
   return (
     <div
       className="rounded-full grid place-items-center overflow-hidden shrink-0 ring-2 ring-background"
@@ -175,26 +142,16 @@ export function BadgeIcon({
       ) : b.icon ? (
         <span style={{ fontSize: size * 0.48 }}>{b.icon}</span>
       ) : (
-        <Award
-          className="text-primary-foreground"
-          style={{ width: size * 0.5, height: size * 0.5 }}
-        />
+        <Award className="text-primary-foreground" style={{ width: size * 0.5, height: size * 0.5 }} />
       )}
     </div>
   );
 }
 
-const fmtMin = (m: number) =>
-  m >= 60 ? `${Math.floor(m / 60)}時間${m % 60 ? `${m % 60}分` : ""}` : `${m}分`;
+const fmtMin = (m: number) => (m >= 60 ? `${Math.floor(m / 60)}時間${m % 60 ? `${m % 60}分` : ""}` : `${m}分`);
 const fmtDate = (s: string) => new Date(s).toLocaleDateString("ja-JP");
 
-export function ProfileAvatar({
-  p,
-  size = 80,
-}: {
-  p: Pick<ProfileCardData, "avatar_type" | "avatar_config" | "avatar_url" | "display_name">;
-  size?: number;
-}) {
+export function ProfileAvatar({ p, size = 80 }: { p: Pick<ProfileCardData, "avatar_type" | "avatar_config" | "avatar_url" | "display_name">; size?: number }) {
   if (p.avatar_type === "character" && p.avatar_config)
     return <CharacterAvatar config={p.avatar_config} size={size} className="rounded-full" />;
   return (
@@ -257,10 +214,7 @@ export function UserProfileDialog({
     if (!user || !userId) return;
     const { error } = await supabase
       .from("follows")
-      .upsert(
-        { follower_id: user.id, following_id: userId, status: "pending" },
-        { onConflict: "follower_id,following_id" },
-      );
+      .upsert({ follower_id: user.id, following_id: userId, status: "pending" }, { onConflict: "follower_id,following_id" });
     if (error) return toast.error(error.message);
     toast.success("フレンド申請を送りました");
     load();
@@ -279,9 +233,7 @@ export function UserProfileDialog({
     onChanged?.();
   };
 
-  const pinned = (data?.badges ?? []).filter(
-    (b) => b.earned_at && data?.pinned_badge_codes?.includes(b.code),
-  );
+  const pinned = (data?.badges ?? []).filter((b) => b.earned_at && data?.pinned_badge_codes?.includes(b.code));
   const earnedCount = (data?.badges ?? []).filter((b) => b.earned_at).length;
   const maxHeat = Math.max(1, ...(data?.stats?.heat ?? []).map((h) => h.m));
   const heatMap = new Map((data?.stats?.heat ?? []).map((h) => [h.d, h.m]));
@@ -303,9 +255,7 @@ export function UserProfileDialog({
     <Dialog open={!!userId} onOpenChange={onOpenChange}>
       <DialogContent className="w-[calc(100vw-1rem)] max-w-lg max-h-[85dvh] overflow-x-hidden overflow-y-auto p-0">
         <DialogTitle className="sr-only">プロフィール</DialogTitle>
-        {loading && !data && (
-          <div className="p-10 text-center text-sm text-muted-foreground">読み込み中…</div>
-        )}
+        {loading && !data && <div className="p-10 text-center text-sm text-muted-foreground">読み込み中…</div>}
         {data && (
           <div>
             <div className="relative h-28 profile-anim" style={bannerStyle(data.banner_url)}>
@@ -404,16 +354,11 @@ export function UserProfileDialog({
               {data.study_tags?.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {data.study_tags.map((t) => (
-                    <Badge key={t} variant="secondary">
-                      {t}
-                    </Badge>
+                    <Badge key={t} variant="secondary">{t}</Badge>
                   ))}
                 </div>
               )}
 
-<<<<<<< HEAD
-              {data.weekly_goal && <WeeklyGoal goal={data.weekly_goal} />}
-=======
               {extra && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-1 text-xs font-semibold">
@@ -452,7 +397,6 @@ export function UserProfileDialog({
                 </div>
               )}
 
->>>>>>> e6aee8e6903074d0054ade00f9d1112fe81bf8a7
 
               {data.relation !== "self" && data.relation !== "blocked" && (
                 <div className="flex gap-2">
@@ -484,11 +428,7 @@ export function UserProfileDialog({
                   <div className="grid grid-cols-3 gap-2">
                     <Stat icon={Clock} label="累計" value={fmtMin(data.stats.total_minutes)} />
                     <Stat icon={Clock} label="この7日" value={fmtMin(data.stats.week_minutes)} />
-                    <Stat
-                      icon={Flame}
-                      label="30日中の学習日"
-                      value={`${data.stats.month_days}日`}
-                    />
+                    <Stat icon={Flame} label="30日中の学習日" value={`${data.stats.month_days}日`} />
                   </div>
                   <div>
                     <div className="text-xs text-muted-foreground mb-1">直近30日</div>
@@ -505,22 +445,15 @@ export function UserProfileDialog({
                   </div>
                   {data.stats.top_subjects.length > 0 && (
                     <div>
-                      <div className="text-xs text-muted-foreground mb-1">
-                        よく学習している教科（30日）
-                      </div>
+                      <div className="text-xs text-muted-foreground mb-1">よく学習している教科（30日）</div>
                       <div className="flex h-2.5 rounded-full overflow-hidden bg-muted">
                         {data.stats.top_subjects.map((s) => (
-                          <div
-                            key={s.name}
-                            style={{ flex: s.m, background: s.color ?? "var(--primary)" }}
-                          />
+                          <div key={s.name} style={{ flex: s.m, background: s.color ?? "var(--primary)" }} />
                         ))}
                       </div>
                       <div className="mt-1 flex flex-wrap gap-x-3 text-xs">
                         {data.stats.top_subjects.map((s) => (
-                          <span key={s.name} className="break-words">
-                            {s.name} {fmtMin(s.m)}
-                          </span>
+                          <span key={s.name} className="break-words">{s.name} {fmtMin(s.m)}</span>
                         ))}
                       </div>
                     </div>
@@ -532,9 +465,7 @@ export function UserProfileDialog({
                         {data.stats.top_materials.map((m, i) => (
                           <li key={m.name} className="flex items-center gap-2">
                             <BookOpen className="h-3.5 w-3.5 text-primary" />
-                            <span className="flex-1 truncate">
-                              {i + 1}. {m.name}
-                            </span>
+                            <span className="flex-1 truncate">{i + 1}. {m.name}</span>
                             <span className="text-xs text-muted-foreground">{fmtMin(m.m)}</span>
                           </li>
                         ))}
@@ -550,8 +481,7 @@ export function UserProfileDialog({
 
               <div>
                 <div className="text-sm font-semibold mb-2 flex items-center gap-1">
-                  <Award className="h-4 w-4 text-primary" /> バッジ {earnedCount}/
-                  {data.badges.length}
+                  <Award className="h-4 w-4 text-primary" /> バッジ {earnedCount}/{data.badges.length}
                 </div>
                 <div className="grid grid-cols-5 gap-2">
                   {data.badges.map((b) => {
@@ -627,33 +557,6 @@ function Stat({ icon: Icon, label, value }: { icon: typeof Clock; label: string;
         <Icon className="h-3 w-3" /> {label}
       </div>
       <div className="break-words text-sm font-bold">{value}</div>
-    </div>
-  );
-}
-
-function WeeklyGoal({ goal }: { goal: NonNullable<ProfileCardData["weekly_goal"]> }) {
-  const progress = Math.min(
-    100,
-    Math.round((goal.week_minutes / Math.max(1, goal.target_minutes)) * 100),
-  );
-  return (
-    <div className="rounded-lg border p-3 space-y-2">
-      <div className="flex items-center justify-between gap-2 text-sm">
-        <span className="flex items-center gap-1 font-semibold">
-          <Target className="h-4 w-4 text-primary" /> 今週の目標
-        </span>
-        <span className="text-xs text-muted-foreground">{progress}%</span>
-      </div>
-      <div className="h-2 overflow-hidden rounded-full bg-muted">
-        <div
-          className="h-full rounded-full bg-primary transition-all"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-      <div className="text-xs text-muted-foreground">
-        {fmtMin(goal.week_minutes)} / {fmtMin(goal.target_minutes)}
-        {goal.note && <span className="ml-2 break-words">・ {goal.note}</span>}
-      </div>
     </div>
   );
 }
