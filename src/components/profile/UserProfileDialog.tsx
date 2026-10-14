@@ -7,10 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CharacterAvatar } from "./CharacterAvatar";
-import { Award, Clock, Flame, Lock, UserPlus, UserCheck, Hourglass, BookOpen, Pin, Pencil, Crown, Trophy, Target, HandHeart, Send } from "lucide-react";
+import { Award, Clock, Flame, Lock, UserPlus, UserCheck, Hourglass, BookOpen, Pin, Pencil, Crown, Trophy, Target, HandHeart, Send, CalendarDays, Check, Share2, Copy, RefreshCw, Medal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ProfileEditDialog } from "@/components/settings/ProfileExtrasSection";
 import { toast } from "sonner";
+import { Progress } from "@/components/ui/progress";
 
 export type BadgeView = {
   code: string;
@@ -46,6 +47,12 @@ export type ProfileCardData = {
     heat: { d: string; m: number }[];
     top_subjects: { name: string; color: string | null; m: number }[];
     top_materials: { name: string; m: number }[];
+  };
+  weekly_goal: null | {
+    target_minutes: number;
+    note: string | null;
+    week_minutes: number;
+    shared: boolean;
   };
   badges: BadgeView[];
 };
@@ -178,6 +185,8 @@ export function UserProfileDialog({
   const [selected, setSelected] = useState<BadgeView | null>(null);
   const [editing, setEditing] = useState(false);
   const [msg, setMsg] = useState("");
+  const [badgeFilter, setBadgeFilter] = useState<"all" | "earned" | "locked">("all");
+  const [copied, setCopied] = useState(false);
 
   const load = async () => {
     if (!userId) return;
@@ -195,8 +204,41 @@ export function UserProfileDialog({
     setExtra(null);
     setSelected(null);
     setMsg("");
+    setBadgeFilter("all");
+    setCopied(false);
     load();
   }, [userId]);
+
+  const copyProfileLink = async () => {
+    if (!data) return;
+    const link = `${window.location.origin}/friends?profile=${data.id}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      toast.success("プロフィールリンクをコピーしました");
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("リンクをコピーできませんでした");
+    }
+  };
+
+  const shareProfile = async () => {
+    if (!data) return;
+    const link = `${window.location.origin}/friends?profile=${data.id}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${data.display_name ?? data.username} のプロフィール`,
+          text: data.status_message ?? "Study#のプロフィールを見てみよう",
+          url: link,
+        });
+      } catch (error) {
+        if ((error as DOMException).name !== "AbortError") toast.error("共有できませんでした");
+      }
+      return;
+    }
+    await copyProfileLink();
+  };
 
   const cheer = async (kind: string, message?: string) => {
     if (!userId) return;
@@ -250,6 +292,27 @@ export function UserProfileDialog({
     ? Math.ceil((new Date(extra.goal_date + "T00:00:00").getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000)
     : null;
   const totalCheers = Object.values(extra?.cheers ?? {}).reduce((a, b) => a + b, 0);
+  const visibleBadges = data?.badges.filter((b) => {
+    if (badgeFilter === "earned") return !!b.earned_at;
+    if (badgeFilter === "locked") return !b.earned_at;
+    return true;
+  }) ?? [];
+  const completion = data?.relation === "self"
+    ? [
+        !!data.display_name,
+        !!data.avatar_url || data.avatar_type === "character",
+        !!data.bio,
+        (data.study_tags ?? []).length > 0,
+        !!extra?.goal_text,
+        pinned.length > 0,
+      ].filter(Boolean).length
+    : 0;
+  const nextStreak = [3, 7, 14, 30, 60, 100].find((n) => n > (extra?.streak ?? 0));
+  const weeklyGoal = data?.weekly_goal;
+  const weeklyTarget = weeklyGoal ? Math.max(0, weeklyGoal.target_minutes) : 0;
+  const weeklyMinutes = weeklyGoal ? Math.max(0, weeklyGoal.week_minutes) : 0;
+  const weeklyProgress = weeklyTarget > 0 ? Math.min(100, Math.round((weeklyMinutes / weeklyTarget) * 100)) : 0;
+  const weeklyDone = weeklyTarget > 0 && weeklyMinutes >= weeklyTarget;
 
   return (
     <Dialog open={!!userId} onOpenChange={onOpenChange}>
@@ -310,7 +373,32 @@ export function UserProfileDialog({
                     <span className="text-primary font-medium">・ {extra.streak}日連続</span>
                   )}
                 </div>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={shareProfile}>
+                    <Share2 className="mr-1 h-3 w-3" /> 共有
+                  </Button>
+                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={copyProfileLink}>
+                    {copied ? <Check className="mr-1 h-3 w-3" /> : <Copy className="mr-1 h-3 w-3" />}
+                    {copied ? "コピー済み" : "リンクをコピー"}
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-7 px-2" onClick={load} aria-label="プロフィールを再読み込み">
+                    <RefreshCw className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
+
+              {data.relation === "self" && (
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold">プロフィール完成度</span>
+                    <span className="font-bold text-primary">{completion}/6</span>
+                  </div>
+                  <Progress value={(completion / 6) * 100} className="mt-2 h-2" />
+                  <div className="mt-2 text-[11px] text-muted-foreground">
+                    {completion === 6 ? "すべて設定済みです。あなたらしさが伝わるプロフィールです！" : "自己紹介・学習スタイル・目標を設定すると、もっと魅力的になります。"}
+                  </div>
+                </div>
+              )}
 
               {pinned.length > 0 && (
                 <div className="rounded-xl border bg-muted/40 p-3">
@@ -348,6 +436,40 @@ export function UserProfileDialog({
                       <div className="text-lg font-bold text-primary">{goalDays >= 0 ? `${goalDays}日` : "-"}</div>
                     </div>
                   )}
+                  {nextStreak && extra?.streak != null && (
+                    <div className="flex items-center gap-3 rounded-lg border border-orange-500/20 bg-orange-500/5 px-3 py-2">
+                      <Medal className="h-5 w-5 shrink-0 text-orange-500" />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-semibold">次の継続マイルストーン</div>
+                        <div className="text-[11px] text-muted-foreground">{nextStreak}日連続まであと {nextStreak - extra.streak}日</div>
+                      </div>
+                      <div className="text-sm font-bold text-orange-500">{extra.streak}/{nextStreak}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+              {weeklyGoal && (
+                <div className="space-y-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-3">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                      {weeklyDone ? <Check className="h-4 w-4" /> : <CalendarDays className="h-4 w-4" />}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="text-xs font-semibold">今週の学習目標</div>
+                        <div className="text-xs font-bold text-primary">{weeklyProgress}%</div>
+                      </div>
+                      <div className="mt-1 text-sm font-semibold">
+                        {weeklyMinutes}分 / {weeklyTarget}分
+                      </div>
+                      {weeklyGoal.note && <div className="mt-0.5 break-words text-xs text-muted-foreground">{weeklyGoal.note}</div>}
+                    </div>
+                  </div>
+                  <Progress value={weeklyProgress} className="h-2" aria-label={`今週の学習目標 ${weeklyProgress}%`} />
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                    <span>{weeklyDone ? "目標達成！" : `あと ${Math.max(0, weeklyTarget - weeklyMinutes)}分`}</span>
+                    <span>{weeklyGoal.shared ? "フレンドに公開中" : "自分だけに表示"}</span>
+                  </div>
                 </div>
               )}
               {data.bio && <p className="break-words text-sm whitespace-pre-wrap">{data.bio}</p>}
@@ -480,11 +602,29 @@ export function UserProfileDialog({
               )}
 
               <div>
-                <div className="text-sm font-semibold mb-2 flex items-center gap-1">
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <div className="text-sm font-semibold flex items-center gap-1">
                   <Award className="h-4 w-4 text-primary" /> バッジ {earnedCount}/{data.badges.length}
+                  </div>
+                  <div className="flex gap-1">
+                    {(["all", "earned", "locked"] as const).map((filter) => (
+                      <Button
+                        key={filter}
+                        variant={badgeFilter === filter ? "secondary" : "ghost"}
+                        size="sm"
+                        className="h-6 px-2 text-[10px]"
+                        onClick={() => setBadgeFilter(filter)}
+                      >
+                        {filter === "all" ? "すべて" : filter === "earned" ? "獲得済み" : "未獲得"}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
+                {visibleBadges.length === 0 ? (
+                  <div className="rounded-lg bg-muted/50 p-3 text-center text-xs text-muted-foreground">この条件のバッジはありません</div>
+                ) : (
                 <div className="grid grid-cols-5 gap-2">
-                  {data.badges.map((b) => {
+                  {visibleBadges.map((b) => {
                     const st = badgeStatus(b);
                     return (
                       <button
@@ -502,6 +642,7 @@ export function UserProfileDialog({
                     );
                   })}
                 </div>
+                )}
                 {selected && <BadgeDetail b={selected} />}
               </div>
             </div>

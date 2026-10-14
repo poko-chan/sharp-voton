@@ -128,6 +128,14 @@ function FriendsPage() {
     load();
   }, [user?.id]);
 
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("profile");
+    if (!id) return;
+    fetchPublicProfiles([id]).then(([profile]) => {
+      if (profile) setProfileTarget(profile);
+    });
+  }, [user?.id]);
+
   const doSearch = async () => {
     if (!search.trim()) {
       setResults(null);
