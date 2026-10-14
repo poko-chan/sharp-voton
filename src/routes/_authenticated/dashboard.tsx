@@ -768,7 +768,7 @@ function FullDashboard() {
               <p className="mt-1 text-sm text-muted-foreground">{nextAction.detail}</p>
             </div>
             <Button asChild className="w-full sm:w-fit">
-              <Link to={nextAction.to}>
+              <Link to={nextAction.to as any}>
                 <nextAction.icon className="mr-2 h-4 w-4" />
                 {nextAction.label}
               </Link>
