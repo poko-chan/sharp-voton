@@ -26,6 +26,7 @@ import { ChatComposer, ChatSearchBar } from "./ChatComposer";
 import { ChatRichCard, isRichCard, useTypingIndicator, TypingLine } from "./ChatRichCard";
 import { playSendSound } from "@/lib/chat-sound";
 import { useLocalPrefs } from "@/lib/user-prefs";
+import { useAuth } from "@/lib/auth-context";
 import { UserProfileDialog } from "@/components/profile/UserProfileDialog";
 
 export function GroupChatPanel({
@@ -50,6 +51,10 @@ export function GroupChatPanel({
   const [query, setQuery] = useState("");
   const [profileTarget, setProfileTarget] = useState<string | null>(null);
   const { prefs } = useLocalPrefs();
+  const { user: authUser } = useAuth();
+  const myName =
+    (authUser?.user_metadata?.display_name as string | undefined) ??
+    (authUser?.email?.split("@")[0] ?? "メンバー");
   const typing = useTypingIndicator(`group-${groupId}`, userId, myName);
 
   const messages = useQuery({
