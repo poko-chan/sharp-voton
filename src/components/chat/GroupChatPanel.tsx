@@ -23,8 +23,10 @@ import {
 import { ChatImage, isImageMessage } from "./ChatImage";
 import { ReactionBar, ReactionPicker } from "./MessageReactions";
 import { ChatComposer, ChatSearchBar } from "./ChatComposer";
+import { ChatRichCard, isRichCard, useTypingIndicator, TypingLine } from "./ChatRichCard";
 import { playSendSound } from "@/lib/chat-sound";
 import { useLocalPrefs } from "@/lib/user-prefs";
+import { useAuth } from "@/lib/auth-context";
 import { UserProfileDialog } from "@/components/profile/UserProfileDialog";
 
 export function GroupChatPanel({
@@ -49,6 +51,11 @@ export function GroupChatPanel({
   const [query, setQuery] = useState("");
   const [profileTarget, setProfileTarget] = useState<string | null>(null);
   const { prefs } = useLocalPrefs();
+  const { user: authUser } = useAuth();
+  const myName =
+    (authUser?.user_metadata?.display_name as string | undefined) ??
+    (authUser?.email?.split("@")[0] ?? "メンバー");
+  const typing = useTypingIndicator(`group-${groupId}`, userId, myName);
 
   const messages = useQuery({
     queryKey: ["chat-group-msgs", groupId],
@@ -280,6 +287,8 @@ export function GroupChatPanel({
                       <div className="flex items-end gap-2">
                         {isImageMessage(m.content) && !isDeleted ? (
                           <ChatImage content={m.content} />
+                        ) : isRichCard(m.content) && !isDeleted ? (
+                          <ChatRichCard content={m.content} />
                         ) : (
                           <span className="text-[1em] leading-relaxed whitespace-pre-wrap break-words">
                             {m.content
@@ -357,6 +366,7 @@ export function GroupChatPanel({
         })()}
         <div ref={endRef} />
       </div>
+      <TypingLine names={typing.names} />
       {replyTo && (
         <div className="border-t px-3 py-2 flex items-center gap-2 bg-muted/50">
           <Reply className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -378,6 +388,16 @@ export function GroupChatPanel({
         value={text}
         onChange={setText}
         onSend={send}
+        onTyping={typing.notify}
+        onSendRaw={async (body) => {
+          try {
+            await ((b: string) => sendGroupMessage(groupId, b))(body);
+            qc.invalidateQueries({ queryKey: ["chat-group-msgs", groupId] });
+            qc.invalidateQueries({ queryKey: ["chat-conversations"] });
+          } catch (e: any) {
+            toast.error(e.message ?? "送信に失敗しました");
+          }
+        }}
         onSendImage={async (file) => {
           try {
             const body = await uploadChatImage(file, userId);

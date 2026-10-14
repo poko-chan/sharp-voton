@@ -33,6 +33,8 @@ import {
 import { toast } from "sonner";
 import { fetchPublicProfiles } from "@/lib/public-profiles";
 import { UserProfileDialog } from "@/components/profile/UserProfileDialog";
+import { ProfileEditDialog } from "@/components/settings/ProfileExtrasSection";
+import { Pencil } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/friends")({ component: FriendsPage });
 
@@ -63,6 +65,8 @@ function FriendsPage() {
   const [board, setBoard] = useState<Array<Profile & { minutes: number }>>([]);
   const [profileTarget, setProfileTarget] = useState<Profile | null>(null);
   const [tab, setTab] = useState("friends");
+  const [me, setMe] = useState<Profile | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   const load = async () => {
     if (!user) return;
@@ -90,6 +94,7 @@ function FriendsPage() {
     );
     const profs = await fetchPublicProfiles(all);
     const map = new Map((profs ?? []).map((p: any) => [p.id, p]));
+    setMe((map.get(user.id) as Profile) ?? null);
     setFollowing(ids1.map((id) => map.get(id)).filter(Boolean) as Profile[]);
     setFollowers(ids2.map((id) => map.get(id)).filter(Boolean) as Profile[]);
     setIncomingPending(ids2Pending.map((id) => map.get(id)).filter(Boolean) as Profile[]);
@@ -305,6 +310,27 @@ function FriendsPage() {
         <Users className="h-7 w-7" />
         <h1 className="text-3xl font-bold">フレンド</h1>
       </div>
+
+      {me && (
+        <Card className="p-4 flex flex-wrap items-center gap-3">
+          <Avatar className="h-12 w-12">
+            <AvatarImage src={me.avatar_url ?? undefined} />
+            <AvatarFallback>{initials(me)}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-[140px]">
+            <div className="text-xs text-muted-foreground">あなたのプロフィール</div>
+            <div className="font-semibold">{me.display_name ?? me.username}</div>
+            <div className="text-xs text-muted-foreground">@{me.username}</div>
+          </div>
+          <Button size="sm" variant="outline" onClick={() => setProfileTarget(me)}>
+            見る
+          </Button>
+          <Button size="sm" onClick={() => setEditOpen(true)}>
+            <Pencil className="h-4 w-4 mr-1" /> 編集する
+          </Button>
+        </Card>
+      )}
+      <ProfileEditDialog open={editOpen} onOpenChange={setEditOpen} onSaved={load} />
 
       <Card className="p-4 space-y-2">
         <div className="font-semibold flex items-center gap-1.5">
