@@ -326,16 +326,16 @@ function FullDashboard() {
       minutes: dowCounts[i] ? Math.round(t / dowCounts[i]) : 0,
     }));
 
-    const subjMap = new Map<string, { v: number; c: string }>();
+    const subjMap = new Map<string, { id: string; v: number; c: string }>();
     logs.forEach((l: any) => {
       const name = l.subjects?.name ?? "その他";
       const color = l.subjects?.color ?? "#94a3b8";
-      const c = subjMap.get(name) ?? { v: 0, c: color };
+      const c = subjMap.get(name) ?? { id: l.subject_id ?? "", v: 0, c: color };
       c.v += l.duration_minutes ?? 0;
       subjMap.set(name, c);
     });
     const subjArr = Array.from(subjMap.entries())
-      .map(([name, { v, c }]) => ({ name, value: v, color: c }))
+      .map(([name, { id, v, c }]) => ({ id, name, value: v, color: c }))
       .sort((a, b) => b.value - a.value);
 
     const matMap = new Map<string, number>();
@@ -521,6 +521,24 @@ function FullDashboard() {
         icon: CalendarDays,
       };
     }
+    const leastStudiedSubject = subjects
+      .map((subject) => ({
+        ...subject,
+        minutes: bySubject.find((item) => item.id === subject.id)?.value ?? 0,
+      }))
+      .sort((a, b) => a.minutes - b.minutes)[0];
+    if (leastStudiedSubject) {
+      return {
+        title: `${leastStudiedSubject.name}を少し復習しましょう`,
+        detail:
+          leastStudiedSubject.minutes > 0
+            ? `累計 ${fmt(leastStudiedSubject.minutes)}。偏りを整えるチャンスです`
+            : "まだ記録がありません。最初の学習を記録してみましょう",
+        to: `/study?subject=${encodeURIComponent(leastStudiedSubject.id)}` as const,
+        label: "この教科を記録",
+        icon: BookOpen,
+      };
+    }
     return {
       title: dailyPct >= 100 ? "この調子で続けましょう" : "まずは25分集中してみましょう",
       detail: dailyPct >= 100 ? "今日の目標は達成済みです" : "短いセッションから始められます",
@@ -528,7 +546,7 @@ function FullDashboard() {
       label: "タイマー開始",
       icon: Timer,
     };
-  }, [goals, exams, dailyPct]);
+  }, [goals, exams, dailyPct, subjects, bySubject]);
 
   // 自動インサイト
   const insights = useMemo(() => {
@@ -1311,7 +1329,6 @@ function FullDashboard() {
           </div>
         </Card>
       )}
-
 
       <WeeklySubjectDiff />
       <DashboardRanking />
