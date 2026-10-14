@@ -313,10 +313,17 @@ export function UserProfileDialog({
   const weeklyMinutes = weeklyGoal ? Math.max(0, weeklyGoal.week_minutes) : 0;
   const weeklyProgress = weeklyTarget > 0 ? Math.min(100, Math.round((weeklyMinutes / weeklyTarget) * 100)) : 0;
   const weeklyDone = weeklyTarget > 0 && weeklyMinutes >= weeklyTarget;
+  const studyMilestones = [
+    { minutes: 60, label: "学習スタート", icon: "🌱" },
+    { minutes: 600, label: "習慣の芽", icon: "🌿" },
+    { minutes: 3000, label: "継続マスター", icon: "🔥" },
+    { minutes: 10000, label: "学習レジェンド", icon: "👑" },
+  ];
+  const totalMinutes = data?.stats?.total_minutes ?? 0;
 
   return (
     <Dialog open={!!userId} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-1rem)] max-w-lg max-h-[85dvh] overflow-x-hidden overflow-y-auto p-0">
+      <DialogContent className="box-border w-[calc(100vw-1rem)] max-w-lg max-h-[85dvh] min-w-0 overflow-x-hidden overflow-y-auto p-0">
         <DialogTitle className="sr-only">プロフィール</DialogTitle>
         {loading && !data && <div className="p-10 text-center text-sm text-muted-foreground">読み込み中…</div>}
         {data && (
@@ -346,7 +353,7 @@ export function UserProfileDialog({
                 </span>
               )}
             </div>
-            <div className="min-w-0 px-5 pt-2 pb-5 space-y-4">
+            <div className="min-w-0 max-w-full overflow-hidden px-5 pt-2 pb-5 space-y-4">
               <div>
                 {extra?.title && (
                   <div className="mb-1 inline-flex items-center gap-1 rounded-md bg-primary px-2 py-0.5 text-[11px] font-bold text-primary-foreground">
@@ -436,16 +443,16 @@ export function UserProfileDialog({
                       <div className="text-lg font-bold text-primary">{goalDays >= 0 ? `${goalDays}日` : "-"}</div>
                     </div>
                   )}
-                  {nextStreak && extra?.streak != null && (
-                    <div className="flex items-center gap-3 rounded-lg border border-orange-500/20 bg-orange-500/5 px-3 py-2">
-                      <Medal className="h-5 w-5 shrink-0 text-orange-500" />
-                      <div className="min-w-0 flex-1">
-                        <div className="text-xs font-semibold">次の継続マイルストーン</div>
-                        <div className="text-[11px] text-muted-foreground">{nextStreak}日連続まであと {nextStreak - extra.streak}日</div>
-                      </div>
-                      <div className="text-sm font-bold text-orange-500">{extra.streak}/{nextStreak}</div>
-                    </div>
-                  )}
+                </div>
+              )}
+              {nextStreak && extra?.streak != null && (
+                <div className="flex min-w-0 items-center gap-3 rounded-lg border border-orange-500/20 bg-orange-500/5 px-3 py-2">
+                  <Medal className="h-5 w-5 shrink-0 text-orange-500" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-semibold">次の継続マイルストーン</div>
+                    <div className="break-words text-[11px] text-muted-foreground">{nextStreak}日連続まであと {nextStreak - extra.streak}日</div>
+                  </div>
+                  <div className="shrink-0 text-sm font-bold text-orange-500">{extra.streak}/{nextStreak}</div>
                 </div>
               )}
               {weeklyGoal && (
@@ -500,8 +507,8 @@ export function UserProfileDialog({
                     })}
                   </div>
                   {data.relation === "friend" && (
-                    <div className="flex gap-2">
-                      <Input value={msg} maxLength={80} placeholder="ひとこと応援メッセージ（80文字まで）" className="h-8 text-xs" onChange={(e) => setMsg(e.target.value)} />
+                    <div className="flex min-w-0 gap-2">
+                      <Input value={msg} maxLength={80} placeholder="ひとこと応援メッセージ（80文字まで）" className="h-8 min-w-0 text-xs" onChange={(e) => setMsg(e.target.value)} />
                       <Button size="sm" className="h-8" disabled={!msg.trim()} onClick={() => cheer("issho", msg)}>
                         <Send className="h-3.5 w-3.5" />
                       </Button>
@@ -547,7 +554,7 @@ export function UserProfileDialog({
 
               {data.stats ? (
                 <div className="space-y-3">
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                     <Stat icon={Clock} label="累計" value={fmtMin(data.stats.total_minutes)} />
                     <Stat icon={Clock} label="この7日" value={fmtMin(data.stats.week_minutes)} />
                     <Stat icon={Flame} label="30日中の学習日" value={`${data.stats.month_days}日`} />
@@ -600,6 +607,28 @@ export function UserProfileDialog({
                   <Lock className="h-3.5 w-3.5" /> 学習記録は非公開です
                 </div>
               )}
+
+              <div className="rounded-xl border bg-muted/30 p-3">
+                <div className="mb-2 flex items-center gap-1 text-xs font-semibold">
+                  <Medal className="h-3.5 w-3.5 text-primary" /> 学習マイルストーン
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {studyMilestones.map((milestone) => {
+                    const earned = totalMinutes >= milestone.minutes;
+                    return (
+                      <div
+                        key={milestone.minutes}
+                        className={`min-w-0 rounded-lg border px-2 py-2 text-center ${earned ? "border-primary/30 bg-primary/10" : "opacity-50"}`}
+                        title={`${milestone.minutes.toLocaleString()}分の学習で解放`}
+                      >
+                        <div className="text-lg">{milestone.icon}</div>
+                        <div className="truncate text-[10px] font-semibold">{milestone.label}</div>
+                        <div className="text-[10px] text-muted-foreground">{milestone.minutes.toLocaleString()}分</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
 
               <div>
                 <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
