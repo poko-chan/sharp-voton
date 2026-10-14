@@ -1,10 +1,23 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { Music2, Volume2, VolumeX, X, Link as LinkIcon, Plus, Upload } from "lucide-react";
+import {
+  Heart,
+  Music2,
+  Pause,
+  Play,
+  Volume2,
+  VolumeX,
+  X,
+  Link as LinkIcon,
+  Plus,
+  Upload,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { toast } from "sonner";
 
 type Preset = "off" | "birds" | "rain" | "wave" | "fire" | "white" | "pink" | "brown";
+type MarketTrack = { id: string; title: string; cover_path: string; audio_path: string };
 
 /**
  * Procedural ambient sounds using Web Audio API — no external assets.
@@ -33,6 +46,11 @@ export function AmbientSound() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [playingCustomId, setPlayingCustomId] = useState<string | null>(null);
+  const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
+  const [marketTracks, setMarketTracks] = useState<MarketTrack[]>([]);
+  const [favoriteTrackIds, setFavoriteTrackIds] = useState<string[]>([]);
+  const [musicView, setMusicView] = useState<"favorites" | "market">("favorites");
+  const [coverUrls, setCoverUrls] = useState<Record<string, string>>({});
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ctxRef = useRef<AudioContext | null>(null);
   const gainRef = useRef<GainNode | null>(null);
@@ -46,6 +64,47 @@ export function AmbientSound() {
       } catch {}
     };
   }, []);
+
+  useEffect(() => {
+    if (!visible || !user?.id) return;
+    let active = true;
+    const loadMarketplace = async () => {
+      const [tracksResult, favoritesResult] = await Promise.all([
+        supabase
+          .from("timer_music_tracks")
+          .select("id,title,cover_path,audio_path")
+          .eq("is_active", true)
+          .order("sort_order")
+          .order("created_at", { ascending: false }),
+        supabase.from("timer_music_favorites").select("track_id").eq("user_id", user.id),
+      ]);
+      if (!active) return;
+      if (tracksResult.error) toast.error(tracksResult.error.message);
+      if (favoritesResult.error) toast.error(favoritesResult.error.message);
+      const tracks = tracksResult.data ?? [];
+      setMarketTracks(tracks);
+      if (tracks.length) {
+        const { data: signed } = await supabase.storage
+          .from("timer-music")
+          .createSignedUrls(
+            tracks.map((t) => t.cover_path),
+            60 * 60 * 6,
+          );
+        if (active && signed) {
+          const map: Record<string, string> = {};
+          signed.forEach((s) => {
+            if (s.path && s.signedUrl) map[s.path] = s.signedUrl;
+          });
+          setCoverUrls(map);
+        }
+      }
+      setFavoriteTrackIds((favoritesResult.data ?? []).map((favorite) => favorite.track_id));
+    };
+    void loadMarketplace();
+    return () => {
+      active = false;
+    };
+  }, [visible, user?.id]);
 
   useEffect(() => {
     if (gainRef.current && ctxRef.current) {
@@ -63,6 +122,7 @@ export function AmbientSound() {
       audioRef.current = null;
     }
     setPlayingCustomId(null);
+    setPlayingTrackId(null);
   };
 
   const persistCustoms = (next: typeof customs) => {
@@ -91,6 +151,43 @@ export function AmbientSound() {
     a.play().catch(() => {});
     audioRef.current = a;
     setPlayingCustomId(c.id);
+  };
+
+  const playMarketplaceTrack = async (track: MarketTrack) => {
+    if (playingTrackId === track.id) {
+      stop();
+      return;
+    }
+    stop();
+    setPreset("off");
+    const { data, error } = await supabase.storage
+      .from("timer-music")
+      .createSignedUrl(track.audio_path, 60 * 60 * 6);
+    if (error || !data) return toast.error("曲を読み込めませんでした");
+    const audio = new Audio(data.signedUrl);
+    audio.loop = true;
+    audio.volume = vol;
+    audio.play().catch(() => toast.error("曲を再生できませんでした"));
+    audioRef.current = audio;
+    setPlayingTrackId(track.id);
+  };
+
+  const toggleFavorite = async (track: MarketTrack) => {
+    if (!user) return;
+    const isFavorite = favoriteTrackIds.includes(track.id);
+    const result = isFavorite
+      ? await supabase
+          .from("timer_music_favorites")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("track_id", track.id)
+      : await supabase
+          .from("timer_music_favorites")
+          .insert({ user_id: user.id, track_id: track.id });
+    if (result.error) return toast.error(result.error.message);
+    setFavoriteTrackIds((ids) =>
+      isFavorite ? ids.filter((id) => id !== track.id) : [...ids, track.id],
+    );
   };
 
   const handleUpload = async (file: File) => {
@@ -304,6 +401,37 @@ export function AmbientSound() {
     }
   };
 
+  const renderMarketTrack = (track: MarketTrack) => (
+    <div
+      key={track.id}
+      className="flex items-center gap-2 rounded-md border border-border/60 p-1.5"
+    >
+      <button
+        type="button"
+        onClick={() => playMarketplaceTrack(track)}
+        className="grid h-8 w-8 shrink-0 place-items-center rounded-full hover:bg-accent"
+        aria-label={playingTrackId === track.id ? `${track.title}を停止` : `${track.title}を再生`}
+      >
+        {playingTrackId === track.id ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+      </button>
+      <img
+        src={coverUrls[track.cover_path]}
+        alt=""
+        className="h-9 w-9 rounded object-cover"
+      />
+      <span className="min-w-0 flex-1 truncate text-xs">{track.title}</span>
+      <button
+        type="button"
+        onClick={() => void toggleFavorite(track)}
+        className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-rose-500 hover:bg-accent"
+        aria-label={favoriteTrackIds.includes(track.id) ? "お気に入りを解除" : "お気に入りに追加"}
+        title={favoriteTrackIds.includes(track.id) ? "お気に入りを解除" : "お気に入りに追加"}
+      >
+        <Heart className={`h-4 w-4 ${favoriteTrackIds.includes(track.id) ? "fill-current" : ""}`} />
+      </button>
+    </div>
+  );
+
   if (!visible) return null;
 
   return (
@@ -321,7 +449,7 @@ export function AmbientSound() {
         )}
       </button>
       {open && (
-        <div className="fixed bottom-36 right-4 z-[60] w-72 rounded-2xl border border-white/20 bg-popover/95 backdrop-blur-2xl p-4 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] space-y-3 ring-1 ring-white/10">
+        <div className="fixed bottom-36 right-4 z-[60] w-72 max-h-[70dvh] overflow-y-auto rounded-2xl border border-white/20 bg-popover/95 backdrop-blur-2xl p-4 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] space-y-3 ring-1 ring-white/10">
           <div className="flex items-center justify-between">
             <div className="text-sm font-semibold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               🎵 音楽 / 環境音
@@ -378,97 +506,136 @@ export function AmbientSound() {
           </div>
 
           <div className="pt-2 border-t border-border/60 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <div className="text-[11px] font-semibold flex items-center gap-1">
-                <Music2 className="h-3 w-3" />
-                お気に入りの音楽
-              </div>
+            <div className="grid grid-cols-2 rounded-md bg-muted p-1 text-xs">
               <button
-                className="text-[10px] text-primary hover:underline"
-                onClick={() => setShowAdd((v) => !v)}
+                type="button"
+                onClick={() => setMusicView("favorites")}
+                aria-pressed={musicView === "favorites"}
+                className={`rounded px-2 py-1.5 ${musicView === "favorites" ? "bg-background shadow-sm" : "text-muted-foreground"}`}
               >
-                <Plus className="inline h-3 w-3" />
-                追加
+                音楽
+              </button>
+              <button
+                type="button"
+                onClick={() => setMusicView("market")}
+                aria-pressed={musicView === "market"}
+                className={`rounded px-2 py-1.5 ${musicView === "market" ? "bg-background shadow-sm" : "text-muted-foreground"}`}
+              >
+                マーケット
               </button>
             </div>
-            {showAdd && (
-              <div className="space-y-1.5">
-                <input
-                  className="w-full text-xs p-1.5 rounded border bg-background"
-                  placeholder="名前 (任意・ファイル名を使用)"
-                  value={newLabel}
-                  onChange={(e) => setNewLabel(e.target.value)}
-                />
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="audio/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) handleUpload(f);
-                  }}
-                />
-                <button
-                  className="w-full text-xs py-1.5 rounded bg-primary text-primary-foreground flex items-center justify-center gap-1 disabled:opacity-50"
-                  disabled={uploading || !user}
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload className="h-3 w-3" />
-                  {uploading ? "アップロード中..." : "音声ファイルをアップロード"}
-                </button>
-                <div className="text-[10px] text-muted-foreground flex items-center gap-1 pt-1 border-t border-border/40 mt-1">
-                  <LinkIcon className="h-3 w-3" />
-                  URL から追加（直リンクのみ）
-                </div>
-                <input
-                  className="w-full text-xs p-1.5 rounded border bg-background"
-                  placeholder="https://.../music.mp3"
-                  value={newUrl}
-                  onChange={(e) => setNewUrl(e.target.value)}
-                />
-                <button
-                  className="w-full text-xs py-1 rounded border bg-background hover:bg-accent"
-                  onClick={() => {
-                    if (!newLabel.trim() || !newUrl.trim()) return;
-                    persistCustoms([
-                      ...customs,
-                      { id: crypto.randomUUID(), label: newLabel.trim(), url: newUrl.trim() },
-                    ]);
-                    setNewLabel("");
-                    setNewUrl("");
-                    setShowAdd(false);
-                  }}
-                >
-                  URLを保存
-                </button>
+            {musicView === "market" ? (
+              <div className="max-h-48 space-y-1.5 overflow-y-auto">
+                {marketTracks.length === 0 && (
+                  <div className="py-3 text-center text-[10px] text-muted-foreground">
+                    公開中の曲はありません
+                  </div>
+                )}
+                {marketTracks.map(renderMarketTrack)}
               </div>
-            )}
-            <div className="max-h-32 overflow-auto space-y-1">
-              {customs.length === 0 && (
-                <div className="text-[10px] text-muted-foreground">まだ登録されていません</div>
-              )}
-              {customs.map((c) => (
-                <div
-                  key={c.id}
-                  className={`flex items-center gap-1.5 text-xs rounded border px-2 py-1 ${playingCustomId === c.id ? "bg-primary/15 border-primary" : ""}`}
-                >
+            ) : (
+              <>
+                <div className="max-h-36 space-y-1.5 overflow-y-auto">
+                  {marketTracks
+                    .filter((track) => favoriteTrackIds.includes(track.id))
+                    .map(renderMarketTrack)}
+                  {marketTracks.every((track) => !favoriteTrackIds.includes(track.id)) &&
+                    customs.length === 0 && (
+                      <div className="py-2 text-center text-[10px] text-muted-foreground">
+                        マーケットでハートを押すと、ここに追加されます
+                      </div>
+                    )}
+                </div>
+                <div className="flex items-center justify-between border-t border-border/50 pt-2">
+                  <div className="text-[11px] font-semibold">マイ音源</div>
                   <button
-                    className="flex-1 text-left truncate"
-                    onClick={() => (playingCustomId === c.id ? stop() : playCustom(c))}
+                    className="text-[10px] text-primary hover:underline"
+                    onClick={() => setShowAdd((value) => !value)}
                   >
-                    {playingCustomId === c.id ? "⏸" : "▶"} {c.label}{" "}
-                    {c.path && <span className="text-[9px] text-muted-foreground">📁</span>}
-                  </button>
-                  <button
-                    className="text-muted-foreground hover:text-destructive"
-                    onClick={() => removeCustom(c)}
-                  >
-                    <X className="h-3 w-3" />
+                    <Plus className="inline h-3 w-3" /> 追加
                   </button>
                 </div>
-              ))}
-            </div>
+                {showAdd && (
+                  <div className="space-y-1.5">
+                    <input
+                      className="w-full rounded border bg-background p-1.5 text-xs"
+                      placeholder="名前 (任意・ファイル名を使用)"
+                      value={newLabel}
+                      onChange={(event) => setNewLabel(event.target.value)}
+                    />
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="audio/*"
+                      className="hidden"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        if (file) handleUpload(file);
+                      }}
+                    />
+                    <button
+                      className="flex w-full items-center justify-center gap-1 rounded bg-primary py-1.5 text-xs text-primary-foreground disabled:opacity-50"
+                      disabled={uploading || !user}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload className="h-3 w-3" />
+                      {uploading ? "アップロード中..." : "音声ファイルをアップロード"}
+                    </button>
+                    <div className="mt-1 flex items-center gap-1 border-t border-border/40 pt-1 text-[10px] text-muted-foreground">
+                      <LinkIcon className="h-3 w-3" /> URL から追加（直リンクのみ）
+                    </div>
+                    <input
+                      className="w-full rounded border bg-background p-1.5 text-xs"
+                      placeholder="https://.../music.mp3"
+                      value={newUrl}
+                      onChange={(event) => setNewUrl(event.target.value)}
+                    />
+                    <button
+                      className="w-full rounded border bg-background py-1 text-xs hover:bg-accent"
+                      onClick={() => {
+                        if (!newLabel.trim() || !newUrl.trim()) return;
+                        persistCustoms([
+                          ...customs,
+                          { id: crypto.randomUUID(), label: newLabel.trim(), url: newUrl.trim() },
+                        ]);
+                        setNewLabel("");
+                        setNewUrl("");
+                        setShowAdd(false);
+                      }}
+                    >
+                      URLを保存
+                    </button>
+                  </div>
+                )}
+                <div className="max-h-28 space-y-1 overflow-auto">
+                  {customs.map((custom) => (
+                    <div
+                      key={custom.id}
+                      className={`flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${playingCustomId === custom.id ? "border-primary bg-primary/15" : ""}`}
+                    >
+                      <button
+                        className="flex-1 truncate text-left"
+                        onClick={() =>
+                          playingCustomId === custom.id ? stop() : playCustom(custom)
+                        }
+                      >
+                        {playingCustomId === custom.id ? "⏸" : "▶"} {custom.label}{" "}
+                        {custom.path && (
+                          <span className="text-[9px] text-muted-foreground">📁</span>
+                        )}
+                      </button>
+                      <button
+                        className="text-muted-foreground hover:text-destructive"
+                        onClick={() => removeCustom(custom)}
+                        aria-label={`${custom.label}を削除`}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

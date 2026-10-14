@@ -259,9 +259,6 @@ export type LocalPrefs = {
   notif_weekly_report: boolean;
   notif_goal_reminder: boolean;
   // プライバシー・フレンド
-  profile_visibility: "public" | "friends" | "private";
-  show_online_status: boolean;
-  show_study_time: boolean;
   allow_friend_requests: boolean;
   allow_room_invites: "all" | "friends" | "none";
   allow_cheers: boolean;
@@ -330,9 +327,6 @@ export const DEFAULT_LOCAL_PREFS: LocalPrefs = {
   notif_room_invites: true,
   notif_weekly_report: true,
   notif_goal_reminder: true,
-  profile_visibility: "friends",
-  show_online_status: true,
-  show_study_time: true,
   allow_friend_requests: true,
   allow_room_invites: "friends",
   allow_cheers: true,

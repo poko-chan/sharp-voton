@@ -4,6 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
@@ -109,6 +116,71 @@ export function NotificationsSection() {
             {t("settings.enableBrowserNotif")}
           </Button>
         </div>
+      </Card>
+      <Card className="p-6 space-y-5">
+        <div className="font-semibold">この端末の通知</div>
+        <SettingRow
+          label="おやすみモード"
+          desc="指定した時間帯は通知を出しません。"
+          checked={localPrefs.quiet_hours_enabled}
+          onChange={(v) => saveLocal({ quiet_hours_enabled: v })}
+        />
+        {localPrefs.quiet_hours_enabled && (
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">開始</Label>
+              <Input
+                type="time"
+                value={localPrefs.quiet_start}
+                onChange={(e) => saveLocal({ quiet_start: e.target.value })}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">終了</Label>
+              <Input
+                type="time"
+                value={localPrefs.quiet_end}
+                onChange={(e) => saveLocal({ quiet_end: e.target.value })}
+              />
+            </div>
+          </div>
+        )}
+        <div className="space-y-2">
+          <Label className="text-sm">通知のまとめ方</Label>
+          <Select
+            value={localPrefs.notif_digest}
+            onValueChange={(v) => saveLocal({ notif_digest: v as typeof localPrefs.notif_digest })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="instant">そのつど届く</SelectItem>
+              <SelectItem value="daily">1日1回まとめて</SelectItem>
+              <SelectItem value="off">受け取らない</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <SettingRow
+          label="応援スタンプの通知"
+          checked={localPrefs.notif_cheers}
+          onChange={(v) => saveLocal({ notif_cheers: v })}
+        />
+        <SettingRow
+          label="勉強ルームへの招待の通知"
+          checked={localPrefs.notif_room_invites}
+          onChange={(v) => saveLocal({ notif_room_invites: v })}
+        />
+        <SettingRow
+          label="週間レポートの通知"
+          checked={localPrefs.notif_weekly_report}
+          onChange={(v) => saveLocal({ notif_weekly_report: v })}
+        />
+        <SettingRow
+          label="目標のリマインド"
+          checked={localPrefs.notif_goal_reminder}
+          onChange={(v) => saveLocal({ notif_goal_reminder: v })}
+        />
       </Card>
       <Card className="p-6 space-y-4">
         <div className="font-semibold">効果音</div>

@@ -17,6 +17,7 @@ import {
   normalizeCharacter,
   type CharacterConfig,
 } from "@/components/profile/CharacterAvatar";
+import { ProfileExtrasSection } from "./ProfileExtrasSection";
 
 export function AccountSection() {
   const { user } = useAuth();
@@ -150,6 +151,7 @@ export function AccountSection() {
         <Button onClick={saveProfile}>{t("settings.saveProfile")}</Button>
       </Card>
 
+      <ProfileExtrasSection />
       <PlanPanel />
       <InvitePanel />
     </div>

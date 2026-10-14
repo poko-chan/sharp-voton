@@ -28,6 +28,7 @@ type Props = {
     name: string;
     description: string;
     subject: string;
+    series: string;
     color: string;
   }) => Promise<void>;
 };
@@ -36,6 +37,7 @@ export function DeckDialog({ open, onOpenChange, deck, onSubmit }: Props) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [subject, setSubject] = useState(DECK_SUBJECTS[0]);
+  const [series, setSeries] = useState("");
   const [color, setColor] = useState(DECK_COLORS[0]);
   const [saving, setSaving] = useState(false);
 
@@ -44,6 +46,7 @@ export function DeckDialog({ open, onOpenChange, deck, onSubmit }: Props) {
       setName(deck?.name ?? "");
       setDescription(deck?.description ?? "");
       setSubject(deck?.subject ?? DECK_SUBJECTS[0]);
+      setSeries(deck?.series ?? "");
       setColor(deck?.color ?? DECK_COLORS[0]);
     }
   }, [open, deck]);
@@ -52,7 +55,13 @@ export function DeckDialog({ open, onOpenChange, deck, onSubmit }: Props) {
     if (!name.trim()) return;
     setSaving(true);
     try {
-      await onSubmit({ name: name.trim(), description: description.trim(), subject, color });
+      await onSubmit({
+        name: name.trim(),
+        description: description.trim(),
+        subject,
+        series: series.trim(),
+        color,
+      });
       onOpenChange(false);
     } finally {
       setSaving(false);
@@ -98,6 +107,15 @@ export function DeckDialog({ open, onOpenChange, deck, onSubmit }: Props) {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="deck-series">シリーズ</Label>
+            <Input
+              id="deck-series"
+              value={series}
+              onChange={(e) => setSeries(e.target.value)}
+              placeholder="例: 中学英語 必修シリーズ"
+            />
           </div>
           <div className="space-y-1.5">
             <Label>カラー</Label>

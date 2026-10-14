@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { AppShell } from "@/components/AppShell";
+import { FocusMode } from "@/components/focus/FocusMode";
 import { TimerProvider } from "@/lib/timer-context";
 import { ServiceGate } from "@/components/ServiceGate";
 import { LoginWelcomeOverlay } from "@/components/LoginWelcomeOverlay";
@@ -12,6 +13,7 @@ import { CallProvider } from "@/lib/call-context";
 import { CallOverlay } from "@/components/call/CallOverlay";
 import { useMaintenance } from "@/lib/maintenance-context";
 import { LowDataNotice } from "@/components/LowDataNotice";
+import { PresenceProvider } from "@/lib/presence";
 
 // Map URL prefix -> service key (must match SERVICES in restriction-context).
 const ROUTE_SERVICE: Array<[string, string]> = [
@@ -133,18 +135,24 @@ function AuthLayout() {
     /^\/notebooks\/[^/]+$/.test(path);
   if (isFullscreenWorkspace) {
     return (
+      <PresenceProvider>
       <TimerProvider>
         <CallProvider>
           {content}
+          <div className="fixed bottom-3 left-3 z-40 hidden rounded-lg border bg-card/90 shadow md:block">
+            <FocusMode />
+          </div>
           {tutorial}
           <LoginWelcomeOverlay />
           <CallOverlay />
         </CallProvider>
       </TimerProvider>
+      </PresenceProvider>
     );
   }
   return (
-    <TimerProvider>
+    <PresenceProvider>
+      <TimerProvider>
       <CallProvider>
         <AppShell>{content}</AppShell>
         {lowDataNotice}
@@ -153,5 +161,6 @@ function AuthLayout() {
         <CallOverlay />
       </CallProvider>
     </TimerProvider>
+      </PresenceProvider>
   );
 }

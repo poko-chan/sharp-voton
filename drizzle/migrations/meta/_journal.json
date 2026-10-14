@@ -22,6 +22,41 @@
       "when": 1791546483226,
       "tag": "0002_org_student_year_records",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791635978567,
+      "tag": "0003_flashcards_archived_series",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791636293084,
+      "tag": "0004_flashcard_decks_archived",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791769553265,
+      "tag": "0005_profile_badges_banners",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791790790071,
+      "tag": "0006_timer_music_marketplace",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791876111975,
+      "tag": "0007_profile_editor_cheers",
+      "breakpoints": true
     }
   ]
 }

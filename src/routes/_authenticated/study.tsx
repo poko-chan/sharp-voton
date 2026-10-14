@@ -107,6 +107,13 @@ function StudyPage() {
     load();
   }, [user]);
 
+  useEffect(() => {
+    const presetSubject = new URLSearchParams(window.location.search).get("subject");
+    if (presetSubject && orderedSubjects.some((subject) => subject.id === presetSubject)) {
+      setSubjectId(presetSubject);
+    }
+  }, [orderedSubjects]);
+
   const addSubject = async () => {
     if (!user || !newSubject.trim()) return;
     const { error } = await supabase

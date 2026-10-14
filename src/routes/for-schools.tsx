@@ -5,7 +5,7 @@ import { SCHOOL_OBJECTIONS, SCHOOL_OUTCOMES, TRUST } from "@/content/services";
 
 const TITLE = "学校・塾の方へ（組織機能） | Study#";
 const DESC =
-  "Study# の組織機能なら、お知らせ・課題・アンケート・チャット・共有カレンダー・組織専用教材までを1つのポータルで運用できます。学年やクラスは年度単位で管理。導入は申請・承認制です。";
+  "Study# の組織機能なら、お知らせ・共有カレンダー・チャット・年度ごとの名簿を1つのポータルで無料で運用できます。学年やクラスは年度単位で管理。導入は申請・承認制です。";
 
 export const Route = createFileRoute("/for-schools")({
   head: () => ({
@@ -28,50 +28,40 @@ const APPS = [
   {
     emoji: "📢",
     t: "投稿・お知らせ",
-    d: "グループ（チャンネル）ごとに投稿。ピン留め・検索・並び替え・編集/削除に対応し、ファイルも添付できます。学年だけ、クラスだけへの配信も可能です。",
-  },
-  {
-    emoji: "📝",
-    t: "課題",
-    d: "期限と必須設定つきで配信。提出状況を一覧と統計で把握できます。小テストの正答はサーバー側で採点し、答えは生徒の端末に送られません。",
-  },
-  {
-    emoji: "🗳️",
-    t: "アンケート",
-    d: "セクション分割・必須/任意・条件分岐に対応。行事の出欠や進路希望の集計が、締切と同時に完了します。",
+    d: "グループごとに投稿。ピン留め・検索・編集/削除に対応し、学年だけ、クラスだけへの配信もできます。",
   },
   {
     emoji: "📅",
     t: "カレンダー",
-    d: "行事・定期試験・課題期限を月／週／日ビューで共有。生徒の予定表と同じ画面に並びます。",
+    d: "行事・定期試験を共有。生徒の予定表と同じ画面に並びます。",
   },
   {
     emoji: "💬",
     t: "チャット",
-    d: "「やること」「承認待ち」「スレッド」など目的別タブで整理。既読が見えるので、伝わったかどうかが分かります。",
-  },
-  {
-    emoji: "🪪",
-    t: "デジタル学生証",
-    d: "組織内で使える身分証を画面に表示。名簿情報と連動します。",
+    d: "組織内のメンバーとやり取り。連絡がプリントやほかのアプリに散らばりません。",
   },
   {
     emoji: "👥",
-    t: "名簿・プロフィール",
-    d: "学年・クラス・出席番号など、組織ごとに必要な項目を定義。年度が変わっても過去の記録を保ったまま更新できます。",
+    t: "年度ごとの名簿",
+    d: "学年・クラス・番号を年度ごとに管理。新年度は前年度から進級の下書きを作れます。",
+  },
+  {
+    emoji: "🛡️",
+    t: "役割と権限",
+    d: "所有者・共同管理者に加え、組織ごとに役割を作り、アプリごとに見る・作る・管理するを設定できます。",
   },
   {
     emoji: "🎓",
-    t: "Makron for education",
-    d: "組織限定の問題集。学年などの属性で出題を切り替え、カリキュラム・パスで進捗を表示。誤答はAI復習で解説します。",
+    t: "Makron for education（準備中）",
+    d: "組織専用の問題演習を準備しています。公開時期は決まり次第お知らせします。",
   },
 ];
 
 const ROLES = [
-  { r: "経営者", d: "組織のすべてを管理。設定変更、役割付与、削除まで可能。" },
+  { r: "所有者", d: "組織のすべてを管理。設定変更、役割の付与、所有者の移譲まで可能。" },
   { r: "共同管理者", d: "設定変更やメンバー管理など、運営業務の大半を担当。" },
-  { r: "教師", d: "課題・お知らせ・アンケートの作成、名簿の学年/クラス設定、教材の配信。" },
-  { r: "一般", d: "課題の提出、投稿の閲覧、組織教材の演習など、参加者としての利用。" },
+  { r: "カスタム役割", d: "「教員」「事務」など組織ごとに作成し、アプリごとに権限を設定。" },
+  { r: "メンバー", d: "投稿の閲覧、カレンダーの確認、チャットなど参加者としての利用。" },
 ];
 
 const FLOW = [
@@ -96,7 +86,7 @@ const FLOW = [
   {
     n: "04",
     t: "運用を始める",
-    d: "まずは1機能から。課題かアンケートを1回配信し、うまくいった範囲だけを広げるのがおすすめです。",
+    d: "まずは1機能から。お知らせを1回配信し、うまくいった範囲だけを広げるのがおすすめです。",
     when: "翌週から",
   },
 ];
@@ -124,16 +114,19 @@ function ForSchoolsPage() {
             <a href="#apply" className="cta cta-signal">
               導入を申請する
             </a>
+            <a href="#pricing" className="cta-ghost cta-ghost-ink">
+              料金を見る（基本無料）
+            </a>
             <Link to="/all-services" className="cta-ghost cta-ghost-ink">
               全機能を見る
             </Link>
           </div>
           <dl className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
-              ["4段階", "役割ベースの権限"],
+              ["自由", "役割と権限の設定"],
               ["年度単位", "学年・クラス管理"],
               ["インストール不要", "スマホのブラウザで参加"],
-              ["申請制", "運営が審査して承認"],
+              ["基本無料", "大規模導入は要相談"],
             ].map(([v, l]) => (
               <div
                 key={l}
@@ -189,7 +182,7 @@ function ForSchoolsPage() {
         <section className="mt-20">
           <p className="section-eyebrow">Roles</p>
           <h2 className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">
-            4段階の役割
+            役割と権限
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             誰が何をできるかを、はっきり分けて運用できます。
@@ -257,6 +250,83 @@ function ForSchoolsPage() {
               </div>
             ))}
           </div>
+        </section>
+
+        {/* 料金 */}
+        <section id="pricing" className="mt-20 scroll-mt-24">
+          <p className="section-eyebrow">Pricing</p>
+          <h2 className="mt-2 font-display text-2xl font-black tracking-tight sm:text-3xl">
+            料金は<span className="text-gradient">基本無料</span>。規模やご要望に合わせてご相談ください。
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            組織の作成と主な機能は無料でお使いいただけます。人数が多い場合や個別の対応が必要な場合は、内容をうかがってからご案内します。
+          </p>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="surface relative overflow-hidden p-7 ring-2 ring-primary/30">
+              <span className="chip text-[10px]">まずはここから</span>
+              <h3 className="mt-3 font-display text-xl font-extrabold">基本プラン</h3>
+              <p className="mt-3 font-display text-4xl font-black text-gradient">
+                ¥0<span className="ml-1 text-sm font-bold text-muted-foreground">／ 基本無料</span>
+              </p>
+              <ul className="mt-5 space-y-2 text-sm">
+                {[
+                  "お知らせ・投稿・カレンダー・チャット",
+                  "役割と権限の設定",
+                  "年度ごとの学年・クラス管理",
+                  "参加コード・招待でメンバー追加",
+                  "運営とのチャットでの相談",
+                ].map((x) => (
+                  <li key={x} className="flex gap-2">
+                    <span className="text-primary">✓</span>
+                    <span>{x}</span>
+                  </li>
+                ))}
+              </ul>
+              <a href="#apply" className="cta cta-signal mt-6 inline-flex">
+                無料で申請する
+              </a>
+            </div>
+            <div className="surface p-7">
+              <span className="chip text-[10px]">大規模・個別対応</span>
+              <h3 className="mt-3 font-display text-xl font-extrabold">カスタム導入</h3>
+              <p className="mt-3 font-display text-4xl font-black">
+                要相談
+              </p>
+              <ul className="mt-5 space-y-2 text-sm">
+                {[
+                  "学校全体・複数校舎での一括導入",
+                  "名簿の一括登録や年度更新のお手伝い",
+                  "組織専用の教材・問題の準備",
+                  "導入説明会・先生向けの使い方案内",
+                  "その他ご要望に合わせた対応",
+                ].map((x) => (
+                  <li key={x} className="flex gap-2">
+                    <span className="text-primary">✓</span>
+                    <span>{x}</span>
+                  </li>
+                ))}
+              </ul>
+              <a href="#apply" className="cta-ghost mt-6 inline-flex">
+                相談する
+              </a>
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            ※ 費用が発生する場合は、必ず事前にお見積りをお伝えし、ご同意いただいてから進めます。勝手に請求されることはありません。
+          </p>
+        </section>
+
+        {/* 最後のひと押し */}
+        <section className="ink-panel mt-20 px-6 py-12 text-center sm:px-12">
+          <h2 className="font-display text-2xl font-black tracking-tight sm:text-3xl">
+            まずは<span className="text-gradient">1クラス・1機能</span>から。
+          </h2>
+          <p className="muted-on-ink mx-auto mt-3 max-w-xl text-sm leading-relaxed">
+            無料で始めて、合わなければやめられます。小さく試して、うまくいった分だけ広げてください。
+          </p>
+          <a href="#apply" className="cta cta-signal mt-6 inline-flex">
+            無料で始める
+          </a>
         </section>
 
         <section id="apply" className="mt-20 scroll-mt-24">

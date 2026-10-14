@@ -81,6 +81,7 @@ import { GettingStartedCard } from "@/components/dashboard/GettingStartedCard";
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { useOrderedSubjects } from "@/lib/subjects";
 import { toast } from "sonner";
+import { DashboardBanners } from "@/components/dashboard/DashboardBanners";
 import { useMaintenance } from "@/lib/maintenance-context";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -325,16 +326,16 @@ function FullDashboard() {
       minutes: dowCounts[i] ? Math.round(t / dowCounts[i]) : 0,
     }));
 
-    const subjMap = new Map<string, { v: number; c: string }>();
+    const subjMap = new Map<string, { id: string; v: number; c: string }>();
     logs.forEach((l: any) => {
       const name = l.subjects?.name ?? "その他";
       const color = l.subjects?.color ?? "#94a3b8";
-      const c = subjMap.get(name) ?? { v: 0, c: color };
+      const c = subjMap.get(name) ?? { id: l.subject_id ?? "", v: 0, c: color };
       c.v += l.duration_minutes ?? 0;
       subjMap.set(name, c);
     });
     const subjArr = Array.from(subjMap.entries())
-      .map(([name, { v, c }]) => ({ name, value: v, color: c }))
+      .map(([name, { id, v, c }]) => ({ id, name, value: v, color: c }))
       .sort((a, b) => b.value - a.value);
 
     const matMap = new Map<string, number>();
@@ -520,6 +521,24 @@ function FullDashboard() {
         icon: CalendarDays,
       };
     }
+    const leastStudiedSubject = subjects
+      .map((subject) => ({
+        ...subject,
+        minutes: bySubject.find((item) => item.id === subject.id)?.value ?? 0,
+      }))
+      .sort((a, b) => a.minutes - b.minutes)[0];
+    if (leastStudiedSubject) {
+      return {
+        title: `${leastStudiedSubject.name}を少し復習しましょう`,
+        detail:
+          leastStudiedSubject.minutes > 0
+            ? `累計 ${fmt(leastStudiedSubject.minutes)}。偏りを整えるチャンスです`
+            : "まだ記録がありません。最初の学習を記録してみましょう",
+        to: `/study?subject=${encodeURIComponent(leastStudiedSubject.id)}` as const,
+        label: "この教科を記録",
+        icon: BookOpen,
+      };
+    }
     return {
       title: dailyPct >= 100 ? "この調子で続けましょう" : "まずは25分集中してみましょう",
       detail: dailyPct >= 100 ? "今日の目標は達成済みです" : "短いセッションから始められます",
@@ -527,7 +546,7 @@ function FullDashboard() {
       label: "タイマー開始",
       icon: Timer,
     };
-  }, [goals, exams, dailyPct]);
+  }, [goals, exams, dailyPct, subjects, bySubject]);
 
   // 自動インサイト
   const insights = useMemo(() => {
@@ -594,6 +613,7 @@ function FullDashboard() {
 
   return (
     <div className="dashboard-page p-4 md:p-8 lg:p-10 space-y-8 max-w-[1480px] mx-auto">
+      <DashboardBanners />
       {/* ===== 一番上: 左=1日の目標 / 右=あなたの街 ===== */}
       <div className="grid gap-6 items-start">
         {/* ===== ヒーロー ===== */}
@@ -748,7 +768,7 @@ function FullDashboard() {
               <p className="mt-1 text-sm text-muted-foreground">{nextAction.detail}</p>
             </div>
             <Button asChild className="w-full sm:w-fit">
-              <Link to={nextAction.to}>
+              <Link to={nextAction.to as any}>
                 <nextAction.icon className="mr-2 h-4 w-4" />
                 {nextAction.label}
               </Link>
@@ -1309,7 +1329,6 @@ function FullDashboard() {
           </div>
         </Card>
       )}
-
 
       <WeeklySubjectDiff />
       <DashboardRanking />

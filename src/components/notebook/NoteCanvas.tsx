@@ -457,7 +457,7 @@ export function NoteCanvas({
     tool === "pen" || tool === "pencil" || tool === "marker" || tool === "highlighter";
 
   return (
-    <div className="flex h-full min-h-0 w-full">
+    <div className="flex h-full min-h-0 w-full flex-col md:flex-row">
       {/* 左：常設ツールバー（持ち替えのために戻る必要なし） */}
       {!readOnly && (
         <div className="flex w-full shrink-0 flex-row items-center gap-1 overflow-x-auto border-b bg-card/90 px-2 py-1 backdrop-blur md:w-14 md:flex-col md:overflow-x-visible md:border-b-0 md:border-r md:px-0 md:py-2">
@@ -733,10 +733,16 @@ export function NoteCanvas({
             <div
               role="menu"
               onPointerDown={(e) => e.stopPropagation()}
-              className="fixed z-50 w-64 rounded-xl border bg-popover p-1.5 text-sm shadow-xl"
+              className="fixed z-50 w-64 rounded-xl border bg-popover p-1.5 text-sm shadow-xl max-sm:inset-x-2 max-sm:bottom-2 max-sm:top-auto max-sm:w-auto max-sm:max-h-[min(70dvh,32rem)] max-sm:overflow-y-auto max-sm:rounded-2xl max-sm:p-2 max-sm:pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
               style={{
-                left: Math.min(contextMenu.x, window.innerWidth - 272),
-                top: Math.min(contextMenu.y, window.innerHeight - 280),
+                left:
+                  window.innerWidth < 640
+                    ? undefined
+                    : Math.max(8, Math.min(contextMenu.x, window.innerWidth - 272)),
+                top:
+                  window.innerWidth < 640
+                    ? undefined
+                    : Math.max(8, Math.min(contextMenu.y, window.innerHeight - 280)),
               }}
             >
               <p className="px-2.5 pb-1.5 pt-1 text-[11px] font-semibold text-muted-foreground">
@@ -753,7 +759,7 @@ export function NoteCanvas({
                       setContextMenu(null);
                     }}
                     className={cn(
-                      "flex items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs hover:bg-accent",
+                      "flex min-h-11 items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs hover:bg-accent",
                       tool === item.key && "bg-primary/10 text-primary",
                     )}
                   >
@@ -770,7 +776,7 @@ export function NoteCanvas({
                   undo();
                   setContextMenu(null);
                 }}
-                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs hover:bg-accent"
+                className="flex min-h-11 w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs hover:bg-accent"
               >
                 <Undo2 className="h-4 w-4" /> 元に戻す
               </button>
@@ -781,7 +787,7 @@ export function NoteCanvas({
                   redo();
                   setContextMenu(null);
                 }}
-                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs hover:bg-accent"
+                className="flex min-h-11 w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs hover:bg-accent"
               >
                 <Redo2 className="h-4 w-4" /> やり直す
               </button>
@@ -792,7 +798,7 @@ export function NoteCanvas({
                   fit();
                   setContextMenu(null);
                 }}
-                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs hover:bg-accent"
+                className="flex min-h-11 w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs hover:bg-accent"
               >
                 <Maximize2 className="h-4 w-4" /> ページを画面に合わせる
               </button>
@@ -804,7 +810,7 @@ export function NoteCanvas({
                     clearPage();
                     setContextMenu(null);
                   }}
-                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs text-destructive hover:bg-destructive/10"
+                  className="flex min-h-11 w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs text-destructive hover:bg-destructive/10"
                 >
                   <Trash2 className="h-4 w-4" /> ページを消去
                 </button>

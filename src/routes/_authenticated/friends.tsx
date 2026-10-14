@@ -32,6 +32,9 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { fetchPublicProfiles } from "@/lib/public-profiles";
+import { UserProfileDialog } from "@/components/profile/UserProfileDialog";
+import { ProfileEditDialog } from "@/components/settings/ProfileExtrasSection";
+import { Pencil } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/friends")({ component: FriendsPage });
 
@@ -62,6 +65,8 @@ function FriendsPage() {
   const [board, setBoard] = useState<Array<Profile & { minutes: number }>>([]);
   const [profileTarget, setProfileTarget] = useState<Profile | null>(null);
   const [tab, setTab] = useState("friends");
+  const [me, setMe] = useState<Profile | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   const load = async () => {
     if (!user) return;
@@ -89,6 +94,7 @@ function FriendsPage() {
     );
     const profs = await fetchPublicProfiles(all);
     const map = new Map((profs ?? []).map((p: any) => [p.id, p]));
+    setMe((map.get(user.id) as Profile) ?? null);
     setFollowing(ids1.map((id) => map.get(id)).filter(Boolean) as Profile[]);
     setFollowers(ids2.map((id) => map.get(id)).filter(Boolean) as Profile[]);
     setIncomingPending(ids2Pending.map((id) => map.get(id)).filter(Boolean) as Profile[]);
@@ -305,6 +311,27 @@ function FriendsPage() {
         <h1 className="text-3xl font-bold">フレンド</h1>
       </div>
 
+      {me && (
+        <Card className="p-4 flex flex-wrap items-center gap-3">
+          <Avatar className="h-12 w-12">
+            <AvatarImage src={me.avatar_url ?? undefined} />
+            <AvatarFallback>{initials(me)}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-[140px]">
+            <div className="text-xs text-muted-foreground">あなたのプロフィール</div>
+            <div className="font-semibold">{me.display_name ?? me.username}</div>
+            <div className="text-xs text-muted-foreground">@{me.username}</div>
+          </div>
+          <Button size="sm" variant="outline" onClick={() => setProfileTarget(me)}>
+            見る
+          </Button>
+          <Button size="sm" onClick={() => setEditOpen(true)}>
+            <Pencil className="h-4 w-4 mr-1" /> 編集する
+          </Button>
+        </Card>
+      )}
+      <ProfileEditDialog open={editOpen} onOpenChange={setEditOpen} onSaved={load} />
+
       <Card className="p-4 space-y-2">
         <div className="font-semibold flex items-center gap-1.5">
           <Trophy className="h-4 w-4" />
@@ -509,36 +536,11 @@ function FriendsPage() {
         </Card>
       )}
 
-      <Dialog open={!!profileTarget} onOpenChange={(v) => !v && setProfileTarget(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>プロフィール</DialogTitle>
-          </DialogHeader>
-          {profileTarget && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-14 w-14">
-                  <AvatarImage src={profileTarget.avatar_url ?? undefined} />
-                  <AvatarFallback>{initials(profileTarget)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="text-lg font-bold">{profileTarget.display_name}</div>
-                  <div className="text-sm text-muted-foreground">@{profileTarget.username}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">{relationBadge(profileTarget)}</div>
-              <Card className="p-3 text-sm">
-                今週の学習時間: <b>{stats[profileTarget.id]?.minutes7d ?? 0}分</b>
-              </Card>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setProfileTarget(null)}>
-              閉じる
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <UserProfileDialog
+        userId={profileTarget?.id ?? null}
+        onOpenChange={(v) => !v && setProfileTarget(null)}
+        onChanged={load}
+      />
     </div>
   );
 }

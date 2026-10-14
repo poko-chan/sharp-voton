@@ -56,7 +56,7 @@ function withinWindow(from: string | null, to: string | null) {
 function Blocked({ icon, title, body }: { icon: "time" | "lock"; title: string; body: string }) {
   const navigate = useNavigate();
   return (
-    <div className="fixed inset-0 z-[80] grid place-items-center bg-background/95 p-6 backdrop-blur">
+    <div className="fixed inset-0 z-[220] grid place-items-center bg-background/95 p-6 backdrop-blur">
       <Card className="max-w-sm space-y-4 p-8 text-center">
         <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-muted">
           {icon === "time" ? <Clock className="h-7 w-7" /> : <Lock className="h-7 w-7" />}

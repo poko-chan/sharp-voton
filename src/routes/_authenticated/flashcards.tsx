@@ -3,12 +3,22 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { Brain } from "lucide-react";
 import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   createDeck,
   deleteDeck,
   fetchDeckCardCounts,
   fetchDecks,
   updateDeck,
+  setDeckArchived,
   type FlashcardDeck,
 } from "@/lib/flashcards.functions";
 import { DeckGrid } from "@/components/flashcards/DeckGrid";
@@ -25,6 +35,8 @@ function FlashcardsPage() {
   const [selectedDeck, setSelectedDeck] = useState<FlashcardDeck | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingDeck, setEditingDeck] = useState<FlashcardDeck | null>(null);
+  const [seriesFilter, setSeriesFilter] = useState("all");
+  const [showArchived, setShowArchived] = useState(false);
 
   const load = async () => {
     if (!user) return;
@@ -47,10 +59,21 @@ function FlashcardsPage() {
     load();
   }, [user?.id]);
 
+  const seriesOptions = [...new Set(decks.map((deck) => deck.series.trim()).filter(Boolean))].sort(
+    (a, b) => a.localeCompare(b, "ja"),
+  );
+  const visibleDecks = decks.filter((deck) => {
+    if (!!deck.archived !== showArchived) return false;
+    if (seriesFilter === "all") return true;
+    if (seriesFilter === "__none__") return !deck.series.trim();
+    return deck.series === seriesFilter;
+  });
+
   const handleSubmit = async (input: {
     name: string;
     description: string;
     subject: string;
+    series: string;
     color: string;
   }) => {
     if (!user) return;
@@ -67,6 +90,16 @@ function FlashcardsPage() {
       toast.error(
         e?.message?.includes("duplicate") ? "同じ名前のデッキが既にあります" : "保存に失敗しました",
       );
+    }
+  };
+
+  const handleArchive = async (deck: FlashcardDeck) => {
+    try {
+      await setDeckArchived(deck.id, !deck.archived);
+      toast.success(deck.archived ? "デッキを復元しました" : "デッキをアーカイブしました");
+      await load();
+    } catch {
+      toast.error("更新に失敗しました");
     }
   };
 
@@ -100,6 +133,10 @@ function FlashcardsPage() {
         <DeckDetail
           userId={user!.id}
           deck={selectedDeck}
+          onEdit={() => {
+            setEditingDeck(selectedDeck);
+            setDialogOpen(true);
+          }}
           onBack={() => {
             setSelectedDeck(null);
             load();
@@ -108,20 +145,51 @@ function FlashcardsPage() {
       ) : loading ? (
         <div className="text-sm text-muted-foreground">読み込み中...</div>
       ) : (
-        <DeckGrid
-          decks={decks}
-          counts={counts}
-          onOpen={setSelectedDeck}
-          onEdit={(deck) => {
-            setEditingDeck(deck);
-            setDialogOpen(true);
-          }}
-          onDelete={handleDelete}
-          onCreate={() => {
-            setEditingDeck(null);
-            setDialogOpen(true);
-          }}
-        />
+        <>
+          {decks.length > 0 && (
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex rounded-md border p-0.5">
+                <Button size="sm" variant={showArchived ? "ghost" : "secondary"} onClick={() => setShowArchived(false)}>
+                  使用中
+                </Button>
+                <Button size="sm" variant={showArchived ? "secondary" : "ghost"} onClick={() => setShowArchived(true)}>
+                  アーカイブ ({decks.filter((d) => d.archived).length})
+                </Button>
+              </div>
+              <Label htmlFor="series-filter">シリーズ</Label>
+              <Select value={seriesFilter} onValueChange={setSeriesFilter}>
+                <SelectTrigger id="series-filter" className="w-[240px] max-w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">すべてのシリーズ</SelectItem>
+                  <SelectItem value="__none__">シリーズ未設定</SelectItem>
+                  {seriesOptions.map((series) => (
+                    <SelectItem key={series} value={series}>
+                      {series}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <DeckGrid
+            decks={visibleDecks}
+            counts={counts}
+            onOpen={setSelectedDeck}
+            onEdit={(deck) => {
+              setEditingDeck(deck);
+              setDialogOpen(true);
+            }}
+            onDelete={handleDelete}
+            onArchive={handleArchive}
+            showCreate={!showArchived}
+            onCreate={() => {
+              setEditingDeck(null);
+              setDialogOpen(true);
+            }}
+          />
+        </>
       )}
 
       <DeckDialog

@@ -1,0 +1,1 @@
+ALTER TABLE public.flashcard_decks ADD COLUMN IF NOT EXISTS archived boolean NOT NULL DEFAULT false;

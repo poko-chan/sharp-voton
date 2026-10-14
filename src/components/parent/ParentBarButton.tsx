@@ -138,7 +138,7 @@ export function ParentBarButton({ compact = false }: { compact?: boolean }) {
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="z-[230] max-w-md">
           <DialogHeader>
             <DialogTitle>{parentName}とやりとり</DialogTitle>
           </DialogHeader>

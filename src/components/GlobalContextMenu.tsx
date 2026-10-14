@@ -9,6 +9,7 @@ import {
   Image,
   RefreshCw,
   TextSelect,
+  X,
 } from "lucide-react";
 import { useEffect, useState, type MouseEvent as ReactMouseEvent } from "react";
 import logoUrl from "@/assets/logo.png";
@@ -114,92 +115,115 @@ export function GlobalContextMenu({ children }: { children: React.ReactNode }) {
     <>
       {children}
       {menu && (
-        <div
-          role="menu"
-          aria-label="ページの操作"
-          onPointerDown={(event) => event.stopPropagation()}
-          onContextMenu={handleMenuContext}
-          className="fixed z-[200] max-h-[calc(100dvh-1rem)] w-64 overflow-y-auto rounded-xl border border-border/70 bg-popover/95 p-1.5 text-sm shadow-2xl backdrop-blur-xl"
-          style={{
-            left: Math.max(8, Math.min(menu.x, window.innerWidth - 272)),
-            top: Math.max(8, Math.min(menu.y, window.innerHeight - 380)),
-          }}
-        >
-          <div className="mb-1 flex items-center gap-2 border-b border-border/60 px-2.5 pb-2">
-            <img src={logoUrl} alt="" className="h-6 w-6 rounded-md shadow-sm" />
-            <span className="font-display text-sm font-extrabold tracking-tight">
-              Study<span className="text-primary">#</span>
-            </span>
+        <>
+          <div
+            aria-hidden="true"
+            onPointerDown={() => setMenu(null)}
+            className="fixed inset-0 z-[199] bg-black/20 sm:hidden"
+          />
+          <div
+            role="menu"
+            aria-label="ページの操作"
+            onPointerDown={(event) => event.stopPropagation()}
+            onContextMenu={handleMenuContext}
+            className="fixed z-[200] max-h-[calc(100dvh-1rem)] w-64 overflow-y-auto rounded-xl border border-border/70 bg-popover/95 p-1.5 text-sm shadow-2xl backdrop-blur-xl max-sm:inset-x-2 max-sm:bottom-2 max-sm:top-auto max-sm:w-auto max-sm:max-h-[min(70dvh,32rem)] max-sm:rounded-2xl max-sm:p-2 max-sm:pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
+            style={{
+              left:
+                window.innerWidth < 640
+                  ? undefined
+                  : Math.max(8, Math.min(menu.x, window.innerWidth - 272)),
+              top:
+                window.innerWidth < 640
+                  ? undefined
+                  : Math.max(8, Math.min(menu.y, window.innerHeight - 380)),
+            }}
+          >
+            <div className="mb-1 flex items-center gap-2 border-b border-border/60 px-2.5 pb-2">
+              <img src={logoUrl} alt="" className="h-6 w-6 rounded-md shadow-sm" />
+              <span className="font-display flex-1 text-sm font-extrabold tracking-tight">
+                Study<span className="text-primary">#</span>
+              </span>
+              <button
+                type="button"
+                aria-label="メニューを閉じる"
+                onClick={() => setMenu(null)}
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground sm:hidden"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <MenuButton
+              icon={<ArrowLeft />}
+              label="戻る"
+              disabled={!history.length}
+              onClick={() => run(() => history.back())}
+            />
+            <MenuButton
+              icon={<ArrowRight />}
+              label="進む"
+              disabled={!history.forward}
+              onClick={() => run(() => history.forward())}
+            />
+            <MenuButton
+              icon={<RefreshCw />}
+              label="ページを再読み込み"
+              onClick={() => run(() => location.reload())}
+            />
+            <div className="my-1 border-t border-border/60" />
+            {menu.href && (
+              <MenuButton
+                icon={<ExternalLink />}
+                label="リンクを新しいタブで開く"
+                onClick={() => run(() => window.open(menu.href!, "_blank", "noopener,noreferrer"))}
+              />
+            )}
+            {menu.imageSrc && (
+              <>
+                <MenuButton
+                  icon={<Image />}
+                  label="画像を新しいタブで開く"
+                  onClick={() =>
+                    run(() => window.open(menu.imageSrc!, "_blank", "noopener,noreferrer"))
+                  }
+                />
+                <MenuButton
+                  icon={<Download />}
+                  label="画像をダウンロード"
+                  onClick={() => {
+                    void downloadImage(menu.imageSrc!);
+                    setMenu(null);
+                  }}
+                />
+                <MenuButton
+                  icon={copied === "image" ? <Check /> : <Copy />}
+                  label={
+                    copied === "image" ? "画像アドレスをコピーしました" : "画像アドレスをコピー"
+                  }
+                  onClick={() => void copy(menu.imageSrc!, "image")}
+                />
+              </>
+            )}
+            {menu.selectedText && (
+              <MenuButton
+                icon={copied === "selection" ? <Check /> : <Copy />}
+                label={copied === "selection" ? "選択範囲をコピーしました" : "選択範囲をコピー"}
+                onClick={() => void copy(menu.selectedText, "selection")}
+              />
+            )}
+            <MenuButton
+              icon={copied === "url" ? <Check /> : <Clipboard />}
+              label={copied === "url" ? "ページURLをコピーしました" : "ページURLをコピー"}
+              onClick={() => void copy(location.href, "url")}
+            />
+            {menu.editable && (
+              <MenuButton
+                icon={<TextSelect />}
+                label="すべて選択"
+                onClick={() => run(() => document.execCommand("selectAll"))}
+              />
+            )}
           </div>
-          <MenuButton
-            icon={<ArrowLeft />}
-            label="戻る"
-            disabled={!history.length}
-            onClick={() => run(() => history.back())}
-          />
-          <MenuButton
-            icon={<ArrowRight />}
-            label="進む"
-            disabled={!history.forward}
-            onClick={() => run(() => history.forward())}
-          />
-          <MenuButton
-            icon={<RefreshCw />}
-            label="ページを再読み込み"
-            onClick={() => run(() => location.reload())}
-          />
-          <div className="my-1 border-t border-border/60" />
-          {menu.href && (
-            <MenuButton
-              icon={<ExternalLink />}
-              label="リンクを新しいタブで開く"
-              onClick={() => run(() => window.open(menu.href!, "_blank", "noopener,noreferrer"))}
-            />
-          )}
-          {menu.imageSrc && (
-            <>
-              <MenuButton
-                icon={<Image />}
-                label="画像を新しいタブで開く"
-                onClick={() =>
-                  run(() => window.open(menu.imageSrc!, "_blank", "noopener,noreferrer"))
-                }
-              />
-              <MenuButton
-                icon={<Download />}
-                label="画像をダウンロード"
-                onClick={() => {
-                  void downloadImage(menu.imageSrc!);
-                  setMenu(null);
-                }}
-              />
-              <MenuButton
-                icon={copied === "image" ? <Check /> : <Copy />}
-                label={copied === "image" ? "画像アドレスをコピーしました" : "画像アドレスをコピー"}
-                onClick={() => void copy(menu.imageSrc!, "image")}
-              />
-            </>
-          )}
-          {menu.selectedText && (
-            <MenuButton
-              icon={copied === "selection" ? <Check /> : <Copy />}
-              label={copied === "selection" ? "選択範囲をコピーしました" : "選択範囲をコピー"}
-              onClick={() => void copy(menu.selectedText, "selection")}
-            />
-          )}
-          <MenuButton
-            icon={copied === "url" ? <Check /> : <Clipboard />}
-            label={copied === "url" ? "ページURLをコピーしました" : "ページURLをコピー"}
-            onClick={() => void copy(location.href, "url")}
-          />
-          {menu.editable && (
-            <MenuButton
-              icon={<TextSelect />}
-              label="すべて選択"
-              onClick={() => run(() => document.execCommand("selectAll"))}
-            />
-          )}
-        </div>
+        </>
       )}
     </>
   );
@@ -222,7 +246,7 @@ function MenuButton({
       role="menuitem"
       disabled={disabled}
       onClick={onClick}
-      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition hover:bg-accent disabled:pointer-events-none disabled:opacity-40"
+      className="flex min-h-11 w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition hover:bg-accent disabled:pointer-events-none disabled:opacity-40"
     >
       <span className="flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground [&>svg]:h-4 [&>svg]:w-4">
         {icon}
