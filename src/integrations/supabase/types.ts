@@ -6633,6 +6633,7 @@ export type Database = {
           active_theme: string | null
           active_title: string | null
           avatar_url: string | null
+          character_profile: Json
           created_at: string
           current_plan: string
           deletion_code: string | null
@@ -6661,6 +6662,7 @@ export type Database = {
           active_theme?: string | null
           active_title?: string | null
           avatar_url?: string | null
+          character_profile?: Json
           created_at?: string
           current_plan?: string
           deletion_code?: string | null
@@ -6689,6 +6691,7 @@ export type Database = {
           active_theme?: string | null
           active_title?: string | null
           avatar_url?: string | null
+          character_profile?: Json
           created_at?: string
           current_plan?: string
           deletion_code?: string | null
@@ -9242,6 +9245,7 @@ export type Database = {
         Args: { _ids: string[] }
         Returns: {
           avatar_url: string
+          character_profile: Json
           display_name: string
           id: string
           username: string
@@ -9260,6 +9264,7 @@ export type Database = {
         Args: { _q: string }
         Returns: {
           avatar_url: string
+          character_profile: Json
           display_name: string
           id: string
           username: string

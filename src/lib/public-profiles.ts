@@ -5,6 +5,7 @@ export type PublicProfile = {
   username: string | null;
   display_name: string | null;
   avatar_url: string | null;
+  character_profile: Record<string, string> | null;
 };
 
 /** 他ユーザーの公開プロフィール（ユーザー名 / 表示名 / アイコン）のみを取得する */

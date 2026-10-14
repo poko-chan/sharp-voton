@@ -11,11 +11,21 @@ import { toast } from "sonner";
 import { emitProfileChange } from "@/lib/profile-events";
 import { useI18n } from "@/lib/i18n";
 import { SectionHeading } from "./shared";
+import {
+  CharacterAvatar,
+  DEFAULT_CHARACTER,
+  normalizeCharacter,
+  type CharacterConfig,
+} from "@/components/profile/CharacterAvatar";
 
 export function AccountSection() {
   const { user } = useAuth();
   const { t } = useI18n();
-  const [profile, setProfile] = useState({ display_name: "", avatar_url: "" as string | null });
+  const [profile, setProfile] = useState({
+    display_name: "",
+    avatar_url: "" as string | null,
+    character_profile: DEFAULT_CHARACTER,
+  });
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -23,7 +33,13 @@ export function AccountSection() {
   useEffect(() => {
     if (!user) return;
     (supabase as any).rpc("my_profile_private").then(({ data }: any) => {
-      if (data) setProfile({ display_name: data.display_name ?? "", avatar_url: data.avatar_url });
+      if (data) {
+        setProfile({
+          display_name: data.display_name ?? "",
+          avatar_url: data.avatar_url,
+          character_profile: normalizeCharacter(data.character_profile),
+        });
+      }
       setLoading(false);
     });
   }, [user]);
@@ -63,7 +79,7 @@ export function AccountSection() {
     if (!name) return toast.error("表示名を入力してください");
     const { error } = await supabase
       .from("profiles")
-      .update({ display_name: name })
+      .update({ display_name: name, character_profile: profile.character_profile } as any)
       .eq("id", user.id);
     if (error) {
       toast.error(error.message);
@@ -85,13 +101,20 @@ export function AccountSection() {
         <div className="flex items-center gap-2 font-semibold">
           <User className="h-4 w-4" /> {t("settings.profile")}
         </div>
-        <div className="flex items-center gap-4">
-          <Avatar className="h-20 w-20">
-            <AvatarImage src={profile.avatar_url ?? undefined} alt={profile.display_name} />
-            <AvatarFallback>
-              {(profile.display_name || "U").slice(0, 1).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+        <div className="flex flex-wrap items-center gap-5">
+          <div className="relative">
+            <Avatar className="h-20 w-20">
+              <AvatarImage src={profile.avatar_url ?? undefined} alt={profile.display_name} />
+              <AvatarFallback>
+                {(profile.display_name || "U").slice(0, 1).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <CharacterAvatar
+              value={profile.character_profile}
+              className="absolute -bottom-2 -right-2 h-10 w-10 rounded-xl border-2 border-background shadow-md"
+              title="プロフィールキャラクター"
+            />
+          </div>
           <div className="space-y-2">
             <input
               ref={fileRef}
@@ -111,6 +134,10 @@ export function AccountSection() {
             </Button>
             <p className="text-xs text-muted-foreground">JPG/PNG・最大5MB</p>
           </div>
+          <CharacterEditor
+            value={profile.character_profile}
+            onChange={(character_profile) => setProfile((p) => ({ ...p, character_profile }))}
+          />
         </div>
         <div className="space-y-1">
           <Label>{t("settings.displayName")}</Label>
@@ -125,6 +152,122 @@ export function AccountSection() {
 
       <PlanPanel />
       <InvitePanel />
+    </div>
+  );
+}
+
+const CHARACTER_OPTIONS = {
+  skin: [
+    ["#f6c7a5", "ライト"],
+    ["#e9a875", "ウォーム"],
+    ["#9b6041", "ブラウン"],
+    ["#75442f", "ディープ"],
+  ],
+  hair: [
+    ["short", "ショート"],
+    ["bob", "ボブ"],
+    ["long", "ロング"],
+    ["curly", "カール"],
+  ],
+  hairColor: [
+    ["#3b2418", "ブラウン"],
+    ["#111827", "ブラック"],
+    ["#7c3aed", "パープル"],
+    ["#db2777", "ピンク"],
+  ],
+  eyes: [
+    ["round", "まる目"],
+    ["calm", "落ち着き"],
+    ["star", "キラキラ"],
+  ],
+  outfit: [
+    ["hoodie", "フーディー"],
+    ["uniform", "制服"],
+    ["jacket", "ジャケット"],
+  ],
+  outfitColor: [
+    ["#6366f1", "インディゴ"],
+    ["#0f766e", "ティール"],
+    ["#ea580c", "オレンジ"],
+    ["#db2777", "ローズ"],
+  ],
+  accessory: [
+    ["none", "なし"],
+    ["glasses", "メガネ"],
+    ["cap", "キャップ"],
+    ["bow", "リボン"],
+  ],
+  background: [
+    ["#e0e7ff", "ミスト"],
+    ["#dcfce7", "ミント"],
+    ["#fef3c7", "レモン"],
+    ["#fce7f3", "ピーチ"],
+  ],
+} as const;
+
+function CharacterEditor({
+  value,
+  onChange,
+}: {
+  value: CharacterConfig;
+  onChange: (value: CharacterConfig) => void;
+}) {
+  const set = (key: keyof CharacterConfig, next: string) => onChange({ ...value, [key]: next });
+  const groups = [
+    ["肌", "skin"],
+    ["髪型", "hair"],
+    ["髪色", "hairColor"],
+    ["目", "eyes"],
+    ["服", "outfit"],
+    ["服の色", "outfitColor"],
+    ["アクセサリー", "accessory"],
+    ["背景", "background"],
+  ] as const;
+
+  return (
+    <div className="space-y-4 rounded-xl border bg-muted/20 p-4">
+      <div>
+        <div className="font-semibold">キャラクター</div>
+        <p className="text-xs text-muted-foreground">
+          写真アイコンとは別に表示される、あなたの分身です。あとから何度でも変更できます。
+        </p>
+      </div>
+      <div className="flex items-start gap-4">
+        <CharacterAvatar value={value} className="h-28 w-28 shrink-0 rounded-3xl shadow-sm" />
+        <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-2">
+          {groups.map(([label, key]) => {
+            const options = CHARACTER_OPTIONS[key] as readonly (readonly [string, string])[];
+            return (
+              <div key={key} className="space-y-1">
+                <Label className="text-xs">{label}</Label>
+                <div className="flex flex-wrap gap-1">
+                  {options.map(([option, optionLabel]) => (
+                    <button
+                      type="button"
+                      key={option}
+                      onClick={() => set(key, option)}
+                      aria-label={`${label}: ${optionLabel}`}
+                      className={`rounded-md border px-2 py-1 text-xs transition ${
+                        value[key] === option
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "bg-background hover:bg-muted"
+                      }`}
+                    >
+                      {["skin", "hairColor", "outfitColor", "background"].includes(key) && (
+                        <span
+                          className="mr-1 inline-block h-2.5 w-2.5 rounded-full border align-[-1px]"
+                          style={{ backgroundColor: option }}
+                        />
+                      )}
+                      {optionLabel}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

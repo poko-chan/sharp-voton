@@ -37,6 +37,7 @@ import {
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { CharacterAvatar } from "@/components/profile/CharacterAvatar";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { syncCalendarNotifications } from "@/lib/calendar-reminders";
@@ -144,6 +145,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     display_name: string | null;
     username: string | null;
     avatar_url: string | null;
+    character_profile: Record<string, string> | null;
   } | null>(null);
   const [level, setLevel] = useState<number>(1);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -499,10 +501,17 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
       <div className="mx-5 border-t border-border/60" />
       <div className="px-5 py-4 flex items-center gap-3">
-        <Avatar className="h-11 w-11">
-          {profile?.avatar_url ? <AvatarImage src={profile.avatar_url} alt={displayName} /> : null}
-          <AvatarFallback>{initial}</AvatarFallback>
-        </Avatar>
+        <div className="relative">
+          <Avatar className="h-11 w-11">
+            {profile?.avatar_url ? <AvatarImage src={profile.avatar_url} alt={displayName} /> : null}
+            <AvatarFallback>{initial}</AvatarFallback>
+          </Avatar>
+          <CharacterAvatar
+            value={profile?.character_profile}
+            className="absolute -bottom-1 -right-1 h-5 w-5 rounded-md border border-background"
+            title={`${displayName}のキャラクター`}
+          />
+        </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <div className="text-sm font-medium leading-tight truncate">{displayName}</div>
@@ -723,12 +732,19 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <HelpCircle className="h-4 w-4" />
               </Link>
               <GoogleTranslateWidget />
-              <Avatar className="h-9 w-9 ring-2 ring-primary/25">
-                {profile?.avatar_url ? (
-                  <AvatarImage src={profile.avatar_url} alt={displayName} />
-                ) : null}
-                <AvatarFallback>{initial}</AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="h-9 w-9 ring-2 ring-primary/25">
+                  {profile?.avatar_url ? (
+                    <AvatarImage src={profile.avatar_url} alt={displayName} />
+                  ) : null}
+                  <AvatarFallback>{initial}</AvatarFallback>
+                </Avatar>
+                <CharacterAvatar
+                  value={profile?.character_profile}
+                  className="absolute -bottom-1 -right-1 h-4 w-4 rounded-md border border-background"
+                  title={`${displayName}のキャラクター`}
+                />
+              </div>
             </div>
           </header>
         )}
