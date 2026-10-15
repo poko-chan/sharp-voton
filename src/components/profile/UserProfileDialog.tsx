@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CharacterAvatar } from "./CharacterAvatar";
+import { GameProfileCard } from "./GameProfileCard";
 import { Award, Clock, Flame, Lock, UserPlus, UserCheck, Hourglass, BookOpen, Pin, Pencil, Crown, Trophy, Target, HandHeart, Send, CalendarDays, Check, Share2, Copy, RefreshCw, Medal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ProfileEditDialog } from "@/components/settings/ProfileExtrasSection";
@@ -406,6 +407,15 @@ export function UserProfileDialog({
                   </div>
                 </div>
               )}
+
+              <GameProfileCard
+                userId={data.id}
+                isSelf={data.relation === "self"}
+                name={data.display_name ?? data.username ?? "ユーザー"}
+                avatarConfig={data.avatar_config}
+                avatar={<ProfileAvatar p={data} size={72} />}
+                stats={{ total: data.stats?.total_minutes ?? 0, streak: extra?.streak ?? 0, badges: earnedCount, week: data.stats?.week_minutes ?? 0 }}
+              />
 
               {pinned.length > 0 && (
                 <div className="rounded-xl border bg-muted/40 p-3">
