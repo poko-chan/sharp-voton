@@ -1556,3 +1556,31 @@ html.focus-dim body { filter: saturate(0.4) brightness(0.92); }
 @media (prefers-reduced-motion: reduce) {
   .profile-anim { animation: none !important; }
 }
+
+/* ===== 説明ページのスクロール演出 ===== */
+.sfx-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 60;
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  pointer-events: none;
+}
+.sfx-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) var(--sfx-delay, 0ms),
+    transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) var(--sfx-delay, 0ms);
+}
+.sfx-reveal.sfx-in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sfx-reveal { opacity: 1; transform: none; transition: none; }
+}
