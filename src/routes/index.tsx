@@ -1,6 +1,7 @@
 import { useI18n } from "@/lib/i18n";
 import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import { PublicFooter, PublicMobileNav } from "@/components/public/PublicShell";
+import { ScrollFx } from "@/components/public/ScrollFx";
 
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
@@ -107,6 +108,7 @@ function LandingPage({ isAuthed }: { isAuthed: boolean }) {
   const { t } = useI18n();
   return (
     <div className="landing-premium relative min-h-screen overflow-x-hidden bg-background text-foreground">
+      <ScrollFx />
       <header className="sticky top-0 z-40 border-b landing-header">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
           <div className="flex items-center gap-2.5">
