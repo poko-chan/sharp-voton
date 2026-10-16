@@ -7,8 +7,10 @@ import {
   Download,
   ExternalLink,
   Image,
+  Link,
   RefreshCw,
-  TextSelect,
+  Search,
+  Share2,
   X,
 } from "lucide-react";
 import { useEffect, useState, type MouseEvent as ReactMouseEvent } from "react";
@@ -20,7 +22,7 @@ type MenuState = {
   href: string | null;
   imageSrc: string | null;
   selectedText: string;
-  editable: boolean;
+  canShare: boolean;
 };
 
 export function GlobalContextMenu({ children }: { children: React.ReactNode }) {
@@ -31,13 +33,20 @@ export function GlobalContextMenu({ children }: { children: React.ReactNode }) {
     const onContextMenu = (event: MouseEvent) => {
       if (event.defaultPrevented) return;
 
-      const target = event.target instanceof HTMLElement ? event.target : null;
+      const target = event.target instanceof Element ? event.target : null;
       if (target?.closest("[data-native-context-menu]")) return;
+
+      const pointerType = (event as MouseEvent & { pointerType?: string }).pointerType;
+      const isTouch = pointerType === "touch" || event.sourceCapabilities?.firesTouchEvents;
+      const isKeyboard = event.button === 0 && event.detail === 0;
+      if (isTouch || (event.button !== 2 && !isKeyboard)) return;
 
       const link = target?.closest("a[href]") as HTMLAnchorElement | null;
       const image = target?.closest("img") as HTMLImageElement | null;
       const selection = window.getSelection()?.toString().trim() ?? "";
       const editable = Boolean(target?.closest("input, textarea, [contenteditable='true']"));
+      if (editable) return;
+
       event.preventDefault();
       setCopied(null);
       setMenu({
@@ -46,7 +55,7 @@ export function GlobalContextMenu({ children }: { children: React.ReactNode }) {
         href: link?.href ?? null,
         imageSrc: image?.currentSrc || image?.src || null,
         selectedText: selection,
-        editable,
+        canShare: typeof navigator.share === "function",
       });
     };
     const close = () => setMenu(null);
@@ -171,11 +180,20 @@ export function GlobalContextMenu({ children }: { children: React.ReactNode }) {
             />
             <div className="my-1 border-t border-border/60" />
             {menu.href && (
-              <MenuButton
-                icon={<ExternalLink />}
-                label="リンクを新しいタブで開く"
-                onClick={() => run(() => window.open(menu.href!, "_blank", "noopener,noreferrer"))}
-              />
+              <>
+                <MenuButton
+                  icon={<ExternalLink />}
+                  label="リンクを新しいタブで開く"
+                  onClick={() =>
+                    run(() => window.open(menu.href!, "_blank", "noopener,noreferrer"))
+                  }
+                />
+                <MenuButton
+                  icon={<Link />}
+                  label="リンクアドレスをコピー"
+                  onClick={() => void copy(menu.href!, "link")}
+                />
+              </>
             )}
             {menu.imageSrc && (
               <>
@@ -204,24 +222,42 @@ export function GlobalContextMenu({ children }: { children: React.ReactNode }) {
               </>
             )}
             {menu.selectedText && (
-              <MenuButton
-                icon={copied === "selection" ? <Check /> : <Copy />}
-                label={copied === "selection" ? "選択範囲をコピーしました" : "選択範囲をコピー"}
-                onClick={() => void copy(menu.selectedText, "selection")}
-              />
+              <>
+                <MenuButton
+                  icon={copied === "selection" ? <Check /> : <Copy />}
+                  label={copied === "selection" ? "選択範囲をコピーしました" : "選択範囲をコピー"}
+                  onClick={() => void copy(menu.selectedText, "selection")}
+                />
+                <MenuButton
+                  icon={<Search />}
+                  label="選択範囲をWeb検索"
+                  onClick={() =>
+                    run(() =>
+                      window.open(
+                        `https://www.google.com/search?q=${encodeURIComponent(menu.selectedText)}`,
+                        "_blank",
+                        "noopener,noreferrer",
+                      ),
+                    )
+                  }
+                />
+                {menu.canShare && (
+                  <MenuButton
+                    icon={<Share2 />}
+                    label="選択範囲を共有"
+                    onClick={() => {
+                      void navigator.share({ text: menu.selectedText }).catch(() => undefined);
+                      setMenu(null);
+                    }}
+                  />
+                )}
+              </>
             )}
             <MenuButton
               icon={copied === "url" ? <Check /> : <Clipboard />}
               label={copied === "url" ? "ページURLをコピーしました" : "ページURLをコピー"}
               onClick={() => void copy(location.href, "url")}
             />
-            {menu.editable && (
-              <MenuButton
-                icon={<TextSelect />}
-                label="すべて選択"
-                onClick={() => run(() => document.execCommand("selectAll"))}
-              />
-            )}
           </div>
         </>
       )}
