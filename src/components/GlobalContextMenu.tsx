@@ -36,8 +36,12 @@ export function GlobalContextMenu({ children }: { children: React.ReactNode }) {
       const target = event.target instanceof Element ? event.target : null;
       if (target?.closest("[data-native-context-menu]")) return;
 
-      const pointerType = (event as MouseEvent & { pointerType?: string }).pointerType;
-      const isTouch = pointerType === "touch" || event.sourceCapabilities?.firesTouchEvents;
+      const pointerEvent = event as MouseEvent & {
+        pointerType?: string;
+        sourceCapabilities?: { firesTouchEvents?: boolean } | null;
+      };
+      const isTouch =
+        pointerEvent.pointerType === "touch" || pointerEvent.sourceCapabilities?.firesTouchEvents;
       const isKeyboard = event.button === 0 && event.detail === 0;
       if (isTouch || (event.button !== 2 && !isKeyboard)) return;
 
