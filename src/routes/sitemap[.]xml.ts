@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 import { CORE, MORE, SERVICE_CATALOG, featureSlug } from "@/content/services";
 
-const BASE_URL = "https://sharp-voton.lovable.app";
+const BASE_URL = "https://sharp.voton.app";
 
 interface SitemapEntry {
   path: string;

@@ -14,4 +14,4 @@ Disallow: /chat
 Disallow: /notifications
 Disallow: /api/
 
-Sitemap: https://sharp-voton.lovable.app/sitemap.xml
+Sitemap: https://sharp.voton.app/sitemap.xml
