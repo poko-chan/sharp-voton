@@ -25,6 +25,7 @@ import { AmbientSound } from "@/components/AmbientSound";
 import { GlobalContextMenu } from "@/components/GlobalContextMenu";
 import { GlobalFeedbackDock } from "@/components/FeedbackWidget";
 import { NetworkStatusBanner } from "@/components/NetworkStatusBanner";
+import { DomainChangeNotice } from "@/components/DomainChangeNotice";
 import { loadAndApplyUserTheme } from "@/lib/theme";
 
 import { I18nProvider } from "@/lib/i18n";
@@ -68,7 +69,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-const SITE_URL = "https://sharp-voton.lovable.app";
+const SITE_URL = "https://sharp.voton.app";
 const OG_IMAGE =
   "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fd850e55-f433-466a-ae78-8f2f88319d43/id-preview-8ca241ff--70a80aa5-02cd-459f-845f-d642eaffb4f2.lovable.app-1778835357697.png";
 
@@ -216,6 +217,7 @@ function RootComponent() {
             </RestrictionProvider>
             <GlobalFeedbackDock />
             <NetworkStatusBanner />
+            <DomainChangeNotice />
             <RouteLoading />
             <PWAInstallPrompt />
             <AmbientSound />
