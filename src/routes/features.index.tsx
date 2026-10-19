@@ -4,7 +4,7 @@ import { CORE, MORE, featureSlug } from "@/content/services";
 const ALL = [...CORE, ...MORE];
 import { PublicAmbient, PublicFooter, PublicHeader } from "@/components/public/PublicShell";
 
-const URL = "https://sharp-voton.lovable.app/features";
+const URL = "https://sharp.voton.app/features";
 const TITLE = "機能一覧｜Study#";
 const DESC =
   "Study# の主要機能を1ページに。ダッシュボード、集中タイマー、勉強記録、Makron演習、AIチャット、組織機能など、それぞれの詳しい説明ページへ進めます。";

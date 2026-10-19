@@ -40,7 +40,7 @@ const SCHEMA_DATA = {
     "Voton, Voton Study, Voton Study Sharp, VotonStudySharp, Study, Study Sharp, Study#, Sharp",
   applicationCategory: "EducationalApplication",
   operatingSystem: "All",
-  url: "https://sharp-voton.lovable.app/",
+  url: "https://sharp.voton.app/",
 };
 
 export const Route = createFileRoute("/")({
@@ -65,7 +65,7 @@ export const Route = createFileRoute("/")({
       },
       { name: "wot-verification", content: "b90b06f9dc6ed5f77aed" },
     ],
-    links: [{ rel: "canonical", href: "https://sharp-voton.lovable.app/" }],
+    links: [{ rel: "canonical", href: "https://sharp.voton.app/" }],
     // 3. head 内に構造化データの <script> および WOT Badge スクリプトを挿入する
     scripts: [
       {

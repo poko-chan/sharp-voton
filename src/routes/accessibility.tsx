@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PublicAmbient, PublicFooter, PublicHeader } from "@/components/public/PublicShell";
 
-const URL = "https://sharp-voton.lovable.app/accessibility";
+const URL = "https://sharp.voton.app/accessibility";
 const TITLE = "アクセシビリティ｜Study#";
 const DESC =
   "文字サイズ・UDフォント・行間・色覚フィルタ・高コントラスト・大きいタップ領域・読み上げなど、Study# のユニバーサルデザイン設定を紹介します。";

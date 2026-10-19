@@ -18,7 +18,7 @@ export const Route = createFileRoute("/all-services")({
       { name: "twitter:title", content: TITLE },
       { name: "twitter:description", content: DESC },
     ],
-    links: [{ rel: "canonical", href: "https://sharp-voton.lovable.app/all-services" }],
+    links: [{ rel: "canonical", href: "https://sharp.voton.app/all-services" }],
   }),
   component: AllServicesPage,
 });

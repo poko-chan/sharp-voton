@@ -16,7 +16,7 @@ export const Route = createFileRoute("/admin-login")({
     const title = "管理者ログイン｜Study#";
     const description =
       "Study# の管理者専用ログインページです。一般利用者のログインは通常のログインページから行ってください。";
-    const url = "https://sharp-voton.lovable.app/admin-login";
+    const url = "https://sharp.voton.app/admin-login";
     return {
       meta: [
         { title },

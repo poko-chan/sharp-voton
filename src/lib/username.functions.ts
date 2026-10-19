@@ -26,12 +26,12 @@ async function lookupEmail(username: string): Promise<string | null> {
 
 /** 再設定リンクの戻り先は自サイトのみ。それ以外は公開URLに固定。 */
 function safeResetRedirect(input: string): string {
-  const fallback = "https://sharp-voton.lovable.app/reset-password";
+  const fallback = "https://sharp.voton.app/reset-password";
   try {
     const u = new URL(input);
     const ok =
       u.protocol === "https:" &&
-      (u.hostname === "sharp-voton.lovable.app" ||
+      (u.hostname === "sharp.voton.app" || u.hostname === "sharp-voton.lovable.app" ||
         /^[a-z0-9-]+--4b897efe-74f1-4b97-8bde-44153babd3fa\.lovable\.app$/.test(u.hostname));
     return ok ? `${u.origin}/reset-password` : fallback;
   } catch {

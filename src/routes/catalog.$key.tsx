@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { SERVICE_CATALOG } from "@/content/services";
 import { PublicAmbient, PublicFooter, PublicHeader } from "@/components/public/PublicShell";
 
-const BASE = "https://sharp-voton.lovable.app";
+const BASE = "https://sharp.voton.app";
 
 export const Route = createFileRoute("/catalog/$key")({
   loader: ({ params }) => {
