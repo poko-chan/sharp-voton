@@ -4,7 +4,7 @@ import { CORE, MORE, featureSlug } from "@/content/services";
 const ALL = [...CORE, ...MORE];
 import { PublicAmbient, PublicFooter, PublicHeader } from "@/components/public/PublicShell";
 
-const BASE = "https://sharp-voton.lovable.app";
+const BASE = "https://sharp.voton.app";
 
 export const Route = createFileRoute("/features/$slug")({
   loader: ({ params }) => {

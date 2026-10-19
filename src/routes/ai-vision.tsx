@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PublicAmbient, PublicFooter, PublicHeader } from "@/components/public/PublicShell";
 
-const URL = "https://sharp-voton.lovable.app/ai-vision";
+const URL = "https://sharp.voton.app/ai-vision";
 const TITLE = "これからのAI｜ひとつのプラットフォームが、ひとつの情報をつくる｜Study#";
 const DESC =
   "Study# に蓄積された学習時間・演習・教材・目標・連絡のすべてを、将来AIが横断して分析します。現在AI機能を一時停止している理由と、今後の構想をお伝えします。";

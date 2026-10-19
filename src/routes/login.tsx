@@ -39,7 +39,7 @@ export const Route = createFileRoute("/login")({
     const title = "ログイン｜Study# — 学習を続けやすくする学習プラットフォーム";
     const description =
       "Study# にログインして、勉強記録・集中タイマー・AI問題生成・AIチャット・学習目標管理などの学習サポート機能を使い始めましょう。新規登録もこちらから。";
-    const url = "https://sharp-voton.lovable.app/login";
+    const url = "https://sharp.voton.app/login";
     return {
       meta: [
         { title },

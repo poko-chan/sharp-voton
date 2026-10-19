@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { SERVICE_CATALOG } from "@/content/services";
 import { PublicAmbient, PublicFooter, PublicHeader } from "@/components/public/PublicShell";
 
-const URL = "https://sharp-voton.lovable.app/catalog";
+const URL = "https://sharp.voton.app/catalog";
 const TITLE = "カテゴリ別ガイド｜Study#";
 const DESC =
   "記録・分析、集中、Makron演習、AI、計画・教材、組織、つながる、続ける仕掛け、安心・運用。Study# の機能をカテゴリごとに解説します。";

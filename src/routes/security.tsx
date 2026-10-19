@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { PublicAmbient, PublicFooter, PublicHeader } from "@/components/public/PublicShell";
 import { TRUST } from "@/content/services";
 
-const URL = "https://sharp-voton.lovable.app/security";
+const URL = "https://sharp.voton.app/security";
 const TITLE = "安全性とデータの扱い｜Study#";
 const DESC =
   "アカウント保護、行単位のアクセス制御、正答データのサーバー保持、削除の7日間猶予など、Study# がデータをどう守っているかを説明します。";

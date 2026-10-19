@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { PublicAmbient, PublicFooter, PublicHeader } from "@/components/public/PublicShell";
 import { AiTrialChat } from "@/components/public/AiTrialChat";
 
-const URL = "https://sharp-voton.lovable.app/ai";
+const URL = "https://sharp.voton.app/ai";
 const TITLE = "AIの仕組み｜Study#";
 const DESC =
   "Study# のAIは端末内で動くGemini Nano・ブラウザ内のWebLLM・パソコンのOllamaから選べます。何ができて、何ができないのかを正直に説明します。";

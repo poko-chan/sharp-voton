@@ -12,7 +12,7 @@ import {
 import { listPublicFaqs, type PublicFaq } from "@/lib/faq.functions";
 import { PublicAmbient, PublicFooter, PublicHeader } from "@/components/public/PublicShell";
 
-const HELP_URL = "https://sharp-voton.lovable.app/help";
+const HELP_URL = "https://sharp.voton.app/help";
 const HELP_TITLE = "ヘルプ・よくある質問｜Study#";
 const HELP_DESC =
   "Study#のよくある質問と回答。ログイン・アカウント・勉強記録・演習・AI・組織利用に関する疑問を解決できます。";

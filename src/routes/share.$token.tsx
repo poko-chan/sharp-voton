@@ -9,7 +9,7 @@ export const Route = createFileRoute("/share/$token")({
     const title = "共有された勉強記録｜Study#";
     const description =
       "Study# で共有された勉強記録のサマリーです。学習時間と科目の内訳を閲覧できます。";
-    const url = `https://sharp-voton.lovable.app/share/${params.token}`;
+    const url = `https://sharp.voton.app/share/${params.token}`;
     return {
       meta: [
         { title },

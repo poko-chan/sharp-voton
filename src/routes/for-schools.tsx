@@ -19,7 +19,7 @@ export const Route = createFileRoute("/for-schools")({
       { name: "twitter:title", content: TITLE },
       { name: "twitter:description", content: DESC },
     ],
-    links: [{ rel: "canonical", href: "https://sharp-voton.lovable.app/for-schools" }],
+    links: [{ rel: "canonical", href: "https://sharp.voton.app/for-schools" }],
   }),
   component: ForSchoolsPage,
 });
