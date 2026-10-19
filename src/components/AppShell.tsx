@@ -66,6 +66,7 @@ import { toast } from "sonner";
 import { useMaintenance } from "@/lib/maintenance-context";
 import { FocusMode } from "@/components/focus/FocusMode";
 import { UserProfileDialog } from "@/components/profile/UserProfileDialog";
+import { DomainChangeBar } from "@/components/DomainChangeNotice";
 
 export const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
@@ -765,6 +766,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </header>
         )}
 
+        <DomainChangeBar />
         <div className={isMobile ? "pb-24" : ""}>{children}</div>
         <ChildGuard />
 

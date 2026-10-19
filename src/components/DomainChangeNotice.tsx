@@ -1,74 +1,104 @@
 import { useEffect, useState } from "react";
+import { Globe, ArrowRight, Copy, Check, Bookmark, ShieldCheck, KeyRound } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const OLD_HOST = "sharp-voton.lovable.app";
 const NEW_ORIGIN = "https://sharp.voton.app";
 const NEW_HOST = "sharp.voton.app";
-const BANNER_KEY = "vtn-domain-banner-dismissed";
 
-/**
- * Domain move notice.
- * - Old lovable.app host: the app is not usable there; always move to the new domain.
- * - New host: show a dismissible banner once telling users the official URL changed.
- */
+/** Old host fallback: if the platform redirect ever stops, move users to the new domain. */
 export function DomainChangeNotice() {
-  const [mode, setMode] = useState<"none" | "old" | "banner">("none");
-
   useEffect(() => {
-    const host = window.location.hostname;
-    if (host === OLD_HOST) {
-      setMode("old");
-      const { pathname, search, hash } = window.location;
-      window.location.replace(NEW_ORIGIN + pathname + search + hash);
-      return;
-    }
-    if (host !== NEW_HOST) return;
+    if (window.location.hostname !== OLD_HOST) return;
+    const { pathname, search, hash } = window.location;
+    window.location.replace(NEW_ORIGIN + pathname + search + hash);
+  }, []);
+  return null;
+}
+
+/** Thin bar under the top bar; opens the full-screen domain change announcement. */
+export function DomainChangeBar() {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
     try {
-      if (localStorage.getItem(BANNER_KEY) === "1") return;
+      await navigator.clipboard.writeText(NEW_ORIGIN);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
     } catch {
       /* ignore */
     }
-    setMode("banner");
-  }, []);
+  };
 
-  if (mode === "old") {
-    return (
-      <div
-        className="fixed inset-0 z-[120] flex items-center justify-center bg-background p-4"
-        role="dialog"
-        aria-modal="true"
-        aria-label="ドメイン移転のお知らせ"
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="flex w-full items-center justify-center gap-2 border-b border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-primary/15"
       >
-        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 text-center shadow-xl">
-          <h1 className="text-2xl font-bold text-foreground">ドメインが新しくなりました</h1>
-          <p className="mt-4 text-sm text-muted-foreground">新しいURLへ移動しています…</p>
-          <a href={NEW_ORIGIN} className="mt-3 block text-lg font-bold text-primary">
-            {NEW_HOST}
-          </a>
-        </div>
-      </div>
-    );
-  }
+        <Globe className="h-3.5 w-3.5 text-primary" />
+        <span>ドメイン変更</span>
+        <span className="hidden sm:inline text-muted-foreground">— 公式URLが {NEW_HOST} になりました</span>
+        <ArrowRight className="h-3.5 w-3.5 text-primary" />
+      </button>
 
-  if (mode === "banner") {
-    const close = () => {
-      try {
-        localStorage.setItem(BANNER_KEY, "1");
-      } catch {
-        /* ignore */
-      }
-      setMode("none");
-    };
-    return (
-      <div className="fixed inset-x-0 top-0 z-[110] flex items-center justify-center gap-3 border-b border-border bg-card px-4 py-2 text-sm text-foreground shadow">
-        <span>
-          【お知らせ】Study#の公式URLが <strong className="text-primary">{NEW_HOST}</strong> に変わりました。ブックマークの再登録をお願いします。
-        </span>
-        <button onClick={close} aria-label="閉じる" className="rounded px-2 text-muted-foreground hover:text-foreground">
-          ×
-        </button>
-      </div>
-    );
-  }
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-2xl overflow-hidden border-primary/30 p-0">
+          <div className="relative bg-gradient-to-br from-primary/25 via-background to-background px-6 py-10 sm:px-10">
+            <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/30 blur-3xl" />
+            <div className="relative">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-[11px] font-bold tracking-widest text-primary">
+                <Globe className="h-3 w-3" /> OFFICIAL DOMAIN MIGRATION
+              </span>
+              <DialogTitle className="mt-5 text-3xl font-black leading-tight sm:text-4xl">
+                Study# の公式URLが
+                <br />
+                新しくなりました
+              </DialogTitle>
+              <DialogDescription className="mt-3 text-sm text-muted-foreground">
+                これからは下の新しいURLからご利用ください。旧URLからも自動で移動します。
+              </DialogDescription>
 
-  return null;
+              <div className="mt-6 flex items-center gap-2 rounded-2xl border border-primary/40 bg-card/80 p-2 pl-4 backdrop-blur">
+                <code className="flex-1 truncate text-lg font-bold text-primary sm:text-xl">{NEW_HOST}</code>
+                <button
+                  type="button"
+                  onClick={copy}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+                >
+                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  {copied ? "コピーしました" : "コピー"}
+                </button>
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">旧URL: {OLD_HOST}（今後は使用しません）</p>
+
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                {[
+                  { icon: Bookmark, t: "ブックマーク", d: "お気に入りを新しいURLに登録し直してください。" },
+                  { icon: ShieldCheck, t: "データはそのまま", d: "アカウントや学習記録はすべて引き継がれています。" },
+                  { icon: KeyRound, t: "パスキー", d: "旧URLで登録したパスキーは設定から再登録が必要です。" },
+                ].map((x) => (
+                  <div key={x.t} className="rounded-xl border border-border bg-card/70 p-3">
+                    <x.icon className="h-4 w-4 text-primary" />
+                    <div className="mt-1.5 text-sm font-bold">{x.t}</div>
+                    <div className="mt-0.5 text-xs text-muted-foreground">{x.d}</div>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="mt-7 w-full rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground transition hover:opacity-90"
+              >
+                了解しました
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }
