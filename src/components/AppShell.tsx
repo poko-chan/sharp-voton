@@ -1,3 +1,4 @@
+import { usePwaDisplay, isFocusPath, setPwaDisplayMode } from "@/lib/pwa-display";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { ChildGuard } from "@/components/ChildGuard";
 import { ParentBarButton } from "@/components/parent/ParentBarButton";
