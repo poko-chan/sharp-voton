@@ -137,6 +137,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const isMobile = useIsMobile();
+  const pwa = usePwaDisplay();
+  const pwaActive = isMobile && pwa.standalone;
+  const hideTopBar =
+    pwaActive && (pwa.mode !== "standard" || isFocusPath(path));
+  const hideBottomNav = pwaActive && pwa.mode === "immersive";
   const { prefs } = useUserPrefs(); // apply font scale / contrast on mount
   const supportDock = (prefs as { right_dock?: string[] }).right_dock;
   const restriction = useRestriction();
@@ -703,7 +708,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         {/* Mobile top bar (hamburger + clock) */}
         {isMobile && (
-          <header className="app-topbar sticky top-0 z-40 flex items-center gap-2 px-3 py-2 liquid-bar border-b">
+          <header
+            className={`app-topbar sticky top-0 z-40 flex items-center gap-2 px-3 py-2 liquid-bar border-b ${hideTopBar ? "hidden" : ""}`}
+          >
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <button
@@ -722,6 +729,32 @@ export function AppShell({ children }: { children: ReactNode }) {
                     <X className="h-5 w-5" />
                   </button>
                 </div>
+                {pwa.standalone && (
+                  <div className="px-3 pb-2">
+                    <div className="text-[11px] font-semibold text-muted-foreground mb-1">
+                      アプリの表示
+                    </div>
+                    <div className="grid grid-cols-3 gap-1 rounded-xl bg-muted/60 p-1">
+                      {(
+                        [
+                          ["compact", "コンパクト"],
+                          ["immersive", "没入"],
+                          ["standard", "標準"],
+                        ] as const
+                      ).map(([k, label]) => (
+                        <button
+                          key={k}
+                          onClick={() => setPwaDisplayMode(k)}
+                          className={`rounded-lg py-1.5 text-xs font-semibold ${
+                            pwa.mode === k ? "bg-background text-primary shadow-sm" : "text-muted-foreground"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {sidebarContent}
               </SheetContent>
             </Sheet>
@@ -766,12 +799,28 @@ export function AppShell({ children }: { children: ReactNode }) {
           </header>
         )}
 
-        <DomainChangeBar />
-        <div className={isMobile ? "pb-24" : ""}>{children}</div>
+        {!hideTopBar && <DomainChangeBar />}
+        <div
+          className={isMobile && !hideBottomNav ? "pb-24" : ""}
+          style={hideTopBar ? { paddingTop: "env(safe-area-inset-top)" } : undefined}
+        >
+          {children}
+        </div>
         <ChildGuard />
 
+        {isMobile && hideBottomNav && (
+          <button
+            onClick={() => setMobileOpen(true)}
+            aria-label="メニューを開く"
+            className="fixed z-40 right-3 h-11 w-11 rounded-full border liquid-bar shadow-lg inline-flex items-center justify-center active:scale-95"
+            style={{ bottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
+          >
+            <MoreHorizontal className="h-5 w-5" />
+          </button>
+        )}
+
         {/* Mobile bottom bar */}
-        {isMobile && (
+        {isMobile && !hideBottomNav && (
           <nav className="fixed bottom-0 left-0 right-0 z-40 border-t liquid-bar safe-bottom">
             <div className="flex items-stretch justify-around gap-0.5 px-1.5 py-1.5">
               {mobileNav.map((n) => {
