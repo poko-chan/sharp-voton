@@ -246,6 +246,39 @@ export function distToStroke(s: Stroke, x: number, y: number, r: number) {
   return s.points.some((p) => Math.hypot(p.x - x, p.y - y) <= r);
 }
 
+export type ShapeKind = "line" | "rect" | "ellipse" | "arrow";
+
+/** 図形を手書き線と同じ点列に変換する（既存データ形式のまま保存・部分消去できる） */
+export function shapePoints(kind: ShapeKind, a: Point, b: Point): Point[] {
+  const seg = (p: Point, q: Point, n = 24) =>
+    Array.from({ length: n + 1 }, (_, i) => ({
+      x: p.x + ((q.x - p.x) * i) / n,
+      y: p.y + ((q.y - p.y) * i) / n,
+      p: 0.5,
+    }));
+  if (kind === "line") return seg(a, b);
+  if (kind === "rect") {
+    const c1 = { x: b.x, y: a.y };
+    const c2 = { x: a.x, y: b.y };
+    return [...seg(a, c1), ...seg(c1, b), ...seg(b, c2), ...seg(c2, a)];
+  }
+  if (kind === "ellipse") {
+    const cx = (a.x + b.x) / 2;
+    const cy = (a.y + b.y) / 2;
+    const rx = Math.abs(b.x - a.x) / 2;
+    const ry = Math.abs(b.y - a.y) / 2;
+    return Array.from({ length: 73 }, (_, i) => {
+      const t = (i / 72) * Math.PI * 2;
+      return { x: cx + rx * Math.cos(t), y: cy + ry * Math.sin(t), p: 0.5 };
+    });
+  }
+  const ang = Math.atan2(b.y - a.y, b.x - a.x);
+  const len = Math.min(40, Math.hypot(b.x - a.x, b.y - a.y) * 0.35);
+  const h1 = { x: b.x - len * Math.cos(ang - 0.45), y: b.y - len * Math.sin(ang - 0.45) };
+  const h2 = { x: b.x - len * Math.cos(ang + 0.45), y: b.y - len * Math.sin(ang + 0.45) };
+  return [...seg(a, b), ...seg(b, h1, 6), ...seg(h1, b, 6), ...seg(b, h2, 6)];
+}
+
 /**
  * 本物の消しゴムのように、触れた部分だけを削る。
  * 線を丸ごと消さず、消した箇所で線を分割して残りを保持する。
