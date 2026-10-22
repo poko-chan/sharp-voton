@@ -61,6 +61,8 @@ function NotebookEditor() {
   const [username, setUsername] = useState("");
   const [canEditShare, setCanEditShare] = useState(true);
   const [saving, setSaving] = useState<"idle" | "dirty" | "saving" | "saved">("idle");
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [saveFailed, setSaveFailed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showPageRail, setShowPageRail] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -219,6 +221,7 @@ function NotebookEditor() {
           }
         }
         setSaving("saved");
+        setSavedAt(new Date());
       } finally {
         saveLoopRef.current = false;
         if (drainPending && pendingRef.current) void savePage();
@@ -232,7 +235,8 @@ function NotebookEditor() {
       pendingRef.current = updated;
       setSaving("dirty");
       if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => void savePage(), 800);
+      // 書き続けている間は送らず、手が止まってからまとめて保存
+      timer.current = setTimeout(() => void savePage(), 2500);
       if (draftTimer.current) clearTimeout(draftTimer.current);
       draftTimer.current = setTimeout(() => {
         try {
