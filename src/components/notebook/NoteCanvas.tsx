@@ -635,15 +635,75 @@ export function NoteCanvas({
                   aria-label="太さ"
                 />
                 <span className="text-[11px] tabular-nums text-muted-foreground">{width}</span>
-                <Button
-                  size="sm"
-                  variant={straight ? "default" : "outline"}
-                  className="h-7"
-                  onClick={() => setStraight((s) => !s)}
-                  title="直線モード"
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
+                {tool === "shape" ? (
+                  <>
+                    <span className="h-5 w-px bg-border" />
+                    {SHAPES.map((s) => (
+                      <Button
+                        key={s.key}
+                        size="sm"
+                        variant={shape === s.key ? "default" : "outline"}
+                        className="h-7 px-2 text-xs"
+                        onClick={() => setShape(s.key)}
+                      >
+                        {s.label}
+                      </Button>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      size="sm"
+                      variant={straight ? "default" : "outline"}
+                      className="h-7"
+                      onClick={() => setStraight((s) => !s)}
+                      title="直線モード"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="h-5 w-px bg-border" />
+                    <span className="text-[11px] text-muted-foreground">手ぶれ補正</span>
+                    <select
+                      value={smooth}
+                      onChange={(e) => setSmooth(Number(e.target.value))}
+                      className="h-7 rounded border bg-background px-1 text-xs"
+                      aria-label="手ぶれ補正"
+                    >
+                      {SMOOTH_LEVELS.map((l) => (
+                        <option key={l.v} value={l.v}>
+                          {l.label}
+                        </option>
+                      ))}
+                    </select>
+                  </>
+                )}
+                {tool !== "highlighter" && (
+                  <>
+                    <span className="h-5 w-px bg-border" />
+                    {PRESETS.map((p) => (
+                      <button
+                        key={p.label}
+                        title={p.label}
+                        onClick={() => {
+                          setColor(p.color);
+                          setWidth(p.width);
+                        }}
+                        className={cn(
+                          "flex h-7 items-center gap-1 rounded-md border px-1.5 text-[11px]",
+                          color === p.color && width === p.width
+                            ? "border-primary bg-primary/10"
+                            : "hover:bg-muted",
+                        )}
+                      >
+                        <span
+                          className="inline-block w-4 rounded-full"
+                          style={{ background: p.color, height: Math.max(2, p.width) }}
+                        />
+                        {p.label}
+                      </button>
+                    ))}
+                  </>
+                )}
               </>
             )}
             {tool === "eraser" && (
