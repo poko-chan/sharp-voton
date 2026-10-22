@@ -201,10 +201,12 @@ function NotebookEditor() {
           if (error) {
             if (!pendingRef.current) pendingRef.current = p;
             setSaving("dirty");
+            setSaveFailed(true);
             drainPending = false;
-            toast.error("保存に失敗しました");
+            toast.error("保存できませんでした。内容はこの端末に保護しています");
             return;
           }
+          setSaveFailed(false);
           savedSig.current[p.id] = sig;
           try {
             localStorage.removeItem(`cnote.draft.${p.id}`);
