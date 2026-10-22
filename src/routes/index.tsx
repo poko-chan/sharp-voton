@@ -98,7 +98,9 @@ function LandingRoute() {
       /(^|&)(access_token|refresh_token|code|token_hash|type|error|error_description)=/.test(raw)
     ) {
       navigate({ to: "/login", replace: true });
+      return;
     }
+    if (user) navigate({ to: "/dashboard", replace: true });
   }, [user, loading, navigate]);
 
   return <LandingPage isAuthed={!!user} />;
