@@ -1,4 +1,33 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+
+/** ページ一覧用の縮小プレビュー（保存はせず、その場で描画） */
+export const PageThumb = memo(function PageThumb({
+  strokes,
+  paper,
+  paperColor,
+}: {
+  strokes: Stroke[];
+  paper: PaperType;
+  paperColor: string;
+}) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const c = ref.current;
+    const ctx = c?.getContext("2d");
+    if (!c || !ctx) return;
+    const s = c.width / PAGE_W;
+    ctx.setTransform(s, 0, 0, s, 0, 0);
+    renderPage(ctx, { strokes, texts: [] }, paper, paperColor);
+  }, [strokes, paper, paperColor]);
+  return (
+    <canvas
+      ref={ref}
+      width={62}
+      height={Math.round((62 * PAGE_H) / PAGE_W)}
+      className="h-[88px] w-[62px] shrink-0 rounded border bg-background"
+    />
+  );
+});
 import { Button } from "@/components/ui/button";
 import {
   Pen,
