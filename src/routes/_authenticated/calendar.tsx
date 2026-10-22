@@ -673,12 +673,6 @@ function CalendarPage() {
                       編集
                     </button>
                     <button
-                      onClick={() => startEditingEvent(ev)}
-                      className="text-primary hover:opacity-70 text-xs"
-                    >
-                      編集
-                    </button>
-                    <button
                       onClick={() => delPlan(p.id)}
                       className="text-destructive hover:opacity-70"
                     >
