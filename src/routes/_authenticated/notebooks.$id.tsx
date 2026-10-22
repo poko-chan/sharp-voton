@@ -20,7 +20,8 @@ import {
   Archive,
   Settings2,
 } from "lucide-react";
-import { NoteCanvas } from "@/components/notebook/NoteCanvas";
+import { ChevronUp, ChevronDown } from "lucide-react";
+import { NoteCanvas, PageThumb } from "@/components/notebook/NoteCanvas";
 import { NoteShell } from "@/components/notebook/NoteShell";
 import {
   PAPER_COLORS,
@@ -611,25 +612,58 @@ function NotebookEditor() {
               </div>
               <div className="space-y-1">
                 {pages.map((candidate, pageIndex) => (
-                  <button
+                  <div
                     key={candidate.id}
-                    type="button"
-                    onClick={() => setIdx(pageIndex)}
                     className={cn(
-                      "flex w-full items-center gap-2 rounded-lg border px-2 py-2 text-left transition",
+                      "group flex w-full items-center gap-2 rounded-lg border p-1.5 transition",
                       pageIndex === idx
                         ? "border-primary/50 bg-primary/10 text-primary"
                         : "border-transparent hover:bg-muted",
                     )}
-                    aria-current={pageIndex === idx ? "page" : undefined}
                   >
-                    <span className="grid h-8 w-7 shrink-0 place-items-center rounded border bg-background text-[10px] font-bold tabular-nums">
-                      {pageIndex + 1}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate text-xs font-medium">
-                      {candidate.title || `ページ ${pageIndex + 1}`}
-                    </span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => goToPage(pageIndex)}
+                      className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                      aria-current={pageIndex === idx ? "page" : undefined}
+                    >
+                      <PageThumb
+                        strokes={candidate.strokes}
+                        paper={nb.paper_type}
+                        paperColor={nb.paper_color}
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[10px] font-bold tabular-nums text-muted-foreground">
+                          {pageIndex + 1}
+                        </span>
+                        <span className="block truncate text-xs font-medium">
+                          {candidate.title || `ページ ${pageIndex + 1}`}
+                        </span>
+                      </span>
+                    </button>
+                    {!readOnly && (
+                      <span className="flex flex-col opacity-60 group-hover:opacity-100">
+                        <button
+                          type="button"
+                          onClick={() => movePage(pageIndex, -1)}
+                          disabled={pageIndex === 0}
+                          className="rounded p-0.5 hover:bg-background disabled:opacity-30"
+                          aria-label="上へ移動"
+                        >
+                          <ChevronUp className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => movePage(pageIndex, 1)}
+                          disabled={pageIndex === pages.length - 1}
+                          className="rounded p-0.5 hover:bg-background disabled:opacity-30"
+                          aria-label="下へ移動"
+                        >
+                          <ChevronDown className="h-3.5 w-3.5" />
+                        </button>
+                      </span>
+                    )}
+                  </div>
                 ))}
               </div>
               {!readOnly && page && (
