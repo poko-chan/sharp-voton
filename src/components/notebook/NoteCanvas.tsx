@@ -534,7 +534,11 @@ export function NoteCanvas({
 
   const swatches = tool === "highlighter" ? MARKER_COLORS : PEN_COLORS;
   const isPenTool =
-    tool === "pen" || tool === "pencil" || tool === "marker" || tool === "highlighter";
+    tool === "pen" ||
+    tool === "pencil" ||
+    tool === "marker" ||
+    tool === "highlighter" ||
+    tool === "shape";
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col md:flex-row">
