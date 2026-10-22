@@ -16,6 +16,7 @@ import {
   Hand,
   Maximize2,
   Pencil,
+  Shapes,
 } from "lucide-react";
 import {
   PAGE_H,
@@ -23,13 +24,16 @@ import {
   renderPage,
   drawStroke,
   eraseAt,
+  shapePoints,
+  type Point,
+  type ShapeKind,
   type PaperType,
   type Stroke,
   type TextBox,
 } from "@/lib/notebooks";
 import { cn } from "@/lib/utils";
 
-type Tool = "pen" | "pencil" | "marker" | "highlighter" | "eraser" | "text" | "hand";
+type Tool = "pen" | "pencil" | "marker" | "highlighter" | "shape" | "eraser" | "text" | "hand";
 
 const PEN_COLORS = [
   "#111827",
@@ -48,10 +52,48 @@ const TOOLS: { key: Tool; icon: typeof Pen; label: string }[] = [
   { key: "pencil", icon: Pencil, label: "えんぴつ" },
   { key: "marker", icon: Brush, label: "サインペン" },
   { key: "highlighter", icon: Highlighter, label: "蛍光ペン" },
+  { key: "shape", icon: Shapes, label: "図形" },
   { key: "eraser", icon: Eraser, label: "消しゴム" },
   { key: "text", icon: Type, label: "テキスト" },
   { key: "hand", icon: Hand, label: "手のひら（移動）" },
 ];
+
+const SHAPES: { key: ShapeKind; label: string }[] = [
+  { key: "line", label: "直線" },
+  { key: "arrow", label: "矢印" },
+  { key: "rect", label: "四角" },
+  { key: "ellipse", label: "円" },
+];
+const SMOOTH_LEVELS = [
+  { v: 0, label: "なし" },
+  { v: 0.25, label: "弱" },
+  { v: 0.45, label: "標準" },
+  { v: 0.65, label: "強" },
+];
+const PRESETS = [
+  { color: "#111827", width: 2, label: "黒・細" },
+  { color: "#111827", width: 5, label: "黒・太" },
+  { color: "#1d4ed8", width: 3, label: "青" },
+  { color: "#dc2626", width: 3, label: "赤" },
+];
+const PREF_KEY = "cnote.prefs.v1";
+type Prefs = {
+  tool?: Tool;
+  color?: string;
+  hlColor?: string;
+  width?: number;
+  eraserSize?: number;
+  penOnly?: boolean;
+  smooth?: number;
+  shape?: ShapeKind;
+};
+function readPrefs(): Prefs {
+  try {
+    return JSON.parse(localStorage.getItem(PREF_KEY) || "{}") as Prefs;
+  } catch {
+    return {};
+  }
+}
 
 /** 実物の筆記具に近い書き味のノートキャンバス */
 export function NoteCanvas({
