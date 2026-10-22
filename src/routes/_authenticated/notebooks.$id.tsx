@@ -314,13 +314,20 @@ function NotebookEditor() {
     setPages(next);
     if (idx === from) setIdx(to);
     else if (idx === to) setIdx(from);
-    const [r1, r2] = await Promise.all([
-      supabase.from("notebook_pages").update({ page_index: b.page_index }).eq("id", a.id),
-      supabase.from("notebook_pages").update({ page_index: a.page_index }).eq("id", b.id),
-    ]);
-    if (r1.error || r2.error) {
-      toast.error("並べ替えを保存できませんでした");
-      setPages(pages);
+    // 同じ番号を同時に持てないため、一時番号を経由して入れ替える
+    const tmp = -1 - Math.floor(Math.random() * 1_000_000);
+    const steps = [
+      () => supabase.from("notebook_pages").update({ page_index: tmp }).eq("id", a.id),
+      () => supabase.from("notebook_pages").update({ page_index: a.page_index }).eq("id", b.id),
+      () => supabase.from("notebook_pages").update({ page_index: b.page_index }).eq("id", a.id),
+    ];
+    for (const step of steps) {
+      const { error } = await step();
+      if (error) {
+        toast.error("並べ替えを保存できませんでした");
+        void load();
+        return;
+      }
     }
   };
 
