@@ -276,13 +276,53 @@ function NotebookEditor() {
       e.preventDefault();
       e.returnValue = "";
     };
+    const flushNow = () => {
+      if (!pendingRef.current) return;
+      if (timer.current) clearTimeout(timer.current);
+      void savePage();
+    };
+    const onHide = () => {
+      if (document.visibilityState === "hidden") flushNow();
+    };
     window.addEventListener("beforeunload", warn);
+    document.addEventListener("visibilitychange", onHide);
+    window.addEventListener("online", flushNow);
     return () => {
       window.removeEventListener("beforeunload", warn);
+      document.removeEventListener("visibilitychange", onHide);
+      window.removeEventListener("online", flushNow);
       const p = pendingRef.current;
       if (p) savePage(p);
     };
   }, [savePage]);
+
+  /** ページ切替前に未保存分を即保存 */
+  const goToPage = (next: number) => {
+    if (pendingRef.current) flushPageSave();
+    setIdx(next);
+  };
+
+  /** ページの順番を1つ入れ替える（2件だけ更新） */
+  const movePage = async (from: number, dir: -1 | 1) => {
+    const to = from + dir;
+    if (readOnly || to < 0 || to >= pages.length) return;
+    const a = pages[from];
+    const b = pages[to];
+    const next = [...pages];
+    next[from] = { ...b, page_index: a.page_index };
+    next[to] = { ...a, page_index: b.page_index };
+    setPages(next);
+    if (idx === from) setIdx(to);
+    else if (idx === to) setIdx(from);
+    const [r1, r2] = await Promise.all([
+      supabase.from("notebook_pages").update({ page_index: b.page_index }).eq("id", a.id),
+      supabase.from("notebook_pages").update({ page_index: a.page_index }).eq("id", b.id),
+    ]);
+    if (r1.error || r2.error) {
+      toast.error("並べ替えを保存できませんでした");
+      setPages(pages);
+    }
+  };
 
   const addPage = async () => {
     const nextIdx = (pages.at(-1)?.page_index ?? -1) + 1;
