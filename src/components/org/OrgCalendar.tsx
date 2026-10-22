@@ -39,6 +39,7 @@ export function OrgCalendar({ orgId, ctx }: { orgId: string; ctx: any }) {
   });
   const [selected, setSelected] = useState<string>(ymd(new Date()));
   const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState<any | null>(null);
   const [scope, setScope] = useState("org");
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
@@ -87,6 +88,47 @@ export function OrgCalendar({ orgId, ctx }: { orgId: string; ctx: any }) {
     setStart("");
     setEnd("");
     load();
+  };
+
+  const edit = async () => {
+    if (!editing || !title.trim() || !start) return toast.error("タイトルと開始日時を入力してください");
+    const { error } = await (supabase as any)
+      .from("org_calendar_events")
+      .update({
+        title: title.trim(),
+        description: desc || null,
+        location: place || null,
+        starts_at: new Date(start).toISOString(),
+        ends_at: end ? new Date(end).toISOString() : null,
+      })
+      .eq("id", editing.id);
+    if (error) return toast.error(error.message);
+    toast.success("予定を変更しました");
+    setEditing(null);
+    setCreating(false);
+    setTitle("");
+    setDesc("");
+    setPlace("");
+    setStart("");
+    setEnd("");
+    load();
+  };
+
+  const toLocalInput = (value: string | null) => {
+    if (!value) return "";
+    const d = new Date(value);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  const startEditing = (event: any) => {
+    setEditing(event);
+    setTitle(event.title ?? "");
+    setDesc(event.description ?? "");
+    setPlace(event.location ?? "");
+    setStart(toLocalInput(event.starts_at));
+    setEnd(toLocalInput(event.ends_at));
+    setCreating(true);
   };
 
   const visible = rows.filter(
@@ -142,17 +184,22 @@ export function OrgCalendar({ orgId, ctx }: { orgId: string; ctx: any }) {
         {e.description && <div className="text-xs mt-1 whitespace-pre-wrap">{e.description}</div>}
       </div>
       {(e.created_by === user?.id || ctx.canAdmin) && (
-        <Button
-          size="sm"
-          variant="ghost"
-          className="text-destructive"
-          onClick={async () => {
-            await (supabase as any).from("org_calendar_events").delete().eq("id", e.id);
-            load();
-          }}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <div className="flex gap-1">
+          <Button size="sm" variant="ghost" onClick={() => startEditing(e)}>
+            編集
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-destructive"
+            onClick={async () => {
+              await (supabase as any).from("org_calendar_events").delete().eq("id", e.id);
+              load();
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       )}
     </Card>
   );
@@ -225,8 +272,14 @@ export function OrgCalendar({ orgId, ctx }: { orgId: string; ctx: any }) {
             onChange={(e) => setDesc(e.target.value)}
           />
           <div className="flex gap-2">
-            <Button onClick={create}>追加</Button>
-            <Button variant="ghost" onClick={() => setCreating(false)}>
+            <Button onClick={editing ? edit : create}>{editing ? "変更" : "追加"}</Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setCreating(false);
+                setEditing(null);
+              }}
+            >
               やめる
             </Button>
           </div>

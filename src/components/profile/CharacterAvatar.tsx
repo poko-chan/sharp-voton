@@ -84,6 +84,7 @@ const HAIR: Record<string, string> = {
   curly: "❧❧",
 };
 const EYES: Record<string, string> = { round: "• •", calm: "− −", star: "★ ★" };
+const MOUTHS = ["◡", "⌣", "‿", "ᴗ"];
 const ACCESSORIES: Record<string, string> = { none: "", glasses: "👓", cap: "🧢", bow: "🎀" };
 
 export function CharacterAvatar({
@@ -134,7 +135,9 @@ export function CharacterAvatar({
         <span className="mt-[18%] whitespace-pre font-bold text-black/70">
           {EYES[character.eyes] ?? EYES.round}
         </span>
-        <span className="absolute bottom-[14%] text-[0.65em] text-black/50">⌣</span>
+        <span className="absolute bottom-[14%] text-[0.65em] text-black/50">
+          {MOUTHS[config?.mouth ?? DEFAULT_AVATAR.mouth] ?? MOUTHS[0]}
+        </span>
         {ACCESSORIES[character.accessory] && (
           <span className="absolute -right-[24%] -top-[8%] text-[0.9em]">{ACCESSORIES[character.accessory]}</span>
         )}

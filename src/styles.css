@@ -165,6 +165,69 @@
   color: var(--ai-ink);
 }
 
+.ai-chat-header {
+  box-shadow: 0 1px 0 rgba(16, 163, 127, 0.08);
+}
+
+.ai-chat-mark {
+  box-shadow:
+    0 0 0 1px rgba(16, 163, 127, 0.18),
+    0 8px 22px rgba(16, 163, 127, 0.14);
+}
+
+.ai-empty-state {
+  animation: ai-rise-in 500ms ease-out both;
+}
+
+.ai-live-dot {
+  box-shadow: 0 0 0 4px rgba(16, 163, 127, 0.12);
+  animation: ai-pulse 2.2s ease-in-out infinite;
+}
+
+.ai-prompt-card {
+  border-color: color-mix(in oklab, var(--ai-line) 86%, var(--ai-accent));
+  box-shadow: 0 8px 24px rgba(16, 163, 127, 0.035);
+}
+
+.ai-prompt-card:hover {
+  border-color: color-mix(in oklab, var(--ai-accent) 42%, var(--ai-line));
+  box-shadow: 0 12px 28px rgba(16, 163, 127, 0.1);
+}
+
+.ai-composer-shell {
+  border-top: 1px solid var(--ai-line);
+  box-shadow: 0 -18px 38px rgba(16, 163, 127, 0.035);
+}
+
+.ai-composer {
+  position: relative;
+}
+
+.ai-composer::before {
+  content: "";
+  position: absolute;
+  inset: 0 1rem auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--ai-accent) 45%, transparent), transparent);
+  opacity: 0.7;
+}
+
+@keyframes ai-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ai-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
 .dark .ai-workspace {
   --ai-bg: #212121;
   --ai-panel: #171717;
@@ -176,6 +239,10 @@
   --ai-muted: #acacbe;
   background:
     radial-gradient(circle at 78% -10%, rgba(25, 195, 125, 0.12), transparent 34%), var(--ai-bg);
+}
+
+.dark .ai-prompt-card {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
 }
 
 .dark {

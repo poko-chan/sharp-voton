@@ -1,6 +1,16 @@
 import { Switch } from "@/components/ui/switch";
-import { Database, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
-import { SCOPE_DEFS, type ChatPrefs, type ScopeKey } from "@/lib/tutor-prefs";
+import {
+  Check,
+  Database,
+  Eye,
+  EyeOff,
+  Info,
+  LockKeyhole,
+  ShieldCheck,
+  Sparkles,
+  Wand2,
+} from "lucide-react";
+import { ALL_SCOPES, SCOPE_DEFS, type ChatPrefs, type ScopeKey } from "@/lib/tutor-prefs";
 
 function Segmented<T extends string | number>({
   value,
@@ -76,12 +86,34 @@ export function ChatSettingsPanel({
     set({
       scopes: prefs.scopes.includes(k) ? prefs.scopes.filter((x) => x !== k) : [...prefs.scopes, k],
     });
+  const allScopesEnabled = prefs.scopes.length === SCOPE_DEFS.length;
 
   return (
-    <div className="space-y-5">
-      <p className="rounded-xl bg-muted/60 p-2.5 text-[11px] leading-relaxed text-muted-foreground">
-        ここは「毎回は変えない」設定です。品質（Flash / Think /
-        Pro）、Web検索、学習データ、回答の長さなどは、入力欄のすぐ下のボタンからすぐ切り替えられます。
+    <div className="space-y-6">
+      <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.13] via-background to-background p-4">
+        <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
+        <div className="relative flex items-start gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-foreground text-background shadow-sm">
+            <LockKeyhole className="h-4 w-4" />
+          </span>
+          <div>
+            <p className="text-sm font-semibold">あなたのペースで、見せる情報を決める</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+              許可した情報だけを回答づくりに使います。いつでも変更でき、記録を勝手に保存することはありません。
+            </p>
+          </div>
+        </div>
+        <div className="relative mt-3 flex items-center gap-2 border-t border-primary/15 pt-3 text-[11px] text-muted-foreground">
+          <Check className="h-3.5 w-3.5 text-primary" />
+          現在 {prefs.scopes.length} / {SCOPE_DEFS.length} 項目を許可中
+        </div>
+      </div>
+
+      <p className="flex items-start gap-2 rounded-xl bg-muted/60 p-3 text-[11px] leading-relaxed text-muted-foreground">
+        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+        <span>
+          よく使う設定は入力欄のボタンからすぐ変更できます。ここでは、AIが参照できる範囲を細かく管理できます。
+        </span>
       </p>
 
       <Section icon={Sparkles} title="回答の長さ" desc="用途に合わせて情報量を切り替えます。">
@@ -144,8 +176,20 @@ export function ChatSettingsPanel({
       <Section
         icon={ShieldCheck}
         title="AIに見せてよい情報"
-        desc="オフにした情報は、どの設定でもAIへ渡しません。"
+        desc="オンの項目だけを、質問に関係するときに参照します。"
       >
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            学習データのアクセス範囲
+          </span>
+          <button
+            type="button"
+            className="text-[11px] font-semibold text-primary hover:underline"
+            onClick={() => set({ scopes: allScopesEnabled ? [] : ALL_SCOPES })}
+          >
+            {allScopesEnabled ? "すべてオフ" : "すべて許可"}
+          </button>
+        </div>
         <div className="grid gap-2">
           {SCOPE_DEFS.map((s) => {
             const on = prefs.scopes.includes(s.key);
@@ -153,15 +197,21 @@ export function ChatSettingsPanel({
             return (
               <label
                 key={s.key}
-                className={`flex cursor-pointer items-start gap-2.5 rounded-xl border p-2.5 transition ${on ? "border-primary/30 bg-primary/[0.06]" : "bg-background/70"}`}
+                className={`group flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition ${on ? "border-primary/35 bg-primary/[0.07] shadow-[0_0_0_1px_color-mix(in_oklab,var(--primary)_8%,transparent)]" : "bg-background/70 opacity-80 hover:opacity-100"}`}
               >
-                <Icon
-                  className={`mt-0.5 h-4 w-4 shrink-0 ${on ? "text-primary" : "text-muted-foreground"}`}
-                />
+                <span className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg ${on ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
+                  <Icon className="h-3.5 w-3.5" />
+                </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-xs font-semibold">{s.label}</span>
-                  <span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground">
+                  <span className="flex items-center gap-1.5 text-xs font-semibold">
+                    {s.label}
+                    {on ? <Eye className="h-3 w-3 text-primary" /> : <EyeOff className="h-3 w-3 text-muted-foreground" />}
+                  </span>
+                  <span className="mt-1 block text-[11px] leading-snug text-muted-foreground">
                     {s.desc}
+                  </span>
+                  <span className="mt-1.5 block text-[10px] leading-snug text-muted-foreground/80">
+                    {on ? "質問に関係するときだけ参照します" : "この情報はAIに渡しません"}
                   </span>
                 </span>
                 <Switch
