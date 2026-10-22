@@ -462,12 +462,14 @@ function NotebookEditor() {
         </span>
       }
       subtitle={
-        saving === "saving"
-          ? "自動保存中..."
+        saveFailed
+          ? "⚠ 保存待ち（この端末に保護済み）"
+          : saving === "saving"
+          ? "保存中..."
           : saving === "saved"
-            ? "自動保存済み"
+            ? `✓ 保存済み${savedAt ? ` ${savedAt.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}` : ""}`
             : saving === "dirty"
-              ? "変更を自動保存します..."
+              ? "● 編集中（手を止めると自動保存）"
               : `${idx + 1} / ${pages.length} ページ`
       }
       right={
