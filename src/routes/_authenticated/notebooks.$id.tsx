@@ -735,7 +735,7 @@ function NotebookEditor() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIdx((i) => Math.max(0, i - 1))}
+              onClick={() => goToPage(Math.max(0, idx - 1))}
               disabled={idx === 0}
             >
               <ChevronLeft className="h-4 w-4" />前
@@ -747,7 +747,7 @@ function NotebookEditor() {
               {pages.map((p, i) => (
                 <button
                   key={p.id}
-                  onClick={() => setIdx(i)}
+                  onClick={() => goToPage(i)}
                   className={cn(
                     "h-8 min-w-8 rounded-md border px-2 text-xs font-medium transition",
                     i === idx ? "bg-primary text-primary-foreground" : "hover:bg-muted",
@@ -762,7 +762,7 @@ function NotebookEditor() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIdx((i) => Math.min(pages.length - 1, i + 1))}
+              onClick={() => goToPage(Math.min(pages.length - 1, idx + 1))}
               disabled={idx >= pages.length - 1}
             >
               次<ChevronRight className="h-4 w-4" />
