@@ -362,6 +362,7 @@ export function NoteCanvas({
       width: tool === "highlighter" ? width * 8 : tool === "marker" ? width * 2.2 : width,
       points: [pt],
     };
+    shapeOrigin.current = tool === "shape" ? { ...pt, p: 0.5 } : null;
     schedulePreview();
   };
 
@@ -390,7 +391,9 @@ export function NoteCanvas({
     }
     const d = drawing.current;
     if (!d) return;
-    if (straight) {
+    if (tool === "shape" && shapeOrigin.current) {
+      d.points = shapePoints(shape, shapeOrigin.current, pt);
+    } else if (straight) {
       d.points = [d.points[0], pt];
     } else {
       const samples = e.nativeEvent.getCoalescedEvents?.() ?? [e.nativeEvent];
