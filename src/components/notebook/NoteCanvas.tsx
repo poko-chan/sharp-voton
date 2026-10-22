@@ -123,6 +123,34 @@ export function NoteCanvas({
   const [eraserSize, setEraserSize] = useState(24);
   const [straight, setStraight] = useState(false);
   const [penOnly, setPenOnly] = useState(true);
+  const [smooth, setSmooth] = useState(0.45);
+  const [shape, setShape] = useState<ShapeKind>("line");
+  const prefsLoaded = useRef(false);
+  const shapeOrigin = useRef<Point | null>(null);
+  // 前回の道具・色・太さを端末から復元
+  useEffect(() => {
+    const p = readPrefs();
+    if (p.tool && p.tool !== "text") setTool(p.tool);
+    if (p.color) setColor(p.color);
+    if (p.hlColor) setHlColor(p.hlColor);
+    if (p.width) setWidth(p.width);
+    if (p.eraserSize) setEraserSize(p.eraserSize);
+    if (typeof p.penOnly === "boolean") setPenOnly(p.penOnly);
+    if (typeof p.smooth === "number") setSmooth(p.smooth);
+    if (p.shape) setShape(p.shape);
+    prefsLoaded.current = true;
+  }, []);
+  useEffect(() => {
+    if (!prefsLoaded.current) return;
+    try {
+      localStorage.setItem(
+        PREF_KEY,
+        JSON.stringify({ tool, color, hlColor, width, eraserSize, penOnly, smooth, shape }),
+      );
+    } catch {
+      /* noop */
+    }
+  }, [tool, color, hlColor, width, eraserSize, penOnly, smooth, shape]);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [activeText, setActiveText] = useState<string | null>(null);
