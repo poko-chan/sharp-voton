@@ -1643,12 +1643,11 @@ export function TutorPageInner() {
             )}
 
             <form
-              className="ai-composer"
               onSubmit={(e) => {
                 e.preventDefault();
                 void send();
               }}
-              className="rounded-3xl border bg-muted/50 transition focus-within:border-muted-foreground/30 focus-within:bg-muted/70"
+              className="ai-composer rounded-3xl border bg-muted/50 transition focus-within:border-muted-foreground/30 focus-within:bg-muted/70"
             >
               <input
                 type="file"
