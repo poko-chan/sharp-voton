@@ -405,8 +405,15 @@ export function NoteCanvas({
           sample.pointerType,
         );
         const last = d.points[d.points.length - 1];
-        const dist = Math.hypot(samplePoint.x - last.x, samplePoint.y - last.y);
-        if (dist >= 0.7) d.points.push(samplePoint);
+        // 手ぶれ補正：前の点へ少し引き寄せて細かな揺れを取り除く
+        const k = 1 - smooth;
+        const smoothed = {
+          x: last.x + (samplePoint.x - last.x) * k,
+          y: last.y + (samplePoint.y - last.y) * k,
+          p: samplePoint.p,
+        };
+        const dist = Math.hypot(smoothed.x - last.x, smoothed.y - last.y);
+        if (dist >= 0.7) d.points.push(smoothed);
       }
     }
     schedulePreview();
