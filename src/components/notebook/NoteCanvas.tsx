@@ -1,4 +1,33 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+
+/** ページ一覧用の縮小プレビュー（保存はせず、その場で描画） */
+export const PageThumb = memo(function PageThumb({
+  strokes,
+  paper,
+  paperColor,
+}: {
+  strokes: Stroke[];
+  paper: PaperType;
+  paperColor: string;
+}) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const c = ref.current;
+    const ctx = c?.getContext("2d");
+    if (!c || !ctx) return;
+    const s = c.width / PAGE_W;
+    ctx.setTransform(s, 0, 0, s, 0, 0);
+    renderPage(ctx, { strokes, texts: [] }, paper, paperColor);
+  }, [strokes, paper, paperColor]);
+  return (
+    <canvas
+      ref={ref}
+      width={62}
+      height={Math.round((62 * PAGE_H) / PAGE_W)}
+      className="h-[88px] w-[62px] shrink-0 rounded border bg-background"
+    />
+  );
+});
 import { Button } from "@/components/ui/button";
 import {
   Pen,
@@ -16,6 +45,7 @@ import {
   Hand,
   Maximize2,
   Pencil,
+  Shapes,
 } from "lucide-react";
 import {
   PAGE_H,
@@ -23,13 +53,16 @@ import {
   renderPage,
   drawStroke,
   eraseAt,
+  shapePoints,
+  type Point,
+  type ShapeKind,
   type PaperType,
   type Stroke,
   type TextBox,
 } from "@/lib/notebooks";
 import { cn } from "@/lib/utils";
 
-type Tool = "pen" | "pencil" | "marker" | "highlighter" | "eraser" | "text" | "hand";
+type Tool = "pen" | "pencil" | "marker" | "highlighter" | "shape" | "eraser" | "text" | "hand";
 
 const PEN_COLORS = [
   "#111827",
@@ -48,10 +81,48 @@ const TOOLS: { key: Tool; icon: typeof Pen; label: string }[] = [
   { key: "pencil", icon: Pencil, label: "えんぴつ" },
   { key: "marker", icon: Brush, label: "サインペン" },
   { key: "highlighter", icon: Highlighter, label: "蛍光ペン" },
+  { key: "shape", icon: Shapes, label: "図形" },
   { key: "eraser", icon: Eraser, label: "消しゴム" },
   { key: "text", icon: Type, label: "テキスト" },
   { key: "hand", icon: Hand, label: "手のひら（移動）" },
 ];
+
+const SHAPES: { key: ShapeKind; label: string }[] = [
+  { key: "line", label: "直線" },
+  { key: "arrow", label: "矢印" },
+  { key: "rect", label: "四角" },
+  { key: "ellipse", label: "円" },
+];
+const SMOOTH_LEVELS = [
+  { v: 0, label: "なし" },
+  { v: 0.25, label: "弱" },
+  { v: 0.45, label: "標準" },
+  { v: 0.65, label: "強" },
+];
+const PRESETS = [
+  { color: "#111827", width: 2, label: "黒・細" },
+  { color: "#111827", width: 5, label: "黒・太" },
+  { color: "#1d4ed8", width: 3, label: "青" },
+  { color: "#dc2626", width: 3, label: "赤" },
+];
+const PREF_KEY = "cnote.prefs.v1";
+type Prefs = {
+  tool?: Tool;
+  color?: string;
+  hlColor?: string;
+  width?: number;
+  eraserSize?: number;
+  penOnly?: boolean;
+  smooth?: number;
+  shape?: ShapeKind;
+};
+function readPrefs(): Prefs {
+  try {
+    return JSON.parse(localStorage.getItem(PREF_KEY) || "{}") as Prefs;
+  } catch {
+    return {};
+  }
+}
 
 /** 実物の筆記具に近い書き味のノートキャンバス */
 export function NoteCanvas({
@@ -81,6 +152,34 @@ export function NoteCanvas({
   const [eraserSize, setEraserSize] = useState(24);
   const [straight, setStraight] = useState(false);
   const [penOnly, setPenOnly] = useState(true);
+  const [smooth, setSmooth] = useState(0.45);
+  const [shape, setShape] = useState<ShapeKind>("line");
+  const prefsLoaded = useRef(false);
+  const shapeOrigin = useRef<Point | null>(null);
+  // 前回の道具・色・太さを端末から復元
+  useEffect(() => {
+    const p = readPrefs();
+    if (p.tool && p.tool !== "text") setTool(p.tool);
+    if (p.color) setColor(p.color);
+    if (p.hlColor) setHlColor(p.hlColor);
+    if (p.width) setWidth(p.width);
+    if (p.eraserSize) setEraserSize(p.eraserSize);
+    if (typeof p.penOnly === "boolean") setPenOnly(p.penOnly);
+    if (typeof p.smooth === "number") setSmooth(p.smooth);
+    if (p.shape) setShape(p.shape);
+    prefsLoaded.current = true;
+  }, []);
+  useEffect(() => {
+    if (!prefsLoaded.current) return;
+    try {
+      localStorage.setItem(
+        PREF_KEY,
+        JSON.stringify({ tool, color, hlColor, width, eraserSize, penOnly, smooth, shape }),
+      );
+    } catch {
+      /* noop */
+    }
+  }, [tool, color, hlColor, width, eraserSize, penOnly, smooth, shape]);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [activeText, setActiveText] = useState<string | null>(null);
@@ -292,6 +391,7 @@ export function NoteCanvas({
       width: tool === "highlighter" ? width * 8 : tool === "marker" ? width * 2.2 : width,
       points: [pt],
     };
+    shapeOrigin.current = tool === "shape" ? { ...pt, p: 0.5 } : null;
     schedulePreview();
   };
 
@@ -320,7 +420,9 @@ export function NoteCanvas({
     }
     const d = drawing.current;
     if (!d) return;
-    if (straight) {
+    if (tool === "shape" && shapeOrigin.current) {
+      d.points = shapePoints(shape, shapeOrigin.current, pt);
+    } else if (straight) {
       d.points = [d.points[0], pt];
     } else {
       const samples = e.nativeEvent.getCoalescedEvents?.() ?? [e.nativeEvent];
@@ -332,8 +434,15 @@ export function NoteCanvas({
           sample.pointerType,
         );
         const last = d.points[d.points.length - 1];
-        const dist = Math.hypot(samplePoint.x - last.x, samplePoint.y - last.y);
-        if (dist >= 0.7) d.points.push(samplePoint);
+        // 手ぶれ補正：前の点へ少し引き寄せて細かな揺れを取り除く
+        const k = 1 - smooth;
+        const smoothed = {
+          x: last.x + (samplePoint.x - last.x) * k,
+          y: last.y + (samplePoint.y - last.y) * k,
+          p: samplePoint.p,
+        };
+        const dist = Math.hypot(smoothed.x - last.x, smoothed.y - last.y);
+        if (dist >= 0.7) d.points.push(smoothed);
       }
     }
     schedulePreview();
@@ -454,7 +563,11 @@ export function NoteCanvas({
 
   const swatches = tool === "highlighter" ? MARKER_COLORS : PEN_COLORS;
   const isPenTool =
-    tool === "pen" || tool === "pencil" || tool === "marker" || tool === "highlighter";
+    tool === "pen" ||
+    tool === "pencil" ||
+    tool === "marker" ||
+    tool === "highlighter" ||
+    tool === "shape";
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col md:flex-row">
@@ -551,15 +664,75 @@ export function NoteCanvas({
                   aria-label="太さ"
                 />
                 <span className="text-[11px] tabular-nums text-muted-foreground">{width}</span>
-                <Button
-                  size="sm"
-                  variant={straight ? "default" : "outline"}
-                  className="h-7"
-                  onClick={() => setStraight((s) => !s)}
-                  title="直線モード"
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
+                {tool === "shape" ? (
+                  <>
+                    <span className="h-5 w-px bg-border" />
+                    {SHAPES.map((s) => (
+                      <Button
+                        key={s.key}
+                        size="sm"
+                        variant={shape === s.key ? "default" : "outline"}
+                        className="h-7 px-2 text-xs"
+                        onClick={() => setShape(s.key)}
+                      >
+                        {s.label}
+                      </Button>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      size="sm"
+                      variant={straight ? "default" : "outline"}
+                      className="h-7"
+                      onClick={() => setStraight((s) => !s)}
+                      title="直線モード"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="h-5 w-px bg-border" />
+                    <span className="text-[11px] text-muted-foreground">手ぶれ補正</span>
+                    <select
+                      value={smooth}
+                      onChange={(e) => setSmooth(Number(e.target.value))}
+                      className="h-7 rounded border bg-background px-1 text-xs"
+                      aria-label="手ぶれ補正"
+                    >
+                      {SMOOTH_LEVELS.map((l) => (
+                        <option key={l.v} value={l.v}>
+                          {l.label}
+                        </option>
+                      ))}
+                    </select>
+                  </>
+                )}
+                {tool !== "highlighter" && (
+                  <>
+                    <span className="h-5 w-px bg-border" />
+                    {PRESETS.map((p) => (
+                      <button
+                        key={p.label}
+                        title={p.label}
+                        onClick={() => {
+                          setColor(p.color);
+                          setWidth(p.width);
+                        }}
+                        className={cn(
+                          "flex h-7 items-center gap-1 rounded-md border px-1.5 text-[11px]",
+                          color === p.color && width === p.width
+                            ? "border-primary bg-primary/10"
+                            : "hover:bg-muted",
+                        )}
+                      >
+                        <span
+                          className="inline-block w-4 rounded-full"
+                          style={{ background: p.color, height: Math.max(2, p.width) }}
+                        />
+                        {p.label}
+                      </button>
+                    ))}
+                  </>
+                )}
               </>
             )}
             {tool === "eraser" && (
