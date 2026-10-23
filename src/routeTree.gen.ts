@@ -102,6 +102,8 @@ import { Route as AuthenticatedOrganizationsOrgIdIndexRouteImport } from './rout
 import { Route as AuthenticatedOrganizationsOrgIdProfileRouteImport } from './routes/_authenticated/organizations.$orgId.profile'
 import { Route as ApiPublicLineCronRouteImport } from './routes/api/public/line/cron'
 import { Route as ApiPublicLineWebhookRouteImport } from './routes/api/public/line/webhook'
+import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as AuthenticatedMakronPackPackIdIndexRouteImport } from './routes/_authenticated/makron.pack.$packId.index'
 import { Route as AuthenticatedMakronPackPackIdDashboardRouteImport } from './routes/_authenticated/makron.pack.$packId.dashboard'
 import { Route as AuthenticatedOrganizationsOrgIdAppAppKeyRouteImport } from './routes/_authenticated/organizations.$orgId.app.$appKey'
@@ -600,6 +602,16 @@ const ApiPublicLineWebhookRoute = ApiPublicLineWebhookRouteImport.update({
   path: '/api/public/line/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
+  id: '/lovable/email/auth/preview',
+  path: '/lovable/email/auth/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
+  id: '/lovable/email/auth/webhook',
+  path: '/lovable/email/auth/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedMakronPackPackIdIndexRoute =
   AuthenticatedMakronPackPackIdIndexRouteImport.update({
     id: '/',
@@ -722,6 +734,8 @@ export interface FileRoutesByFullPath {
   '/organizations/$orgId/profile': typeof AuthenticatedOrganizationsOrgIdProfileRoute
   '/api/public/line/cron': typeof ApiPublicLineCronRoute
   '/api/public/line/webhook': typeof ApiPublicLineWebhookRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/makron/edu/': typeof AuthenticatedMakronEduIndexRoute
   '/organizations/$orgId/': typeof AuthenticatedOrganizationsOrgIdIndexRoute
   '/makron/pack/$packId/dashboard': typeof AuthenticatedMakronPackPackIdDashboardRoute
@@ -815,6 +829,8 @@ export interface FileRoutesByTo {
   '/organizations/$orgId/profile': typeof AuthenticatedOrganizationsOrgIdProfileRoute
   '/api/public/line/cron': typeof ApiPublicLineCronRoute
   '/api/public/line/webhook': typeof ApiPublicLineWebhookRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/makron/edu': typeof AuthenticatedMakronEduIndexRoute
   '/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdIndexRoute
   '/makron/pack/$packId/dashboard': typeof AuthenticatedMakronPackPackIdDashboardRoute
@@ -916,6 +932,8 @@ export interface FileRoutesById {
   '/_authenticated/organizations/$orgId/profile': typeof AuthenticatedOrganizationsOrgIdProfileRoute
   '/api/public/line/cron': typeof ApiPublicLineCronRoute
   '/api/public/line/webhook': typeof ApiPublicLineWebhookRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/_authenticated/makron/edu/': typeof AuthenticatedMakronEduIndexRoute
   '/_authenticated/organizations/$orgId/': typeof AuthenticatedOrganizationsOrgIdIndexRoute
   '/_authenticated/makron/pack/$packId/dashboard': typeof AuthenticatedMakronPackPackIdDashboardRoute
@@ -1017,6 +1035,8 @@ export interface FileRouteTypes {
     | '/organizations/$orgId/profile'
     | '/api/public/line/cron'
     | '/api/public/line/webhook'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/makron/edu/'
     | '/organizations/$orgId/'
     | '/makron/pack/$packId/dashboard'
@@ -1110,6 +1130,8 @@ export interface FileRouteTypes {
     | '/organizations/$orgId/profile'
     | '/api/public/line/cron'
     | '/api/public/line/webhook'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/makron/edu'
     | '/organizations/$orgId'
     | '/makron/pack/$packId/dashboard'
@@ -1210,6 +1232,8 @@ export interface FileRouteTypes {
     | '/_authenticated/organizations/$orgId/profile'
     | '/api/public/line/cron'
     | '/api/public/line/webhook'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/_authenticated/makron/edu/'
     | '/_authenticated/organizations/$orgId/'
     | '/_authenticated/makron/pack/$packId/dashboard'
@@ -1254,6 +1278,8 @@ export interface RootRouteChildren {
   ApiPublicAiTrialRoute: typeof ApiPublicAiTrialRoute
   ApiPublicLineCronRoute: typeof ApiPublicLineCronRoute
   ApiPublicLineWebhookRoute: typeof ApiPublicLineWebhookRoute
+  LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
+  LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1909,6 +1935,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicLineWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/auth/preview': {
+      id: '/lovable/email/auth/preview'
+      path: '/lovable/email/auth/preview'
+      fullPath: '/lovable/email/auth/preview'
+      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/webhook': {
+      id: '/lovable/email/auth/webhook'
+      path: '/lovable/email/auth/webhook'
+      fullPath: '/lovable/email/auth/webhook'
+      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/makron/pack/$packId/': {
       id: '/_authenticated/makron/pack/$packId/'
       path: '/'
@@ -2197,6 +2237,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAiTrialRoute: ApiPublicAiTrialRoute,
   ApiPublicLineCronRoute: ApiPublicLineCronRoute,
   ApiPublicLineWebhookRoute: ApiPublicLineWebhookRoute,
+  LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
+  LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
