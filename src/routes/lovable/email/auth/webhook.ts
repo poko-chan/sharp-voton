@@ -10,9 +10,9 @@ import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 
 // Configuration
 const SITE_NAME = "Study#"
-const SENDER_DOMAIN = "notify.mail.sharp.voton.app"
-const ROOT_DOMAIN = "mail.sharp.voton.app"
-const FROM_DOMAIN = "mail.sharp.voton.app"
+const SENDER_DOMAIN = "noreply.sharp.voton.app"
+const ROOT_DOMAIN = "sharp.voton.app"
+const FROM_DOMAIN = "sharp.voton.app"
 const SITE_URL = "https://sharp.voton.app"
 
 // The SDK handler owns verification, dispatch, and retry semantics; this file
