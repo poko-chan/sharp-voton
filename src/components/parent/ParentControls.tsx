@@ -17,10 +17,23 @@ import {
   revokeChildLoginCode,
   sendCheerToChild,
   setChildControls,
+  setFocusLock,
 } from "@/lib/parent.functions";
-import { LOCKABLE_FEATURES } from "@/components/parent/lockable-features";
+import {
+  LOCKABLE_FEATURES,
+  PRESETS,
+  type FeatureMode,
+  type Preset,
+} from "@/components/parent/lockable-features";
 
 export { LOCKABLE_FEATURES } from "@/components/parent/lockable-features";
+
+const MODES: { key: FeatureMode; label: string }[] = [
+  { key: "always", label: "🟢常に" },
+  { key: "normal", label: "⚪通常" },
+  { key: "limited", label: "🟡制限" },
+  { key: "blocked", label: "🔴ブロック" },
+];
 
 type Friend = { id: string; username: string | null; display_name: string | null };
 type Msg = { id: string; sender_role: string; body: string; created_at: string };
@@ -117,10 +130,44 @@ export function ParentControls({ childId }: { childId: string }) {
     setBusy(false);
   };
 
-  const toggle = (key: string) =>
-    setLocked((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
-  const toggleAlways = (key: string) =>
-    setAlways((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
+  const modeOf = (key: string): FeatureMode =>
+    locked.includes(key)
+      ? "blocked"
+      : always.includes(key)
+        ? "always"
+        : appLimits[key]
+          ? "limited"
+          : "normal";
+
+  const setMode = (key: string, mode: FeatureMode) => {
+    setLocked((p) => (mode === "blocked" ? [...new Set([...p, key])] : p.filter((k) => k !== key)));
+    setAlways((p) => (mode === "always" ? [...new Set([...p, key])] : p.filter((k) => k !== key)));
+    setAppLimits((p) => {
+      const n = { ...p };
+      if (mode === "limited") n[key] = n[key] || "30";
+      else delete n[key];
+      return n;
+    });
+  };
+
+  const applyPreset = (p: Preset) => {
+    setLimit(p.daily == null ? "" : String(p.daily));
+    setFrom(p.from);
+    setTo(p.to);
+    const nextLocked: string[] = [];
+    const nextAlways: string[] = [];
+    const nextLimits: Record<string, string> = {};
+    for (const f of LOCKABLE_FEATURES) {
+      const mode = f.category === "study" ? p.study : p.social;
+      if (mode === "blocked") nextLocked.push(f.key);
+      if (mode === "always") nextAlways.push(f.key);
+      if (mode === "limited") nextLimits[f.key] = String(p.socialMinutes ?? 30);
+    }
+    setLocked(nextLocked);
+    setAlways(nextAlways);
+    setAppLimits(nextLimits);
+    toast.message(`「${p.label}」を当てはめました。保存してください`);
+  };
 
   const pending = requests.filter((r) => r.status === "pending");
 
@@ -167,28 +214,41 @@ export function ParentControls({ childId }: { childId: string }) {
         </Card>
       )}
 
-      <Card className="space-y-4 p-5">
+      <Card className="space-y-3 p-5">
         <div className="flex items-center gap-2 font-semibold">
-          <Clock className="h-4 w-4" /> 使える時間
+          <Lock className="h-4 w-4" /> いますぐ操作
         </div>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div className="space-y-1">
-            <Label>1日の上限（分・空欄で無制限）</Label>
-            <Input
-              inputMode="numeric"
-              value={limit}
-              onChange={(e) => setLimit(e.target.value.replace(/[^0-9]/g, ""))}
-              placeholder="90"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label>使える時間帯（開始）</Label>
-            <Input type="time" value={from} onChange={(e) => setFrom(e.target.value)} />
-          </div>
-          <div className="space-y-1">
-            <Label>使える時間帯（終了）</Label>
-            <Input type="time" value={to} onChange={(e) => setTo(e.target.value)} />
-          </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={async () => {
+              await setFocusLock({ data: { childId, minutes: 60, scope: "all" } });
+              toast.success("1時間ロックしました");
+            }}
+          >
+            <Lock className="mr-1 h-4 w-4" /> いますぐロック（1時間）
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={async () => {
+              await setFocusLock({ data: { childId, minutes: 60, scope: "study_only" } });
+              toast.success("1時間、勉強だけにしました");
+            }}
+          >
+            勉強だけ（1時間）
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={async () => {
+              await setFocusLock({ data: { childId, minutes: 0, scope: "all" } });
+              toast.success("ロックを解除しました");
+            }}
+          >
+            ロック解除
+          </Button>
         </div>
         <div className="flex flex-wrap items-center gap-2 rounded-xl border p-3">
           <div className="mr-auto text-sm">
@@ -221,65 +281,137 @@ export function ParentControls({ childId }: { childId: string }) {
             </Button>
           )}
         </div>
+      </Card>
+
+      <Card className="space-y-3 p-5">
+        <div className="font-semibold">おすすめ設定</div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {PRESETS.map((p) => (
+            <button
+              key={p.key}
+              type="button"
+              onClick={() => applyPreset(p)}
+              className="rounded-xl border p-3 text-left transition hover:border-primary hover:bg-primary/5"
+            >
+              <div className="text-sm font-semibold">{p.label}</div>
+              <div className="text-xs text-muted-foreground">{p.description}</div>
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground">押したあと「保存」で反映されます。</p>
+      </Card>
+
+      <Card className="space-y-4 p-5">
+        <div className="flex items-center gap-2 font-semibold">
+          <Clock className="h-4 w-4" /> 毎日のスケジュール
+        </div>
+        <div className="space-y-2">
+          <Label>1日の利用上限</Label>
+          <div className="flex flex-wrap gap-1.5">
+            {[null, 30, 60, 90, 120, 180].map((m) => {
+              const active = m == null ? limit === "" : limit === String(m);
+              return (
+                <Button
+                  key={String(m)}
+                  size="sm"
+                  variant={active ? "default" : "outline"}
+                  onClick={() => setLimit(m == null ? "" : String(m))}
+                >
+                  {m == null ? "なし" : m < 60 ? `${m}分` : `${m / 60}時間`}
+                </Button>
+              );
+            })}
+            <Input
+              className="h-8 w-24"
+              inputMode="numeric"
+              value={limit}
+              onChange={(e) => setLimit(e.target.value.replace(/[^0-9]/g, ""))}
+              placeholder="分"
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label>使える時間帯（これ以外はおやすみ時間）</Label>
+          <div className="flex flex-wrap items-center gap-2">
+            <Input className="w-32" type="time" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <span>〜</span>
+            <Input className="w-32" type="time" value={to} onChange={(e) => setTo(e.target.value)} />
+            {(from || to) && (
+              <Button size="sm" variant="ghost" onClick={() => (setFrom(""), setTo(""))}>
+                なしにする
+              </Button>
+            )}
+          </div>
+        </div>
         <div className="flex items-center justify-between rounded-xl border p-3">
           <div>
             <div className="text-sm font-medium">勉強を優先する</div>
             <div className="text-xs text-muted-foreground">
-              今日の勉強を始めるまで、遊びの機能を開けなくします
+              今日の勉強を始めるまで、交流の機能を開けなくします
             </div>
           </div>
           <Switch checked={homeworkFirst} onCheckedChange={setHomeworkFirst} />
         </div>
       </Card>
 
-      <Card className="space-y-3 p-5">
-        <div className="flex items-center gap-2 font-semibold">
-          <Lock className="h-4 w-4" /> アプリごとの設定
-        </div>
-        <p className="text-xs text-muted-foreground">
-          「ロック」は完全に使えなくします。「時間切れでも使える」にすると、1日の上限に達したあともそのアプリだけ使えます。分数を入れると、そのアプリだけ1日◯分までにできます。
-        </p>
-        <div className="space-y-2">
-          {LOCKABLE_FEATURES.map((f) => (
-            <div
-              key={f.key}
-              className="flex flex-wrap items-center gap-3 rounded-xl border p-3 text-sm"
-            >
-              <span className="mr-auto font-medium">{f.label}</span>
-              <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                ロック
-                <Switch checked={locked.includes(f.key)} onCheckedChange={() => toggle(f.key)} />
-              </label>
-              <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                時間切れでも使える
-                <Switch
-                  checked={always.includes(f.key)}
-                  onCheckedChange={() => toggleAlways(f.key)}
-                />
-              </label>
-              <div className="flex items-center gap-1.5">
-                <Input
-                  className="h-8 w-20"
-                  inputMode="numeric"
-                  placeholder="分"
-                  value={appLimits[f.key] ?? ""}
-                  onChange={(e) =>
-                    setAppLimits((p) => ({
-                      ...p,
-                      [f.key]: e.target.value.replace(/[^0-9]/g, ""),
-                    }))
-                  }
-                />
-                <span className="text-xs text-muted-foreground">分/日</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
+      {(["study", "social"] as const).map((cat) => (
+        <Card key={cat} className="space-y-3 p-5">
+          <div className="font-semibold">{cat === "study" ? "📚 勉強の機能" : "💬 交流の機能"}</div>
+          <p className="text-xs text-muted-foreground">
+            🟢常に許可＝上限やおやすみ時間でも使える／⚪通常＝全体の上限に従う／🟡時間制限＝この機能だけ1日◯分／🔴ブロック
+          </p>
+          <div className="space-y-2">
+            {LOCKABLE_FEATURES.filter((f) => f.category === cat).map((f) => {
+              const mode = modeOf(f.key);
+              return (
+                <div key={f.key} className="space-y-2 rounded-xl border p-3 text-sm">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="mr-auto font-medium">{f.label}</span>
+                    <div className="flex overflow-hidden rounded-lg border">
+                      {MODES.map((m) => (
+                        <button
+                          key={m.key}
+                          type="button"
+                          onClick={() => setMode(f.key, m.key)}
+                          className={`px-2.5 py-1 text-xs transition ${
+                            mode === m.key
+                              ? "bg-primary text-primary-foreground"
+                              : "hover:bg-muted"
+                          }`}
+                        >
+                          {m.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {mode === "limited" && (
+                    <div className="flex items-center gap-1.5">
+                      <Input
+                        className="h-8 w-20"
+                        inputMode="numeric"
+                        value={appLimits[f.key] ?? ""}
+                        onChange={(e) =>
+                          setAppLimits((p) => ({
+                            ...p,
+                            [f.key]: e.target.value.replace(/[^0-9]/g, ""),
+                          }))
+                        }
+                      />
+                      <span className="text-xs text-muted-foreground">分/日まで</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      ))}
 
-      <Button onClick={save} disabled={busy}>
-        利用制限を保存
-      </Button>
+      <div className="sticky bottom-20 z-10 md:bottom-4">
+        <Button className="w-full shadow-lg" onClick={save} disabled={busy}>
+          利用制限を保存
+        </Button>
+      </div>
 
       <Card className="space-y-3 p-5">
         <div className="flex items-center gap-2 font-semibold">
