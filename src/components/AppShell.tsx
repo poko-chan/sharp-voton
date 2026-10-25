@@ -467,6 +467,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   // 保護者アカウントは学習系ナビを一切見せない。保護者専用リンクのみ表示。
   const isOrgAccount = accountKind === "org";
   const isParent = accountKind === "parent" || isOrgAccount;
+  const isParentOnly = accountKind === "parent";
   const parentNav = isOrgAccount
     ? [
         { to: "/organizations", label: "組織", icon: Users },
@@ -662,7 +663,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <CommandPalette />
 
       {/* Desktop sidebar */}
-      {!isMobile && navOpen && (
+      {!isMobile && navOpen && !isParentOnly && (
         <aside className="app-sidebar w-64 shrink-0 border-r liquid-bar text-sidebar-foreground flex flex-col sticky top-0 h-screen self-start">
           {sidebarContent}
         </aside>
@@ -673,6 +674,22 @@ export function AppShell({ children }: { children: ReactNode }) {
         {/* Desktop top bar */}
         {!isMobile && (
           <div className="app-topbar sticky top-0 z-30 flex h-12 items-center gap-2 px-4 border-b liquid-bar">
+            {isParentOnly ? (
+              <nav className="flex items-center gap-1" aria-label="保護者メニュー">
+                <img src={logoUrl} alt="" className="mr-1 h-7 w-7 rounded-lg shadow-sm" />
+                <span className="mr-3 text-sm font-bold">Study# 保護者</span>
+                {parentNav.map((n) => (
+                  <Link
+                    key={n.to}
+                    to={n.to}
+                    className={`inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-sm transition ${path.startsWith(n.to) ? "bg-primary/10 font-semibold text-primary" : "hover:bg-accent"}`}
+                  >
+                    <n.icon className="h-4 w-4" />
+                    {n.label === "保護者ダッシュボード" ? "ホーム" : n.label}
+                  </Link>
+                ))}
+              </nav>
+            ) : (
             <button
               onClick={toggleNav}
               title={navOpen ? "メニューを閉じる" : "メニューを開く"}
@@ -681,7 +698,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               {navOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
             </button>
-            {!navOpen && <img src={logoUrl} alt="" className="h-7 w-7 rounded-lg shadow-sm" />}
+            )}
+            {!navOpen && !isParentOnly && <img src={logoUrl} alt="" className="h-7 w-7 rounded-lg shadow-sm" />}
             <div className="ml-auto flex items-center gap-2">
               <FocusMode />
               <SearchBar />
@@ -712,6 +730,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <header
             className={`app-topbar sticky top-0 z-40 flex items-center gap-2 px-3 py-2 liquid-bar border-b ${hideTopBar ? "hidden" : ""}`}
           >
+            {!isParentOnly && (
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <button
@@ -759,6 +778,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 {sidebarContent}
               </SheetContent>
             </Sheet>
+            )}
             <img src={logoUrl} alt="" className="h-8 w-8 rounded-lg shadow-sm" />
             <ClockHeader version={version} compact />
             <div className="ml-auto flex items-center gap-1.5">
