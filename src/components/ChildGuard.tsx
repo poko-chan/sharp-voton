@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { getMyControls } from "@/lib/parent.functions";
@@ -95,9 +97,33 @@ export function ChildGuard() {
   useEffect(() => {
     if (!user || accountKind === "parent") return;
     void refresh();
-    const id = setInterval(() => void refresh(), 60_000);
-    return () => clearInterval(id);
+    const id = setInterval(() => void refresh(), 120_000);
+    const channel = supabase
+      .channel(`child-controls-${user.id}-${Math.random().toString(36).slice(2)}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "child_controls", filter: `child_id=eq.${user.id}` },
+        () => void refresh(),
+      )
+      .subscribe();
+    return () => {
+      clearInterval(id);
+      void supabase.removeChannel(channel);
+    };
   }, [user, accountKind, refresh]);
+
+  // 残り時間の予告（5分前・1分前）
+  const warned = useRef<string>("");
+  useEffect(() => {
+    if (!controls?.daily_limit_minutes) return;
+    const b = controls.bonus_date === jstToday() ? (controls.bonus_minutes ?? 0) : 0;
+    const left = controls.daily_limit_minutes + b - used;
+    const tag = `${jstToday()}-${left}`;
+    if ((left === 5 || left === 1) && warned.current !== tag) {
+      warned.current = tag;
+      toast.warning(`あと${left}分で今日の利用時間がおわります`);
+    }
+  }, [controls, used]);
 
   const tracking =
     Boolean(controls?.daily_limit_minutes) ||
