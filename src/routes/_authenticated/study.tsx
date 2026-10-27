@@ -470,7 +470,6 @@ function StudyPage() {
 
 function DailyLogs({
   logs: allLogs,
-  logs,
   onChange,
   onBulkDelete,
   materialMap,
