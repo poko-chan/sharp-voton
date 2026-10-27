@@ -32,15 +32,12 @@ import { Route as AuthenticatedAiChatRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
-import { Route as AuthenticatedClasschatRouteImport } from './routes/_authenticated/classchat'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedExamsRouteImport } from './routes/_authenticated/exams'
-import { Route as AuthenticatedExportRouteImport } from './routes/_authenticated/export'
 import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/feed'
 import { Route as AuthenticatedFlashcardsRouteImport } from './routes/_authenticated/flashcards'
 import { Route as AuthenticatedFriendsRouteImport } from './routes/_authenticated/friends'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
-import { Route as AuthenticatedHeatmapRouteImport } from './routes/_authenticated/heatmap'
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
 import { Route as AuthenticatedMakronRouteImport } from './routes/_authenticated/makron'
 import { Route as AuthenticatedMaterialsRouteImport } from './routes/_authenticated/materials'
@@ -49,9 +46,6 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedOrganizationsRouteImport } from './routes/_authenticated/organizations'
 import { Route as AuthenticatedParentRouteImport } from './routes/_authenticated/parent'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
-import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
-import { Route as AuthenticatedQuestionsRouteImport } from './routes/_authenticated/questions'
-import { Route as AuthenticatedRankRouteImport } from './routes/_authenticated/rank'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedShareRouteImport } from './routes/_authenticated/share'
 import { Route as AuthenticatedStudyRouteImport } from './routes/_authenticated/study'
@@ -225,11 +219,6 @@ const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedClasschatRoute = AuthenticatedClasschatRouteImport.update({
-  id: '/classchat',
-  path: '/classchat',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -238,11 +227,6 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 const AuthenticatedExamsRoute = AuthenticatedExamsRouteImport.update({
   id: '/exams',
   path: '/exams',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedExportRoute = AuthenticatedExportRouteImport.update({
-  id: '/export',
-  path: '/export',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedFeedRoute = AuthenticatedFeedRouteImport.update({
@@ -263,11 +247,6 @@ const AuthenticatedFriendsRoute = AuthenticatedFriendsRouteImport.update({
 const AuthenticatedGoalsRoute = AuthenticatedGoalsRouteImport.update({
   id: '/goals',
   path: '/goals',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedHeatmapRoute = AuthenticatedHeatmapRouteImport.update({
-  id: '/heatmap',
-  path: '/heatmap',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedLeaderboardRoute =
@@ -311,21 +290,6 @@ const AuthenticatedParentRoute = AuthenticatedParentRouteImport.update({
 const AuthenticatedPaymentsRoute = AuthenticatedPaymentsRouteImport.update({
   id: '/payments',
   path: '/payments',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedPracticeRoute = AuthenticatedPracticeRouteImport.update({
-  id: '/practice',
-  path: '/practice',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedQuestionsRoute = AuthenticatedQuestionsRouteImport.update({
-  id: '/questions',
-  path: '/questions',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedRankRoute = AuthenticatedRankRouteImport.update({
-  id: '/rank',
-  path: '/rank',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -666,15 +630,12 @@ export interface FileRoutesByFullPath {
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/chat': typeof AuthenticatedChatRoute
-  '/classchat': typeof AuthenticatedClasschatRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exams': typeof AuthenticatedExamsRouteWithChildren
-  '/export': typeof AuthenticatedExportRoute
   '/feed': typeof AuthenticatedFeedRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/friends': typeof AuthenticatedFriendsRoute
   '/goals': typeof AuthenticatedGoalsRoute
-  '/heatmap': typeof AuthenticatedHeatmapRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/makron': typeof AuthenticatedMakronRouteWithChildren
   '/materials': typeof AuthenticatedMaterialsRouteWithChildren
@@ -683,9 +644,6 @@ export interface FileRoutesByFullPath {
   '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/parent': typeof AuthenticatedParentRoute
   '/payments': typeof AuthenticatedPaymentsRoute
-  '/practice': typeof AuthenticatedPracticeRoute
-  '/questions': typeof AuthenticatedQuestionsRoute
-  '/rank': typeof AuthenticatedRankRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
   '/study': typeof AuthenticatedStudyRoute
@@ -767,22 +725,16 @@ export interface FileRoutesByTo {
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/chat': typeof AuthenticatedChatRoute
-  '/classchat': typeof AuthenticatedClasschatRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/export': typeof AuthenticatedExportRoute
   '/feed': typeof AuthenticatedFeedRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/friends': typeof AuthenticatedFriendsRoute
   '/goals': typeof AuthenticatedGoalsRoute
-  '/heatmap': typeof AuthenticatedHeatmapRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/parent': typeof AuthenticatedParentRoute
   '/payments': typeof AuthenticatedPaymentsRoute
-  '/practice': typeof AuthenticatedPracticeRoute
-  '/questions': typeof AuthenticatedQuestionsRoute
-  '/rank': typeof AuthenticatedRankRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
   '/study': typeof AuthenticatedStudyRoute
@@ -864,15 +816,12 @@ export interface FileRoutesById {
   '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
-  '/_authenticated/classchat': typeof AuthenticatedClasschatRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/exams': typeof AuthenticatedExamsRouteWithChildren
-  '/_authenticated/export': typeof AuthenticatedExportRoute
   '/_authenticated/feed': typeof AuthenticatedFeedRoute
   '/_authenticated/flashcards': typeof AuthenticatedFlashcardsRoute
   '/_authenticated/friends': typeof AuthenticatedFriendsRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
-  '/_authenticated/heatmap': typeof AuthenticatedHeatmapRoute
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/makron': typeof AuthenticatedMakronRouteWithChildren
   '/_authenticated/materials': typeof AuthenticatedMaterialsRouteWithChildren
@@ -881,9 +830,6 @@ export interface FileRoutesById {
   '/_authenticated/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/_authenticated/parent': typeof AuthenticatedParentRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
-  '/_authenticated/practice': typeof AuthenticatedPracticeRoute
-  '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
-  '/_authenticated/rank': typeof AuthenticatedRankRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/share': typeof AuthenticatedShareRoute
   '/_authenticated/study': typeof AuthenticatedStudyRoute
@@ -967,15 +913,12 @@ export interface FileRouteTypes {
     | '/announcements'
     | '/calendar'
     | '/chat'
-    | '/classchat'
     | '/dashboard'
     | '/exams'
-    | '/export'
     | '/feed'
     | '/flashcards'
     | '/friends'
     | '/goals'
-    | '/heatmap'
     | '/leaderboard'
     | '/makron'
     | '/materials'
@@ -984,9 +927,6 @@ export interface FileRouteTypes {
     | '/organizations'
     | '/parent'
     | '/payments'
-    | '/practice'
-    | '/questions'
-    | '/rank'
     | '/settings'
     | '/share'
     | '/study'
@@ -1068,22 +1008,16 @@ export interface FileRouteTypes {
     | '/announcements'
     | '/calendar'
     | '/chat'
-    | '/classchat'
     | '/dashboard'
-    | '/export'
     | '/feed'
     | '/flashcards'
     | '/friends'
     | '/goals'
-    | '/heatmap'
     | '/leaderboard'
     | '/notes'
     | '/notifications'
     | '/parent'
     | '/payments'
-    | '/practice'
-    | '/questions'
-    | '/rank'
     | '/settings'
     | '/share'
     | '/study'
@@ -1164,15 +1098,12 @@ export interface FileRouteTypes {
     | '/_authenticated/announcements'
     | '/_authenticated/calendar'
     | '/_authenticated/chat'
-    | '/_authenticated/classchat'
     | '/_authenticated/dashboard'
     | '/_authenticated/exams'
-    | '/_authenticated/export'
     | '/_authenticated/feed'
     | '/_authenticated/flashcards'
     | '/_authenticated/friends'
     | '/_authenticated/goals'
-    | '/_authenticated/heatmap'
     | '/_authenticated/leaderboard'
     | '/_authenticated/makron'
     | '/_authenticated/materials'
@@ -1181,9 +1112,6 @@ export interface FileRouteTypes {
     | '/_authenticated/organizations'
     | '/_authenticated/parent'
     | '/_authenticated/payments'
-    | '/_authenticated/practice'
-    | '/_authenticated/questions'
-    | '/_authenticated/rank'
     | '/_authenticated/settings'
     | '/_authenticated/share'
     | '/_authenticated/study'
@@ -1445,13 +1373,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChatRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/classchat': {
-      id: '/_authenticated/classchat'
-      path: '/classchat'
-      fullPath: '/classchat'
-      preLoaderRoute: typeof AuthenticatedClasschatRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -1464,13 +1385,6 @@ declare module '@tanstack/react-router' {
       path: '/exams'
       fullPath: '/exams'
       preLoaderRoute: typeof AuthenticatedExamsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/export': {
-      id: '/_authenticated/export'
-      path: '/export'
-      fullPath: '/export'
-      preLoaderRoute: typeof AuthenticatedExportRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/feed': {
@@ -1499,13 +1413,6 @@ declare module '@tanstack/react-router' {
       path: '/goals'
       fullPath: '/goals'
       preLoaderRoute: typeof AuthenticatedGoalsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/heatmap': {
-      id: '/_authenticated/heatmap'
-      path: '/heatmap'
-      fullPath: '/heatmap'
-      preLoaderRoute: typeof AuthenticatedHeatmapRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/leaderboard': {
@@ -1562,27 +1469,6 @@ declare module '@tanstack/react-router' {
       path: '/payments'
       fullPath: '/payments'
       preLoaderRoute: typeof AuthenticatedPaymentsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/practice': {
-      id: '/_authenticated/practice'
-      path: '/practice'
-      fullPath: '/practice'
-      preLoaderRoute: typeof AuthenticatedPracticeRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/questions': {
-      id: '/_authenticated/questions'
-      path: '/questions'
-      fullPath: '/questions'
-      preLoaderRoute: typeof AuthenticatedQuestionsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/rank': {
-      id: '/_authenticated/rank'
-      path: '/rank'
-      fullPath: '/rank'
-      preLoaderRoute: typeof AuthenticatedRankRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/settings': {
@@ -2118,15 +2004,12 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
-  AuthenticatedClasschatRoute: typeof AuthenticatedClasschatRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExamsRoute: typeof AuthenticatedExamsRouteWithChildren
-  AuthenticatedExportRoute: typeof AuthenticatedExportRoute
   AuthenticatedFeedRoute: typeof AuthenticatedFeedRoute
   AuthenticatedFlashcardsRoute: typeof AuthenticatedFlashcardsRoute
   AuthenticatedFriendsRoute: typeof AuthenticatedFriendsRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
-  AuthenticatedHeatmapRoute: typeof AuthenticatedHeatmapRoute
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
   AuthenticatedMakronRoute: typeof AuthenticatedMakronRouteWithChildren
   AuthenticatedMaterialsRoute: typeof AuthenticatedMaterialsRouteWithChildren
@@ -2135,9 +2018,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRouteWithChildren
   AuthenticatedParentRoute: typeof AuthenticatedParentRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
-  AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
-  AuthenticatedQuestionsRoute: typeof AuthenticatedQuestionsRoute
-  AuthenticatedRankRoute: typeof AuthenticatedRankRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedShareRoute: typeof AuthenticatedShareRoute
   AuthenticatedStudyRoute: typeof AuthenticatedStudyRoute
@@ -2161,15 +2041,12 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedChatRoute: AuthenticatedChatRoute,
-  AuthenticatedClasschatRoute: AuthenticatedClasschatRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExamsRoute: AuthenticatedExamsRouteWithChildren,
-  AuthenticatedExportRoute: AuthenticatedExportRoute,
   AuthenticatedFeedRoute: AuthenticatedFeedRoute,
   AuthenticatedFlashcardsRoute: AuthenticatedFlashcardsRoute,
   AuthenticatedFriendsRoute: AuthenticatedFriendsRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
-  AuthenticatedHeatmapRoute: AuthenticatedHeatmapRoute,
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
   AuthenticatedMakronRoute: AuthenticatedMakronRouteWithChildren,
   AuthenticatedMaterialsRoute: AuthenticatedMaterialsRouteWithChildren,
@@ -2178,9 +2055,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRouteWithChildren,
   AuthenticatedParentRoute: AuthenticatedParentRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
-  AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
-  AuthenticatedQuestionsRoute: AuthenticatedQuestionsRoute,
-  AuthenticatedRankRoute: AuthenticatedRankRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedShareRoute: AuthenticatedShareRoute,
   AuthenticatedStudyRoute: AuthenticatedStudyRoute,

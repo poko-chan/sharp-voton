@@ -180,10 +180,6 @@ export const getChildFullDashboard = createServerFn({ method: "POST" })
       flashcards,
       badges,
       titles,
-      inventory,
-      missions,
-      photoLogs,
-      reflections,
     ] = await Promise.all([
       supabaseAdmin
         .from("profiles")
@@ -252,26 +248,6 @@ export const getChildFullDashboard = createServerFn({ method: "POST" })
         .limit(30),
       supabaseAdmin.from("user_badges").select("*").eq("user_id", cid),
       supabaseAdmin.from("user_titles").select("*").eq("user_id", cid),
-      supabaseAdmin.from("user_inventory").select("*").eq("user_id", cid),
-      supabaseAdmin
-        .from("daily_missions")
-        .select("*")
-        .eq("user_id", cid)
-        .gte("date", since90)
-        .order("date", { ascending: false })
-        .limit(100),
-      supabaseAdmin
-        .from("photo_study_logs")
-        .select("*")
-        .eq("user_id", cid)
-        .order("created_at", { ascending: false })
-        .limit(30),
-      supabaseAdmin
-        .from("daily_reflections")
-        .select("*")
-        .eq("user_id", cid)
-        .order("date", { ascending: false })
-        .limit(30),
     ]);
 
     return {
@@ -289,10 +265,6 @@ export const getChildFullDashboard = createServerFn({ method: "POST" })
       flashcards: flashcards.data ?? [],
       badges: badges.data ?? [],
       titles: titles.data ?? [],
-      inventory: inventory.data ?? [],
-      missions: missions.data ?? [],
-      photoLogs: photoLogs.data ?? [],
-      reflections: reflections.data ?? [],
     };
   });
 

@@ -293,7 +293,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       if (!error) {
         // best-effort UX feedback
         try {
-          (window as any).__lovableToast?.("招待ボーナス +10コイン");
+          (window as any).__lovableToast?.("招待リンクから登録しました");
         } catch {
           /* noop */
         }

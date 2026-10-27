@@ -17,11 +17,9 @@ import {
   ClipboardList,
   NotebookPen,
   BellRing,
-  Flame,
   Building2,
   LineChart,
   Share2,
-  FileDown,
   type LucideIcon,
 } from "lucide-react";
 
@@ -105,20 +103,6 @@ export const APPS: AppEntry[] = [
     label: "カレンダー",
     keywords: "calendar 予定 スケジュール",
     icon: CalendarDays,
-    group: "記録・分析",
-  },
-  {
-    to: "/heatmap",
-    label: "ヒートマップ",
-    keywords: "heatmap 継続 grass",
-    icon: Flame,
-    group: "記録・分析",
-  },
-  {
-    to: "/export",
-    label: "データ書き出し",
-    keywords: "export csv バックアップ",
-    icon: FileDown,
     group: "記録・分析",
   },
   {
