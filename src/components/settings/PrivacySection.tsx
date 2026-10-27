@@ -22,7 +22,7 @@ export function PrivacySection() {
         desc="プロフィールの公開範囲とフレンド機能を管理します"
       />
       <Card className="p-6 space-y-3 text-sm text-muted-foreground">
-        プロフィールの公開範囲や学習記録の表示は「アカウント・プロフィール」から設定できます。
+        プロフィールの公開範囲や学習記録の表示は「フレンド」画面のプロフィール編集から設定できます。
       </Card>
       <Card className="p-6 space-y-5">
         <div className="font-semibold">フレンド・招待</div>

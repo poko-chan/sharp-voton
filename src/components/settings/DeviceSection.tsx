@@ -25,7 +25,7 @@ async function swReg() {
   return navigator.serviceWorker.register("/push-sw.js");
 }
 
-export function DeviceSection() {
+export function DeviceSection({ mode = "all" }: { mode?: "all" | "passkey" | "push" }) {
   const [keys, setKeys] = useState<{ id: string; label: string | null; created_at: string }[]>([]);
   const [pushOn, setPushOn] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -113,7 +113,7 @@ export function DeviceSection() {
 
   return (
     <div className="space-y-6">
-      <Card className="space-y-3 p-5">
+      {mode !== "push" && (<Card className="space-y-3 p-5">
         <h2 className="font-bold">パスキー（顔・指紋でログイン）</h2>
         <p className="text-sm text-muted-foreground">
           登録すると、ログイン画面の「パスキーでログイン」から Face ID / Touch ID / Windows Hello
@@ -188,10 +188,10 @@ export function DeviceSection() {
         <Button disabled={busy} onClick={addPasskey}>
           この端末をパスキーに登録
         </Button>
-      </Card>
+      </Card>)}
 
-      <Card className="space-y-3 p-5">
-        <h2 className="font-bold">この端末への通知</h2>
+      {mode !== "passkey" && (<Card className="space-y-3 p-5">
+        <h2 className="font-bold">この端末への通知（プッシュ）</h2>
         <p className="text-sm text-muted-foreground">
           LINEを使わなくても、スマホやパソコンに直接お知らせが届き、アプリのアイコンに印がつきます。
         </p>
@@ -214,7 +214,7 @@ export function DeviceSection() {
             </Button>
           )}
         </div>
-      </Card>
+      </Card>)}
     </div>
   );
 }
