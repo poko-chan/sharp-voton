@@ -579,7 +579,7 @@ function DailyLogs({
     else setSelected(new Set(allIds));
   };
 
-  if (logs.length === 0) {
+  if (allLogs.length === 0) {
     return (
       <Card className="p-6">
         <p className="text-muted-foreground text-sm">まだ記録がありません</p>
@@ -593,6 +593,10 @@ function DailyLogs({
 
   return (
     <Card className="p-6 space-y-2">
+      {filterBar}
+      {logs.length === 0 && (
+        <p className="text-muted-foreground text-sm">条件に合う記録がありません</p>
+      )}
       <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
         <h3 className="font-semibold">日別の記録</h3>
         <div className="flex items-center gap-2">
