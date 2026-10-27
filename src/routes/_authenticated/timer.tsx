@@ -38,6 +38,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { localDateStr, addDaysStr } from "@/lib/date";
 import { PowerBar } from "@/components/RadialGauge";
+import { UNDERSTANDING, type Understanding } from "@/lib/study-reflection";
 
 export const Route = createFileRoute("/_authenticated/timer")({
   component: TimerPage,
@@ -225,6 +226,65 @@ function TodaySummary() {
 
 /* ---------------- ページ ---------------- */
 
+/** 前回の記録から「続きから再開」を提案するカード */
+function ResumeCard({ onStart }: { onStart: () => void }) {
+  const { user } = useAuth();
+  const { start } = useTimer();
+  const { data } = useQuery({
+    queryKey: ["timer-resume", user?.id],
+    enabled: !!user?.id,
+    staleTime: 30_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("study_logs")
+        .select("id,subject_id,material_ids,content,next_step,range_text,understanding,subjects(name,color)")
+        .eq("user_id", user!.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data as any;
+    },
+  });
+  if (!data || (!data.subject_id && !data.next_step)) return null;
+  const u = data.understanding ? UNDERSTANDING[data.understanding as Understanding] : null;
+  return (
+    <Card className="p-3.5 mb-3 border-primary/30 bg-primary/5">
+      <div className="text-xs text-muted-foreground mb-1">前回の続き</div>
+      <div className="flex items-center gap-2 flex-wrap text-sm">
+        {data.subjects && (
+          <span
+            className="px-2 py-0.5 rounded-full text-xs"
+            style={{ background: data.subjects.color + "33", color: data.subjects.color }}
+          >
+            {data.subjects.name}
+          </span>
+        )}
+        <span className="font-medium">
+          {data.next_step ? `次回：${data.next_step}` : data.range_text || data.content}
+        </span>
+        {u && <span className="text-xs">{u.emoji}</span>}
+      </div>
+      <Button
+        size="sm"
+        className="mt-2.5 w-full"
+        onClick={() => {
+          onStart();
+          start({
+            kind: "stopwatch",
+            targetMs: 0,
+            subjectId: data.subject_id ?? "",
+            content: data.next_step ?? "",
+            record: true,
+            materialIds: data.material_ids ?? [],
+          });
+        }}
+      >
+        <Play className="mr-1.5 h-4 w-4" /> この続きから計測を始める
+      </Button>
+    </Card>
+  );
+}
+
 function TimerPage() {
   const [focus, setFocus] = useState(false);
   const { state, elapsedMs, remainingMs, pause, resume } = useTimer();
@@ -316,6 +376,7 @@ function TimerPage() {
       </div>
 
       <TodaySummary />
+      {!state && <ResumeCard onStart={() => setTab("stopwatch")} />}
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList className="w-full grid grid-cols-4">
