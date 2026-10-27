@@ -38,7 +38,6 @@ import {
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { CharacterAvatar } from "@/components/profile/CharacterAvatar";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { syncCalendarNotifications } from "@/lib/calendar-reminders";
@@ -524,11 +523,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             ) : null}
             <AvatarFallback>{initial}</AvatarFallback>
           </Avatar>
-          <CharacterAvatar
-            value={profile?.character_profile}
-            className="absolute -bottom-1 -right-1 h-5 w-5 rounded-md border border-background"
-            title={`${displayName}のキャラクター`}
-          />
         </button>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
@@ -810,11 +804,6 @@ export function AppShell({ children }: { children: ReactNode }) {
                   ) : null}
                   <AvatarFallback>{initial}</AvatarFallback>
                 </Avatar>
-                <CharacterAvatar
-                  value={profile?.character_profile}
-                  className="absolute -bottom-1 -right-1 h-4 w-4 rounded-md border border-background"
-                  title={`${displayName}のキャラクター`}
-                />
               </button>
             </div>
           </header>
