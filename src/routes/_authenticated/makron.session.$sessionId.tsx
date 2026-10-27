@@ -109,10 +109,8 @@ function SessionPage() {
   const [likes, setLikes] = useState<Set<string>>(new Set());
   const [reviewFlags, setReviewFlags] = useState<Set<string>>(new Set());
   const [hintShown, setHintShown] = useState<Set<string>>(new Set());
-  const [hintTickets, setHintTickets] = useState(0);
   const [reportOpen, setReportOpen] = useState(false);
   const [ocrBusy, setOcrBusy] = useState(false);
-  const [hintConfirmOpen, setHintConfirmOpen] = useState(false);
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const gradeFn = async (args: {
@@ -300,7 +298,7 @@ function SessionPage() {
       const tag = t?.tagName;
       // textarea や記述系の長文入力中は Enter を奪わない
       if (tag === "TEXTAREA") return;
-      if (showPreview || submitConfirmOpen || hintConfirmOpen || reportOpen) return;
+      if (showPreview || submitConfirmOpen || reportOpen) return;
       if (perQMode && !currentLocked) return; // 一問採点モードでは採点前は Enter で進めない
       e.preventDefault();
       if (idx + 1 < questions.length) setIdx(idx + 1);
@@ -313,7 +311,6 @@ function SessionPage() {
     questions.length,
     showPreview,
     submitConfirmOpen,
-    hintConfirmOpen,
     reportOpen,
     perQMode,
     currentLocked,

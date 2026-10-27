@@ -35,7 +35,6 @@ import {
   Trophy,
   Brain,
   Target,
-  Camera,
   Clock,
   BookOpen,
   ShieldAlert,
