@@ -264,9 +264,9 @@ function InvitePanel() {
   const link = typeof window !== "undefined" ? `${window.location.origin}/r/${code}` : `/r/${code}`;
   return (
     <Card className="p-6 space-y-3">
-      <div className="font-semibold">友達を招待 (+10コイン)</div>
+      <div className="font-semibold">友達を招待</div>
       <p className="text-sm text-muted-foreground">
-        招待リンクから登録された方とあなたの両方に 10 コインがプレゼントされます。
+        招待リンクを送って、一緒に Study# で勉強しましょう。
       </p>
       <div className="flex gap-2">
         <Input value={link} readOnly onClick={(e) => (e.target as HTMLInputElement).select()} />

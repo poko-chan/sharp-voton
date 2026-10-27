@@ -208,22 +208,15 @@ function SessionPage() {
       setAnswers({});
       setFiles({});
       if (user) {
-        const [{ data: bm }, { data: lk }, { data: inv }] = await Promise.all([
+        const [{ data: bm }, { data: lk }] = await Promise.all([
           (supabase as any).from("makron_bookmarks").select("question_id").eq("user_id", user.id),
           (supabase as any)
             .from("makron_question_likes")
             .select("question_id, liked")
             .eq("user_id", user.id),
-          (supabase as any)
-            .from("user_inventory")
-            .select("quantity")
-            .eq("user_id", user.id)
-            .eq("item_code", "hint_ticket")
-            .maybeSingle(),
         ]);
         setBookmarks(new Set((bm ?? []).map((r: any) => r.question_id)));
         setLikes(new Set((lk ?? []).filter((r: any) => r.liked).map((r: any) => r.question_id)));
-        setHintTickets(inv?.quantity ?? 0);
       }
     })();
   }, [sessionId, user?.id]);
@@ -287,28 +280,10 @@ function SessionPage() {
     });
   };
 
-  const useHint = async () => {
-    if (!user || !q) return;
-    if (!q.hint_text) return toast.info("この問題にはヒントが用意されていません");
-    if (hintShown.has(q.id)) return;
-    if (hintTickets <= 0) return toast.error("ヒント券がありません（ショップで購入できます）");
-    setHintConfirmOpen(true);
-  };
-
-  const confirmUseHint = async () => {
+  const useHint = () => {
     if (!q) return;
-    const { error } = await (supabase as any).rpc("consume_inventory", {
-      _item_code: "hint_ticket",
-      _qty: 1,
-    });
-    if (error) {
-      toast.error(error.message);
-      setHintConfirmOpen(false);
-      return;
-    }
-    setHintTickets((n) => n - 1);
+    if (!q.hint_text) return toast.info("この問題にはヒントが用意されていません");
     setHintShown((s) => new Set(s).add(q.id));
-    setHintConfirmOpen(false);
   };
 
   // 問題間の移動は途中保存せず、ローカル state のみで切り替えます。
@@ -644,10 +619,10 @@ function SessionPage() {
             variant="ghost"
             onClick={useHint}
             disabled={!q.hint_text || hintShown.has(q.id)}
-            title={`ヒント券で答えのヒントを見る（残り${hintTickets}枚）`}
+            title="ヒントを見る"
           >
             <Lightbulb className="h-4 w-4 mr-1" />
-            <span className="hidden sm:inline text-xs">ヒント({hintTickets})</span>
+            <span className="hidden sm:inline text-xs">ヒント</span>
           </Button>
           <Button
             size="sm"
@@ -1041,27 +1016,6 @@ function SessionPage() {
         )}
       </div>
       <ReportDialog open={reportOpen} onOpenChange={setReportOpen} questionId={q.id} />
-      <AlertDialog open={hintConfirmOpen} onOpenChange={setHintConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>ヒントを表示しますか？</AlertDialogTitle>
-            <AlertDialogDescription>
-              ヒント券を1枚使います（残り {hintTickets} 枚）。
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>キャンセル</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                e.preventDefault();
-                confirmUseHint();
-              }}
-            >
-              使う
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
       <AlertDialog
         open={submitConfirmOpen}
         onOpenChange={(o) => !submitting && setSubmitConfirmOpen(o)}

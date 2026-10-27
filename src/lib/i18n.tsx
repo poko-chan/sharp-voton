@@ -101,7 +101,7 @@ const dict = {
     "settings.dataExport": "データ出力",
     "settings.dataExportDesc": "勉強記録や予定を外部にエクスポート。",
     "settings.currentPlan": "現在のプラン",
-    "settings.invite": "友達を招待 (+10コイン)",
+    "settings.invite": "友達を招待",
     "settings.dangerZone": "アカウント削除",
 
     "login.title": "ログイン",

@@ -108,20 +108,6 @@ export const APPS: AppEntry[] = [
     group: "記録・分析",
   },
   {
-    to: "/heatmap",
-    label: "ヒートマップ",
-    keywords: "heatmap 継続 grass",
-    icon: Flame,
-    group: "記録・分析",
-  },
-  {
-    to: "/export",
-    label: "データ書き出し",
-    keywords: "export csv バックアップ",
-    icon: FileDown,
-    group: "記録・分析",
-  },
-  {
     to: "/ai-chat",
     label: "AIチャット",
     keywords: "ai tutor chat gpt 質問",

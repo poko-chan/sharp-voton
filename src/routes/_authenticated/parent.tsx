@@ -640,16 +640,6 @@ function ChildFullDetail({ childId, todayMinutes }: { childId: string; todayMinu
           )}
         />
         <List
-          title="振り返り"
-          rows={d.reflections}
-          render={(r: any) => (
-            <div>
-              <div className="text-muted-foreground">{r.date}</div>
-              <div className="line-clamp-2">{r.content ?? r.text ?? ""}</div>
-            </div>
-          )}
-        />
-        <List
           title="試験"
           rows={d.exams}
           render={(r: any) => (
@@ -659,22 +649,6 @@ function ChildFullDetail({ childId, todayMinutes }: { childId: string; todayMinu
             </div>
           )}
         />
-        <List
-          title="写真ログ"
-          rows={d.photoLogs}
-          render={(r: any) => (
-            <div className="flex items-center gap-2">
-              {r.image_url && <img src={r.image_url} className="h-10 w-10 rounded object-cover" />}
-              <span className="text-muted-foreground">
-                {new Date(r.created_at).toLocaleDateString("ja-JP")}
-              </span>
-              <span className="truncate">{r.caption ?? ""}</span>
-            </div>
-          )}
-        />
-      </div>
-      <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-        <Camera className="h-3 w-3" /> 写真ログ {(d.photoLogs ?? []).length} 件
       </div>
     </div>
   );
