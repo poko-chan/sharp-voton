@@ -7427,12 +7427,18 @@ export type Database = {
           created_at: string
           date: string
           duration_minutes: number
+          focus_level: number | null
           id: string
           material_id: string | null
           material_ids: string[]
+          next_step: string | null
+          range_text: string | null
+          reflection_tags: string[]
+          reviewed_at: string | null
           start_time: string | null
           subject_id: string | null
           tag: string | null
+          understanding: string | null
           user_id: string
         }
         Insert: {
@@ -7440,12 +7446,18 @@ export type Database = {
           created_at?: string
           date?: string
           duration_minutes?: number
+          focus_level?: number | null
           id?: string
           material_id?: string | null
           material_ids?: string[]
+          next_step?: string | null
+          range_text?: string | null
+          reflection_tags?: string[]
+          reviewed_at?: string | null
           start_time?: string | null
           subject_id?: string | null
           tag?: string | null
+          understanding?: string | null
           user_id: string
         }
         Update: {
@@ -7453,12 +7465,18 @@ export type Database = {
           created_at?: string
           date?: string
           duration_minutes?: number
+          focus_level?: number | null
           id?: string
           material_id?: string | null
           material_ids?: string[]
+          next_step?: string | null
+          range_text?: string | null
+          reflection_tags?: string[]
+          reviewed_at?: string | null
           start_time?: string | null
           subject_id?: string | null
           tag?: string | null
+          understanding?: string | null
           user_id?: string
         }
         Relationships: [
