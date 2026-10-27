@@ -6,8 +6,6 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CharacterAvatar } from "./CharacterAvatar";
-import { GameProfileCard } from "./GameProfileCard";
 import { Award, Clock, Flame, Lock, UserPlus, UserCheck, Hourglass, BookOpen, Pin, Pencil, Crown, Trophy, Target, HandHeart, Send, CalendarDays, Check, Share2, Copy, RefreshCw, Medal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ProfileEditDialog } from "@/components/settings/ProfileExtrasSection";
@@ -160,8 +158,6 @@ const fmtMin = (m: number) => (m >= 60 ? `${Math.floor(m / 60)}時間${m % 60 ? 
 const fmtDate = (s: string) => new Date(s).toLocaleDateString("ja-JP");
 
 export function ProfileAvatar({ p, size = 80 }: { p: Pick<ProfileCardData, "avatar_type" | "avatar_config" | "avatar_url" | "display_name">; size?: number }) {
-  if (p.avatar_type === "character" && p.avatar_config)
-    return <CharacterAvatar config={p.avatar_config} size={size} className="rounded-full" />;
   return (
     <Avatar style={{ width: size, height: size }}>
       <AvatarImage src={p.avatar_url ?? undefined} />
@@ -298,16 +294,6 @@ export function UserProfileDialog({
     if (badgeFilter === "locked") return !b.earned_at;
     return true;
   }) ?? [];
-  const completion = data?.relation === "self"
-    ? [
-        !!data.display_name,
-        !!data.avatar_url || data.avatar_type === "character",
-        !!data.bio,
-        (data.study_tags ?? []).length > 0,
-        !!extra?.goal_text,
-        pinned.length > 0,
-      ].filter(Boolean).length
-    : 0;
   const nextStreak = [3, 7, 14, 30, 60, 100].find((n) => n > (extra?.streak ?? 0));
   const weeklyGoal = data?.weekly_goal;
   const weeklyTarget = weeklyGoal ? Math.max(0, weeklyGoal.target_minutes) : 0;
@@ -395,27 +381,6 @@ export function UserProfileDialog({
                 </div>
               </div>
 
-              {data.relation === "self" && (
-                <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold">プロフィール完成度</span>
-                    <span className="font-bold text-primary">{completion}/6</span>
-                  </div>
-                  <Progress value={(completion / 6) * 100} className="mt-2 h-2" />
-                  <div className="mt-2 text-[11px] text-muted-foreground">
-                    {completion === 6 ? "すべて設定済みです。あなたらしさが伝わるプロフィールです！" : "自己紹介・学習スタイル・目標を設定すると、もっと魅力的になります。"}
-                  </div>
-                </div>
-              )}
-
-              <GameProfileCard
-                userId={data.id}
-                isSelf={data.relation === "self"}
-                name={data.display_name ?? data.username ?? "ユーザー"}
-                avatarConfig={data.avatar_config}
-                avatar={<ProfileAvatar p={data} size={72} />}
-                stats={{ total: data.stats?.total_minutes ?? 0, streak: extra?.streak ?? 0, badges: earnedCount, week: data.stats?.week_minutes ?? 0 }}
-              />
 
               {pinned.length > 0 && (
                 <div className="rounded-xl border bg-muted/40 p-3">
