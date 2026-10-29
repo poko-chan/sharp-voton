@@ -26,6 +26,7 @@ import { QrScannerDialog } from "@/components/QrScannerDialog";
 import { toast } from "sonner";
 import { signInWithUsername, checkUsernameAvailable } from "@/lib/username.functions";
 import { EmailVerifyNotice } from "@/components/auth/EmailVerifyNotice";
+import { VotonLoginButton } from "@/components/auth/VotonLogin";
 import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import logoUrl from "@/assets/logo.png";
 import googleLogo from "@/assets/google-logo.svg.asset.json";
@@ -432,6 +433,10 @@ function LoginPage() {
               </p>
             </div>
 
+            <VotonLoginButton
+              disabled={busy}
+              label={`Voton アカウントで${mode === "signin" ? "ログイン" : "登録"}`}
+            />
             <Button onClick={google} variant="outline" className="w-full" disabled={busy}>
               <img src={googleLogo.url} alt="" width={18} height={18} className="mr-2 h-[18px] w-[18px]" />
               Googleで{mode === "signin" ? "ログイン" : "登録"}
