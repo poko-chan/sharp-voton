@@ -38,7 +38,6 @@ import {
   matchAudience,
   type OrgField,
 } from "@/lib/org-profile";
-import { OrgEduReview } from "./OrgEduReview";
 
 const HUES = ["#7B6CFF", "#34D7B5", "#38bdf8", "#fb923c", "#f472b6"];
 const levelOf = (xp: number) => Math.floor(Math.sqrt(xp / 40)) + 1;
@@ -208,7 +207,6 @@ export function OrgEdu({ orgId, ctx }: { orgId: string; ctx: any }) {
     return (
       <div className="max-w-3xl mx-auto space-y-4">
         {TabBar}
-        <OrgEduReview orgId={orgId} />
       </div>
     );
   }
