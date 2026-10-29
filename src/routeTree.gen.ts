@@ -21,6 +21,7 @@ import { Route as ForgotRouteImport } from './routes/forgot'
 import { Route as GuideRouteImport } from './routes/guide'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LoginRedirectVotonRouteImport } from './routes/login.redirect-voton'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as QrLoginRouteImport } from './routes/qr-login'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -32,30 +33,26 @@ import { Route as AuthenticatedAiChatRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
-import { Route as AuthenticatedClasschatRouteImport } from './routes/_authenticated/classchat'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedExamsRouteImport } from './routes/_authenticated/exams'
-import { Route as AuthenticatedExportRouteImport } from './routes/_authenticated/export'
 import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/feed'
 import { Route as AuthenticatedFlashcardsRouteImport } from './routes/_authenticated/flashcards'
 import { Route as AuthenticatedFriendsRouteImport } from './routes/_authenticated/friends'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
-import { Route as AuthenticatedHeatmapRouteImport } from './routes/_authenticated/heatmap'
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
 import { Route as AuthenticatedMakronRouteImport } from './routes/_authenticated/makron'
+import { Route as AuthenticatedMarketRouteImport } from './routes/_authenticated/market'
 import { Route as AuthenticatedMaterialsRouteImport } from './routes/_authenticated/materials'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedOrganizationsRouteImport } from './routes/_authenticated/organizations'
 import { Route as AuthenticatedParentRouteImport } from './routes/_authenticated/parent'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
-import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
-import { Route as AuthenticatedQuestionsRouteImport } from './routes/_authenticated/questions'
-import { Route as AuthenticatedRankRouteImport } from './routes/_authenticated/rank'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedShareRouteImport } from './routes/_authenticated/share'
 import { Route as AuthenticatedStudyRouteImport } from './routes/_authenticated/study'
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
+import { Route as AuthenticatedTodoRouteImport } from './routes/_authenticated/todo'
 import { Route as AuthenticatedTogetherRouteImport } from './routes/_authenticated/together'
 import { Route as AuthenticatedTutorRouteImport } from './routes/_authenticated/tutor'
 import { Route as AuthenticatedUpdatesRouteImport } from './routes/_authenticated/updates'
@@ -102,6 +99,8 @@ import { Route as AuthenticatedOrganizationsOrgIdIndexRouteImport } from './rout
 import { Route as AuthenticatedOrganizationsOrgIdProfileRouteImport } from './routes/_authenticated/organizations.$orgId.profile'
 import { Route as ApiPublicLineCronRouteImport } from './routes/api/public/line/cron'
 import { Route as ApiPublicLineWebhookRouteImport } from './routes/api/public/line/webhook'
+import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as AuthenticatedMakronPackPackIdIndexRouteImport } from './routes/_authenticated/makron.pack.$packId.index'
 import { Route as AuthenticatedMakronPackPackIdDashboardRouteImport } from './routes/_authenticated/makron.pack.$packId.dashboard'
 import { Route as AuthenticatedOrganizationsOrgIdAppAppKeyRouteImport } from './routes/_authenticated/organizations.$orgId.app.$appKey'
@@ -167,6 +166,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRedirectVotonRoute = LoginRedirectVotonRouteImport.update({
+  id: '/login/redirect-voton',
+  path: '/login/redirect-voton',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -223,11 +227,6 @@ const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedClasschatRoute = AuthenticatedClasschatRouteImport.update({
-  id: '/classchat',
-  path: '/classchat',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -236,11 +235,6 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 const AuthenticatedExamsRoute = AuthenticatedExamsRouteImport.update({
   id: '/exams',
   path: '/exams',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedExportRoute = AuthenticatedExportRouteImport.update({
-  id: '/export',
-  path: '/export',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedFeedRoute = AuthenticatedFeedRouteImport.update({
@@ -263,11 +257,6 @@ const AuthenticatedGoalsRoute = AuthenticatedGoalsRouteImport.update({
   path: '/goals',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedHeatmapRoute = AuthenticatedHeatmapRouteImport.update({
-  id: '/heatmap',
-  path: '/heatmap',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedLeaderboardRoute =
   AuthenticatedLeaderboardRouteImport.update({
     id: '/leaderboard',
@@ -277,6 +266,11 @@ const AuthenticatedLeaderboardRoute =
 const AuthenticatedMakronRoute = AuthenticatedMakronRouteImport.update({
   id: '/makron',
   path: '/makron',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMarketRoute = AuthenticatedMarketRouteImport.update({
+  id: '/market',
+  path: '/market',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedMaterialsRoute = AuthenticatedMaterialsRouteImport.update({
@@ -311,21 +305,6 @@ const AuthenticatedPaymentsRoute = AuthenticatedPaymentsRouteImport.update({
   path: '/payments',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedPracticeRoute = AuthenticatedPracticeRouteImport.update({
-  id: '/practice',
-  path: '/practice',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedQuestionsRoute = AuthenticatedQuestionsRouteImport.update({
-  id: '/questions',
-  path: '/questions',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedRankRoute = AuthenticatedRankRouteImport.update({
-  id: '/rank',
-  path: '/rank',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -344,6 +323,11 @@ const AuthenticatedStudyRoute = AuthenticatedStudyRouteImport.update({
 const AuthenticatedTimerRoute = AuthenticatedTimerRouteImport.update({
   id: '/timer',
   path: '/timer',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTodoRoute = AuthenticatedTodoRouteImport.update({
+  id: '/todo',
+  path: '/todo',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTogetherRoute = AuthenticatedTogetherRouteImport.update({
@@ -600,6 +584,16 @@ const ApiPublicLineWebhookRoute = ApiPublicLineWebhookRouteImport.update({
   path: '/api/public/line/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
+  id: '/lovable/email/auth/preview',
+  path: '/lovable/email/auth/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
+  id: '/lovable/email/auth/webhook',
+  path: '/lovable/email/auth/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedMakronPackPackIdIndexRoute =
   AuthenticatedMakronPackPackIdIndexRouteImport.update({
     id: '/',
@@ -643,6 +637,7 @@ export interface FileRoutesByFullPath {
   '/guide': typeof GuideRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
+  '/login/redirect-voton': typeof LoginRedirectVotonRoute
   '/privacy': typeof PrivacyRoute
   '/qr-login': typeof QrLoginRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -654,30 +649,26 @@ export interface FileRoutesByFullPath {
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/chat': typeof AuthenticatedChatRoute
-  '/classchat': typeof AuthenticatedClasschatRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exams': typeof AuthenticatedExamsRouteWithChildren
-  '/export': typeof AuthenticatedExportRoute
   '/feed': typeof AuthenticatedFeedRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/friends': typeof AuthenticatedFriendsRoute
   '/goals': typeof AuthenticatedGoalsRoute
-  '/heatmap': typeof AuthenticatedHeatmapRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/makron': typeof AuthenticatedMakronRouteWithChildren
+  '/market': typeof AuthenticatedMarketRoute
   '/materials': typeof AuthenticatedMaterialsRouteWithChildren
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/parent': typeof AuthenticatedParentRoute
   '/payments': typeof AuthenticatedPaymentsRoute
-  '/practice': typeof AuthenticatedPracticeRoute
-  '/questions': typeof AuthenticatedQuestionsRoute
-  '/rank': typeof AuthenticatedRankRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
+  '/todo': typeof AuthenticatedTodoRoute
   '/together': typeof AuthenticatedTogetherRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/updates': typeof AuthenticatedUpdatesRoute
@@ -722,6 +713,8 @@ export interface FileRoutesByFullPath {
   '/organizations/$orgId/profile': typeof AuthenticatedOrganizationsOrgIdProfileRoute
   '/api/public/line/cron': typeof ApiPublicLineCronRoute
   '/api/public/line/webhook': typeof ApiPublicLineWebhookRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/makron/edu/': typeof AuthenticatedMakronEduIndexRoute
   '/organizations/$orgId/': typeof AuthenticatedOrganizationsOrgIdIndexRoute
   '/makron/pack/$packId/dashboard': typeof AuthenticatedMakronPackPackIdDashboardRoute
@@ -742,6 +735,7 @@ export interface FileRoutesByTo {
   '/guide': typeof GuideRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
+  '/login/redirect-voton': typeof LoginRedirectVotonRoute
   '/privacy': typeof PrivacyRoute
   '/qr-login': typeof QrLoginRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -753,26 +747,22 @@ export interface FileRoutesByTo {
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/chat': typeof AuthenticatedChatRoute
-  '/classchat': typeof AuthenticatedClasschatRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/export': typeof AuthenticatedExportRoute
   '/feed': typeof AuthenticatedFeedRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/friends': typeof AuthenticatedFriendsRoute
   '/goals': typeof AuthenticatedGoalsRoute
-  '/heatmap': typeof AuthenticatedHeatmapRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
+  '/market': typeof AuthenticatedMarketRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/parent': typeof AuthenticatedParentRoute
   '/payments': typeof AuthenticatedPaymentsRoute
-  '/practice': typeof AuthenticatedPracticeRoute
-  '/questions': typeof AuthenticatedQuestionsRoute
-  '/rank': typeof AuthenticatedRankRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/share': typeof AuthenticatedShareRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
+  '/todo': typeof AuthenticatedTodoRoute
   '/together': typeof AuthenticatedTogetherRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/updates': typeof AuthenticatedUpdatesRoute
@@ -815,6 +805,8 @@ export interface FileRoutesByTo {
   '/organizations/$orgId/profile': typeof AuthenticatedOrganizationsOrgIdProfileRoute
   '/api/public/line/cron': typeof ApiPublicLineCronRoute
   '/api/public/line/webhook': typeof ApiPublicLineWebhookRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/makron/edu': typeof AuthenticatedMakronEduIndexRoute
   '/organizations/$orgId': typeof AuthenticatedOrganizationsOrgIdIndexRoute
   '/makron/pack/$packId/dashboard': typeof AuthenticatedMakronPackPackIdDashboardRoute
@@ -837,6 +829,7 @@ export interface FileRoutesById {
   '/guide': typeof GuideRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
+  '/login/redirect-voton': typeof LoginRedirectVotonRoute
   '/privacy': typeof PrivacyRoute
   '/qr-login': typeof QrLoginRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -848,30 +841,26 @@ export interface FileRoutesById {
   '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
-  '/_authenticated/classchat': typeof AuthenticatedClasschatRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/exams': typeof AuthenticatedExamsRouteWithChildren
-  '/_authenticated/export': typeof AuthenticatedExportRoute
   '/_authenticated/feed': typeof AuthenticatedFeedRoute
   '/_authenticated/flashcards': typeof AuthenticatedFlashcardsRoute
   '/_authenticated/friends': typeof AuthenticatedFriendsRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
-  '/_authenticated/heatmap': typeof AuthenticatedHeatmapRoute
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/makron': typeof AuthenticatedMakronRouteWithChildren
+  '/_authenticated/market': typeof AuthenticatedMarketRoute
   '/_authenticated/materials': typeof AuthenticatedMaterialsRouteWithChildren
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/_authenticated/parent': typeof AuthenticatedParentRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
-  '/_authenticated/practice': typeof AuthenticatedPracticeRoute
-  '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
-  '/_authenticated/rank': typeof AuthenticatedRankRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/share': typeof AuthenticatedShareRoute
   '/_authenticated/study': typeof AuthenticatedStudyRoute
   '/_authenticated/timer': typeof AuthenticatedTimerRoute
+  '/_authenticated/todo': typeof AuthenticatedTodoRoute
   '/_authenticated/together': typeof AuthenticatedTogetherRoute
   '/_authenticated/tutor': typeof AuthenticatedTutorRoute
   '/_authenticated/updates': typeof AuthenticatedUpdatesRoute
@@ -916,6 +905,8 @@ export interface FileRoutesById {
   '/_authenticated/organizations/$orgId/profile': typeof AuthenticatedOrganizationsOrgIdProfileRoute
   '/api/public/line/cron': typeof ApiPublicLineCronRoute
   '/api/public/line/webhook': typeof ApiPublicLineWebhookRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/_authenticated/makron/edu/': typeof AuthenticatedMakronEduIndexRoute
   '/_authenticated/organizations/$orgId/': typeof AuthenticatedOrganizationsOrgIdIndexRoute
   '/_authenticated/makron/pack/$packId/dashboard': typeof AuthenticatedMakronPackPackIdDashboardRoute
@@ -938,6 +929,7 @@ export interface FileRouteTypes {
     | '/guide'
     | '/help'
     | '/login'
+    | '/login/redirect-voton'
     | '/privacy'
     | '/qr-login'
     | '/reset-password'
@@ -949,30 +941,26 @@ export interface FileRouteTypes {
     | '/announcements'
     | '/calendar'
     | '/chat'
-    | '/classchat'
     | '/dashboard'
     | '/exams'
-    | '/export'
     | '/feed'
     | '/flashcards'
     | '/friends'
     | '/goals'
-    | '/heatmap'
     | '/leaderboard'
     | '/makron'
+    | '/market'
     | '/materials'
     | '/notes'
     | '/notifications'
     | '/organizations'
     | '/parent'
     | '/payments'
-    | '/practice'
-    | '/questions'
-    | '/rank'
     | '/settings'
     | '/share'
     | '/study'
     | '/timer'
+    | '/todo'
     | '/together'
     | '/tutor'
     | '/updates'
@@ -1017,6 +1005,8 @@ export interface FileRouteTypes {
     | '/organizations/$orgId/profile'
     | '/api/public/line/cron'
     | '/api/public/line/webhook'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/makron/edu/'
     | '/organizations/$orgId/'
     | '/makron/pack/$packId/dashboard'
@@ -1037,6 +1027,7 @@ export interface FileRouteTypes {
     | '/guide'
     | '/help'
     | '/login'
+    | '/login/redirect-voton'
     | '/privacy'
     | '/qr-login'
     | '/reset-password'
@@ -1048,26 +1039,22 @@ export interface FileRouteTypes {
     | '/announcements'
     | '/calendar'
     | '/chat'
-    | '/classchat'
     | '/dashboard'
-    | '/export'
     | '/feed'
     | '/flashcards'
     | '/friends'
     | '/goals'
-    | '/heatmap'
     | '/leaderboard'
+    | '/market'
     | '/notes'
     | '/notifications'
     | '/parent'
     | '/payments'
-    | '/practice'
-    | '/questions'
-    | '/rank'
     | '/settings'
     | '/share'
     | '/study'
     | '/timer'
+    | '/todo'
     | '/together'
     | '/tutor'
     | '/updates'
@@ -1110,6 +1097,8 @@ export interface FileRouteTypes {
     | '/organizations/$orgId/profile'
     | '/api/public/line/cron'
     | '/api/public/line/webhook'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/makron/edu'
     | '/organizations/$orgId'
     | '/makron/pack/$packId/dashboard'
@@ -1131,6 +1120,7 @@ export interface FileRouteTypes {
     | '/guide'
     | '/help'
     | '/login'
+    | '/login/redirect-voton'
     | '/privacy'
     | '/qr-login'
     | '/reset-password'
@@ -1142,30 +1132,26 @@ export interface FileRouteTypes {
     | '/_authenticated/announcements'
     | '/_authenticated/calendar'
     | '/_authenticated/chat'
-    | '/_authenticated/classchat'
     | '/_authenticated/dashboard'
     | '/_authenticated/exams'
-    | '/_authenticated/export'
     | '/_authenticated/feed'
     | '/_authenticated/flashcards'
     | '/_authenticated/friends'
     | '/_authenticated/goals'
-    | '/_authenticated/heatmap'
     | '/_authenticated/leaderboard'
     | '/_authenticated/makron'
+    | '/_authenticated/market'
     | '/_authenticated/materials'
     | '/_authenticated/notes'
     | '/_authenticated/notifications'
     | '/_authenticated/organizations'
     | '/_authenticated/parent'
     | '/_authenticated/payments'
-    | '/_authenticated/practice'
-    | '/_authenticated/questions'
-    | '/_authenticated/rank'
     | '/_authenticated/settings'
     | '/_authenticated/share'
     | '/_authenticated/study'
     | '/_authenticated/timer'
+    | '/_authenticated/todo'
     | '/_authenticated/together'
     | '/_authenticated/tutor'
     | '/_authenticated/updates'
@@ -1210,6 +1196,8 @@ export interface FileRouteTypes {
     | '/_authenticated/organizations/$orgId/profile'
     | '/api/public/line/cron'
     | '/api/public/line/webhook'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/_authenticated/makron/edu/'
     | '/_authenticated/organizations/$orgId/'
     | '/_authenticated/makron/pack/$packId/dashboard'
@@ -1232,6 +1220,7 @@ export interface RootRouteChildren {
   GuideRoute: typeof GuideRoute
   HelpRoute: typeof HelpRoute
   LoginRoute: typeof LoginRoute
+  LoginRedirectVotonRoute: typeof LoginRedirectVotonRoute
   PrivacyRoute: typeof PrivacyRoute
   QrLoginRoute: typeof QrLoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -1254,6 +1243,8 @@ export interface RootRouteChildren {
   ApiPublicAiTrialRoute: typeof ApiPublicAiTrialRoute
   ApiPublicLineCronRoute: typeof ApiPublicLineCronRoute
   ApiPublicLineWebhookRoute: typeof ApiPublicLineWebhookRoute
+  LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
+  LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1419,13 +1410,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChatRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/classchat': {
-      id: '/_authenticated/classchat'
-      path: '/classchat'
-      fullPath: '/classchat'
-      preLoaderRoute: typeof AuthenticatedClasschatRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -1438,13 +1422,6 @@ declare module '@tanstack/react-router' {
       path: '/exams'
       fullPath: '/exams'
       preLoaderRoute: typeof AuthenticatedExamsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/export': {
-      id: '/_authenticated/export'
-      path: '/export'
-      fullPath: '/export'
-      preLoaderRoute: typeof AuthenticatedExportRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/feed': {
@@ -1475,13 +1452,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGoalsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/heatmap': {
-      id: '/_authenticated/heatmap'
-      path: '/heatmap'
-      fullPath: '/heatmap'
-      preLoaderRoute: typeof AuthenticatedHeatmapRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/leaderboard': {
       id: '/_authenticated/leaderboard'
       path: '/leaderboard'
@@ -1494,6 +1464,13 @@ declare module '@tanstack/react-router' {
       path: '/makron'
       fullPath: '/makron'
       preLoaderRoute: typeof AuthenticatedMakronRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/market': {
+      id: '/_authenticated/market'
+      path: '/market'
+      fullPath: '/market'
+      preLoaderRoute: typeof AuthenticatedMarketRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/materials': {
@@ -1538,27 +1515,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPaymentsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/practice': {
-      id: '/_authenticated/practice'
-      path: '/practice'
-      fullPath: '/practice'
-      preLoaderRoute: typeof AuthenticatedPracticeRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/questions': {
-      id: '/_authenticated/questions'
-      path: '/questions'
-      fullPath: '/questions'
-      preLoaderRoute: typeof AuthenticatedQuestionsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/rank': {
-      id: '/_authenticated/rank'
-      path: '/rank'
-      fullPath: '/rank'
-      preLoaderRoute: typeof AuthenticatedRankRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -1585,6 +1541,13 @@ declare module '@tanstack/react-router' {
       path: '/timer'
       fullPath: '/timer'
       preLoaderRoute: typeof AuthenticatedTimerRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/todo': {
+      id: '/_authenticated/todo'
+      path: '/todo'
+      fullPath: '/todo'
+      preLoaderRoute: typeof AuthenticatedTodoRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/together': {
@@ -1909,6 +1872,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicLineWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/auth/preview': {
+      id: '/lovable/email/auth/preview'
+      path: '/lovable/email/auth/preview'
+      fullPath: '/lovable/email/auth/preview'
+      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/webhook': {
+      id: '/lovable/email/auth/webhook'
+      path: '/lovable/email/auth/webhook'
+      fullPath: '/lovable/email/auth/webhook'
+      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/makron/pack/$packId/': {
       id: '/_authenticated/makron/pack/$packId/'
       path: '/'
@@ -2078,30 +2055,26 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
-  AuthenticatedClasschatRoute: typeof AuthenticatedClasschatRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExamsRoute: typeof AuthenticatedExamsRouteWithChildren
-  AuthenticatedExportRoute: typeof AuthenticatedExportRoute
   AuthenticatedFeedRoute: typeof AuthenticatedFeedRoute
   AuthenticatedFlashcardsRoute: typeof AuthenticatedFlashcardsRoute
   AuthenticatedFriendsRoute: typeof AuthenticatedFriendsRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
-  AuthenticatedHeatmapRoute: typeof AuthenticatedHeatmapRoute
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
   AuthenticatedMakronRoute: typeof AuthenticatedMakronRouteWithChildren
+  AuthenticatedMarketRoute: typeof AuthenticatedMarketRoute
   AuthenticatedMaterialsRoute: typeof AuthenticatedMaterialsRouteWithChildren
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRouteWithChildren
   AuthenticatedParentRoute: typeof AuthenticatedParentRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
-  AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
-  AuthenticatedQuestionsRoute: typeof AuthenticatedQuestionsRoute
-  AuthenticatedRankRoute: typeof AuthenticatedRankRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedShareRoute: typeof AuthenticatedShareRoute
   AuthenticatedStudyRoute: typeof AuthenticatedStudyRoute
   AuthenticatedTimerRoute: typeof AuthenticatedTimerRoute
+  AuthenticatedTodoRoute: typeof AuthenticatedTodoRoute
   AuthenticatedTogetherRoute: typeof AuthenticatedTogetherRoute
   AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
   AuthenticatedUpdatesRoute: typeof AuthenticatedUpdatesRoute
@@ -2121,30 +2094,26 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedChatRoute: AuthenticatedChatRoute,
-  AuthenticatedClasschatRoute: AuthenticatedClasschatRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExamsRoute: AuthenticatedExamsRouteWithChildren,
-  AuthenticatedExportRoute: AuthenticatedExportRoute,
   AuthenticatedFeedRoute: AuthenticatedFeedRoute,
   AuthenticatedFlashcardsRoute: AuthenticatedFlashcardsRoute,
   AuthenticatedFriendsRoute: AuthenticatedFriendsRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
-  AuthenticatedHeatmapRoute: AuthenticatedHeatmapRoute,
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
   AuthenticatedMakronRoute: AuthenticatedMakronRouteWithChildren,
+  AuthenticatedMarketRoute: AuthenticatedMarketRoute,
   AuthenticatedMaterialsRoute: AuthenticatedMaterialsRouteWithChildren,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRouteWithChildren,
   AuthenticatedParentRoute: AuthenticatedParentRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
-  AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
-  AuthenticatedQuestionsRoute: AuthenticatedQuestionsRoute,
-  AuthenticatedRankRoute: AuthenticatedRankRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedShareRoute: AuthenticatedShareRoute,
   AuthenticatedStudyRoute: AuthenticatedStudyRoute,
   AuthenticatedTimerRoute: AuthenticatedTimerRoute,
+  AuthenticatedTodoRoute: AuthenticatedTodoRoute,
   AuthenticatedTogetherRoute: AuthenticatedTogetherRoute,
   AuthenticatedTutorRoute: AuthenticatedTutorRoute,
   AuthenticatedUpdatesRoute: AuthenticatedUpdatesRoute,
@@ -2175,6 +2144,7 @@ const rootRouteChildren: RootRouteChildren = {
   GuideRoute: GuideRoute,
   HelpRoute: HelpRoute,
   LoginRoute: LoginRoute,
+  LoginRedirectVotonRoute: LoginRedirectVotonRoute,
   PrivacyRoute: PrivacyRoute,
   QrLoginRoute: QrLoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
@@ -2197,6 +2167,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAiTrialRoute: ApiPublicAiTrialRoute,
   ApiPublicLineCronRoute: ApiPublicLineCronRoute,
   ApiPublicLineWebhookRoute: ApiPublicLineWebhookRoute,
+  LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
+  LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

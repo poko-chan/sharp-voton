@@ -7,15 +7,10 @@ import {
   Palette,
   Bell,
   BookOpen,
-  Shield,
-  Sparkles,
-  Languages,
   Accessibility,
   Database,
   CreditCard,
-  AlertTriangle,
   MessageSquare,
-  MessageCircle,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { SettingsNav } from "@/components/settings/SettingsNav";
@@ -28,7 +23,6 @@ import { NotificationsSection } from "@/components/settings/NotificationsSection
 import { StudySection } from "@/components/settings/StudySection";
 import { ChatSection } from "@/components/settings/ChatSection";
 import { PrivacySection } from "@/components/settings/PrivacySection";
-import { AiSection } from "@/components/settings/AiSection";
 import { LanguageSection } from "@/components/settings/LanguageSection";
 import { AccessibilitySection } from "@/components/settings/AccessibilitySection";
 import { DataSection } from "@/components/settings/DataSection";
@@ -40,184 +34,40 @@ import { ChatWebhookSection } from "@/components/settings/ChatWebhookSection";
 import { DeviceSection } from "@/components/settings/DeviceSection";
 
 const CATEGORIES: SettingsCategory[] = [
-  {
-    id: "account",
-    label: "アカウント・プロフィール",
-    icon: User,
-    keywords: [
-      "アカウント",
-      "プロフィール",
-      "表示名",
-      "アイコン",
-      "メール",
-      "ユーザー名",
-      "account",
-      "profile",
-    ],
-  },
-  {
-    id: "login",
-    label: "ログイン方法",
-    icon: KeyRound,
-    keywords: [
-      "ログイン",
-      "パスワード",
-      "google",
-      "apple",
-      "連携",
-      "認証",
-      "login",
-      "password",
-      "oauth",
-    ],
-  },
-  {
-    id: "appearance",
-    label: "外観・テーマ",
-    icon: Palette,
-    keywords: [
-      "外観",
-      "テーマ",
-      "配色",
-      "ダークモード",
-      "フォント",
-      "文字サイズ",
-      "コンパクト",
-      "ダッシュボード",
-      "theme",
-    ],
-  },
-  {
-    id: "notifications",
-    label: "通知",
-    icon: Bell,
-    keywords: ["通知", "リマインダー", "お知らせ", "チャット", "ストリーク", "notification"],
-  },
-  {
-    id: "study",
-    label: "学習",
-    icon: BookOpen,
-    keywords: [
-      "学習",
-      "勉強",
-      "タイマー",
-      "教科",
-      "休憩",
-      "週の開始",
-      "効果音",
-      "目標",
-      "study",
-      "timer",
-    ],
-  },
-  {
-    id: "chat",
-    label: "チャット",
-    icon: MessageSquare,
-    keywords: ["チャット", "メッセージ", "送信", "enter", "リアクション", "chat"],
-  },
-  {
-    id: "privacy",
-    label: "プライバシー",
-    icon: Shield,
-    keywords: ["プライバシー", "公開", "フレンド", "非公開", "privacy"],
-  },
-  {
-    id: "ai",
-    label: "AI",
-    icon: Sparkles,
-    keywords: ["AI", "モデル", "端末内", "webllm", "gemini", "nano", "ダウンロード", "容量"],
-  },
-  {
-    id: "language",
-    label: "言語・翻訳",
-    icon: Languages,
-    keywords: ["言語", "翻訳", "language", "translate", "日本語", "english"],
-  },
-  {
-    id: "accessibility",
-    label: "アクセシビリティ",
-    icon: Accessibility,
-    keywords: [
-      "アクセシビリティ",
-      "読み上げ",
-      "読み上げ速度",
-      "音声",
-      "動きを減らす",
-      "コントラスト",
-      "accessibility",
-    ],
-  },
-  {
-    id: "data",
-    label: "データ",
-    icon: Database,
-    keywords: ["データ", "エクスポート", "バックアップ", "キャッシュ", "data", "export"],
-  },
-  {
-    id: "line",
-    label: "LINE連携・通知",
-    icon: MessageCircle,
-    keywords: [
-      "line",
-      "discord",
-      "slack",
-      "ライン",
-      "リマインダー",
-      "通知",
-      "レポート",
-      "おやすみ",
-      "連携",
-    ],
-  },
-  {
-    id: "payment",
-    label: "お支払い",
-    icon: CreditCard,
-    keywords: ["お支払い", "決済", "料金", "プラン", "購入", "payment", "billing"],
-  },
-  {
-    id: "advanced",
-    label: "操作・表示",
-    icon: Search,
-    keywords: ["操作", "表示", "ショートカット", "advanced"],
-  },
-  {
-    id: "danger",
-    label: "危険な操作",
-    icon: AlertTriangle,
-    keywords: ["削除", "退会", "リセット", "ログアウト", "danger", "delete"],
-    danger: true,
-  },
+  { id: "account", label: "アカウント・プライバシー", icon: User,
+    keywords: ["アカウント", "招待", "プライバシー", "公開", "招待できる人", "account", "privacy"] },
+  { id: "login", label: "ログイン・セキュリティ", icon: KeyRound,
+    keywords: ["ログイン", "パスワード", "google", "apple", "連携", "認証", "パスキー", "2段階", "login", "password", "passkey"] },
+  { id: "notifications", label: "通知・連携", icon: Bell,
+    keywords: ["通知", "リマインダー", "お知らせ", "チャット", "ストリーク", "プッシュ", "おやすみ", "line", "ライン", "discord", "slack", "notification"] },
+  { id: "appearance", label: "外観・表示", icon: Palette,
+    keywords: ["外観", "テーマ", "配色", "ダークモード", "フォント", "ダッシュボード", "ヘッダー", "初期画面", "ショートカット", "theme"] },
+  { id: "study", label: "学習・タイマー", icon: BookOpen,
+    keywords: ["学習", "勉強", "タイマー", "教科", "休憩", "週の開始", "目標", "study", "timer"] },
+  { id: "chat", label: "チャット", icon: MessageSquare,
+    keywords: ["チャット", "メッセージ", "送信", "enter", "chat"] },
+  { id: "accessibility", label: "アクセシビリティ・言語", icon: Accessibility,
+    keywords: ["アクセシビリティ", "読み上げ", "音声", "コントラスト", "言語", "翻訳", "english", "accessibility", "language"] },
+  { id: "payment", label: "お支払い", icon: CreditCard,
+    keywords: ["お支払い", "決済", "料金", "プラン", "payment", "billing"] },
+  { id: "data", label: "データ・退会", icon: Database,
+    keywords: ["データ", "エクスポート", "CSV", "削除", "退会", "リセット", "data", "delete"], danger: true },
 ];
 
-const SECTIONS: Record<SettingsCategoryId, React.ComponentType> = {
-  account: AccountSection,
-  login: () => (
-    <div className="space-y-6">
-      <LoginMethodsSection />
-      <DeviceSection />
-    </div>
-  ),
-  line: () => (
-    <div className="space-y-6">
-      <LineSection />
-      <ChatWebhookSection />
-    </div>
-  ),
+const Stack = ({ children }: { children: React.ReactNode }) => <div className="space-y-6">{children}</div>;
 
-  appearance: AppearanceSection,
-  notifications: NotificationsSection,
+const SECTIONS: Partial<Record<SettingsCategoryId, React.ComponentType>> = {
+  account: () => (<Stack><AccountSection /><PrivacySection /></Stack>),
+  login: () => (<Stack><LoginMethodsSection /><DeviceSection mode="passkey" /></Stack>),
+  notifications: () => (
+    <Stack><NotificationsSection /><DeviceSection mode="push" /><LineSection /><ChatWebhookSection /></Stack>
+  ),
+  appearance: () => (<Stack><AppearanceSection /><AdvancedSection /></Stack>),
   study: StudySection,
   chat: ChatSection,
-  privacy: PrivacySection,
-  ai: AiSection,
-  language: LanguageSection,
-  accessibility: AccessibilitySection,
-  data: DataSection,
+  accessibility: () => (<Stack><AccessibilitySection /><LanguageSection /></Stack>),
   payment: PaymentSection,
-  advanced: AdvancedSection,
-  danger: DangerSection,
+  data: () => (<Stack><DataSection /><DangerSection /></Stack>),
 };
 
 function UserSettingsPage() {
@@ -262,7 +112,7 @@ function UserSettingsPage() {
             </p>
           )}
           {shown.map((c) => {
-            const Section = SECTIONS[c.id];
+            const Section = SECTIONS[c.id]!;
             const Icon = c.icon;
             return (
               <section key={c.id} className="space-y-3">
@@ -289,7 +139,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
       {
         name: "description",
         content:
-          "アカウント・表示・通知・学習・AI・プライバシーなど、Study# の各種設定を管理します。",
+          "アカウント・表示・通知・学習・プライバシーなど、Study# の各種設定を管理します。",
       },
       { name: "robots", content: "noindex,nofollow" },
     ],

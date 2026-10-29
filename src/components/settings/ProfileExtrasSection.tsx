@@ -256,43 +256,6 @@ export function ProfileEditor({ onSaved, compact }: { onSaved?: () => void; comp
             <p className="text-xs text-muted-foreground">きらきらマークは動く背景です</p>
           </div>
 
-          <div className="space-y-3">
-            <Label>アイコン</Label>
-            <div className="flex gap-2">
-              <Button variant={s.avatar_type === "image" ? "default" : "outline"} size="sm" onClick={() => setS({ ...s, avatar_type: "image" })}>
-                <ImageIcon className="h-4 w-4 mr-1" /> 写真
-              </Button>
-              <Button variant={s.avatar_type === "character" ? "default" : "outline"} size="sm" onClick={() => setS({ ...s, avatar_type: "character" })}>
-                <Sparkles className="h-4 w-4 mr-1" /> キャラクター
-              </Button>
-            </div>
-            {s.avatar_type === "image" && (
-              <p className="text-xs text-muted-foreground">写真は設定の「アカウント」から変更できます</p>
-            )}
-            {s.avatar_type === "character" && (
-              <div className={`flex ${compact ? "flex-col" : "flex-col sm:flex-row"} gap-4 rounded-lg border p-4`}>
-                <div className="flex flex-col items-center gap-2">
-                  <CharacterAvatar config={s.avatar_config} size={110} className="rounded-full" />
-                  <Button size="sm" variant="ghost" onClick={() => setS({ ...s, avatar_config: randomAvatar() })}>
-                    <Shuffle className="h-4 w-4 mr-1" /> おまかせ
-                  </Button>
-                </div>
-                <div className="flex-1 space-y-2 text-sm">
-                  <Swatches label="肌" colors={SKINS} value={s.avatar_config.skin} onChange={(v) => setAv("skin", v)} />
-                  <Steps label="髪型" n={HAIR_COUNT} value={s.avatar_config.hair} onChange={(v) => setAv("hair", v)} />
-                  <Swatches label="髪色" colors={HAIR_COLORS} value={s.avatar_config.hairColor} onChange={(v) => setAv("hairColor", v)} />
-                  <Steps label="目" n={EYES_COUNT} value={s.avatar_config.eyes} onChange={(v) => setAv("eyes", v)} />
-                  <Steps label="口" n={MOUTH_COUNT} value={s.avatar_config.mouth} onChange={(v) => setAv("mouth", v)} />
-                  <Swatches label="服" colors={OUTFITS} value={s.avatar_config.outfit} onChange={(v) => setAv("outfit", v)} />
-                  <Swatches label="背景" colors={BGS} value={s.avatar_config.bg} onChange={(v) => setAv("bg", v)} />
-                  <div className="flex items-center gap-2">
-                    <span className="w-10 text-muted-foreground">メガネ</span>
-                    <Switch checked={s.avatar_config.glasses} onCheckedChange={(v) => setAv("glasses", v)} />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
 
           <div className="space-y-2">
             <Label>カード枠</Label>

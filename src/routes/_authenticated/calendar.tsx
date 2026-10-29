@@ -82,14 +82,19 @@ function CalendarPage() {
 
   // Plan form
   const [planSubject, setPlanSubject] = useState("");
+  const [planDate, setPlanDate] = useState("");
   const [planMin, setPlanMin] = useState(60);
   const [planTime, setPlanTime] = useState("");
   const [planContent, setPlanContent] = useState("");
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
 
   // Event form
   const [evTitle, setEvTitle] = useState("");
+  const [evDate, setEvDate] = useState("");
   const [evTime, setEvTime] = useState("");
   const [evDesc, setEvDesc] = useState("");
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
+  const [entryTab, setEntryTab] = useState<"plan" | "event">("plan");
 
   const dateStr = date ? localDateStr(date) : "";
   const todayStr = localDateStr(today);
@@ -119,37 +124,100 @@ function CalendarPage() {
   const dayEvents = events.filter((ev) => ev.date === dateStr);
 
   const addPlan = async () => {
-    if (!user || !date) return;
+    if (!user || !(planDate || dateStr)) return;
     const { error } = await supabase.from("study_plans").insert({
       user_id: user.id,
-      date: dateStr,
+      date: planDate || dateStr,
       subject_id: planSubject || null,
       planned_minutes: planMin,
       content: planContent,
       start_time: planTime || null,
     } as any);
     if (error) return toast.error(error.message);
+    setPlanDate("");
     setPlanContent("");
     setPlanTime("");
     load();
     toast.success("予定を追加しました");
   };
 
+  const updatePlan = async () => {
+    if (!editingPlanId || !(planDate || dateStr)) return;
+    const { error } = await supabase
+      .from("study_plans")
+      .update({
+        date: planDate || dateStr,
+        subject_id: planSubject || null,
+        planned_minutes: planMin,
+        content: planContent,
+        start_time: planTime || null,
+      })
+      .eq("id", editingPlanId);
+    if (error) return toast.error(error.message);
+    setEditingPlanId(null);
+    setPlanDate("");
+    setPlanContent("");
+    setPlanTime("");
+    await load();
+    toast.success("勉強予定を変更しました");
+  };
+
+  const startEditingPlan = (plan: any) => {
+    setEntryTab("plan");
+    setEditingPlanId(plan.id);
+    setPlanDate(plan.date ?? dateStr);
+    setPlanSubject(plan.subject_id ?? "");
+    setPlanMin(plan.planned_minutes ?? 60);
+    setPlanTime(fmtTime(plan.start_time));
+    setPlanContent(plan.content ?? "");
+  };
+
   const addEvent = async () => {
-    if (!user || !date || !evTitle.trim()) return;
+    if (!user || !(evDate || dateStr) || !evTitle.trim()) return;
     const { error } = await supabase.from("events" as any).insert({
       user_id: user.id,
-      date: dateStr,
+      date: evDate || dateStr,
       title: evTitle.trim(),
       start_time: evTime || null,
       description: evDesc || null,
     });
     if (error) return toast.error(error.message);
     setEvTitle("");
+    setEvDate("");
     setEvTime("");
     setEvDesc("");
     load();
     toast.success("イベントを追加しました");
+  };
+
+  const updateEvent = async () => {
+    if (!editingEventId || !evDate || !evTitle.trim()) return;
+    const { error } = await supabase
+      .from("events" as any)
+      .update({
+        date: evDate,
+        title: evTitle.trim(),
+        start_time: evTime || null,
+        description: evDesc || null,
+      })
+      .eq("id", editingEventId);
+    if (error) return toast.error(error.message);
+    setEditingEventId(null);
+    setEvTitle("");
+    setEvDate("");
+    setEvTime("");
+    setEvDesc("");
+    await load();
+    toast.success("イベントを変更しました");
+  };
+
+  const startEditingEvent = (event: any) => {
+    setEntryTab("event");
+    setEditingEventId(event.id);
+    setEvTitle(event.title ?? "");
+    setEvDate(event.date ?? dateStr);
+    setEvTime(fmtTime(event.start_time));
+    setEvDesc(event.description ?? "");
   };
 
   const togglePlan = async (id: string, done: boolean) => {
@@ -465,7 +533,7 @@ function CalendarPage() {
           <div className="space-y-4 mt-4">
             <Card className="p-5">
               <h3 className="font-semibold mb-3">{dateStr} に追加</h3>
-              <Tabs defaultValue="plan">
+              <Tabs value={entryTab} onValueChange={(value) => setEntryTab(value as "plan" | "event")}>
                 <TabsList className="w-full">
                   <TabsTrigger value="plan" className="flex-1">
                     勉強予定
@@ -489,6 +557,10 @@ function CalendarPage() {
                   </Select>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
+                      <Label>日付</Label>
+                      <Input type="date" value={planDate || dateStr} onChange={(e) => setPlanDate(e.target.value)} />
+                    </div>
+                    <div>
                       <Label>開始時刻</Label>
                       <Input
                         type="time"
@@ -510,9 +582,25 @@ function CalendarPage() {
                     onChange={(e) => setPlanContent(e.target.value)}
                     placeholder="内容"
                   />
-                  <Button onClick={addPlan} className="w-full">
-                    予定を追加
+                  <Button onClick={editingPlanId ? updatePlan : addPlan} className="w-full">
+                    {editingPlanId ? "予定を変更" : "予定を追加"}
                   </Button>
+                  {editingPlanId && (
+                    <Button
+                      variant="ghost"
+                      className="w-full"
+                      onClick={() => {
+                        setEditingPlanId(null);
+                        setPlanDate("");
+                        setPlanSubject("");
+                        setPlanMin(60);
+                        setPlanTime("");
+                        setPlanContent("");
+                      }}
+                    >
+                      編集をやめる
+                    </Button>
+                  )}
                 </TabsContent>
                 <TabsContent value="event" className="space-y-2 pt-3">
                   <Input
@@ -520,6 +608,10 @@ function CalendarPage() {
                     onChange={(e) => setEvTitle(e.target.value)}
                     placeholder="タイトル (例: 模試)"
                   />
+                  <div>
+                    <Label>日付</Label>
+                    <Input type="date" value={evDate || dateStr} onChange={(e) => setEvDate(e.target.value)} />
+                  </div>
                   <div>
                     <Label>開始時刻</Label>
                     <Input type="time" value={evTime} onChange={(e) => setEvTime(e.target.value)} />
@@ -529,9 +621,24 @@ function CalendarPage() {
                     onChange={(e) => setEvDesc(e.target.value)}
                     placeholder="メモ"
                   />
-                  <Button onClick={addEvent} className="w-full">
-                    イベントを追加
+                  <Button onClick={editingEventId ? updateEvent : addEvent} className="w-full">
+                    {editingEventId ? "イベントを変更" : "イベントを追加"}
                   </Button>
+                  {editingEventId && (
+                    <Button
+                      variant="ghost"
+                      className="w-full"
+                      onClick={() => {
+                        setEditingEventId(null);
+                        setEvTitle("");
+                        setEvDate("");
+                        setEvTime("");
+                        setEvDesc("");
+                      }}
+                    >
+                      編集をやめる
+                    </Button>
+                  )}
                 </TabsContent>
               </Tabs>
             </Card>
@@ -559,6 +666,12 @@ function CalendarPage() {
                         <div className="text-xs text-muted-foreground">{p.content}</div>
                       )}
                     </div>
+                    <button
+                      onClick={() => startEditingPlan(p)}
+                      className="text-primary hover:opacity-70 text-xs"
+                    >
+                      編集
+                    </button>
                     <button
                       onClick={() => delPlan(p.id)}
                       className="text-destructive hover:opacity-70"

@@ -6759,6 +6759,7 @@ export type Database = {
           goal_text: string | null
           id: string
           line_user_id: string | null
+          voton_user_id: string | null
           notify_announcements: boolean
           notify_chat: boolean
           notify_daily_reminder: boolean
@@ -6801,6 +6802,7 @@ export type Database = {
           goal_text?: string | null
           id: string
           line_user_id?: string | null
+          voton_user_id?: string | null
           notify_announcements?: boolean
           notify_chat?: boolean
           notify_daily_reminder?: boolean
@@ -6843,6 +6845,7 @@ export type Database = {
           goal_text?: string | null
           id?: string
           line_user_id?: string | null
+          voton_user_id?: string | null
           notify_announcements?: boolean
           notify_chat?: boolean
           notify_daily_reminder?: boolean
@@ -7427,12 +7430,18 @@ export type Database = {
           created_at: string
           date: string
           duration_minutes: number
+          focus_level: number | null
           id: string
           material_id: string | null
           material_ids: string[]
+          next_step: string | null
+          range_text: string | null
+          reflection_tags: string[]
+          reviewed_at: string | null
           start_time: string | null
           subject_id: string | null
           tag: string | null
+          understanding: string | null
           user_id: string
         }
         Insert: {
@@ -7440,12 +7449,18 @@ export type Database = {
           created_at?: string
           date?: string
           duration_minutes?: number
+          focus_level?: number | null
           id?: string
           material_id?: string | null
           material_ids?: string[]
+          next_step?: string | null
+          range_text?: string | null
+          reflection_tags?: string[]
+          reviewed_at?: string | null
           start_time?: string | null
           subject_id?: string | null
           tag?: string | null
+          understanding?: string | null
           user_id: string
         }
         Update: {
@@ -7453,12 +7468,18 @@ export type Database = {
           created_at?: string
           date?: string
           duration_minutes?: number
+          focus_level?: number | null
           id?: string
           material_id?: string | null
           material_ids?: string[]
+          next_step?: string | null
+          range_text?: string | null
+          reflection_tags?: string[]
+          reviewed_at?: string | null
           start_time?: string | null
           subject_id?: string | null
           tag?: string | null
+          understanding?: string | null
           user_id?: string
         }
         Relationships: [
@@ -7545,6 +7566,54 @@ export type Database = {
           id?: string
           room_id?: string
           started_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      study_todos: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          due_date: string | null
+          estimated_minutes: number | null
+          id: string
+          is_completed: boolean
+          logged: boolean
+          note: string | null
+          priority: string
+          subject_id: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          estimated_minutes?: number | null
+          id?: string
+          is_completed?: boolean
+          logged?: boolean
+          note?: string | null
+          priority?: string
+          subject_id?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          estimated_minutes?: number | null
+          id?: string
+          is_completed?: boolean
+          logged?: boolean
+          note?: string | null
+          priority?: string
+          subject_id?: string | null
+          title?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -8402,6 +8471,30 @@ export type Database = {
           daily_earned_date?: string | null
           total_earned?: number
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_installed_apps: {
+        Row: {
+          app_id: string
+          id: string
+          installed_at: string
+          sort_order: number
+          user_id: string
+        }
+        Insert: {
+          app_id: string
+          id?: string
+          installed_at?: string
+          sort_order?: number
+          user_id: string
+        }
+        Update: {
+          app_id?: string
+          id?: string
+          installed_at?: string
+          sort_order?: number
           user_id?: string
         }
         Relationships: []

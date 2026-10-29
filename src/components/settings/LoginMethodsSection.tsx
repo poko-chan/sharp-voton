@@ -12,6 +12,8 @@ import { SectionHeading } from "./shared";
 import { MfaCard } from "./MfaCard";
 import { MessageCircle } from "lucide-react";
 import { getMyLineStatus, unlinkLine } from "@/lib/line.functions";
+import { startVotonAuth } from "@/components/auth/VotonLogin";
+import { getMyVotonStatus, unlinkVotonAccount } from "@/lib/voton.functions";
 import googleLogo from "@/assets/google-logo.svg.asset.json";
 
 type Identity = { identity_id: string; id: string; provider: string; identity_data?: any };
@@ -33,6 +35,7 @@ export function LoginMethodsSection() {
   const [pw2, setPw2] = useState("");
 
   const [lineLinked, setLineLinked] = useState(false);
+  const [votonLinked, setVotonLinked] = useState(false);
 
   const load = useCallback(async () => {
     const { data, error } = await supabase.auth.getUserIdentities();
@@ -41,7 +44,14 @@ export function LoginMethodsSection() {
       const st = await getMyLineStatus();
       setLineLinked(Boolean((st as any)?.linked));
     } catch {
-      /* ignore */
+      toast.error("LINEの連携状態を確認できませんでした");
+    }
+    try {
+      const st = await getMyVotonStatus();
+      if ("error" in st && st.error) throw new Error(st.error);
+      setVotonLinked(st.linked);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Votonの連携状態を確認できませんでした");
     }
     setLoading(false);
   }, []);
@@ -113,13 +123,53 @@ export function LoginMethodsSection() {
 
   return (
     <div className="space-y-6">
-      <SectionHeading title="ログイン方法" desc="パスワード・Google・Apple・Microsoft・LINE の連携と二段階認証を管理します" />
+      <SectionHeading title="ログイン方法" desc="Voton・パスワード・Google・Apple・Microsoft・LINE の連携と二段階認証を管理します" />
 
       <Card className="p-6 space-y-4">
         <div className="flex items-center gap-2 font-semibold">
           <ShieldCheck className="h-4 w-4" /> 連携中のログイン方法
         </div>
         <div className="space-y-2">
+          <div className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5 p-3">
+            <div className="flex items-center gap-3">
+              <div className="grid h-7 w-7 place-items-center rounded-full bg-[#0b0d12] text-xs font-black text-[#00F5A0]">
+                V
+              </div>
+              <div>
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  Voton アカウント
+                  <span className="rounded bg-primary/20 px-1.5 py-0.5 text-[10px] font-bold text-primary">公式</span>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {votonLinked ? "連携済み（異なるメールアドレスでもログイン可能）" : "未連携"}
+                </div>
+              </div>
+            </div>
+            {votonLinked ? (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={busy === "voton"}
+                onClick={async () => {
+                  setBusy("voton");
+                  const result = await unlinkVotonAccount();
+                  if ("error" in result && result.error) toast.error(result.error);
+                  else {
+                    toast.success("Voton連携を解除しました");
+                    setVotonLinked(false);
+                  }
+                  setBusy(null);
+                }}
+              >
+                <Unlink className="mr-2 h-4 w-4" /> 解除
+              </Button>
+            ) : (
+              <Button size="sm" disabled={busy === "voton"} onClick={() => startVotonAuth("link")}>
+                <Link2 className="mr-2 h-4 w-4" /> 連携する
+              </Button>
+            )}
+          </div>
+
           <div className="flex items-center justify-between rounded-xl border p-3">
             <div className="flex items-center gap-3">
               <KeyRound className="h-5 w-5 text-muted-foreground" />

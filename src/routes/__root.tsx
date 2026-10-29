@@ -26,6 +26,7 @@ import { GlobalContextMenu } from "@/components/GlobalContextMenu";
 import { GlobalFeedbackDock } from "@/components/FeedbackWidget";
 import { NetworkStatusBanner } from "@/components/NetworkStatusBanner";
 import { DomainChangeNotice } from "@/components/DomainChangeNotice";
+import { VotonCallbackHandler } from "@/components/auth/VotonLogin";
 import { loadAndApplyUserTheme } from "@/lib/theme";
 
 import { I18nProvider } from "@/lib/i18n";
@@ -90,6 +91,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "google-site-verification", content: "B53jOoCzbt35gsIhXt-rg9Jqqc4OifdwkX_Bf05phOk" },
       { name: "theme-color", content: "#0B1020" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { name: "apple-mobile-web-app-title", content: "Study#" },
       ...(CHROME_AI_OT ? [{ httpEquiv: "origin-trial", content: CHROME_AI_OT } as any] : []),
       { property: "og:site_name", content: "Study#" },
@@ -218,6 +221,7 @@ function RootComponent() {
             <GlobalFeedbackDock />
             <NetworkStatusBanner />
             <DomainChangeNotice />
+            <VotonCallbackHandler />
             <RouteLoading />
             <PWAInstallPrompt />
             <AmbientSound />

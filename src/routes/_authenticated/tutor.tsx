@@ -1260,7 +1260,7 @@ export function TutorPageInner() {
 
       {/* メイン */}
       <main className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center gap-3 border-b border-border/60 bg-gradient-to-r from-primary/[0.08] via-background/90 to-background px-4 py-3 backdrop-blur-xl">
+        <header className="ai-chat-header flex items-center gap-3 border-b border-border/60 bg-gradient-to-r from-primary/[0.12] via-background/90 to-background px-4 py-3 backdrop-blur-xl">
           {!sidebarOpen && (
             <Button
               type="button"
@@ -1273,7 +1273,7 @@ export function TutorPageInner() {
               <PanelLeft className="h-4 w-4" />
             </Button>
           )}
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-foreground text-background shadow-sm">
+          <div className="ai-chat-mark grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-foreground text-background shadow-sm">
             <Brain className="h-4 w-4" />
           </div>
           <div className="min-w-0">
@@ -1368,12 +1368,16 @@ export function TutorPageInner() {
             )}
 
             {!messageLoading && msgs.length === 0 && (
-              <div className="flex min-h-[60dvh] flex-col items-center justify-center text-center">
-                <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-                  今日はどのようにお手伝いしましょうか？
+              <div className="ai-empty-state flex min-h-[60dvh] flex-col items-center justify-center text-center">
+                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.07] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                  <span className="ai-live-dot h-1.5 w-1.5 rounded-full bg-primary" />
+                  Ready when you are
+                </div>
+                <h2 className="max-w-xl text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">
+                  何から始めようか？
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  質問にはすぐ答え、記録の依頼は保存前に確認します。
+                  質問にはすぐ答え、必要なときだけあなたの学習データを使います。
                 </p>
                 <div className="mt-8 grid w-full gap-3 text-left sm:grid-cols-2">
                   {QUICK_PROMPTS.map((p) => (
@@ -1384,7 +1388,7 @@ export function TutorPageInner() {
                         setInput(p.body);
                         inputRef.current?.focus();
                       }}
-                      className="group rounded-2xl border px-4 py-3.5 transition hover:bg-muted/60"
+                      className="ai-prompt-card group rounded-2xl border bg-background/55 px-4 py-3.5 transition hover:-translate-y-0.5 hover:bg-muted/60"
                     >
                       <span className="block text-sm font-medium">{p.title}</span>
                       <span className="mt-0.5 block text-xs text-muted-foreground transition group-hover:text-foreground/70">
@@ -1585,7 +1589,7 @@ export function TutorPageInner() {
         </div>
 
         {/* 入力欄 */}
-        <div className="bg-background">
+        <div className="ai-composer-shell bg-background">
           <div className="mx-auto w-full max-w-3xl px-4 pb-4 pt-2">
             {pending.length > 0 && (
               <div className="mb-2 flex flex-wrap gap-2">
@@ -1643,7 +1647,7 @@ export function TutorPageInner() {
                 e.preventDefault();
                 void send();
               }}
-              className="rounded-3xl border bg-muted/50 transition focus-within:border-muted-foreground/30 focus-within:bg-muted/70"
+              className="ai-composer rounded-3xl border bg-muted/50 transition focus-within:border-muted-foreground/30 focus-within:bg-muted/70"
             >
               <input
                 type="file"

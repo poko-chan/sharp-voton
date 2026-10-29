@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { localDateStr } from "@/lib/date";
 import { emitProfileChange } from "@/lib/profile-events";
+import { ReflectionDialog, type PendingReflection } from "@/components/study/ReflectionDialog";
 
 export type TimerKind = "stopwatch" | "countdown" | "pomodoro";
 
@@ -66,6 +67,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   });
   const [nowMs, setNowMs] = useState(() => Date.now());
   const completedRef = useRef(false);
+  const [pending, setPending] = useState<PendingReflection | null>(null);
 
   // Persist
   useEffect(() => {
@@ -100,20 +102,26 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       // derive start time by subtracting minutes
       const startD = new Date(now.getTime() - minutes * 60000);
       const startTime = `${String(startD.getHours()).padStart(2, "0")}:${String(startD.getMinutes()).padStart(2, "0")}`;
-      const { error } = await supabase.from("study_logs").insert({
-        user_id: user.id,
-        subject_id: state.subjectId || null,
-        date: localDateStr(),
-        duration_minutes: minutes,
-        content: state.content || kindLabel,
-        start_time: startTime,
-        material_id: state.materialIds?.[0] || null,
-        material_ids: state.materialIds ?? [],
-      } as any);
+      const content = state.content || kindLabel;
+      const { data, error } = await supabase
+        .from("study_logs")
+        .insert({
+          user_id: user.id,
+          subject_id: state.subjectId || null,
+          date: localDateStr(),
+          duration_minutes: minutes,
+          content,
+          start_time: startTime,
+          material_id: state.materialIds?.[0] || null,
+          material_ids: state.materialIds ?? [],
+        } as any)
+        .select("id")
+        .single();
       if (error) toast.error(error.message);
       else {
-        toast.success(`${minutes}分を記録しました🎉`);
         emitProfileChange();
+        if (data?.id) setPending({ logId: data.id, minutes, content });
+        else toast.success(`${minutes}分を記録しました🎉`);
       }
     },
     [user, state],
@@ -207,7 +215,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     },
   };
 
-  return <TimerCtx.Provider value={ctx}>{children}</TimerCtx.Provider>;
+  return (
+    <TimerCtx.Provider value={ctx}>
+      {children}
+      <ReflectionDialog pending={pending} onClose={() => setPending(null)} />
+    </TimerCtx.Provider>
+  );
 }
 
 export function useTimer() {

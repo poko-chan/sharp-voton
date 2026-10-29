@@ -19,13 +19,13 @@ import {
   Mail,
   Heart,
   Smartphone,
-  MoreHorizontal,
 } from "lucide-react";
 import { QrScannerDialog } from "@/components/QrScannerDialog";
 
 import { toast } from "sonner";
 import { signInWithUsername, checkUsernameAvailable } from "@/lib/username.functions";
 import { EmailVerifyNotice } from "@/components/auth/EmailVerifyNotice";
+import { VotonLoginButton } from "@/components/auth/VotonLogin";
 import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
 import logoUrl from "@/assets/logo.png";
 import googleLogo from "@/assets/google-logo.svg.asset.json";
@@ -209,7 +209,6 @@ function LoginPage() {
     if (r.error) toast.error("Googleログインに失敗しました");
     setBusy(false);
   };
-  const [showAll, setShowAll] = useState(false);
   const [phoneOpen, setPhoneOpen] = useState(false);
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
@@ -432,15 +431,24 @@ function LoginPage() {
               </p>
             </div>
 
+<<<<<<< HEAD
+            <VotonLoginButton disabled={busy} />
+            <div className="grid grid-cols-3 gap-2">
+=======
+            <VotonLoginButton
+              disabled={busy}
+              label={`Voton アカウントで${mode === "signin" ? "ログイン" : "登録"}`}
+            />
+>>>>>>> b23be19da64131c89d3a8a56ef1fa3a06ad7b83b
             <Button onClick={google} variant="outline" className="w-full" disabled={busy}>
               <img src={googleLogo.url} alt="" width={18} height={18} className="mr-2 h-[18px] w-[18px]" />
-              Googleで{mode === "signin" ? "ログイン" : "登録"}
+              Google
             </Button>
             <Button onClick={() => oauth("apple")} variant="outline" className="w-full" disabled={busy}>
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17.05 12.04c-.03-2.6 2.13-3.86 2.23-3.92-1.21-1.77-3.1-2.02-3.77-2.05-1.6-.16-3.13.94-3.94.94-.83 0-2.07-.92-3.41-.9-1.75.03-3.37 1.02-4.27 2.59-1.82 3.16-.46 7.83 1.31 10.39.86 1.26 1.88 2.66 3.22 2.61 1.3-.05 1.79-.84 3.36-.84s2.01.84 3.39.81c1.4-.02 2.28-1.27 3.14-2.53.99-1.45 1.39-2.86 1.41-2.93-.03-.01-2.7-1.04-2.73-4.12zM14.62 4.39c.71-.87 1.2-2.06 1.07-3.27-1.03.04-2.29.69-3.03 1.55-.66.77-1.25 2-1.09 3.16 1.16.09 2.34-.59 3.05-1.44z" />
               </svg>
-              Appleで{mode === "signin" ? "ログイン" : "登録"}
+              Apple
             </Button>
             <Button onClick={() => oauth("microsoft")} variant="outline" className="w-full" disabled={busy}>
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden>
@@ -449,8 +457,14 @@ function LoginPage() {
                 <path fill="#00A4EF" d="M2 12.5h9.5V22H2z" />
                 <path fill="#FFB900" d="M12.5 12.5H22V22h-9.5z" />
               </svg>
-              Microsoftで{mode === "signin" ? "ログイン" : "登録"}
+              Microsoft
             </Button>
+            </div>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="h-px flex-1 bg-border" />
+              <span>または Study# アカウントでログイン</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
             {(() => {
               const methods = [
                 { key: "line", label: "LINE", icon: <MessageCircle className="h-4 w-4 text-[#06C755]" />, run: () => { window.location.href = "/line-liff/login"; } },
@@ -460,29 +474,20 @@ function LoginPage() {
                 { key: "mail", label: "メール認証", icon: <Mail className="h-4 w-4" />, run: () => setMailOpen((v) => !v) },
                 { key: "phone", label: "携帯電話番号", icon: <Smartphone className="h-4 w-4" />, run: () => setPhoneOpen((v) => !v) },
               ];
-              return showAll ? (
-                <div className="grid grid-cols-2 gap-2">
+              return (
+                <details className="rounded-xl border px-3">
+                  <summary className="cursor-pointer list-none py-3 text-center text-sm font-medium">
+                    その他の方法でログイン
+                  </summary>
+                  <div className="grid grid-cols-2 gap-2 pb-3">
                   {methods.map((m) => (
                     <Button key={m.key} variant="outline" disabled={busy} onClick={m.run} className="justify-start">
                       <span className="mr-2">{m.icon}</span>
                       {m.label}でログイン
                     </Button>
                   ))}
-                  <Button variant="ghost" className="col-span-2" onClick={() => setShowAll(false)}>
-                    閉じる
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center gap-2">
-                  {methods.map((m) => (
-                    <Button key={m.key} variant="outline" size="icon" disabled={busy} onClick={m.run} title={`${m.label}でログイン`} aria-label={`${m.label}でログイン`}>
-                      {m.icon}
-                    </Button>
-                  ))}
-                  <Button variant="ghost" size="icon" title="すべて表示" aria-label="すべてのログイン方法を表示" onClick={() => setShowAll(true)}>
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </div>
+                  </div>
+                </details>
               );
             })()}
             {mailOpen && (

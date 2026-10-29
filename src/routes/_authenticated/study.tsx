@@ -39,6 +39,16 @@ import { useOrderedSubjects, type SubjectLite } from "@/lib/subjects";
 import { StudyStats } from "@/components/study/StudyStats";
 import { notifyStudyFinished } from "@/lib/parent.functions";
 import { notifyChatStudyFinished } from "@/lib/chat-webhooks.functions";
+import {
+  normalizeReflection,
+  type ReflectionFields,
+  type Understanding,
+} from "@/lib/study-reflection";
+import {
+  ReflectionBadges,
+  ReflectionDetailFields,
+  UnderstandingPicker,
+} from "@/components/study/ReflectionFields";
 
 export const Route = createFileRoute("/_authenticated/study")({
   component: StudyPage,
@@ -67,6 +77,8 @@ function StudyPage() {
   const [subjectId, setSubjectId] = useState<string>("");
   const [duration, setDuration] = useState(30);
   const [content, setContent] = useState("");
+  const [refl, setRefl] = useState<ReflectionFields>({});
+  const [showDetail, setShowDetail] = useState(false);
   const [materialMap, setMaterialMap] = useState<
     Record<string, { title: string; publisher: string | null }>
   >({});
@@ -153,6 +165,7 @@ function StudyPage() {
       start_time: startTime || null,
       material_id: materialIds[0] || null,
       material_ids: materialIds,
+      ...normalizeReflection(refl),
     } as never);
     if (error) return toast.error(error.message);
     void notifyStudyFinished({ data: { minutes: duration, questions: 0 } }).catch(() => {});
@@ -162,6 +175,7 @@ function StudyPage() {
     setDuration(30);
     setStartTime("");
     setMaterialIds([]);
+    setRefl({});
     load();
     toast.success("記録しました🎉");
   };
@@ -408,6 +422,26 @@ function StudyPage() {
               />
             </div>
             <div className="col-span-2">
+              <Label>手応え（任意）</Label>
+              <div className="mt-1 mb-3">
+                <UnderstandingPicker
+                  value={refl.understanding}
+                  onChange={(v) => setRefl({ ...refl, understanding: v })}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDetail((v) => !v)}
+                className="flex items-center gap-1 text-sm font-medium text-primary mb-2"
+              >
+                {showDetail ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                詳しく記録する（範囲・集中度・次の一歩・タグ）
+              </button>
+              {showDetail && (
+                <div className="mb-3 rounded-lg border p-3">
+                  <ReflectionDetailFields value={refl} onChange={setRefl} />
+                </div>
+              )}
               <Label>使った教材（任意）</Label>
               <MaterialPicker variant="large" value={materialIds} onChange={setMaterialIds} />
               <p className="text-xs text-muted-foreground mt-1">
@@ -435,7 +469,7 @@ function StudyPage() {
 }
 
 function DailyLogs({
-  logs,
+  logs: allLogs,
   onChange,
   onBulkDelete,
   materialMap,
@@ -445,6 +479,74 @@ function DailyLogs({
   onBulkDelete: (ids: string[]) => Promise<void>;
   materialMap: Record<string, { title: string; publisher: string | null }>;
 }) {
+  const [fU, setFU] = useState<"all" | Understanding | "pending">("all");
+  const [fSubject, setFSubject] = useState("all");
+  const [fText, setFText] = useState("");
+  const subjectOpts = Array.from(
+    new Map(allLogs.filter((l) => l.subjects).map((l) => [l.subjects.id, l.subjects])).values(),
+  ) as any[];
+  const q = fText.trim().toLowerCase();
+  const logs = allLogs.filter((l) => {
+    if (fU === "pending" && !(l.understanding === "review" && !l.reviewed_at)) return false;
+    if (fU !== "all" && fU !== "pending" && l.understanding !== fU) return false;
+    if (fSubject !== "all" && l.subjects?.id !== fSubject) return false;
+    if (q) {
+      const hay = [
+        l.content,
+        l.range_text,
+        l.next_step,
+        ...(l.reflection_tags ?? []),
+        ...((l.material_ids ?? []) as string[]).map((id) => materialMap[id]?.title),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  const pendingCount = allLogs.filter((l) => l.understanding === "review" && !l.reviewed_at).length;
+  const filterBar = (
+    <div className="flex flex-wrap gap-2 mb-3">
+      {(
+        [
+          ["all", "すべて"],
+          ["pending", `🔴 未復習 (${pendingCount})`],
+          ["good", "🟢 バッチリ"],
+          ["ok", "🟡 ふつう"],
+          ["review", "🔴 要復習(全部)"],
+        ] as const
+      ).map(([k, label]) => (
+        <button
+          key={k}
+          type="button"
+          onClick={() => setFU(k)}
+          className={`rounded-full border px-3 py-1 text-xs ${fU === k ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted"}`}
+        >
+          {label}
+        </button>
+      ))}
+      <Select value={fSubject} onValueChange={setFSubject}>
+        <SelectTrigger className="h-8 w-32 text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">全教科</SelectItem>
+          {subjectOpts.map((s) => (
+            <SelectItem key={s.id} value={s.id}>
+              {s.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Input
+        value={fText}
+        onChange={(e) => setFText(e.target.value)}
+        placeholder="内容・範囲・タグ・教材で検索"
+        className="h-8 text-xs flex-1 min-w-[160px]"
+      />
+    </div>
+  );
   // 日付ごとにグルーピング
   const byDate = new Map<string, any[]>();
   logs.forEach((l) => {
@@ -476,7 +578,7 @@ function DailyLogs({
     else setSelected(new Set(allIds));
   };
 
-  if (logs.length === 0) {
+  if (allLogs.length === 0) {
     return (
       <Card className="p-6">
         <p className="text-muted-foreground text-sm">まだ記録がありません</p>
@@ -490,6 +592,10 @@ function DailyLogs({
 
   return (
     <Card className="p-6 space-y-2">
+      {filterBar}
+      {logs.length === 0 && (
+        <p className="text-muted-foreground text-sm">条件に合う記録がありません</p>
+      )}
       <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
         <h3 className="font-semibold">日別の記録</h3>
         <div className="flex items-center gap-2">
@@ -607,6 +713,13 @@ function LogRow({
   const [mats, setMats] = useState<string[]>(
     (log.material_ids ?? (log.material_id ? [log.material_id] : [])) as string[],
   );
+  const [refl, setRefl] = useState<ReflectionFields>({
+    understanding: log.understanding ?? null,
+    focus_level: log.focus_level ?? null,
+    range_text: log.range_text ?? "",
+    next_step: log.next_step ?? "",
+    reflection_tags: log.reflection_tags ?? [],
+  });
 
   const save = async () => {
     const { error } = await supabase
@@ -618,6 +731,7 @@ function LogRow({
         start_time: startTime || null,
         material_id: mats[0] ?? null,
         material_ids: mats,
+        ...normalizeReflection(refl),
       } as never)
       .eq("id", log.id);
     if (error) return toast.error(error.message);
@@ -669,6 +783,14 @@ function LogRow({
           <Label className="text-xs">使った教材</Label>
           <MaterialPicker value={mats} onChange={setMats} />
         </div>
+        <div>
+          <Label className="text-xs mb-1 block">手応え</Label>
+          <UnderstandingPicker
+            value={refl.understanding}
+            onChange={(v) => setRefl({ ...refl, understanding: v })}
+          />
+        </div>
+        <ReflectionDetailFields value={refl} onChange={setRefl} />
         <div className="flex gap-2">
           <Button size="sm" onClick={save}>
             <Save className="h-3.5 w-3.5 mr-1" />
@@ -701,6 +823,25 @@ function LogRow({
           <span className="text-muted-foreground">{log.duration_minutes}分</span>
         </div>
         {log.content && <p className="mt-1 text-sm whitespace-pre-wrap">{log.content}</p>}
+        <ReflectionBadges log={log} />
+        {log.understanding === "review" && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs mt-1.5"
+            onClick={async () => {
+              const { error } = await supabase
+                .from("study_logs")
+                .update({ reviewed_at: log.reviewed_at ? null : new Date().toISOString() } as never)
+                .eq("id", log.id);
+              if (error) return toast.error(error.message);
+              toast.success(log.reviewed_at ? "未復習に戻しました" : "復習済みにしました");
+              onChange();
+            }}
+          >
+            {log.reviewed_at ? "未復習に戻す" : "✓ 復習した"}
+          </Button>
+        )}
         {(() => {
           const ids: string[] = (log.material_ids ??
             (log.material_id ? [log.material_id] : [])) as string[];

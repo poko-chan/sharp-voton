@@ -34,11 +34,13 @@ import {
   Languages,
   Video,
   CreditCard,
+  Store,
+  ListTodo,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { MARKET_ROUTES, useInstalledApps, MARKET_APPS } from "@/lib/marketplace";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { CharacterAvatar } from "@/components/profile/CharacterAvatar";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { syncCalendarNotifications } from "@/lib/calendar-reminders";
@@ -107,6 +109,8 @@ export const NAV = [
   { to: "/makron", labelKey: "nav.dashboard" as const, icon: Target, override: "Makron" },
   { to: "/xlang", labelKey: "nav.dashboard" as const, icon: Languages, override: "Xlang" },
   { to: "/organizations", labelKey: "nav.dashboard" as const, icon: Users, override: "組織" },
+  { to: "/todo", labelKey: "nav.dashboard" as const, icon: ListTodo, override: "ToDoリスト" },
+  { to: "/market", labelKey: "nav.dashboard" as const, icon: Store, override: "アプリマーケット" },
   { to: "/settings", labelKey: "nav.settings" as const, icon: Settings, override: "設定" },
   { to: "/help", labelKey: "nav.dashboard" as const, icon: HelpCircle, override: "ヘルプ" },
 ] as const;
@@ -148,6 +152,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const restriction = useRestriction();
   const { lowDataMode } = useMaintenance();
   const { map: navCfg } = useAdminNavConfig();
+  const { installed: marketInstalled } = useInstalledApps();
   const [version, setVersion] = useState<string>("");
   const [profile, setProfile] = useState<{
     display_name: string | null;
@@ -293,7 +298,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       if (!error) {
         // best-effort UX feedback
         try {
-          (window as any).__lovableToast?.("招待ボーナス +10コイン");
+          (window as any).__lovableToast?.("招待リンクから登録しました");
         } catch {
           /* noop */
         }
@@ -429,7 +434,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       (prefix) => to === prefix || to.startsWith(prefix + "/"),
     );
   // apply admin config: hidden by admin -> show only via "その他", rename / reorder
-  const decorated = NAV.map((n) => {
+  const decorated = NAV.filter(
+    (n) => !MARKET_ROUTES.has(n.to) || MARKET_APPS.some((a) => a.route === n.to && marketInstalled.has(a.id)),
+  ).map((n) => {
     const cfg = navCfg[n.to];
     return {
       ...n,
@@ -467,6 +474,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   // 保護者アカウントは学習系ナビを一切見せない。保護者専用リンクのみ表示。
   const isOrgAccount = accountKind === "org";
   const isParent = accountKind === "parent" || isOrgAccount;
+  const isParentOnly = accountKind === "parent";
   const parentNav = isOrgAccount
     ? [
         { to: "/organizations", label: "組織", icon: Users },
@@ -523,11 +531,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             ) : null}
             <AvatarFallback>{initial}</AvatarFallback>
           </Avatar>
-          <CharacterAvatar
-            value={profile?.character_profile}
-            className="absolute -bottom-1 -right-1 h-5 w-5 rounded-md border border-background"
-            title={`${displayName}のキャラクター`}
-          />
         </button>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
@@ -662,7 +665,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <CommandPalette />
 
       {/* Desktop sidebar */}
-      {!isMobile && navOpen && (
+      {!isMobile && navOpen && !isParentOnly && (
         <aside className="app-sidebar w-64 shrink-0 border-r liquid-bar text-sidebar-foreground flex flex-col sticky top-0 h-screen self-start">
           {sidebarContent}
         </aside>
@@ -673,6 +676,22 @@ export function AppShell({ children }: { children: ReactNode }) {
         {/* Desktop top bar */}
         {!isMobile && (
           <div className="app-topbar sticky top-0 z-30 flex h-12 items-center gap-2 px-4 border-b liquid-bar">
+            {isParentOnly ? (
+              <nav className="flex items-center gap-1" aria-label="保護者メニュー">
+                <img src={logoUrl} alt="" className="mr-1 h-7 w-7 rounded-lg shadow-sm" />
+                <span className="mr-3 text-sm font-bold">Study# 保護者</span>
+                {parentNav.map((n) => (
+                  <Link
+                    key={n.to}
+                    to={n.to}
+                    className={`inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-sm transition ${path.startsWith(n.to) ? "bg-primary/10 font-semibold text-primary" : "hover:bg-accent"}`}
+                  >
+                    <n.icon className="h-4 w-4" />
+                    {n.label === "保護者ダッシュボード" ? "ホーム" : n.label}
+                  </Link>
+                ))}
+              </nav>
+            ) : (
             <button
               onClick={toggleNav}
               title={navOpen ? "メニューを閉じる" : "メニューを開く"}
@@ -681,7 +700,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               {navOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
             </button>
-            {!navOpen && <img src={logoUrl} alt="" className="h-7 w-7 rounded-lg shadow-sm" />}
+            )}
+            {!navOpen && !isParentOnly && <img src={logoUrl} alt="" className="h-7 w-7 rounded-lg shadow-sm" />}
             <div className="ml-auto flex items-center gap-2">
               <FocusMode />
               <SearchBar />
@@ -712,6 +732,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <header
             className={`app-topbar sticky top-0 z-40 flex items-center gap-2 px-3 py-2 liquid-bar border-b ${hideTopBar ? "hidden" : ""}`}
           >
+            {!isParentOnly && (
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <button
@@ -759,6 +780,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 {sidebarContent}
               </SheetContent>
             </Sheet>
+            )}
             <img src={logoUrl} alt="" className="h-8 w-8 rounded-lg shadow-sm" />
             <ClockHeader version={version} compact />
             <div className="ml-auto flex items-center gap-1.5">
@@ -790,11 +812,6 @@ export function AppShell({ children }: { children: ReactNode }) {
                   ) : null}
                   <AvatarFallback>{initial}</AvatarFallback>
                 </Avatar>
-                <CharacterAvatar
-                  value={profile?.character_profile}
-                  className="absolute -bottom-1 -right-1 h-4 w-4 rounded-md border border-background"
-                  title={`${displayName}のキャラクター`}
-                />
               </button>
             </div>
           </header>

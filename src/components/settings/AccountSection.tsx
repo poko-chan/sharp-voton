@@ -95,64 +95,12 @@ export function AccountSection() {
   return (
     <div className="space-y-6">
       <SectionHeading
-        title="アカウント / プロフィール"
-        desc="表示名やアイコン、プランや招待コードを管理します"
+        title="アカウント"
+        desc="招待コードなどアカウントの情報を管理します"
       />
-      <Card className="p-6 space-y-5">
-        <div className="flex items-center gap-2 font-semibold">
-          <User className="h-4 w-4" /> {t("settings.profile")}
-        </div>
-        <div className="flex flex-wrap items-center gap-5">
-          <div className="relative">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={profile.avatar_url ?? undefined} alt={profile.display_name} />
-              <AvatarFallback>
-                {(profile.display_name || "U").slice(0, 1).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <CharacterAvatar
-              value={profile.character_profile}
-              className="absolute -bottom-2 -right-2 h-10 w-10 rounded-xl border-2 border-background shadow-md"
-              title="プロフィールキャラクター"
-            />
-          </div>
-          <div className="space-y-2">
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={(e) => e.target.files?.[0] && onAvatarPick(e.target.files[0])}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={uploading}
-              onClick={() => fileRef.current?.click()}
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              {uploading ? t("settings.uploading") : t("settings.changeIcon")}
-            </Button>
-            <p className="text-xs text-muted-foreground">JPG/PNG・最大5MB</p>
-          </div>
-          <CharacterEditor
-            value={profile.character_profile}
-            onChange={(character_profile) => setProfile((p) => ({ ...p, character_profile }))}
-          />
-        </div>
-        <div className="space-y-1">
-          <Label>{t("settings.displayName")}</Label>
-          <Input
-            value={profile.display_name}
-            onChange={(e) => setProfile({ ...profile, display_name: e.target.value })}
-            maxLength={40}
-          />
-        </div>
-        <Button onClick={saveProfile}>{t("settings.saveProfile")}</Button>
+      <Card className="p-4 text-sm text-muted-foreground">
+        表示名・アイコン・キャラクター・自己紹介などのプロフィールは「フレンド」画面の「プロフィール編集」から変更できます。プランは「お支払い」で確認できます。
       </Card>
-
-      <ProfileExtrasSection />
-      <PlanPanel />
       <InvitePanel />
     </div>
   );
@@ -316,9 +264,9 @@ function InvitePanel() {
   const link = typeof window !== "undefined" ? `${window.location.origin}/r/${code}` : `/r/${code}`;
   return (
     <Card className="p-6 space-y-3">
-      <div className="font-semibold">友達を招待 (+10コイン)</div>
+      <div className="font-semibold">友達を招待</div>
       <p className="text-sm text-muted-foreground">
-        招待リンクから登録された方とあなたの両方に 10 コインがプレゼントされます。
+        招待リンクを送って、一緒に Study# で勉強しましょう。
       </p>
       <div className="flex gap-2">
         <Input value={link} readOnly onClick={(e) => (e.target as HTMLInputElement).select()} />
