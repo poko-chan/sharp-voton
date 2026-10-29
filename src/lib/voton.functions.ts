@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const VOTON_URL = process.env.VOTON_URL;
@@ -17,6 +18,8 @@ function getVotonClient(accessToken?: string) {
     global: {
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
 =======
+=======
+>>>>>>> b23be19da64131c89d3a8a56ef1fa3a06ad7b83b
 
 const VOTON_URL = "https://bzcapzqxrbjfdlamctrb.supabase.co";
 const VOTON_KEY = "sb_publishable_uduJUXODyTfPFse9YYtgYA__ddVoCfa";
@@ -32,11 +35,15 @@ function votonClient(accessToken?: string) {
         h.set("apikey", VOTON_KEY);
         return fetch(input, { ...init, headers: h });
       },
+<<<<<<< HEAD
+>>>>>>> b23be19da64131c89d3a8a56ef1fa3a06ad7b83b
+=======
 >>>>>>> b23be19da64131c89d3a8a56ef1fa3a06ad7b83b
     },
   });
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 const accessTokenInput = z.object({
   accessToken: z.string().min(10).max(4096),
@@ -164,6 +171,8 @@ export const getMyVotonStatus = createServerFn({ method: "GET" })
     }
     return { linked: Boolean(data?.voton_user_id) };
 =======
+=======
+>>>>>>> b23be19da64131c89d3a8a56ef1fa3a06ad7b83b
 /** Voton のトークンを検証し、Study# のログイン用ワンタイムトークンを返す */
 export const exchangeVotonToken = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ accessToken: z.string().min(10).max(4096) }).parse(d))
@@ -206,5 +215,8 @@ export const exchangeVotonToken = createServerFn({ method: "POST" })
     });
     if (le || !link?.properties?.hashed_token) return { error: "ログインに失敗しました" as const };
     return { tokenHash: link.properties.hashed_token };
+<<<<<<< HEAD
+>>>>>>> b23be19da64131c89d3a8a56ef1fa3a06ad7b83b
+=======
 >>>>>>> b23be19da64131c89d3a8a56ef1fa3a06ad7b83b
   });

@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { Button } from "@/components/ui/button";
 
 const VOTON_URL = "https://voton.app";
@@ -11,6 +12,8 @@ export function startVotonAuth(intent: "login" | "link" = "login") {
 
   const params = new URLSearchParams({
 =======
+=======
+>>>>>>> b23be19da64131c89d3a8a56ef1fa3a06ad7b83b
 import { useEffect, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -25,12 +28,16 @@ export function startVotonLogin() {
   const state = crypto.randomUUID();
   sessionStorage.setItem("voton_state", state);
   const q = new URLSearchParams({
+<<<<<<< HEAD
+>>>>>>> b23be19da64131c89d3a8a56ef1fa3a06ad7b83b
+=======
 >>>>>>> b23be19da64131c89d3a8a56ef1fa3a06ad7b83b
     client_id: "study-sharp",
     redirect_uri: REDIRECT_URI,
     scope: "profile email",
     state,
   });
+<<<<<<< HEAD
 <<<<<<< HEAD
   window.location.assign(`${VOTON_URL}/oauth/authorize?${params.toString()}`);
 }
@@ -58,6 +65,8 @@ export function VotonLoginButton({
   );
 }
 =======
+=======
+>>>>>>> b23be19da64131c89d3a8a56ef1fa3a06ad7b83b
   location.href = `${VOTON}/oauth/authorize?${q}`;
 }
 
@@ -121,4 +130,7 @@ export function VotonCallbackHandler() {
 
   return null;
 }
+<<<<<<< HEAD
+>>>>>>> b23be19da64131c89d3a8a56ef1fa3a06ad7b83b
+=======
 >>>>>>> b23be19da64131c89d3a8a56ef1fa3a06ad7b83b
