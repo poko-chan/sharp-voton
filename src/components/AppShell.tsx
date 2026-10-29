@@ -34,8 +34,11 @@ import {
   Languages,
   Video,
   CreditCard,
+  Store,
+  ListTodo,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { MARKET_ROUTES, useInstalledApps, MARKET_APPS } from "@/lib/marketplace";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
@@ -106,6 +109,8 @@ export const NAV = [
   { to: "/makron", labelKey: "nav.dashboard" as const, icon: Target, override: "Makron" },
   { to: "/xlang", labelKey: "nav.dashboard" as const, icon: Languages, override: "Xlang" },
   { to: "/organizations", labelKey: "nav.dashboard" as const, icon: Users, override: "組織" },
+  { to: "/todo", labelKey: "nav.dashboard" as const, icon: ListTodo, override: "ToDoリスト" },
+  { to: "/market", labelKey: "nav.dashboard" as const, icon: Store, override: "アプリマーケット" },
   { to: "/settings", labelKey: "nav.settings" as const, icon: Settings, override: "設定" },
   { to: "/help", labelKey: "nav.dashboard" as const, icon: HelpCircle, override: "ヘルプ" },
 ] as const;
@@ -147,6 +152,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const restriction = useRestriction();
   const { lowDataMode } = useMaintenance();
   const { map: navCfg } = useAdminNavConfig();
+  const { installed: marketInstalled } = useInstalledApps();
   const [version, setVersion] = useState<string>("");
   const [profile, setProfile] = useState<{
     display_name: string | null;
@@ -428,7 +434,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       (prefix) => to === prefix || to.startsWith(prefix + "/"),
     );
   // apply admin config: hidden by admin -> show only via "その他", rename / reorder
-  const decorated = NAV.map((n) => {
+  const decorated = NAV.filter(
+    (n) => !MARKET_ROUTES.has(n.to) || MARKET_APPS.some((a) => a.route === n.to && marketInstalled.has(a.id)),
+  ).map((n) => {
     const cfg = navCfg[n.to];
     return {
       ...n,

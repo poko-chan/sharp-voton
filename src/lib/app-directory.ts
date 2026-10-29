@@ -20,6 +20,7 @@ import {
   Building2,
   LineChart,
   Share2,
+  Store,
   type LucideIcon,
 } from "lucide-react";
 
@@ -153,6 +154,13 @@ export const APPS: AppEntry[] = [
     keywords: "organization 学校 塾",
     icon: Building2,
     group: "組織",
+  },
+  {
+    to: "/market",
+    label: "アプリマーケット",
+    keywords: "market store アプリ インストール todo",
+    icon: Store,
+    group: "その他",
   },
   { to: "/share", label: "共有", keywords: "share 共有リンク", icon: Share2, group: "その他" },
   {

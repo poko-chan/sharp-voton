@@ -7567,6 +7567,54 @@ export type Database = {
         }
         Relationships: []
       }
+      study_todos: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          due_date: string | null
+          estimated_minutes: number | null
+          id: string
+          is_completed: boolean
+          logged: boolean
+          note: string | null
+          priority: string
+          subject_id: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          estimated_minutes?: number | null
+          id?: string
+          is_completed?: boolean
+          logged?: boolean
+          note?: string | null
+          priority?: string
+          subject_id?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          estimated_minutes?: number | null
+          id?: string
+          is_completed?: boolean
+          logged?: boolean
+          note?: string | null
+          priority?: string
+          subject_id?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       style_diagnosis: {
         Row: {
           creativity: number
@@ -8420,6 +8468,30 @@ export type Database = {
           daily_earned_date?: string | null
           total_earned?: number
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_installed_apps: {
+        Row: {
+          app_id: string
+          id: string
+          installed_at: string
+          sort_order: number
+          user_id: string
+        }
+        Insert: {
+          app_id: string
+          id?: string
+          installed_at?: string
+          sort_order?: number
+          user_id: string
+        }
+        Update: {
+          app_id?: string
+          id?: string
+          installed_at?: string
+          sort_order?: number
           user_id?: string
         }
         Relationships: []
