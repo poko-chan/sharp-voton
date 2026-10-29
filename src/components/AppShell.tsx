@@ -422,7 +422,6 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   // Compute hidden/restricted nav items
   const hiddenByUser = new Set(prefs.sidebar_hidden ?? []);
-  for (const a of MARKET_APPS) if (!marketInstalled.has(a.id)) hiddenByUser.add(a.route);
   const bypass = isAdmin && prefs.act_as_admin;
   const isRestricted = (to: string) => {
     const svc = ROUTE_SERVICE[to];
@@ -435,7 +434,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       (prefix) => to === prefix || to.startsWith(prefix + "/"),
     );
   // apply admin config: hidden by admin -> show only via "その他", rename / reorder
-  const decorated = NAV.map((n) => {
+  const decorated = NAV.filter(
+    (n) => !MARKET_ROUTES.has(n.to) || MARKET_APPS.some((a) => a.route === n.to && marketInstalled.has(a.id)),
+  ).map((n) => {
     const cfg = navCfg[n.to];
     return {
       ...n,
