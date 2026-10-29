@@ -192,14 +192,6 @@ export function OrgEdu({ orgId, ctx }: { orgId: string; ctx: any }) {
         <Map className="h-4 w-4 mr-1" />
         カリキュラム
       </Button>
-      <Button
-        size="sm"
-        variant={mode === "review" ? "default" : "outline"}
-        onClick={() => setMode("review")}
-      >
-        <Brain className="h-4 w-4 mr-1" />
-        AI復習{mistakes > 0 ? `（${mistakes}）` : ""}
-      </Button>
     </div>
   );
 
