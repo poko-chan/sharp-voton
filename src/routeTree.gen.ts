@@ -40,6 +40,7 @@ import { Route as AuthenticatedFriendsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
 import { Route as AuthenticatedMakronRouteImport } from './routes/_authenticated/makron'
+import { Route as AuthenticatedMarketRouteImport } from './routes/_authenticated/market'
 import { Route as AuthenticatedMaterialsRouteImport } from './routes/_authenticated/materials'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -50,6 +51,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedShareRouteImport } from './routes/_authenticated/share'
 import { Route as AuthenticatedStudyRouteImport } from './routes/_authenticated/study'
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
+import { Route as AuthenticatedTodoRouteImport } from './routes/_authenticated/todo'
 import { Route as AuthenticatedTogetherRouteImport } from './routes/_authenticated/together'
 import { Route as AuthenticatedTutorRouteImport } from './routes/_authenticated/tutor'
 import { Route as AuthenticatedUpdatesRouteImport } from './routes/_authenticated/updates'
@@ -260,6 +262,11 @@ const AuthenticatedMakronRoute = AuthenticatedMakronRouteImport.update({
   path: '/makron',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedMarketRoute = AuthenticatedMarketRouteImport.update({
+  id: '/market',
+  path: '/market',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedMaterialsRoute = AuthenticatedMaterialsRouteImport.update({
   id: '/materials',
   path: '/materials',
@@ -310,6 +317,11 @@ const AuthenticatedStudyRoute = AuthenticatedStudyRouteImport.update({
 const AuthenticatedTimerRoute = AuthenticatedTimerRouteImport.update({
   id: '/timer',
   path: '/timer',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTodoRoute = AuthenticatedTodoRouteImport.update({
+  id: '/todo',
+  path: '/todo',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTogetherRoute = AuthenticatedTogetherRouteImport.update({
@@ -638,6 +650,7 @@ export interface FileRoutesByFullPath {
   '/goals': typeof AuthenticatedGoalsRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/makron': typeof AuthenticatedMakronRouteWithChildren
+  '/market': typeof AuthenticatedMarketRoute
   '/materials': typeof AuthenticatedMaterialsRouteWithChildren
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -648,6 +661,7 @@ export interface FileRoutesByFullPath {
   '/share': typeof AuthenticatedShareRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
+  '/todo': typeof AuthenticatedTodoRoute
   '/together': typeof AuthenticatedTogetherRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/updates': typeof AuthenticatedUpdatesRoute
@@ -731,6 +745,7 @@ export interface FileRoutesByTo {
   '/friends': typeof AuthenticatedFriendsRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
+  '/market': typeof AuthenticatedMarketRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/parent': typeof AuthenticatedParentRoute
@@ -739,6 +754,7 @@ export interface FileRoutesByTo {
   '/share': typeof AuthenticatedShareRoute
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
+  '/todo': typeof AuthenticatedTodoRoute
   '/together': typeof AuthenticatedTogetherRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/updates': typeof AuthenticatedUpdatesRoute
@@ -824,6 +840,7 @@ export interface FileRoutesById {
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/makron': typeof AuthenticatedMakronRouteWithChildren
+  '/_authenticated/market': typeof AuthenticatedMarketRoute
   '/_authenticated/materials': typeof AuthenticatedMaterialsRouteWithChildren
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -834,6 +851,7 @@ export interface FileRoutesById {
   '/_authenticated/share': typeof AuthenticatedShareRoute
   '/_authenticated/study': typeof AuthenticatedStudyRoute
   '/_authenticated/timer': typeof AuthenticatedTimerRoute
+  '/_authenticated/todo': typeof AuthenticatedTodoRoute
   '/_authenticated/together': typeof AuthenticatedTogetherRoute
   '/_authenticated/tutor': typeof AuthenticatedTutorRoute
   '/_authenticated/updates': typeof AuthenticatedUpdatesRoute
@@ -921,6 +939,7 @@ export interface FileRouteTypes {
     | '/goals'
     | '/leaderboard'
     | '/makron'
+    | '/market'
     | '/materials'
     | '/notes'
     | '/notifications'
@@ -931,6 +950,7 @@ export interface FileRouteTypes {
     | '/share'
     | '/study'
     | '/timer'
+    | '/todo'
     | '/together'
     | '/tutor'
     | '/updates'
@@ -1014,6 +1034,7 @@ export interface FileRouteTypes {
     | '/friends'
     | '/goals'
     | '/leaderboard'
+    | '/market'
     | '/notes'
     | '/notifications'
     | '/parent'
@@ -1022,6 +1043,7 @@ export interface FileRouteTypes {
     | '/share'
     | '/study'
     | '/timer'
+    | '/todo'
     | '/together'
     | '/tutor'
     | '/updates'
@@ -1106,6 +1128,7 @@ export interface FileRouteTypes {
     | '/_authenticated/goals'
     | '/_authenticated/leaderboard'
     | '/_authenticated/makron'
+    | '/_authenticated/market'
     | '/_authenticated/materials'
     | '/_authenticated/notes'
     | '/_authenticated/notifications'
@@ -1116,6 +1139,7 @@ export interface FileRouteTypes {
     | '/_authenticated/share'
     | '/_authenticated/study'
     | '/_authenticated/timer'
+    | '/_authenticated/todo'
     | '/_authenticated/together'
     | '/_authenticated/tutor'
     | '/_authenticated/updates'
@@ -1429,6 +1453,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMakronRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/market': {
+      id: '/_authenticated/market'
+      path: '/market'
+      fullPath: '/market'
+      preLoaderRoute: typeof AuthenticatedMarketRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/materials': {
       id: '/_authenticated/materials'
       path: '/materials'
@@ -1497,6 +1528,13 @@ declare module '@tanstack/react-router' {
       path: '/timer'
       fullPath: '/timer'
       preLoaderRoute: typeof AuthenticatedTimerRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/todo': {
+      id: '/_authenticated/todo'
+      path: '/todo'
+      fullPath: '/todo'
+      preLoaderRoute: typeof AuthenticatedTodoRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/together': {
@@ -2012,6 +2050,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
   AuthenticatedMakronRoute: typeof AuthenticatedMakronRouteWithChildren
+  AuthenticatedMarketRoute: typeof AuthenticatedMarketRoute
   AuthenticatedMaterialsRoute: typeof AuthenticatedMaterialsRouteWithChildren
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
@@ -2022,6 +2061,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedShareRoute: typeof AuthenticatedShareRoute
   AuthenticatedStudyRoute: typeof AuthenticatedStudyRoute
   AuthenticatedTimerRoute: typeof AuthenticatedTimerRoute
+  AuthenticatedTodoRoute: typeof AuthenticatedTodoRoute
   AuthenticatedTogetherRoute: typeof AuthenticatedTogetherRoute
   AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
   AuthenticatedUpdatesRoute: typeof AuthenticatedUpdatesRoute
@@ -2049,6 +2089,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
   AuthenticatedMakronRoute: AuthenticatedMakronRouteWithChildren,
+  AuthenticatedMarketRoute: AuthenticatedMarketRoute,
   AuthenticatedMaterialsRoute: AuthenticatedMaterialsRouteWithChildren,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
@@ -2059,6 +2100,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedShareRoute: AuthenticatedShareRoute,
   AuthenticatedStudyRoute: AuthenticatedStudyRoute,
   AuthenticatedTimerRoute: AuthenticatedTimerRoute,
+  AuthenticatedTodoRoute: AuthenticatedTodoRoute,
   AuthenticatedTogetherRoute: AuthenticatedTogetherRoute,
   AuthenticatedTutorRoute: AuthenticatedTutorRoute,
   AuthenticatedUpdatesRoute: AuthenticatedUpdatesRoute,
