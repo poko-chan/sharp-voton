@@ -8,6 +8,8 @@ const SYSTEM =
   "あなたは学習アプリ Study# の体験用AIです。日本語で、やさしく短く（目安300文字以内）答えてください。";
 
 type Body = { messages?: Array<{ role: "user" | "assistant"; content: string }> };
+const MAX_REQUEST_BYTES = 128 * 1024;
+const MAX_MESSAGES = 50;
 
 function text(message: string, status: number) {
   return new Response(message, {
@@ -28,33 +30,59 @@ export const Route = createFileRoute("/api/public/ai-trial")({
         const apiKey = process.env.LOVABLE_API_KEY;
         if (!apiKey) return text("AIの設定が未完了です", 500);
 
+        const contentLength = Number(request.headers.get("content-length"));
+        if (Number.isFinite(contentLength) && contentLength > MAX_REQUEST_BYTES) {
+          return text("リクエストが大きすぎます", 413);
+        }
+
         let body: Body;
         try {
-          body = (await request.json()) as Body;
+          const rawBody: unknown = await request.json();
+          if (!rawBody || typeof rawBody !== "object" || Array.isArray(rawBody)) {
+            return text("リクエストが不正です", 400);
+          }
+          body = rawBody as Body;
         } catch {
           return text("リクエストが不正です", 400);
         }
 
+        if (
+          body.messages !== undefined &&
+          (!Array.isArray(body.messages) || body.messages.length > MAX_MESSAGES)
+        ) {
+          return text("メッセージ数が上限を超えています", 400);
+        }
+
         const turns = (body.messages ?? [])
-          .filter((m) => typeof m?.content === "string" && m.content.trim())
+          .filter(
+            (m) =>
+              (m?.role === "user" || m?.role === "assistant") &&
+              typeof m.content === "string" &&
+              m.content.trim(),
+          )
           .slice(-6)
           .map((m) => ({ role: m.role, content: m.content.slice(0, 2000) }));
         if (!turns.length) return text("入力が空です", 400);
 
-        const upstream = await fetch(`${GATEWAY}/chat/completions`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Lovable-API-Key": apiKey,
-            "X-Lovable-AIG-SDK": "fetch",
-          },
-          body: JSON.stringify({
-            model: MODEL,
-            stream: true,
-            max_tokens: 500,
-            messages: [{ role: "system", content: SYSTEM }, ...turns],
-          }),
-        });
+        let upstream: Response;
+        try {
+          upstream = await fetch(`${GATEWAY}/chat/completions`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Lovable-API-Key": apiKey,
+              "X-Lovable-AIG-SDK": "fetch",
+            },
+            body: JSON.stringify({
+              model: MODEL,
+              stream: true,
+              max_tokens: 500,
+              messages: [{ role: "system", content: SYSTEM }, ...turns],
+            }),
+          });
+        } catch {
+          return text("AIサービスに接続できませんでした", 502);
+        }
 
         if (!upstream.ok || !upstream.body) {
           if (upstream.status === 429)

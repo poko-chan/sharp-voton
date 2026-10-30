@@ -32,6 +32,11 @@ type Body = {
   maxTokens?: number;
 };
 
+const MAX_REQUEST_BYTES = 256 * 1024;
+const MAX_MESSAGES = 100;
+const MAX_CONTENT_LENGTH = 20_000;
+const MAX_OUTPUT_TOKENS = 8_192;
+
 function textResponse(message: string, status: number) {
   return new Response(message, {
     status,
@@ -108,9 +113,18 @@ export const Route = createFileRoute("/api/ai-stream")({
         const apiKey = process.env.LOVABLE_API_KEY;
         if (!apiKey) return textResponse("AIの設定が未完了です", 500);
 
+        const contentLength = Number(request.headers.get("content-length"));
+        if (Number.isFinite(contentLength) && contentLength > MAX_REQUEST_BYTES) {
+          return textResponse("リクエストが大きすぎます", 413);
+        }
+
         let body: Body;
         try {
-          body = (await request.json()) as Body;
+          const rawBody: unknown = await request.json();
+          if (!rawBody || typeof rawBody !== "object" || Array.isArray(rawBody)) {
+            return textResponse("リクエストが不正です", 400);
+          }
+          body = rawBody as Body;
         } catch {
           return textResponse("リクエストが不正です", 400);
         }
@@ -120,13 +134,29 @@ export const Route = createFileRoute("/api/ai-stream")({
             ? body.model
             : DEFAULT_CLOUD_MODEL;
         // 役割はサーバーが決める（system 等の指定は user 扱いにする）
-        const turns = (
+        if (body.messages && (!Array.isArray(body.messages) || body.messages.length > MAX_MESSAGES)) {
+          return textResponse("メッセージ数が上限を超えています", 400);
+        }
+
+        const rawTurns =
           body.messages && body.messages.length
             ? body.messages
-            : [{ role: "user" as const, content: String(body.prompt ?? "") }]
-        ).map((t) => ({
-          role: t.role === "assistant" ? ("assistant" as const) : ("user" as const),
-          content: String(t.content ?? ""),
+            : [{ role: "user" as const, content: String(body.prompt ?? "") }];
+        if (
+          rawTurns.some(
+            (turn) =>
+              !turn ||
+              (turn.role !== "user" && turn.role !== "assistant") ||
+              typeof turn.content !== "string" ||
+              turn.content.length > MAX_CONTENT_LENGTH,
+          )
+        ) {
+          return textResponse("メッセージの形式が不正です", 400);
+        }
+
+        const turns = rawTurns.map((t) => ({
+          role: t.role,
+          content: t.content,
         }));
         if (!turns.some((t) => t.content.trim())) return textResponse("入力が空です", 400);
         const hint = userHint(body.system);
@@ -143,42 +173,59 @@ export const Route = createFileRoute("/api/ai-stream")({
           "X-Lovable-AIG-SDK": "fetch",
         };
 
+        if (
+          body.maxTokens !== undefined &&
+          (!Number.isInteger(body.maxTokens) || body.maxTokens < 1 || body.maxTokens > MAX_OUTPUT_TOKENS)
+        ) {
+          return textResponse("出力トークン数が不正です", 400);
+        }
+        if (
+          body.temperature !== undefined &&
+          (!Number.isFinite(body.temperature) || body.temperature < 0 || body.temperature > 2)
+        ) {
+          return textResponse("temperature が不正です", 400);
+        }
+
         let upstream: Response;
         let pick: (j: any) => string | undefined;
 
-        if (model.startsWith("openai/")) {
-          const needsReasoning = model === "openai/gpt-6-astra" || model.includes("pro");
-          upstream = await fetch(`${GATEWAY}/responses`, {
-            method: "POST",
-            headers,
-            body: JSON.stringify({
-              model,
-              stream: true,
-              instructions: buildSystem(body.system),
-              input: turns.map((t) => ({
-                role: t.role,
-                content: [
-                  { type: t.role === "assistant" ? "output_text" : "input_text", text: t.content },
-                ],
-              })),
-              ...(needsReasoning ? { reasoning: { effort: "low" } } : {}),
-              ...(body.maxTokens ? { max_output_tokens: body.maxTokens } : {}),
-            }),
-          });
-          pick = (j) => (j?.type === "response.output_text.delta" ? j.delta : undefined);
-        } else {
-          upstream = await fetch(`${GATEWAY}/chat/completions`, {
-            method: "POST",
-            headers,
-            body: JSON.stringify({
-              model,
-              stream: true,
-              messages: [{ role: "system", content: buildSystem(body.system) }, ...turns],
-              ...(typeof body.temperature === "number" ? { temperature: body.temperature } : {}),
-              ...(body.maxTokens ? { max_tokens: body.maxTokens } : {}),
-            }),
-          });
-          pick = (j) => j?.choices?.[0]?.delta?.content;
+        try {
+          if (model.startsWith("openai/")) {
+            const needsReasoning = model === "openai/gpt-6-astra" || model.includes("pro");
+            upstream = await fetch(`${GATEWAY}/responses`, {
+              method: "POST",
+              headers,
+              body: JSON.stringify({
+                model,
+                stream: true,
+                instructions: buildSystem(body.system),
+                input: turns.map((t) => ({
+                  role: t.role,
+                  content: [
+                    { type: t.role === "assistant" ? "output_text" : "input_text", text: t.content },
+                  ],
+                })),
+                ...(needsReasoning ? { reasoning: { effort: "low" } } : {}),
+                ...(body.maxTokens !== undefined ? { max_output_tokens: body.maxTokens } : {}),
+              }),
+            });
+            pick = (j) => (j?.type === "response.output_text.delta" ? j.delta : undefined);
+          } else {
+            upstream = await fetch(`${GATEWAY}/chat/completions`, {
+              method: "POST",
+              headers,
+              body: JSON.stringify({
+                model,
+                stream: true,
+                messages: [{ role: "system", content: buildSystem(body.system) }, ...turns],
+                ...(body.temperature !== undefined ? { temperature: body.temperature } : {}),
+                ...(body.maxTokens !== undefined ? { max_tokens: body.maxTokens } : {}),
+              }),
+            });
+            pick = (j) => j?.choices?.[0]?.delta?.content;
+          }
+        } catch {
+          return textResponse("AIサービスに接続できませんでした", 502);
         }
 
         if (!upstream.ok || !upstream.body) {

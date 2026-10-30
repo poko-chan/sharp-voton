@@ -25,6 +25,8 @@ import { CallButtons } from "@/components/call/CallOverlay";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserProfileDialog } from "@/components/profile/UserProfileDialog";
 
+const CHAT_PAGE_SIZE = 50;
+
 export function DmChatPanel({
   userId,
   partnerId,
@@ -39,13 +41,20 @@ export function DmChatPanel({
   const qc = useQueryClient();
   const [text, setText] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
+  const skipNextScrollRef = useRef(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [replyTo, setReplyToMsg] = useState<DmMessage | null>(null);
   const [query, setQuery] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
+  const [isLoadingOlder, setIsLoadingOlder] = useState(false);
+  const [hasOlderMessages, setHasOlderMessages] = useState(true);
   const { prefs } = useLocalPrefs();
   const typing = useTypingIndicator(`dm-${[userId, partnerId].sort().join("-")}`, userId, "相手");
+
+  useEffect(() => {
+    setHasOlderMessages(true);
+  }, [partnerId]);
 
   const partnerProfile = useQuery({
     queryKey: ["chat-dm-partner-profile", partnerId],
@@ -70,11 +79,52 @@ export function DmChatPanel({
         .or(
           `and(sender_id.eq.${userId},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${userId})`,
         )
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false })
+        .limit(CHAT_PAGE_SIZE);
       if (error) throw error;
-      return (data ?? []) as DmMessage[];
+      const result = (data ?? []) as DmMessage[];
+      const latest = result.reverse();
+      const current = qc.getQueryData<DmMessage[]>(["chat-dm", partnerId]) ?? [];
+      if (current.length <= CHAT_PAGE_SIZE) {
+        setHasOlderMessages(latest.length === CHAT_PAGE_SIZE);
+        return latest;
+      }
+      const merged = new Map(current.map((message) => [message.id, message]));
+      latest.forEach((message) => merged.set(message.id, message));
+      return [...merged.values()].sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      );
     },
   });
+
+  const loadOlderMessages = async () => {
+    const oldest = messages.data?.[0];
+    if (!oldest || isLoadingOlder || !hasOlderMessages) return;
+    setIsLoadingOlder(true);
+    try {
+      const { data, error } = await supabase
+        .from("chat_messages")
+        .select("*")
+        .or(
+          `and(sender_id.eq.${userId},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${userId})`,
+        )
+        .lt("created_at", oldest.created_at)
+        .order("created_at", { ascending: false })
+        .limit(CHAT_PAGE_SIZE);
+      if (error) throw error;
+      const older = ((data ?? []) as DmMessage[]).reverse();
+      setHasOlderMessages(older.length === CHAT_PAGE_SIZE);
+      skipNextScrollRef.current = true;
+      qc.setQueryData<DmMessage[]>(["chat-dm", partnerId], (current = []) => [
+        ...older,
+        ...current,
+      ]);
+    } catch (e: any) {
+      toast.error(e.message ?? "過去のメッセージの読み込みに失敗しました");
+    } finally {
+      setIsLoadingOlder(false);
+    }
+  };
 
   const msgIds = useMemo(() => (messages.data ?? []).map((m) => m.id), [messages.data]);
   const reactions = useQuery({
@@ -121,6 +171,10 @@ export function DmChatPanel({
   }, [userId, partnerId, qc]);
 
   useEffect(() => {
+    if (skipNextScrollRef.current) {
+      skipNextScrollRef.current = false;
+      return;
+    }
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.data]);
 
@@ -209,6 +263,18 @@ export function DmChatPanel({
         className={`flex-1 overflow-y-auto p-4 ${prefs.chat_compact ? "space-y-0.5" : "space-y-2"}`}
         style={{ fontSize: `${Math.round(14 * prefs.chat_font_scale)}px` }}
       >
+        {hasOlderMessages && (
+          <div className="flex justify-center mb-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={loadOlderMessages}
+              disabled={isLoadingOlder}
+            >
+              {isLoadingOlder ? "読み込み中..." : "過去のメッセージを読み込む"}
+            </Button>
+          </div>
+        )}
         {(() => {
           let lastDay = "";
           const list = (messages.data ?? []).filter(

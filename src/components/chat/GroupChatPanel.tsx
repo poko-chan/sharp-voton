@@ -29,6 +29,8 @@ import { useLocalPrefs } from "@/lib/user-prefs";
 import { useAuth } from "@/lib/auth-context";
 import { UserProfileDialog } from "@/components/profile/UserProfileDialog";
 
+const CHAT_PAGE_SIZE = 50;
+
 export function GroupChatPanel({
   userId,
   groupId,
@@ -45,17 +47,24 @@ export function GroupChatPanel({
   const qc = useQueryClient();
   const [text, setText] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
+  const skipNextScrollRef = useRef(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [replyTo, setReplyToMsg] = useState<GroupMessage | null>(null);
   const [query, setQuery] = useState("");
   const [profileTarget, setProfileTarget] = useState<string | null>(null);
+  const [isLoadingOlder, setIsLoadingOlder] = useState(false);
+  const [hasOlderMessages, setHasOlderMessages] = useState(true);
   const { prefs } = useLocalPrefs();
   const { user: authUser } = useAuth();
   const myName =
     (authUser?.user_metadata?.display_name as string | undefined) ??
     (authUser?.email?.split("@")[0] ?? "メンバー");
   const typing = useTypingIndicator(`group-${groupId}`, userId, myName);
+
+  useEffect(() => {
+    setHasOlderMessages(true);
+  }, [groupId]);
 
   const messages = useQuery({
     queryKey: ["chat-group-msgs", groupId],
@@ -64,11 +73,50 @@ export function GroupChatPanel({
         .from("chat_group_messages")
         .select("*")
         .eq("group_id", groupId)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false })
+        .limit(CHAT_PAGE_SIZE);
       if (error) throw error;
-      return (data ?? []) as GroupMessage[];
+      const result = (data ?? []) as GroupMessage[];
+      const latest = result.reverse();
+      const current = qc.getQueryData<GroupMessage[]>(["chat-group-msgs", groupId]) ?? [];
+      if (current.length <= CHAT_PAGE_SIZE) {
+        setHasOlderMessages(latest.length === CHAT_PAGE_SIZE);
+        return latest;
+      }
+      const merged = new Map(current.map((message) => [message.id, message]));
+      latest.forEach((message) => merged.set(message.id, message));
+      return [...merged.values()].sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      );
     },
   });
+
+  const loadOlderMessages = async () => {
+    const oldest = messages.data?.[0];
+    if (!oldest || isLoadingOlder || !hasOlderMessages) return;
+    setIsLoadingOlder(true);
+    try {
+      const { data, error } = await supabase
+        .from("chat_group_messages")
+        .select("*")
+        .eq("group_id", groupId)
+        .lt("created_at", oldest.created_at)
+        .order("created_at", { ascending: false })
+        .limit(CHAT_PAGE_SIZE);
+      if (error) throw error;
+      const older = ((data ?? []) as GroupMessage[]).reverse();
+      setHasOlderMessages(older.length === CHAT_PAGE_SIZE);
+      skipNextScrollRef.current = true;
+      qc.setQueryData<GroupMessage[]>(["chat-group-msgs", groupId], (current = []) => [
+        ...older,
+        ...current,
+      ]);
+    } catch (e: any) {
+      toast.error(e.message ?? "過去のメッセージの読み込みに失敗しました");
+    } finally {
+      setIsLoadingOlder(false);
+    }
+  };
 
   const senderIds = Array.from(new Set((messages.data ?? []).map((m) => m.sender_id)));
   const profiles = useQuery({
@@ -138,6 +186,10 @@ export function GroupChatPanel({
   }, [groupId, qc]);
 
   useEffect(() => {
+    if (skipNextScrollRef.current) {
+      skipNextScrollRef.current = false;
+      return;
+    }
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.data]);
 
@@ -210,6 +262,18 @@ export function GroupChatPanel({
         className={`flex-1 overflow-y-auto p-4 ${prefs.chat_compact ? "space-y-0.5" : "space-y-2"}`}
         style={{ fontSize: `${Math.round(14 * prefs.chat_font_scale)}px` }}
       >
+        {hasOlderMessages && (
+          <div className="flex justify-center mb-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={loadOlderMessages}
+              disabled={isLoadingOlder}
+            >
+              {isLoadingOlder ? "読み込み中..." : "過去のメッセージを読み込む"}
+            </Button>
+          </div>
+        )}
         {(() => {
           let lastDay = "";
           const list = (messages.data ?? []).filter(
