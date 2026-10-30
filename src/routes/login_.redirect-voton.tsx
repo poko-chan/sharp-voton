@@ -7,7 +7,7 @@ import { exchangeVotonToken, linkVotonAccount } from "@/lib/voton.functions";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, ArrowLeft } from "lucide-react";
 
-export const Route = createFileRoute("/login/redirect-voton")({
+export const Route = createFileRoute("/login_/redirect-voton")({
   head: () => ({ meta: [{ title: "Voton認証中｜Study#" }] }),
   component: RedirectVotonPage,
 });
