@@ -38,7 +38,7 @@ import {
   ListTodo,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { MARKET_ROUTES, useInstalledApps, MARKET_APPS } from "@/lib/marketplace";
+import { MARKET_ROUTES, useInstalledApps, MARKET_APPS, isPathInstalled } from "@/lib/marketplace";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
@@ -368,10 +368,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [navigate, user?.id]);
 
   // 当日のカレンダー予定を通知に流し込む（1日1回・重複なし）
+  const calendarInstalled = marketInstalled.has("calendar");
   useEffect(() => {
-    if (!user || (lowDataMode && !isAdmin)) return;
+    // カレンダー未インストールなら予定のお知らせは作らない
+    if (!user || !calendarInstalled || (lowDataMode && !isAdmin)) return;
     syncCalendarNotifications(user.id).catch(() => {});
-  }, [isAdmin, lowDataMode, user?.id]);
+  }, [isAdmin, lowDataMode, user?.id, calendarInstalled]);
 
   // 最近つかった機能を端末内に記録（アクティビティ履歴）
   useEffect(() => {
@@ -492,7 +494,10 @@ export function AppShell({ children }: { children: ReactNode }) {
       ];
   const mobileNav = isParent
     ? parentNav.slice(0, 4).map((n) => ({ ...n, labelKey: null }))
-    : (lowDataMode && !isAdmin ? NAV.filter((n) => isLowDataAllowed(n.to)) : BOTTOM_NAV).map(
+    : (lowDataMode && !isAdmin
+        ? NAV.filter((n) => isLowDataAllowed(n.to))
+        : BOTTOM_NAV.filter((n) => isPathInstalled(n.to, marketInstalled))
+      ).map(
         (n) => ({ ...n, label: null }),
       );
 
