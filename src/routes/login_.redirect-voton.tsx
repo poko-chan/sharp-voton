@@ -49,7 +49,6 @@ function RedirectVotonPage() {
     void (async () => {
       try {
         setStep(1);
-        setStep(1);
         if (intent === "link") {
           const result = await linkAccount({ data: { accessToken } });
           if ("error" in result && result.error) throw new Error(result.error);
@@ -61,13 +60,11 @@ function RedirectVotonPage() {
         const result = await exchange({ data: { accessToken } });
         if ("error" in result && result.error) throw new Error(result.error);
         setStep(2);
-        setStep(2);
         const { error } = await supabase.auth.verifyOtp({
           token_hash: result.tokenHash,
           type: "magiclink",
         });
         if (error) throw error;
-        setStep(3);
         setStep(3);
         toast.success("ログインしました");
         navigate({ to: "/dashboard", replace: true });
