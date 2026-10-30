@@ -20,7 +20,8 @@ import {
   Archive,
   Settings2,
 } from "lucide-react";
-import { NoteCanvas } from "@/components/notebook/NoteCanvas";
+import { ChevronUp, ChevronDown } from "lucide-react";
+import { NoteCanvas, PageThumb } from "@/components/notebook/NoteCanvas";
 import { NoteShell } from "@/components/notebook/NoteShell";
 import {
   PAPER_COLORS,
@@ -61,6 +62,8 @@ function NotebookEditor() {
   const [username, setUsername] = useState("");
   const [canEditShare, setCanEditShare] = useState(true);
   const [saving, setSaving] = useState<"idle" | "dirty" | "saving" | "saved">("idle");
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [saveFailed, setSaveFailed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showPageRail, setShowPageRail] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -199,10 +202,12 @@ function NotebookEditor() {
           if (error) {
             if (!pendingRef.current) pendingRef.current = p;
             setSaving("dirty");
+            setSaveFailed(true);
             drainPending = false;
-            toast.error("保存に失敗しました");
+            toast.error("保存できませんでした。内容はこの端末に保護しています");
             return;
           }
+          setSaveFailed(false);
           savedSig.current[p.id] = sig;
           try {
             localStorage.removeItem(`cnote.draft.${p.id}`);
@@ -219,6 +224,7 @@ function NotebookEditor() {
           }
         }
         setSaving("saved");
+        setSavedAt(new Date());
       } finally {
         saveLoopRef.current = false;
         if (drainPending && pendingRef.current) void savePage();
@@ -232,7 +238,8 @@ function NotebookEditor() {
       pendingRef.current = updated;
       setSaving("dirty");
       if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => void savePage(), 800);
+      // 書き続けている間は送らず、手が止まってからまとめて保存
+      timer.current = setTimeout(() => void savePage(), 2500);
       if (draftTimer.current) clearTimeout(draftTimer.current);
       draftTimer.current = setTimeout(() => {
         try {
@@ -270,13 +277,60 @@ function NotebookEditor() {
       e.preventDefault();
       e.returnValue = "";
     };
+    const flushNow = () => {
+      if (!pendingRef.current) return;
+      if (timer.current) clearTimeout(timer.current);
+      void savePage();
+    };
+    const onHide = () => {
+      if (document.visibilityState === "hidden") flushNow();
+    };
     window.addEventListener("beforeunload", warn);
+    document.addEventListener("visibilitychange", onHide);
+    window.addEventListener("online", flushNow);
     return () => {
       window.removeEventListener("beforeunload", warn);
+      document.removeEventListener("visibilitychange", onHide);
+      window.removeEventListener("online", flushNow);
       const p = pendingRef.current;
       if (p) savePage(p);
     };
   }, [savePage]);
+
+  /** ページ切替前に未保存分を即保存 */
+  const goToPage = (next: number) => {
+    if (pendingRef.current) flushPageSave();
+    setIdx(next);
+  };
+
+  /** ページの順番を1つ入れ替える（2件だけ更新） */
+  const movePage = async (from: number, dir: -1 | 1) => {
+    const to = from + dir;
+    if (readOnly || to < 0 || to >= pages.length) return;
+    const a = pages[from];
+    const b = pages[to];
+    const next = [...pages];
+    next[from] = { ...b, page_index: a.page_index };
+    next[to] = { ...a, page_index: b.page_index };
+    setPages(next);
+    if (idx === from) setIdx(to);
+    else if (idx === to) setIdx(from);
+    // 同じ番号を同時に持てないため、一時番号を経由して入れ替える
+    const tmp = -1 - Math.floor(Math.random() * 1_000_000);
+    const steps = [
+      () => supabase.from("notebook_pages").update({ page_index: tmp }).eq("id", a.id),
+      () => supabase.from("notebook_pages").update({ page_index: a.page_index }).eq("id", b.id),
+      () => supabase.from("notebook_pages").update({ page_index: b.page_index }).eq("id", a.id),
+    ];
+    for (const step of steps) {
+      const { error } = await step();
+      if (error) {
+        toast.error("並べ替えを保存できませんでした");
+        void load();
+        return;
+      }
+    }
+  };
 
   const addPage = async () => {
     const nextIdx = (pages.at(-1)?.page_index ?? -1) + 1;
@@ -409,12 +463,14 @@ function NotebookEditor() {
         </span>
       }
       subtitle={
-        saving === "saving"
-          ? "自動保存中..."
+        saveFailed
+          ? "⚠ 保存待ち（この端末に保護済み）"
+          : saving === "saving"
+          ? "保存中..."
           : saving === "saved"
-            ? "自動保存済み"
+            ? `✓ 保存済み${savedAt ? ` ${savedAt.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}` : ""}`
             : saving === "dirty"
-              ? "変更を自動保存します..."
+              ? "● 編集中（手を止めると自動保存）"
               : `${idx + 1} / ${pages.length} ページ`
       }
       right={
@@ -556,25 +612,58 @@ function NotebookEditor() {
               </div>
               <div className="space-y-1">
                 {pages.map((candidate, pageIndex) => (
-                  <button
+                  <div
                     key={candidate.id}
-                    type="button"
-                    onClick={() => setIdx(pageIndex)}
                     className={cn(
-                      "flex w-full items-center gap-2 rounded-lg border px-2 py-2 text-left transition",
+                      "group flex w-full items-center gap-2 rounded-lg border p-1.5 transition",
                       pageIndex === idx
                         ? "border-primary/50 bg-primary/10 text-primary"
                         : "border-transparent hover:bg-muted",
                     )}
-                    aria-current={pageIndex === idx ? "page" : undefined}
                   >
-                    <span className="grid h-8 w-7 shrink-0 place-items-center rounded border bg-background text-[10px] font-bold tabular-nums">
-                      {pageIndex + 1}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate text-xs font-medium">
-                      {candidate.title || `ページ ${pageIndex + 1}`}
-                    </span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => goToPage(pageIndex)}
+                      className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                      aria-current={pageIndex === idx ? "page" : undefined}
+                    >
+                      <PageThumb
+                        strokes={candidate.strokes}
+                        paper={nb.paper_type}
+                        paperColor={nb.paper_color}
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[10px] font-bold tabular-nums text-muted-foreground">
+                          {pageIndex + 1}
+                        </span>
+                        <span className="block truncate text-xs font-medium">
+                          {candidate.title || `ページ ${pageIndex + 1}`}
+                        </span>
+                      </span>
+                    </button>
+                    {!readOnly && (
+                      <span className="flex flex-col opacity-60 group-hover:opacity-100">
+                        <button
+                          type="button"
+                          onClick={() => movePage(pageIndex, -1)}
+                          disabled={pageIndex === 0}
+                          className="rounded p-0.5 hover:bg-background disabled:opacity-30"
+                          aria-label="上へ移動"
+                        >
+                          <ChevronUp className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => movePage(pageIndex, 1)}
+                          disabled={pageIndex === pages.length - 1}
+                          className="rounded p-0.5 hover:bg-background disabled:opacity-30"
+                          aria-label="下へ移動"
+                        >
+                          <ChevronDown className="h-3.5 w-3.5" />
+                        </button>
+                      </span>
+                    )}
+                  </div>
                 ))}
               </div>
               {!readOnly && page && (
@@ -646,7 +735,7 @@ function NotebookEditor() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIdx((i) => Math.max(0, i - 1))}
+              onClick={() => goToPage(Math.max(0, idx - 1))}
               disabled={idx === 0}
             >
               <ChevronLeft className="h-4 w-4" />前
@@ -658,7 +747,7 @@ function NotebookEditor() {
               {pages.map((p, i) => (
                 <button
                   key={p.id}
-                  onClick={() => setIdx(i)}
+                  onClick={() => goToPage(i)}
                   className={cn(
                     "h-8 min-w-8 rounded-md border px-2 text-xs font-medium transition",
                     i === idx ? "bg-primary text-primary-foreground" : "hover:bg-muted",
@@ -673,7 +762,7 @@ function NotebookEditor() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIdx((i) => Math.min(pages.length - 1, i + 1))}
+              onClick={() => goToPage(Math.min(pages.length - 1, idx + 1))}
               disabled={idx >= pages.length - 1}
             >
               次<ChevronRight className="h-4 w-4" />

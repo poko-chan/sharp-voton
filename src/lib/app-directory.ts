@@ -17,11 +17,10 @@ import {
   ClipboardList,
   NotebookPen,
   BellRing,
-  Flame,
   Building2,
   LineChart,
   Share2,
-  FileDown,
+  Store,
   type LucideIcon,
 } from "lucide-react";
 
@@ -108,20 +107,6 @@ export const APPS: AppEntry[] = [
     group: "記録・分析",
   },
   {
-    to: "/heatmap",
-    label: "ヒートマップ",
-    keywords: "heatmap 継続 grass",
-    icon: Flame,
-    group: "記録・分析",
-  },
-  {
-    to: "/export",
-    label: "データ書き出し",
-    keywords: "export csv バックアップ",
-    icon: FileDown,
-    group: "記録・分析",
-  },
-  {
     to: "/ai-chat",
     label: "AIチャット",
     keywords: "ai tutor chat gpt 質問",
@@ -169,6 +154,13 @@ export const APPS: AppEntry[] = [
     keywords: "organization 学校 塾",
     icon: Building2,
     group: "組織",
+  },
+  {
+    to: "/market",
+    label: "アプリマーケット",
+    keywords: "market store アプリ インストール todo",
+    icon: Store,
+    group: "その他",
   },
   { to: "/share", label: "共有", keywords: "share 共有リンク", icon: Share2, group: "その他" },
   {

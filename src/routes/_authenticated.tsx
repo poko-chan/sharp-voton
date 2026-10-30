@@ -14,6 +14,7 @@ import { CallOverlay } from "@/components/call/CallOverlay";
 import { useMaintenance } from "@/lib/maintenance-context";
 import { LowDataNotice } from "@/components/LowDataNotice";
 import { PresenceProvider } from "@/lib/presence";
+import { MarketAppGuard } from "@/components/market/MarketAppGuard";
 
 // Map URL prefix -> service key (must match SERVICES in restriction-context).
 const ROUTE_SERVICE: Array<[string, string]> = [
@@ -120,13 +121,12 @@ function AuthLayout() {
       <LowDataNotice />
     ) : null;
   const match = ROUTE_SERVICE.find(([prefix]) => path === prefix || path.startsWith(prefix + "/"));
-  const content = match ? (
-    <ServiceGate serviceKey={match[1]}>
+  const guarded = (
+    <MarketAppGuard>
       <Outlet />
-    </ServiceGate>
-  ) : (
-    <Outlet />
+    </MarketAppGuard>
   );
+  const content = match ? <ServiceGate serviceKey={match[1]}>{guarded}</ServiceGate> : guarded;
   // Full-screen workspaces must bypass AppShell's scrolling page container.
   const isFullscreenWorkspace =
     path === "/makron" ||

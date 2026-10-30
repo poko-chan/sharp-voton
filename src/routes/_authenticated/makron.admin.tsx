@@ -940,7 +940,7 @@ function AdminPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs">ヒント（任意・コインで生徒に開示）</label>
+                      <label className="text-xs">ヒント（任意・生徒が演習中に表示できます）</label>
                       <Textarea
                         rows={2}
                         placeholder="生徒がヒント券を消費すると表示されます。AIは使わず、ここに作成者が記入。"

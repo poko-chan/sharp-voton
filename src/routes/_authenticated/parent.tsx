@@ -35,13 +35,14 @@ import {
   Trophy,
   Brain,
   Target,
-  Camera,
   Clock,
   BookOpen,
   ShieldAlert,
   Sparkles,
   Timer,
+  Plus,
 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { SERVICES } from "@/lib/restriction-context";
 
@@ -120,109 +121,99 @@ function ParentPage() {
   const row = rows.find((r) => r.id === selected) ?? null;
 
   return (
-    <div className="mx-auto w-full max-w-[1500px] space-y-6 p-4 md:p-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight">
-          <Users /> 保護者ダッシュボード
-        </h1>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-        {/* 左ペイン */}
-        <div className="space-y-4">
-          <Card className="space-y-2 p-4">
-            <div className="text-sm font-semibold">お子様</div>
-            {rows.length === 0 && (
-              <p className="text-xs text-muted-foreground">まだリンクされていません。</p>
-            )}
-            {rows.map((r) => {
-              const active = r.id === selected;
-              const focus = r.focusUntil && new Date(r.focusUntil).getTime() > Date.now();
-              return (
-                <button
-                  key={r.id}
-                  onClick={() => setSelected(r.id)}
-                  className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition ${
-                    active ? "border-primary bg-primary/5" : "hover:bg-muted/50"
-                  }`}
-                >
-                  <Avatar className="h-10 w-10">
-                    {r.avatar_url ? <AvatarImage src={r.avatar_url} /> : null}
-                    <AvatarFallback>{(r.display_name ?? "U").slice(0, 1)}</AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium">
-                      {r.display_name || r.username}
-                    </div>
-                    <div className="truncate text-[11px] text-muted-foreground">
-                      今日 {r.todayMinutes}分
-                      {r.dailyLimit ? ` / ${r.dailyLimit + (r.bonusMinutes ?? 0)}分` : ""}
-                    </div>
+    <div className="mx-auto w-full max-w-[1400px] space-y-5 p-3 md:p-6">
+      {/* お子様切り替えバー */}
+      <div className="sticky top-12 z-20 -mx-3 border-b bg-background/90 px-3 py-2 backdrop-blur md:-mx-6 md:px-6">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          {rows.map((r) => {
+            const active = r.id === selected;
+            const focus = r.focusUntil && new Date(r.focusUntil).getTime() > Date.now();
+            const limit = r.dailyLimit ? r.dailyLimit + (r.bonusMinutes ?? 0) : null;
+            return (
+              <button
+                key={r.id}
+                onClick={() => setSelected(r.id)}
+                className={`relative flex shrink-0 items-center gap-2.5 rounded-2xl border px-3 py-2 text-left transition ${
+                  active ? "border-primary bg-primary/10 shadow-sm" : "bg-card hover:bg-muted/50"
+                }`}
+              >
+                <Avatar className="h-9 w-9">
+                  {r.avatar_url ? <AvatarImage src={r.avatar_url} /> : null}
+                  <AvatarFallback>{(r.display_name ?? "U").slice(0, 1)}</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <div className="max-w-[9rem] truncate text-sm font-semibold">
+                    {r.display_name || r.username}
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    {focus && <Badge className="px-1 text-[10px]">集中中</Badge>}
-                    {r.pendingRequests > 0 && (
-                      <Badge variant="destructive" className="px-1 text-[10px]">
-                        申請{r.pendingRequests}
-                      </Badge>
-                    )}
+                  <div className="text-[11px] text-muted-foreground">
+                    {focus ? "🔒 集中中" : `今日 ${r.todayMinutes}分${limit ? ` / ${limit}分` : ""}`}
                   </div>
-                </button>
-              );
-            })}
-          </Card>
-
-          <Card className="space-y-2 p-4">
-            <div className="flex items-center gap-2 text-sm font-semibold text-destructive">
-              <ShieldAlert className="h-4 w-4" /> 今すぐ全員集中
-            </div>
-            <p className="text-[11px] text-muted-foreground">
-              勉強以外のページを一時的に使えなくします。
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="destructive" onClick={() => onLockAll(30)}>
-                30分
+                </div>
+                {r.pendingRequests > 0 && (
+                  <Badge variant="destructive" className="absolute -right-1 -top-1 px-1.5 text-[10px]">
+                    {r.pendingRequests}
+                  </Badge>
+                )}
+              </button>
+            );
+          })}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="h-[52px] shrink-0 rounded-2xl border-dashed">
+                <Plus className="h-4 w-4" /> お子様を追加
               </Button>
-              <Button size="sm" variant="destructive" onClick={() => onLockAll(60)}>
-                1時間
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => onLockAll(0)}>
-                解除
-              </Button>
-            </div>
-          </Card>
-
-          <Card className="space-y-3 p-4">
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <Link2 className="h-4 w-4" /> お子様を追加
-            </div>
-            <div className="space-y-2">
+            </PopoverTrigger>
+            <PopoverContent className="w-72 space-y-2">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Link2 className="h-4 w-4" /> お子様のアカウントとリンク
+              </div>
               <Label className="text-xs">ユーザー名</Label>
               <Input value={uname} onChange={(e) => setUname(e.target.value)} />
               <Label className="text-xs">パスワード</Label>
               <Input type="password" value={pw} onChange={(e) => setPw(e.target.value)} />
-            </div>
-            <Button size="sm" onClick={onLink} disabled={busy} className="w-full">
-              リンクする
-            </Button>
-          </Card>
+              <Button size="sm" onClick={onLink} disabled={busy} className="w-full">
+                リンクする
+              </Button>
+            </PopoverContent>
+          </Popover>
+          {rows.length > 1 && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" className="h-[52px] shrink-0 rounded-2xl text-destructive">
+                  <ShieldAlert className="h-4 w-4" /> 全員集中
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-60 space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  全員の勉強以外のページを一時的に使えなくします。
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="destructive" onClick={() => onLockAll(30)}>30分</Button>
+                  <Button size="sm" variant="destructive" onClick={() => onLockAll(60)}>1時間</Button>
+                  <Button size="sm" variant="outline" onClick={() => onLockAll(0)}>解除</Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
-
-        {/* 右ペイン */}
-        {child ? (
-          <ChildWorkspace
-            key={child.id}
-            child={child}
-            row={row}
-            onChange={reload}
-            unlink={unlink}
-          />
-        ) : (
-          <Card className="grid place-items-center p-16 text-sm text-muted-foreground">
-            左からお子様をえらんでください。
-          </Card>
-        )}
       </div>
+
+      {child ? (
+        <ChildWorkspace
+          key={child.id}
+          child={child}
+          row={row}
+          onChange={reload}
+          unlink={unlink}
+        />
+      ) : (
+        <Card className="grid place-items-center gap-2 p-16 text-center text-sm text-muted-foreground">
+          <Users className="h-8 w-8" />
+          {rows.length === 0
+            ? "上の「お子様を追加」からお子様のアカウントとリンクしてください。"
+            : "上のバーからお子様をえらんでください。"}
+        </Card>
+      )}
     </div>
   );
 }
@@ -648,16 +639,6 @@ function ChildFullDetail({ childId, todayMinutes }: { childId: string; todayMinu
           )}
         />
         <List
-          title="振り返り"
-          rows={d.reflections}
-          render={(r: any) => (
-            <div>
-              <div className="text-muted-foreground">{r.date}</div>
-              <div className="line-clamp-2">{r.content ?? r.text ?? ""}</div>
-            </div>
-          )}
-        />
-        <List
           title="試験"
           rows={d.exams}
           render={(r: any) => (
@@ -667,22 +648,6 @@ function ChildFullDetail({ childId, todayMinutes }: { childId: string; todayMinu
             </div>
           )}
         />
-        <List
-          title="写真ログ"
-          rows={d.photoLogs}
-          render={(r: any) => (
-            <div className="flex items-center gap-2">
-              {r.image_url && <img src={r.image_url} className="h-10 w-10 rounded object-cover" />}
-              <span className="text-muted-foreground">
-                {new Date(r.created_at).toLocaleDateString("ja-JP")}
-              </span>
-              <span className="truncate">{r.caption ?? ""}</span>
-            </div>
-          )}
-        />
-      </div>
-      <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-        <Camera className="h-3 w-3" /> 写真ログ {(d.photoLogs ?? []).length} 件
       </div>
     </div>
   );

@@ -465,7 +465,7 @@ export function UserRow({
             <Button size="sm" variant="outline" onClick={() => doImpersonate(user.id)}>
               <LogIn className="h-3.5 w-3.5" />
             </Button>
-            <UserCoinXpPopover userId={user.id} />
+            <UserXpPopover userId={user.id} />
             <Button
               size="sm"
               variant={user.isSuspended ? "outline" : "destructive"}
@@ -483,7 +483,7 @@ export function UserRow({
   );
 }
 
-export function UserCoinXpPopover({ userId }: { userId: string }) {
+export function UserXpPopover({ userId }: { userId: string }) {
   const [open, setOpen] = useState(false);
   const [xp, setXp] = useState<number>(0);
 
