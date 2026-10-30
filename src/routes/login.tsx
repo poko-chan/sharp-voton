@@ -27,7 +27,7 @@ import { toast } from "sonner";
 import { signInWithUsername, checkUsernameAvailable } from "@/lib/username.functions";
 import { EmailVerifyNotice } from "@/components/auth/EmailVerifyNotice";
 import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
-import logoUrl from "@/assets/logo.png";
+const logoUrl = "/logo-boxed.svg";
 import googleLogo from "@/assets/google-logo.svg.asset.json";
 
 type AccountKind = "child" | "parent" | "org";

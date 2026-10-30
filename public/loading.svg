@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <style>
+      /* 全体サイクル：1.4秒で軽やかに巡回 */
+      .loader-line {
+        stroke: #00F59B;
+        stroke-width: 38;
+        stroke-linecap: round;
+        stroke-dasharray: 270 270;
+        animation-duration: 1.4s;
+        animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        animation-iteration-count: infinite;
+      }
+
+      /* 1画目: 左縦 */
+      .v1 { animation-name: loadV1; }
+      @keyframes loadV1 {
+        0%        { stroke-dashoffset: 270; }
+        25%, 55%  { stroke-dashoffset: 0; }
+        80%, 100% { stroke-dashoffset: -270; }
+      }
+
+      /* 2画目: 右縦 */
+      .v2 { animation-name: loadV2; }
+      @keyframes loadV2 {
+        0%, 12%   { stroke-dashoffset: 270; }
+        37%, 62%  { stroke-dashoffset: 0; }
+        87%, 100% { stroke-dashoffset: -270; }
+      }
+
+      /* 3画目: 上横 */
+      .h1 { animation-name: loadH1; }
+      @keyframes loadH1 {
+        0%, 24%   { stroke-dashoffset: 270; }
+        49%, 69%  { stroke-dashoffset: 0; }
+        94%, 100% { stroke-dashoffset: -270; }
+      }
+
+      /* 4画目: 下横 */
+      .h2 { animation-name: loadH2; }
+      @keyframes loadH2 {
+        0%, 36%   { stroke-dashoffset: 270; }
+        61%, 76%  { stroke-dashoffset: 0; }
+        100%      { stroke-dashoffset: -270; }
+      }
+    </style>
+  </defs>
+
+  <!-- ローダー本体（中央配置・適正サイズ・傾斜） -->
+  <g transform="translate(256, 256) scale(1.18) skewX(-13.5)">
+    <!-- 1画目: 左縦 -->
+    <line class="loader-line v1" x1="-47.5" y1="-125" x2="-47.5" y2="125" />
+    <!-- 2画目: 右縦 -->
+    <line class="loader-line v2" x1="47.5" y1="-125" x2="47.5" y2="125" />
+    <!-- 3画目: 上横 -->
+    <line class="loader-line h1" x1="-125" y1="-47.5" x2="125" y2="-47.5" />
+    <!-- 4画目: 下横 -->
+    <line class="loader-line h2" x1="-125" y1="47.5" x2="125" y2="47.5" />
+  </g>
+</svg>

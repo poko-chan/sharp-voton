@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- 左上の鮮やかな青を強調したグラデーション -->
+    <linearGradient id="hashGradient" x1="15%" y1="5%" x2="85%" y2="95%">
+      <stop offset="0%" stop-color="#0080FF" />
+      <stop offset="20%" stop-color="#00D0FF" />
+      <stop offset="60%" stop-color="#05F58B" />
+      <stop offset="100%" stop-color="#CCFF00" />
+    </linearGradient>
+
+    <!-- 背景のネオングロー効果（青〜シアンの発光感を強化） -->
+    <filter id="neonGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="16" result="blur" />
+      <feColorMatrix type="matrix" values="
+        0 0 0 0 0.0
+        0 0 0 0 0.75
+        0 0 0 0 1.0
+        0 0 0 0 0.7 0" />
+    </filter>
+
+    <!-- ハッシュタグのパス定義 -->
+    <path id="hashSymbol" fill-rule="evenodd" d="
+      M -70 -135 L -25 -135 L -25 -70 L 25 -70 L 25 -135 L 70 -135 L 70 -70 L 135 -70 L 135 -25 L 70 -25 L 70 25 L 135 25 L 135 70 L 70 70 L 70 135 L 25 135 L 25 70 L -25 70 L -25 135 L -70 135 L -70 70 L -135 70 L -135 25 L -70 25 L -70 -25 L -135 -25 L -135 -70 L -70 -70 Z
+      M -25 -25 L 25 -25 L 25 25 L -25 25 Z" />
+  </defs>
+
+  <!-- アイコン背景（ダークネイビーの角丸正方形） -->
+  <rect width="512" height="512" rx="112" fill="#060A1A" />
+
+  <!-- ロゴシンボル（中央配置 & 拡大スケール & スキュー傾斜適用） -->
+  <g transform="translate(256, 256) scale(1.24) skewX(-13.5)">
+    <!-- 発光レイヤー -->
+    <use href="#hashSymbol" fill="url(#hashGradient)" filter="url(#neonGlow)" opacity="0.85" />
+    <!-- メインレイヤー -->
+    <use href="#hashSymbol" fill="url(#hashGradient)" />
+  </g>
+</svg>

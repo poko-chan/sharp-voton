@@ -14,7 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState, type MouseEvent as ReactMouseEvent } from "react";
-import logoUrl from "@/assets/logo.png";
+const logoUrl = "/logo-boxed.svg";
 
 type MenuState = {
   x: number;

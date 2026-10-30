@@ -10,7 +10,7 @@ import { ArrowLeft, KeyRound, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { requestPasswordResetByUsername } from "@/lib/username.functions";
 import { getMaskedEmailByUsername } from "@/lib/account-recovery.functions";
-import logoUrl from "@/assets/logo.png";
+const logoUrl = "/logo-boxed.svg";
 
 export const Route = createFileRoute("/forgot")({
   head: () => ({

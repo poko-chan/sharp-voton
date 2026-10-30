@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { GoogleTranslateWidget } from "@/components/GoogleTranslateWidget";
-import logoUrl from "@/assets/logo.png";
+const logoUrl = "/logo-boxed.svg";
 import { cn } from "@/lib/utils";
 import { Menu } from "lucide-react";
 

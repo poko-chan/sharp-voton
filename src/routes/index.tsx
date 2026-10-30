@@ -6,7 +6,7 @@ import { ScrollFx } from "@/components/public/ScrollFx";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
-import logoUrl from "@/assets/logo.png";
+const logoUrl = "/logo-boxed.svg";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BarChart3, BookOpenCheck, Check, Sparkles } from "lucide-react";
 import {

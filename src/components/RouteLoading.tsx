@@ -49,20 +49,12 @@ export function RouteLoading() {
         aria-live="polite"
       >
         <div className="voton-loading__content flex flex-col items-center gap-5">
-          <div className="voton-loading__logo" aria-hidden="true">
-            <span className="voton-loading__orbit voton-loading__orbit--outer" />
-            <span className="voton-loading__orbit voton-loading__orbit--inner" />
-            <span className="voton-loading__halo" />
-            <div className="voton-loading__mark">
-              <span className="voton-loading__stroke voton-loading__stroke--horizontal voton-loading__stroke--top" />
-              <span className="voton-loading__stroke voton-loading__stroke--horizontal voton-loading__stroke--bottom" />
-              <span className="voton-loading__stroke voton-loading__stroke--vertical voton-loading__stroke--left" />
-              <span className="voton-loading__stroke voton-loading__stroke--vertical voton-loading__stroke--right" />
-            </div>
-            <span className="voton-loading__spark voton-loading__spark--one" />
-            <span className="voton-loading__spark voton-loading__spark--two" />
-            <span className="voton-loading__spark voton-loading__spark--three" />
-          </div>
+          <img
+            src="/loading.svg"
+            alt=""
+            aria-hidden="true"
+            className="h-32 w-32"
+          />
         </div>
       </div>
     </>

@@ -42,7 +42,7 @@ import { CharacterAvatar } from "@/components/profile/CharacterAvatar";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { syncCalendarNotifications } from "@/lib/calendar-reminders";
-import logoUrl from "@/assets/logo.png";
+const logoUrl = "/logo-boxed.svg";
 import { levelFromMinutes } from "@/lib/level";
 import { onProfileChange } from "@/lib/profile-events";
 import { localDateStr } from "@/lib/date";

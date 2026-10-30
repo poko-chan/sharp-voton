@@ -1,5 +1,5 @@
 import { Wrench } from "lucide-react";
-import logoUrl from "@/assets/logo.png";
+const logoUrl = "/logo-boxed.svg";
 
 export function MaintenanceScreen({
   message,

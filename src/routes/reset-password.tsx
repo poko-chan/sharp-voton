@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import logoUrl from "@/assets/logo.png";
+const logoUrl = "/logo-boxed.svg";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
