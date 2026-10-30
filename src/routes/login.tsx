@@ -431,21 +431,8 @@ function LoginPage() {
               </p>
             </div>
 
-<<<<<<< HEAD
-<<<<<<< HEAD
             <VotonLoginButton disabled={busy} />
             <div className="grid grid-cols-3 gap-2">
-=======
-=======
->>>>>>> b23be19da64131c89d3a8a56ef1fa3a06ad7b83b
-            <VotonLoginButton
-              disabled={busy}
-              label={`Voton アカウントで${mode === "signin" ? "ログイン" : "登録"}`}
-            />
-<<<<<<< HEAD
->>>>>>> b23be19da64131c89d3a8a56ef1fa3a06ad7b83b
-=======
->>>>>>> b23be19da64131c89d3a8a56ef1fa3a06ad7b83b
             <Button onClick={google} variant="outline" className="w-full" disabled={busy}>
               <img src={googleLogo.url} alt="" width={18} height={18} className="mr-2 h-[18px] w-[18px]" />
               Google
