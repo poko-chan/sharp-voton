@@ -3,18 +3,22 @@ import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const VOTON_URL = process.env.VOTON_URL;
-const VOTON_PUBLISHABLE_KEY = process.env.VOTON_PUBLISHABLE_KEY;
+const DEFAULT_VOTON_URL = "https://bzcapzqxrbjfdlamctrb.supabase.co";
+const DEFAULT_VOTON_KEY = "sb_publishable_uduJUXODyTfPFse9YYtgYA__ddVoCfa";
 
 function getVotonClient(accessToken?: string) {
-  if (!VOTON_URL || !VOTON_PUBLISHABLE_KEY) {
-    throw new Error("Voton認証の設定が未完了です");
-  }
-
-  return createClient(VOTON_URL, VOTON_PUBLISHABLE_KEY, {
+  const url = process.env.VOTON_URL || DEFAULT_VOTON_URL;
+  const key = process.env.VOTON_PUBLISHABLE_KEY || DEFAULT_VOTON_KEY;
+  return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
     global: {
-      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      fetch: (input, init) => {
+        const h = new Headers(init?.headers);
+        if (h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
+        if (accessToken) h.set("Authorization", `Bearer ${accessToken}`);
+        h.set("apikey", key);
+        return fetch(input, { ...init, headers: h });
+      },
     },
   });
 }

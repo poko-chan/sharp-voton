@@ -67,7 +67,7 @@ import { Route as InstatusCheckDatabaseRouteImport } from './routes/instatus-che
 import { Route as InstatusCheckDatebaseRouteImport } from './routes/instatus-check.datebase'
 import { Route as InstatusCheckLoginRouteImport } from './routes/instatus-check.login'
 import { Route as LineLiffLoginRouteImport } from './routes/line-liff.login'
-import { Route as LoginRedirectVotonRouteImport } from './routes/login.redirect-voton'
+import { Route as LoginRedirectVotonRouteImport } from './routes/login_.redirect-voton'
 import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as AuthenticatedAdminLineRouteImport } from './routes/_authenticated/admin_.line'
@@ -401,9 +401,9 @@ const LineLiffLoginRoute = LineLiffLoginRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRedirectVotonRoute = LoginRedirectVotonRouteImport.update({
-  id: '/redirect-voton',
-  path: '/redirect-voton',
-  getParentRoute: () => LoginRoute,
+  id: '/login_/redirect-voton',
+  path: '/login/redirect-voton',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const RCodeRoute = RCodeRouteImport.update({
   id: '/r/$code',
@@ -636,7 +636,7 @@ export interface FileRoutesByFullPath {
   '/forgot': typeof ForgotRoute
   '/guide': typeof GuideRoute
   '/help': typeof HelpRoute
-  '/login': typeof LoginRouteWithChildren
+  '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/qr-login': typeof QrLoginRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -734,7 +734,7 @@ export interface FileRoutesByTo {
   '/forgot': typeof ForgotRoute
   '/guide': typeof GuideRoute
   '/help': typeof HelpRoute
-  '/login': typeof LoginRouteWithChildren
+  '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/qr-login': typeof QrLoginRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -828,7 +828,7 @@ export interface FileRoutesById {
   '/forgot': typeof ForgotRoute
   '/guide': typeof GuideRoute
   '/help': typeof HelpRoute
-  '/login': typeof LoginRouteWithChildren
+  '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/qr-login': typeof QrLoginRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -873,7 +873,7 @@ export interface FileRoutesById {
   '/instatus-check/datebase': typeof InstatusCheckDatebaseRoute
   '/instatus-check/login': typeof InstatusCheckLoginRoute
   '/line-liff/login': typeof LineLiffLoginRoute
-  '/login/redirect-voton': typeof LoginRedirectVotonRoute
+  '/login_/redirect-voton': typeof LoginRedirectVotonRoute
   '/r/$code': typeof RCodeRoute
   '/share/$token': typeof ShareTokenRoute
   '/catalog/': typeof CatalogIndexRoute
@@ -1164,7 +1164,7 @@ export interface FileRouteTypes {
     | '/instatus-check/datebase'
     | '/instatus-check/login'
     | '/line-liff/login'
-    | '/login/redirect-voton'
+    | '/login_/redirect-voton'
     | '/r/$code'
     | '/share/$token'
     | '/catalog/'
@@ -1219,7 +1219,7 @@ export interface RootRouteChildren {
   ForgotRoute: typeof ForgotRoute
   GuideRoute: typeof GuideRoute
   HelpRoute: typeof HelpRoute
-  LoginRoute: typeof LoginRouteWithChildren
+  LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
   QrLoginRoute: typeof QrLoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -1235,6 +1235,7 @@ export interface RootRouteChildren {
   InstatusCheckDatebaseRoute: typeof InstatusCheckDatebaseRoute
   InstatusCheckLoginRoute: typeof InstatusCheckLoginRoute
   LineLiffLoginRoute: typeof LineLiffLoginRoute
+  LoginRedirectVotonRoute: typeof LoginRedirectVotonRoute
   RCodeRoute: typeof RCodeRoute
   ShareTokenRoute: typeof ShareTokenRoute
   CatalogIndexRoute: typeof CatalogIndexRoute
@@ -1654,12 +1655,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LineLiffLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/login/redirect-voton': {
-      id: '/login/redirect-voton'
-      path: '/redirect-voton'
+    '/login_/redirect-voton': {
+      id: '/login_/redirect-voton'
+      path: '/login/redirect-voton'
       fullPath: '/login/redirect-voton'
       preLoaderRoute: typeof LoginRedirectVotonRouteImport
-      parentRoute: typeof LoginRoute
+      parentRoute: typeof rootRouteImport
     }
     '/r/$code': {
       id: '/r/$code'
@@ -2137,16 +2138,6 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
-interface LoginRouteChildren {
-  LoginRedirectVotonRoute: typeof LoginRedirectVotonRoute
-}
-
-const LoginRouteChildren: LoginRouteChildren = {
-  LoginRedirectVotonRoute: LoginRedirectVotonRoute,
-}
-
-const LoginRouteWithChildren = LoginRoute._addFileChildren(LoginRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
@@ -2159,7 +2150,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotRoute: ForgotRoute,
   GuideRoute: GuideRoute,
   HelpRoute: HelpRoute,
-  LoginRoute: LoginRouteWithChildren,
+  LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
   QrLoginRoute: QrLoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
@@ -2175,6 +2166,7 @@ const rootRouteChildren: RootRouteChildren = {
   InstatusCheckDatebaseRoute: InstatusCheckDatebaseRoute,
   InstatusCheckLoginRoute: InstatusCheckLoginRoute,
   LineLiffLoginRoute: LineLiffLoginRoute,
+  LoginRedirectVotonRoute: LoginRedirectVotonRoute,
   RCodeRoute: RCodeRoute,
   ShareTokenRoute: ShareTokenRoute,
   CatalogIndexRoute: CatalogIndexRoute,
