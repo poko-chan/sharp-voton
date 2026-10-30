@@ -347,7 +347,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             if (typeof Notification !== "undefined" && Notification.permission === "granted") {
               const browserNotification = new Notification(n.title || "通知", {
                 body: n.body || "",
-                icon: "/favicon.ico",
+                icon: "/favicon.png",
                 tag: n.id,
               });
               browserNotification.onclick = () => {
@@ -401,7 +401,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       try {
         new Notification("学習リマインダー", {
           body: "今日の学習を記録しましょう！",
-          icon: "/favicon.ico",
+          icon: "/favicon.png",
           tag: "daily-reminder",
         });
       } catch {
@@ -518,7 +518,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           className="h-12 w-12 rounded-2xl object-cover shadow-sm"
         />
         <div className="min-w-0">
-          <ClockHeader version={version} />
+          <ClockHeader version={version} showMark />
         </div>
       </div>
       <div className="mx-5 border-t border-border/60" />
@@ -880,7 +880,15 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
-function ClockHeader({ version, compact }: { version: string; compact?: boolean }) {
+function ClockHeader({
+  version,
+  compact,
+  showMark = false,
+}: {
+  version: string;
+  compact?: boolean;
+  showMark?: boolean;
+}) {
   const [now, setNow] = useState<Date>(() => new Date());
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -906,8 +914,9 @@ function ClockHeader({ version, compact }: { version: string; compact?: boolean 
   return (
     <>
       <div className="text-[10px] text-muted-foreground leading-tight">{date}</div>
-      <div className="font-bold text-lg leading-tight flex items-baseline gap-2">
+      <div className="font-bold text-lg leading-tight flex items-center gap-2">
         <span>Study#</span>
+        {showMark && <img src="/logo-mark.svg" alt="" className="h-5 w-5" />}
         <span className="text-sm tabular-nums text-primary font-semibold">
           {hh}:{mm}
         </span>
