@@ -57,11 +57,11 @@ import {
   PAGE_W,
   renderPage,
   drawStroke,
-  eraseAt,
+  eraseAtMany,
   shapePoints,
   paintStroke,
   createInkContext,
-  eraseWholeAt,
+  eraseWholeAtMany,
   strokeBox,
   pointInPolygon,
   recognizeShape,
@@ -473,12 +473,11 @@ export function NoteCanvas({
   const flushErase = () => {
     eraseFrame.current = null;
     let cur = liveStrokes.current;
-    for (const p of pendingErase.current) {
-      cur =
-        eraserMode === "stroke"
-          ? eraseWholeAt(cur, p.x, p.y, eraserSize / 2)
-          : eraseAt(cur, p.x, p.y, eraserSize / 2);
-    }
+    const points = pendingErase.current;
+    cur =
+      eraserMode === "stroke"
+        ? eraseWholeAtMany(cur, points, eraserSize / 2)
+        : eraseAtMany(cur, points, eraserSize / 2);
     pendingErase.current = [];
     if (cur !== liveStrokes.current) {
       liveStrokes.current = cur;

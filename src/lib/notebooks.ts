@@ -427,32 +427,48 @@ export function shapePoints(kind: ShapeKind, a: Point, b: Point): Point[] {
  * 線を丸ごと消さず、消した箇所で線を分割して残りを保持する。
  */
 export function eraseAt(strokes: Stroke[], x: number, y: number, radius: number): Stroke[] {
+  return eraseAtMany(strokes, [{ x, y }], radius);
+}
+
+/** 同じフレーム内の消去入力をまとめて処理し、線の走査回数を抑える。 */
+export function eraseAtMany(strokes: Stroke[], points: Point[], radius: number): Stroke[] {
+  if (points.length === 0) return strokes;
   let changed = false;
   const out: Stroke[] = [];
   for (const s of strokes) {
     const r = radius + s.width / 2;
     const bb = strokeBox(s);
-    if (
-      s.tool === "fill" ||
-      x < bb.minX - r ||
-      x > bb.maxX + r ||
-      y < bb.minY - r ||
-      y > bb.maxY + r ||
-      !s.points.some((p) => Math.hypot(p.x - x, p.y - y) <= r)) {
+    const nearBox = points.some(
+      (point) =>
+        point.x >= bb.minX - r &&
+        point.x <= bb.maxX + r &&
+        point.y >= bb.minY - r &&
+        point.y <= bb.maxY + r,
+    );
+    if (s.tool === "fill" || !nearBox) {
       out.push(s);
       continue;
     }
-    changed = true;
+    let strokeChanged = false;
     let run: Point[] = [];
     const flush = () => {
       if (run.length >= 2) out.push({ ...s, id: crypto.randomUUID(), points: run });
       run = [];
     };
     for (const p of s.points) {
-      if (Math.hypot(p.x - x, p.y - y) <= r) flush();
-      else run.push(p);
+      if (points.some((point) => Math.hypot(p.x - point.x, p.y - point.y) <= r)) {
+        strokeChanged = true;
+        flush();
+      } else {
+        run.push(p);
+      }
     }
-    flush();
+    if (strokeChanged) {
+      changed = true;
+      flush();
+    } else {
+      out.push(s);
+    }
   }
   return changed ? out : strokes;
 }
@@ -476,11 +492,25 @@ export function strokeBox(s: Stroke) {
 
 /** 線を丸ごと消す（オブジェクト消しゴム） */
 export function eraseWholeAt(strokes: Stroke[], x: number, y: number, radius: number): Stroke[] {
+  return eraseWholeAtMany(strokes, [{ x, y }], radius);
+}
+
+export function eraseWholeAtMany(strokes: Stroke[], points: Point[], radius: number): Stroke[] {
+  if (points.length === 0) return strokes;
   const out = strokes.filter((s) => {
     const r = radius + s.width / 2 + (s.tool === "fill" ? 6 : 0);
     const bb = strokeBox(s);
-    if (x < bb.minX - r || x > bb.maxX + r || y < bb.minY - r || y > bb.maxY + r) return true;
-    return !s.points.some((p) => Math.hypot(p.x - x, p.y - y) <= r);
+    const nearBox = points.some(
+      (point) =>
+        point.x >= bb.minX - r &&
+        point.x <= bb.maxX + r &&
+        point.y >= bb.minY - r &&
+        point.y <= bb.maxY + r,
+    );
+    if (!nearBox) return true;
+    return !s.points.some((p) =>
+      points.some((point) => Math.hypot(p.x - point.x, p.y - point.y) <= r),
+    );
   });
   return out.length === strokes.length ? strokes : out;
 }
