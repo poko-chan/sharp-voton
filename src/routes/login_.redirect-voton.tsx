@@ -17,16 +17,19 @@ function RedirectVotonPage() {
   const exchange = useServerFn(exchangeVotonToken);
   const linkAccount = useServerFn(linkVotonAccount);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [step, setStep] = useState(0);
   const handled = useRef(false);
 
   useEffect(() => {
     if (handled.current) return;
     handled.current = true;
 
-    const params = new URLSearchParams(window.location.hash.slice(1));
-    const accessToken = params.get("access_token");
-    const state = params.get("state");
-    const authError = params.get("error");
+    const hash = new URLSearchParams(window.location.hash.slice(1));
+    const query = new URLSearchParams(window.location.search);
+    const pick = (k: string) => hash.get(k) ?? query.get(k);
+    const accessToken = pick("access_token");
+    const state = pick("state");
+    const authError = pick("error");
     window.history.replaceState(null, "", window.location.pathname);
 
     const savedState = sessionStorage.getItem("voton_state");
@@ -45,6 +48,7 @@ function RedirectVotonPage() {
 
     void (async () => {
       try {
+        setStep(1);
         if (intent === "link") {
           const result = await linkAccount({ data: { accessToken } });
           if ("error" in result && result.error) throw new Error(result.error);
@@ -55,11 +59,13 @@ function RedirectVotonPage() {
 
         const result = await exchange({ data: { accessToken } });
         if ("error" in result && result.error) throw new Error(result.error);
+        setStep(2);
         const { error } = await supabase.auth.verifyOtp({
           token_hash: result.tokenHash,
           type: "magiclink",
         });
         if (error) throw error;
+        setStep(3);
         toast.success("ログインしました");
         navigate({ to: "/dashboard", replace: true });
       } catch (error) {
@@ -95,8 +101,15 @@ function RedirectVotonPage() {
           </div>
         ) : (
           <div className="space-y-2">
-            <h2 className="text-lg font-bold">Votonアカウントを認証中…</h2>
-            <p className="text-xs text-white/60">安全にStudy#へ接続しています。少々お待ちください。</p>
+            <h2 className="text-lg font-bold">Votonで認証しています</h2>
+            <ul className="mx-auto mt-4 space-y-2 text-left text-sm">
+              {["Votonアカウントを照合中", "Study#アカウントと接続中", "ダッシュボードへ移動中"].map((t, i) => (
+                <li key={t} className={`flex items-center gap-2 ${step > i ? "text-[#00F5A0]" : step === i ? "text-white" : "text-white/30"}`}>
+                  <span className={`h-2 w-2 rounded-full ${step > i ? "bg-[#00F5A0]" : step === i ? "animate-pulse bg-[#00D2FF]" : "bg-white/20"}`} />
+                  {t}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>
