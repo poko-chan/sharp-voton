@@ -6759,7 +6759,6 @@ export type Database = {
           goal_text: string | null
           id: string
           line_user_id: string | null
-          voton_user_id: string | null
           notify_announcements: boolean
           notify_chat: boolean
           notify_daily_reminder: boolean
@@ -6780,6 +6779,7 @@ export type Database = {
           tutorial_done: boolean
           updated_at: string
           username: string | null
+          voton_user_id: string | null
         }
         Insert: {
           account_kind?: string
@@ -6802,7 +6802,6 @@ export type Database = {
           goal_text?: string | null
           id: string
           line_user_id?: string | null
-          voton_user_id?: string | null
           notify_announcements?: boolean
           notify_chat?: boolean
           notify_daily_reminder?: boolean
@@ -6823,6 +6822,7 @@ export type Database = {
           tutorial_done?: boolean
           updated_at?: string
           username?: string | null
+          voton_user_id?: string | null
         }
         Update: {
           account_kind?: string
@@ -6845,7 +6845,6 @@ export type Database = {
           goal_text?: string | null
           id?: string
           line_user_id?: string | null
-          voton_user_id?: string | null
           notify_announcements?: boolean
           notify_chat?: boolean
           notify_daily_reminder?: boolean
@@ -6866,6 +6865,7 @@ export type Database = {
           tutorial_done?: boolean
           updated_at?: string
           username?: string | null
+          voton_user_id?: string | null
         }
         Relationships: []
       }
