@@ -26,7 +26,6 @@ import { GlobalContextMenu } from "@/components/GlobalContextMenu";
 import { GlobalFeedbackDock } from "@/components/FeedbackWidget";
 import { NetworkStatusBanner } from "@/components/NetworkStatusBanner";
 import { DomainChangeNotice } from "@/components/DomainChangeNotice";
-import { VotonCallbackHandler } from "@/components/auth/VotonLogin";
 import { loadAndApplyUserTheme } from "@/lib/theme";
 
 import { I18nProvider } from "@/lib/i18n";
@@ -221,7 +220,6 @@ function RootComponent() {
             <GlobalFeedbackDock />
             <NetworkStatusBanner />
             <DomainChangeNotice />
-            <VotonCallbackHandler />
             <RouteLoading />
             <PWAInstallPrompt />
             <AmbientSound />
