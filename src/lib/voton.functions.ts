@@ -50,29 +50,16 @@ export const exchangeVotonToken = createServerFn({ method: "POST" })
       return { error: "Voton連携情報を確認できませんでした" as const };
     }
 
-    let targetEmail = linkedProfile?.email?.trim().toLowerCase();
+    if (!linkedProfile) {
+      return {
+        error:
+          "このVotonアカウントはStudy#と連携されていません。通常のログイン後、設定画面の「ログイン方法」からVoton連携を行ってください。" as const,
+      };
+    }
+
+    const targetEmail = linkedProfile.email?.trim().toLowerCase();
     if (!targetEmail) {
-      if (!votonEmail) return { error: "Votonアカウントにメールアドレスが登録されていません" as const };
-      targetEmail = votonEmail;
-
-      const { error: createError } = await supabaseAdmin.auth.admin.createUser({
-        email: targetEmail,
-        email_confirm: true,
-        user_metadata: { voton_user_id: votonUserId },
-      });
-      if (createError && !/already registered|already exists/i.test(createError.message)) {
-        console.error("[Voton] user creation failed", createError);
-        return { error: "Study#アカウントの準備に失敗しました" as const };
-      }
-
-      const { error: linkError } = await supabaseAdmin
-        .from("profiles")
-        .update({ voton_user_id: votonUserId })
-        .eq("email", targetEmail);
-      if (linkError) {
-        console.error("[Voton] profile link failed", linkError);
-        return { error: "Voton連携情報の保存に失敗しました" as const };
-      }
+      return { error: "連携先アカウントのメールアドレスを確認できませんでした" as const };
     }
 
     const { data: link, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
@@ -123,10 +110,7 @@ export const unlinkVotonAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
-      .from("profiles")
-      .update({ voton_user_id: null })
-      .eq("id", context.userId);
+    const { error } = await supabaseAdmin.from("profiles").update({ voton_user_id: null }).eq("id", context.userId);
     if (error) {
       console.error("[Voton] profile unlink failed", error);
       return { error: "Voton連携の解除に失敗しました" as const };
