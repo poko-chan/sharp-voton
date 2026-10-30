@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "sonner";
 import { MARKET_APPS, useInstalledApps, type MarketApp } from "@/lib/marketplace";
 import { DeveloperLine } from "@/components/market/VerifiedBadge";
+import { MarketAccessList } from "@/components/market/MarketAccessList";
 
 export const Route = createFileRoute("/_authenticated/market")({
   head: () => ({
@@ -131,7 +132,10 @@ function MarketPage() {
                 <div>バージョン<div className="text-foreground">{detail.version}</div></div>
                 <div>最終更新<div className="text-foreground">{detail.updatedAt}</div></div>
               </div>
-              <p className="text-xs text-muted-foreground">アンインストールしてもデータは削除されません。再インストールで元に戻ります。</p>
+              {detail.preparing && (
+                <p className="text-xs rounded-lg bg-primary/10 text-primary px-3 py-2">準備中のアプリです。インストールはできますが、公開まで使えません。</p>
+              )}
+              <MarketAccessList access={detail.access} />
               <Button variant={installed.has(detail.id) ? "outline" : "default"} onClick={() => toggle(detail)}>
                 {installed.has(detail.id) ? "アンインストール" : "インストール"}
               </Button>

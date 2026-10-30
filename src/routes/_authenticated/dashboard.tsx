@@ -83,6 +83,7 @@ import { useOrderedSubjects } from "@/lib/subjects";
 import { toast } from "sonner";
 import { DashboardBanners } from "@/components/dashboard/DashboardBanners";
 import { useMaintenance } from "@/lib/maintenance-context";
+import { useInstalledApps } from "@/lib/marketplace";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -461,7 +462,8 @@ function FullDashboard() {
   const recent = data?.recent ?? [];
   const classroomXp = data?.classroomXp ?? 0;
   const byMaterial = data?.byMaterial ?? [];
-  const exams = data?.exams ?? [];
+  const { installed: appsInstalled } = useInstalledApps();
+  const exams = appsInstalled.has("exams") ? (data?.exams ?? []) : [];
   const maxMaterialMin = Math.max(1, ...byMaterial.map((m) => m.value));
 
   const diff = stats.weekMin - stats.lastWeekMin;
@@ -734,7 +736,11 @@ function FullDashboard() {
             <QuickAction to="/timer" icon={Timer} label="タイマー開始" />
             <QuickAction to="/study" icon={BookOpen} label="学習を記録" />
             <QuickAction to="/makron" icon={Brain} label="Makron 演習" />
-            <QuickAction to="/flashcards" icon={Layers} label="暗記カード" />
+            {appsInstalled.has("flashcards") ? (
+              <QuickAction to="/flashcards" icon={Layers} label="暗記カード" />
+            ) : (
+              <QuickAction to="/goals" icon={Target} label="学習目標" />
+            )}
           </div>
         </Card>
       </div>
@@ -1098,6 +1104,7 @@ function FullDashboard() {
 
       {/* ===== 試験カウントダウン + 教材別 ===== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {appsInstalled.has("exams") && (
         <Card className="p-5">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-bold flex items-center gap-2">
@@ -1159,6 +1166,7 @@ function FullDashboard() {
             </div>
           )}
         </Card>
+        )}
 
         <Card className="p-5">
           <div className="flex items-center justify-between mb-3">
