@@ -60,6 +60,8 @@ export type NotePage = {
   title: string;
   strokes: Stroke[];
   texts: TextBox[];
+  /** 本文を取得済みか。ページ一覧はメタデータだけで表示できる。 */
+  loaded?: boolean;
 };
 
 export type Notebook = {

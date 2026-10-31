@@ -19,6 +19,7 @@ import {
   Trash2,
   Archive,
   Settings2,
+  FileText,
 } from "lucide-react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { NoteCanvas, PageThumb } from "@/components/notebook/NoteCanvas";
@@ -67,9 +68,13 @@ function NotebookEditor() {
   const [showSettings, setShowSettings] = useState(false);
   const [showPageRail, setShowPageRail] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(false);
   const [pageLoadError, setPageLoadError] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const page = pages[idx];
+  const pagesRef = useRef<NotePage[]>([]);
+  pagesRef.current = pages;
 
   const load = useCallback(async () => {
     setPageLoadError(null);
@@ -85,7 +90,7 @@ function NotebookEditor() {
     setNb(n as unknown as Notebook);
     const { data: ps, error: pagesError } = await supabase
       .from("notebook_pages")
-      .select("*")
+      .select("id,page_index,title")
       .eq("notebook_id", id)
       .order("page_index");
     if (pagesError) {
@@ -97,8 +102,9 @@ function NotebookEditor() {
       id: p.id,
       page_index: p.page_index,
       title: p.title || `ページ ${p.page_index + 1}`,
-      strokes: (p.strokes ?? []) as Stroke[],
-      texts: (p.texts ?? []) as TextBox[],
+      strokes: [],
+      texts: [],
+      loaded: false,
     })) as NotePage[];
     if (list.length === 0) {
       const { data: created, error: createError } = await supabase
@@ -118,30 +124,11 @@ function NotebookEditor() {
           title: (created as any).title || "ページ 1",
           strokes: [],
           texts: [],
+          loaded: true,
         },
       ];
     }
-    let restoredDraft = false;
-    const pagesWithDrafts = list.map((p) => {
-      try {
-        const rawDraft = localStorage.getItem(`cnote.draft.${p.id}`);
-        if (!rawDraft) return p;
-        const draft = JSON.parse(rawDraft) as Partial<NotePage>;
-        if (draft.id !== p.id || !Array.isArray(draft.strokes) || !Array.isArray(draft.texts))
-          return p;
-        restoredDraft = true;
-        return {
-          ...p,
-          title: typeof draft.title === "string" ? draft.title : p.title,
-          strokes: draft.strokes,
-          texts: draft.texts,
-        };
-      } catch {
-        return p;
-      }
-    });
-    setPages(pagesWithDrafts);
-    if (restoredDraft) setSaving("dirty");
+    setPages(list);
     const { data: sh } = await supabase.from("notebook_shares").select("*").eq("notebook_id", id);
     const rows = (sh as unknown as ShareRow[]) ?? [];
     const profs = rows.length ? await fetchPublicProfiles(rows.map((r) => r.user_id)) : [];
@@ -152,6 +139,59 @@ function NotebookEditor() {
   useEffect(() => {
     load();
   }, [load]);
+
+  /** ページ本文は表示するときだけ取得し、訪問済みページはメモリ内キャッシュする。 */
+  const loadPageContent = useCallback(
+    async (pageId: string) => {
+      const current = pagesRef.current.find((candidate) => candidate.id === pageId);
+      if (!current || current.loaded) return;
+      setPageLoading(true);
+      setPageLoadError(null);
+      const { data, error } = await supabase
+        .from("notebook_pages")
+        .select("id,strokes,texts")
+        .eq("id", pageId)
+        .maybeSingle();
+      if (error || !data) {
+        setPageLoadError(error?.message ?? "ページを読み込めませんでした");
+        setPageLoading(false);
+        return;
+      }
+      let next = {
+        ...current,
+        strokes: (data.strokes ?? []) as Stroke[],
+        texts: (data.texts ?? []) as TextBox[],
+        loaded: true,
+      };
+      try {
+        const rawDraft = localStorage.getItem(`cnote.draft.${pageId}`);
+        if (rawDraft) {
+          const draft = JSON.parse(rawDraft) as Partial<NotePage>;
+          if (draft.id === pageId && Array.isArray(draft.strokes) && Array.isArray(draft.texts)) {
+            next = {
+              ...next,
+              title: typeof draft.title === "string" ? draft.title : next.title,
+              strokes: draft.strokes,
+              texts: draft.texts,
+            };
+            setSaving("dirty");
+          }
+        }
+      } catch {
+        // 破損した端末下書きは無視し、サーバーの本文を表示する。
+      }
+      pagesRef.current = pagesRef.current.map((candidate) =>
+        candidate.id === pageId ? next : candidate,
+      );
+      setPages(pagesRef.current);
+      setPageLoading(false);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (page?.id && !page.loaded) void loadPageContent(page.id);
+  }, [page?.id, page?.loaded, loadPageContent]);
   useEffect(
     () => () => {
       if (timer.current) clearTimeout(timer.current);
@@ -163,15 +203,11 @@ function NotebookEditor() {
   const isOwner = nb?.owner_id === user?.id;
   const myShare = shares.find((s) => s.user_id === user?.id && s.status === "accepted");
   const readOnly = !isOwner && !(myShare?.can_edit ?? false);
-  const page = pages[idx];
 
   /** 保存済み内容の目印。同じ内容なら書き込みを行わない（無駄な通信を減らす） */
   const savedSig = useRef<Record<string, string>>({});
   /** ノート本体の更新日時は最大でも5分に1回だけ書き込む */
   const nbTouched = useRef(0);
-  /** 入力イベントが連続しても、常に最新ページを基準に更新する */
-  const pagesRef = useRef<NotePage[]>([]);
-  pagesRef.current = pages;
   /** 最新ページを常に保持し、離脱時の保存に使う */
   const pendingRef = useRef<NotePage | null>(null);
   const saveLoopRef = useRef(false);
@@ -298,10 +334,35 @@ function NotebookEditor() {
   }, [savePage]);
 
   /** ページ切替前に未保存分を即保存 */
-  const goToPage = (next: number) => {
-    if (pendingRef.current) flushPageSave();
-    setIdx(next);
-  };
+  const goToPage = useCallback(
+    (next: number) => {
+      if (pendingRef.current) flushPageSave();
+      setIdx(next);
+    },
+    [flushPageSave],
+  );
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (
+        target?.closest("input, textarea, select, [contenteditable='true']") ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey
+      )
+        return;
+      if (event.key === "ArrowLeft" || event.key === "PageUp") {
+        event.preventDefault();
+        goToPage(Math.max(0, idx - 1));
+      } else if (event.key === "ArrowRight" || event.key === "PageDown") {
+        event.preventDefault();
+        goToPage(Math.min(pages.length - 1, idx + 1));
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [idx, pages.length, goToPage]);
 
   /** ページの順番を1つ入れ替える（2件だけ更新） */
   const movePage = async (from: number, dir: -1 | 1) => {
@@ -348,6 +409,7 @@ function NotebookEditor() {
         title: `ページ ${nextIdx + 1}`,
         strokes: [],
         texts: [],
+        loaded: true,
       },
     ]);
     setIdx(pages.length);
@@ -377,6 +439,7 @@ function NotebookEditor() {
         title,
         strokes: page.strokes,
         texts: page.texts,
+        loaded: true,
       },
     ]);
     setIdx(pages.length);
@@ -475,7 +538,7 @@ function NotebookEditor() {
       }
       right={
         <div className="flex items-center gap-1">
-          {!readOnly && page && (
+          {!readOnly && page && page.loaded && (
             <Button
               size="sm"
               variant={saving === "dirty" ? "default" : "outline"}
@@ -627,11 +690,20 @@ function NotebookEditor() {
                       className="flex min-w-0 flex-1 items-center gap-2 text-left"
                       aria-current={pageIndex === idx ? "page" : undefined}
                     >
-                      <PageThumb
-                        strokes={candidate.strokes}
-                        paper={nb.paper_type}
-                        paperColor={nb.paper_color}
-                      />
+                      {candidate.loaded ? (
+                        <PageThumb
+                          strokes={candidate.strokes}
+                          paper={nb.paper_type}
+                          paperColor={nb.paper_color}
+                        />
+                      ) : (
+                        <div
+                          className="grid h-[88px] w-[62px] shrink-0 place-items-center rounded border bg-background text-muted-foreground"
+                          aria-label="未読み込みのページ"
+                        >
+                          <FileText className="h-5 w-5" />
+                        </div>
+                      )}
                       <span className="min-w-0 flex-1">
                         <span className="block text-[10px] font-bold tabular-nums text-muted-foreground">
                           {pageIndex + 1}
@@ -667,7 +739,13 @@ function NotebookEditor() {
                 ))}
               </div>
               {!readOnly && page && (
-                <Button variant="outline" size="sm" className="mt-3 w-full" onClick={duplicatePage}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-3 w-full"
+                  onClick={duplicatePage}
+                  disabled={!page.loaded}
+                >
                   <Copy className="mr-1 h-3.5 w-3.5" />
                   このページを複製
                 </Button>
@@ -683,17 +761,21 @@ function NotebookEditor() {
                   再読み込み
                 </Button>
               </div>
-            ) : page ? (
+            ) : page && page.loaded ? (
               <NoteCanvas
                 key={page.id}
                 strokes={page.strokes}
                 texts={page.texts}
                 paper={nb.paper_type}
                 paperColor={nb.paper_color}
-                readOnly={readOnly}
+                readOnly={readOnly || !page.loaded}
                 onChange={onChange}
                 title={nb.title}
               />
+            ) : pageLoading ? (
+              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                ページを読み込み中...
+              </div>
             ) : null}
           </div>
         </div>
