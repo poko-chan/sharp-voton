@@ -16,7 +16,7 @@ export type StudyScope = (typeof STUDY_SCOPES)[number];
 // ユーザーの学習コンテキストを集約して返す（AIチャットのツール呼び出しから使用）
 // scopes で「AIに見せてよい情報」を分けて指定できる。
 export const getStudyContext = createServerFn({ method: "POST" })
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({ scopes: z.array(z.enum(STUDY_SCOPES)).optional() })
       .optional()
@@ -175,7 +175,7 @@ export const listTutorThreads = createServerFn({ method: "POST" })
 
 export const createTutorThread = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ title: z.string().max(200).optional() }).parse(i))
+  .validator((i) => z.object({ title: z.string().max(200).optional() }).parse(i))
   .handler(async ({ data, context }) => {
     const { data: row, error } = await (context.supabase as any)
       .from("tutor_threads")
@@ -188,7 +188,7 @@ export const createTutorThread = createServerFn({ method: "POST" })
 
 export const renameTutorThread = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) =>
+  .validator((i) =>
     z.object({ id: z.string().uuid(), title: z.string().min(1).max(200) }).parse(i),
   )
   .handler(async ({ data, context }) => {
@@ -202,7 +202,7 @@ export const renameTutorThread = createServerFn({ method: "POST" })
 
 export const deleteTutorThread = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
+  .validator((i) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     await (context.supabase as any).from("tutor_messages").delete().eq("thread_id", data.id);
     const { error } = await (context.supabase as any)

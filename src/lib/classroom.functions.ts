@@ -14,7 +14,7 @@ function genCode() {
 
 export const createClass = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
+  .validator((d) =>
     z
       .object({
         name: z.string().min(1).max(100),
@@ -53,7 +53,7 @@ export const createClass = createServerFn({ method: "POST" })
 
 export const joinClass = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ code: z.string().min(4).max(12) }).parse(d))
+  .validator((d) => z.object({ code: z.string().min(4).max(12) }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { data: r, error } = await supabase.rpc("join_class_by_code" as any, {
@@ -65,7 +65,7 @@ export const joinClass = createServerFn({ method: "POST" })
 
 export const gradeSubmission = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
+  .validator((d) =>
     z
       .object({
         submissionId: z.string().uuid(),

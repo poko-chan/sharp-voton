@@ -35,7 +35,7 @@ async function sessionTokenFor(email: string) {
 
 /** Step 1: build the LINE authorization URL. */
 export const getLineAuthUrl = createServerFn({ method: "POST" })
-  .inputValidator((i) =>
+  .validator((i) =>
     z.object({ redirectUri: z.string().url(), state: z.string().min(8).max(128) }).parse(i),
   )
   .handler(async ({ data }) => {
@@ -89,7 +89,7 @@ async function exchangeCode(code: string, redirectUri: string): Promise<LineIden
  * Linked account -> a session token. Unknown LINE user -> a short-lived pending token.
  */
 export const completeLineLogin = createServerFn({ method: "POST" })
-  .inputValidator((i) =>
+  .validator((i) =>
     z.object({ code: z.string().min(4).max(512), redirectUri: z.string().url() }).parse(i),
   )
   .handler(async ({ data }) => {
@@ -160,7 +160,7 @@ async function clearPending(token: string) {
 
 /** Link LINE to an existing account by username + password, then sign in. */
 export const linkLineToExistingAccount = createServerFn({ method: "POST" })
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         token: z.string().uuid(),
@@ -202,7 +202,7 @@ export const linkLineToExistingAccount = createServerFn({ method: "POST" })
 
 /** Create a brand new Study# account from the LINE identity. */
 export const createAccountFromLine = createServerFn({ method: "POST" })
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         token: z.string().uuid(),
@@ -253,7 +253,7 @@ export const createAccountFromLine = createServerFn({ method: "POST" })
 /** Attach LINE to the account that is already signed in (settings screen). */
 export const linkLineToCurrentUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ token: z.string().uuid() }).parse(i))
+  .validator((i) => z.object({ token: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const pending = await takePending(data.token);

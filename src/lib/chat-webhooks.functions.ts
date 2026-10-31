@@ -51,7 +51,7 @@ export const getChatWebhooks = createServerFn({ method: "GET" })
 
 export const saveChatWebhooks = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
+  .validator((d) =>
     z
       .object({
         discord_url: z
@@ -96,7 +96,7 @@ export const testChatWebhooks = createServerFn({ method: "POST" })
 
 export const notifyChatStudyFinished = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ minutes: z.number().min(0).max(1440) }).parse(d))
+  .validator((d) => z.object({ minutes: z.number().min(0).max(1440) }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: w } = await context.supabase
       .from("user_chat_webhooks" as never)

@@ -9,7 +9,7 @@ import { createClient } from "@supabase/supabase-js";
  */
 export const linkChildAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         username: z.string().min(1).max(64),
@@ -80,7 +80,7 @@ export const listMyChildren = createServerFn({ method: "POST" })
 
 export const unlinkChild = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ childId: z.string().uuid() }).parse(i))
+  .validator((i) => z.object({ childId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin
@@ -93,7 +93,7 @@ export const unlinkChild = createServerFn({ method: "POST" })
 
 export const updateChildProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         childId: z.string().uuid(),
@@ -121,7 +121,7 @@ export const updateChildProfile = createServerFn({ method: "POST" })
 
 export const getChildSummary = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ childId: z.string().uuid() }).parse(i))
+  .validator((i) => z.object({ childId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: ok } = await supabaseAdmin
@@ -151,7 +151,7 @@ export const getChildSummary = createServerFn({ method: "POST" })
  */
 export const getChildFullDashboard = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ childId: z.string().uuid() }).parse(i))
+  .validator((i) => z.object({ childId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: ok } = await supabaseAdmin
@@ -284,7 +284,7 @@ async function assertLinked(parentId: string, childId: string) {
 
 export const getChildControls = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ childId: z.string().uuid() }).parse(i))
+  .validator((i) => z.object({ childId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const admin = await assertLinked(context.userId, data.childId);
     const { data: row } = await admin
@@ -304,7 +304,7 @@ export const getChildControls = createServerFn({ method: "POST" })
 
 export const setChildControls = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         childId: z.string().uuid(),
@@ -333,7 +333,7 @@ export const setChildControls = createServerFn({ method: "POST" })
 
 export const issueChildLoginCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ childId: z.string().uuid() }).parse(i))
+  .validator((i) => z.object({ childId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const admin = await assertLinked(context.userId, data.childId);
     await admin
@@ -351,7 +351,7 @@ export const issueChildLoginCode = createServerFn({ method: "POST" })
 
 export const revokeChildLoginCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ childId: z.string().uuid() }).parse(i))
+  .validator((i) => z.object({ childId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const admin = await assertLinked(context.userId, data.childId);
     await admin
@@ -364,7 +364,7 @@ export const revokeChildLoginCode = createServerFn({ method: "POST" })
 
 export const listChildFriends = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ childId: z.string().uuid() }).parse(i))
+  .validator((i) => z.object({ childId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const admin = await assertLinked(context.userId, data.childId);
     const { data: follows } = await admin
@@ -383,7 +383,7 @@ export const listChildFriends = createServerFn({ method: "POST" })
 
 /** QRカードから子供がログインする（公開・コードのみで認証） */
 export const loginWithChildCode = createServerFn({ method: "POST" })
-  .inputValidator((i) => z.object({ code: z.string().min(10).max(64) }).parse(i))
+  .validator((i) => z.object({ code: z.string().min(10).max(64) }).parse(i))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin
@@ -494,7 +494,7 @@ export const getMyParentPanel = createServerFn({ method: "GET" })
 /** 子供側：保護者へメッセージ／スタンプを送る */
 export const sendMessageToParent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         body: z.string().min(1).max(300),
@@ -533,7 +533,7 @@ export const sendMessageToParent = createServerFn({ method: "POST" })
 /** 子供側：利用時間の延長をお願いする */
 export const requestTimeExtension = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         minutes: z.number().int().min(5).max(240),
@@ -574,7 +574,7 @@ export const requestTimeExtension = createServerFn({ method: "POST" })
 /** 子供側：学習おわりを保護者に知らせる */
 export const notifyStudyFinished = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         minutes: z.number().int().min(0).max(1440),
@@ -611,7 +611,7 @@ export const notifyStudyFinished = createServerFn({ method: "POST" })
 /** 保護者側：やり取りと延長申請の一覧 */
 export const getParentThread = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ childId: z.string().uuid() }).parse(i))
+  .validator((i) => z.object({ childId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const admin = await assertLinked(context.userId, data.childId);
     const [{ data: msgs }, { data: reqs }] = await Promise.all([
@@ -634,7 +634,7 @@ export const getParentThread = createServerFn({ method: "POST" })
 /** 保護者側：応援スタンプ・メッセージを送る（Study#内のみ） */
 export const sendCheerToChild = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         childId: z.string().uuid(),
@@ -665,7 +665,7 @@ export const sendCheerToChild = createServerFn({ method: "POST" })
 /** 保護者側：延長申請の承認・却下 */
 export const decideExtensionRequest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         requestId: z.string().uuid(),
@@ -726,7 +726,7 @@ export const decideExtensionRequest = createServerFn({ method: "POST" })
 /** 保護者側：今すぐ時間を追加する（申請なしでも延長できる） */
 export const grantBonusMinutes = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) =>
+  .validator((i) =>
     z.object({ childId: z.string().uuid(), minutes: z.number().int().min(-240).max(240) }).parse(i),
   )
   .handler(async ({ data, context }) => {
@@ -757,7 +757,7 @@ export const grantBonusMinutes = createServerFn({ method: "POST" })
 /** 保護者側：ミッション一覧 */
 export const listChildMissions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ childId: z.string().uuid() }).parse(i))
+  .validator((i) => z.object({ childId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const admin = await assertLinked(context.userId, data.childId);
     const { data: rows } = await admin
@@ -772,7 +772,7 @@ export const listChildMissions = createServerFn({ method: "POST" })
 /** 保護者側：ミッションを作る */
 export const createChildMission = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         childId: z.string().uuid(),
@@ -806,7 +806,7 @@ export const createChildMission = createServerFn({ method: "POST" })
 
 export const deleteChildMission = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ missionId: z.string().uuid() }).parse(i))
+  .validator((i) => z.object({ missionId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin
@@ -820,7 +820,7 @@ export const deleteChildMission = createServerFn({ method: "POST" })
 /** 保護者側：確認／もう少し／ごほうびを渡した（コインは使わない） */
 export const reviewChildMission = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         missionId: z.string().uuid(),
@@ -899,7 +899,7 @@ export const listMyMissions = createServerFn({ method: "GET" })
 /** 子供側：できた！と報告する */
 export const claimMyMission = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ missionId: z.string().uuid() }).parse(i))
+  .validator((i) => z.object({ missionId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
       .from("parent_missions")
@@ -928,7 +928,7 @@ export const claimMyMission = createServerFn({ method: "POST" })
 /** 保護者側：いますぐ集中ロック（分数と範囲を指定） */
 export const setFocusLock = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         childId: z.string().uuid(),
@@ -963,7 +963,7 @@ export const setFocusLock = createServerFn({ method: "POST" })
 /** 保護者側：全員まとめて集中ロック */
 export const setFocusLockAll = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         minutes: z.number().int().min(0).max(1440),

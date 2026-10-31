@@ -90,7 +90,7 @@ export const passkeyRegisterOptions = createServerFn({ method: "POST" })
 
 export const passkeyRegisterVerify = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
+  .validator((d) =>
     z
       .object({ challengeId: z.string().uuid(), response: z.any(), label: z.string().max(40) })
       .parse(d),
@@ -142,7 +142,7 @@ export const passkeyLoginOptions = createServerFn({ method: "POST" }).handler(as
 });
 
 export const passkeyLoginVerify = createServerFn({ method: "POST" })
-  .inputValidator((d) => z.object({ challengeId: z.string().uuid(), response: z.any() }).parse(d))
+  .validator((d) => z.object({ challengeId: z.string().uuid(), response: z.any() }).parse(d))
   .handler(async ({ data }) => {
     const { verifyAuthentication, bytesFromB64url } = await lib();
     const ch = await takeChallenge(data.challengeId);
@@ -200,7 +200,7 @@ export const listMyPasskeys = createServerFn({ method: "GET" })
 
 export const deletePasskey = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ id: z.string().max(512) }).parse(d))
+  .validator((d) => z.object({ id: z.string().max(512) }).parse(d))
   .handler(async ({ data, context }) => {
     await context.supabase
       .from("user_passkeys" as never)
@@ -212,7 +212,7 @@ export const deletePasskey = createServerFn({ method: "POST" })
 
 export const renamePasskey = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
+  .validator((d) =>
     z.object({ id: z.string().max(512), label: z.string().trim().min(1).max(40) }).parse(d),
   )
   .handler(async ({ data, context }) => {

@@ -6,7 +6,7 @@ const PAGE_SIZE = 20;
 
 export const createSocialPost = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
+  .validator((d) =>
     z
       .object({
         body: z.string().min(1).max(4000),
@@ -38,7 +38,7 @@ export const createSocialPost = createServerFn({ method: "POST" })
 // タブ: all(閲覧可能な全体) / following(フォロー中のみ) / mine(自分のみ)
 export const listFeedPosts = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
+  .validator((d) =>
     z
       .object({
         scope: z.enum(["all", "following", "mine"]).default("all"),

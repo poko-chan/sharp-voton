@@ -13,7 +13,7 @@ export const ACTION_CATEGORIES: FeedbackCategory[] = ["bug", "feature", "questio
 export const REVIEW_ONLY_CATEGORIES: FeedbackCategory[] = ["praise"];
 
 export const submitFeedback = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         email: z.string().email().max(255).optional().nullable(),
@@ -87,7 +87,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 export const adminUpdateFeedback = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         id: z.string().uuid(),
@@ -163,7 +163,7 @@ export const adminUpdateFeedback = createServerFn({ method: "POST" })
 
 export const adminDeleteFeedback = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .validator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     const { error } = await supabaseAdmin.from("feedback").delete().eq("id", data.id);
@@ -207,7 +207,7 @@ export const listMyThreads = createServerFn({ method: "POST" })
 
 export const getThreadMessages = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ feedbackId: z.string().uuid() }).parse(d))
+  .validator((d: unknown) => z.object({ feedbackId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: fb } = await supabaseAdmin
       .from("feedback")
@@ -244,7 +244,7 @@ export const getThreadMessages = createServerFn({ method: "POST" })
 
 export const postThreadMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         feedbackId: z.string().uuid(),
@@ -305,7 +305,7 @@ export const postThreadMessage = createServerFn({ method: "POST" })
 
 export const startThread = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         category: z.enum(FEEDBACK_CATEGORIES).default("other"),

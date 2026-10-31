@@ -27,7 +27,7 @@ async function assertNotPokochan(userId: string, action = "操作") {
 
 export const adminCreateUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         email: z.string().email(),
@@ -63,7 +63,7 @@ export const adminCreateUser = createServerFn({ method: "POST" })
 
 export const adminUpdateUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         userId: z.string().uuid(),
@@ -96,7 +96,7 @@ export const adminUpdateUser = createServerFn({ method: "POST" })
 
 export const adminDeleteUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ userId: z.string().uuid() }).parse(d))
+  .validator((d: unknown) => z.object({ userId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     if (data.userId === context.userId) throw new Error("自分自身は削除できません");
@@ -108,7 +108,7 @@ export const adminDeleteUser = createServerFn({ method: "POST" })
 
 export const adminSetRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z.object({ userId: z.string().uuid(), makeAdmin: z.boolean() }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -132,7 +132,7 @@ export const adminSetRole = createServerFn({ method: "POST" })
 
 export const adminImpersonate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ userId: z.string().uuid() }).parse(d))
+  .validator((d: unknown) => z.object({ userId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     await assertNotPokochan(data.userId, "ログイン");
@@ -211,7 +211,7 @@ export const adminEnsurePokochan = createServerFn({ method: "POST" })
 
 export const adminUpdateMaintenance = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         enabled: z.boolean(),
@@ -237,7 +237,7 @@ export const adminUpdateMaintenance = createServerFn({ method: "POST" })
 
 export const adminUpdateLowDataMode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ enabled: z.boolean() }).parse(d))
+  .validator((d: unknown) => z.object({ enabled: z.boolean() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     await supabaseAdmin
@@ -248,7 +248,7 @@ export const adminUpdateLowDataMode = createServerFn({ method: "POST" })
 
 export const adminListUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         search: z.string().optional(),
@@ -314,7 +314,7 @@ export const adminListUsers = createServerFn({ method: "POST" })
 
 export const adminSendNotification = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         userId: z.string().uuid().optional(),
@@ -360,7 +360,7 @@ export const adminSendNotification = createServerFn({ method: "POST" })
 
 export const adminSetUserSuspended = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z.object({ userId: z.string().uuid(), suspended: z.boolean() }).parse(d),
   )
   .handler(async ({ data, context }) => {

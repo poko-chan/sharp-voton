@@ -16,7 +16,7 @@ const attachmentSchema = z.object({
 
 export const createPost = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
+  .validator((d) =>
     z
       .object({
         classId: z.string().uuid(),
@@ -45,7 +45,7 @@ export const createPost = createServerFn({ method: "POST" })
 
 export const deletePost = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ postId: z.string().uuid() }).parse(d))
+  .validator((d) => z.object({ postId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { error } = await supabase.from("class_posts").delete().eq("id", data.postId);
@@ -55,7 +55,7 @@ export const deletePost = createServerFn({ method: "POST" })
 
 export const addComment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
+  .validator((d) =>
     z
       .object({
         postId: z.string().uuid(),
@@ -84,7 +84,7 @@ export const addComment = createServerFn({ method: "POST" })
 
 export const deleteComment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ commentId: z.string().uuid() }).parse(d))
+  .validator((d) => z.object({ commentId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { error } = await supabase.from("class_post_comments").delete().eq("id", data.commentId);
@@ -95,7 +95,7 @@ export const deleteComment = createServerFn({ method: "POST" })
 // Auto-grade quiz submissions
 export const submitQuiz = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
+  .validator((d) =>
     z
       .object({
         assignmentId: z.string().uuid(),

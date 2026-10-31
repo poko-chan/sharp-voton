@@ -43,7 +43,7 @@ const BAD_LOGIN = "ユーザー名またはパスワードが正しくありま�
 
 /** Sign in with a username + password. Returns session tokens, never the email. */
 export const signInWithUsername = createServerFn({ method: "POST" })
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         username: z.string().min(1).max(64),
@@ -85,7 +85,7 @@ export const signInWithUsername = createServerFn({ method: "POST" })
  * Always reports success so usernames/emails cannot be enumerated.
  */
 export const requestPasswordResetByUsername = createServerFn({ method: "POST" })
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         username: z.string().min(1).max(64),
@@ -105,7 +105,7 @@ export const requestPasswordResetByUsername = createServerFn({ method: "POST" })
   });
 
 export const checkUsernameAvailable = createServerFn({ method: "POST" })
-  .inputValidator((i) => z.object({ username: z.string().min(1).max(64) }).parse(i))
+  .validator((i) => z.object({ username: z.string().min(1).max(64) }).parse(i))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin

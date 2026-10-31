@@ -80,7 +80,7 @@ export const getLinePreferences = createServerFn({ method: "GET" })
 
 export const saveLinePreferences = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => prefsSchema.parse(i))
+  .validator((i) => prefsSchema.parse(i))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin

@@ -69,7 +69,7 @@ const JSON_SHAPE = `以下のJSON形式で**それのみ**返答:
 
 export const generateQuestions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => InputSchema.parse(input))
+  .validator((input) => InputSchema.parse(input))
   .handler(async ({ data, context }) => {
     const prompt = `日本語で「${data.topic}」に関する問題を${data.count}問作成。
 形式: ${formatHint(data.format)}
@@ -103,7 +103,7 @@ ${JSON_SHAPE}`;
 // 類題生成: 間違えた問題を元に、似ているが異なる新しい問題を作る
 export const generateSimilarFromWrong = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ topic: z.string().min(1).max(500) }).parse(input))
+  .validator((input) => z.object({ topic: z.string().min(1).max(500) }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: wrongs, error: fErr } = await supabase
@@ -159,7 +159,7 @@ ${JSON_SHAPE}`;
 
 export const recordAttempt = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         id: z.string().uuid(),
@@ -198,7 +198,7 @@ export const recordAttempt = createServerFn({ method: "POST" })
 
 export const gradeWrittenAnswer = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         id: z.string().uuid(),
@@ -254,7 +254,7 @@ ${q.explanation ? `解説: ${q.explanation}\n` : ""}生徒の解答: ${data.user
 
 export const deleteGradingRecord = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
+  .validator((i) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { error } = await (context.supabase as any)
       .from("grading_history")
@@ -266,7 +266,7 @@ export const deleteGradingRecord = createServerFn({ method: "POST" })
 
 export const deleteGradingHistoryForQuestion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ questionId: z.string().uuid() }).parse(i))
+  .validator((i) => z.object({ questionId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { error } = await (context.supabase as any)
       .from("grading_history")
@@ -278,7 +278,7 @@ export const deleteGradingHistoryForQuestion = createServerFn({ method: "POST" }
 
 export const deleteQuestion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
+  .validator((i) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     // 関連する採点履歴も削除
     await (context.supabase as any).from("grading_history").delete().eq("question_id", data.id);
@@ -289,7 +289,7 @@ export const deleteQuestion = createServerFn({ method: "POST" })
 
 export const deleteQuestionsByTopic = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ topic: z.string().min(1) }).parse(i))
+  .validator((i) => z.object({ topic: z.string().min(1) }).parse(i))
   .handler(async ({ data, context }) => {
     // 削除対象の問題IDを取得して、関連採点履歴も削除
     const { data: qs } = await context.supabase
@@ -312,7 +312,7 @@ export const deleteQuestionsByTopic = createServerFn({ method: "POST" })
 
 export const clearWrongByTopic = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ topic: z.string().min(1) }).parse(i))
+  .validator((i) => z.object({ topic: z.string().min(1) }).parse(i))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
       .from("questions")
@@ -337,7 +337,7 @@ const ExamPaperSchema = z.object({
 
 export const generateExamPaper = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => ExamPaperSchema.parse(i))
+  .validator((i) => ExamPaperSchema.parse(i))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const diffLabel =
@@ -415,7 +415,7 @@ const ExamGradeSchema = z.object({
 
 export const gradeExamSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => ExamGradeSchema.parse(i))
+  .validator((i) => ExamGradeSchema.parse(i))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const ids = data.answers.map((a) => a.questionId);

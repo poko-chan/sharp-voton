@@ -342,7 +342,7 @@ function isBlockedHost(hostname: string): boolean {
  * チャットにURLを貼ると、AIがその内容を根拠に答えられるようになる。
  */
 export const fetchPage = createServerFn({ method: "POST" })
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         url: z.string().min(8).max(2000),
@@ -494,7 +494,7 @@ export const fetchPage = createServerFn({ method: "POST" })
 
 /** 学習質問の事実確認に使う軽量Web検索（外部APIキー不要・複数ソースで冗長化）。 */
 export const webSearch = createServerFn({ method: "POST" })
-  .inputValidator((i) =>
+  .validator((i) =>
     z
       .object({
         query: z.string().min(1).max(300),

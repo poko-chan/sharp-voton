@@ -28,7 +28,7 @@ const accessTokenInput = z.object({
 });
 
 export const exchangeVotonToken = createServerFn({ method: "POST" })
-  .inputValidator((data) => accessTokenInput.parse(data))
+  .validator((data) => accessTokenInput.parse(data))
   .handler(async ({ data }) => {
     const voton = getVotonClient(data.accessToken);
     const { data: userData, error: userError } = await voton.auth.getUser(data.accessToken);
@@ -76,7 +76,7 @@ export const exchangeVotonToken = createServerFn({ method: "POST" })
 
 export const linkVotonAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => accessTokenInput.parse(data))
+  .validator((data) => accessTokenInput.parse(data))
   .handler(async ({ data, context }) => {
     const voton = getVotonClient(data.accessToken);
     const { data: userData, error: userError } = await voton.auth.getUser(data.accessToken);

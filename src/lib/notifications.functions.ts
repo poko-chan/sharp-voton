@@ -18,7 +18,7 @@ export const listNotifications = createServerFn({ method: "POST" })
 
 export const markNotificationRead = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z.object({ id: z.string().uuid().optional(), all: z.boolean().optional() }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -38,7 +38,7 @@ export const markNotificationRead = createServerFn({ method: "POST" })
 
 export const deleteNotification = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         id: z.string().uuid().optional(),

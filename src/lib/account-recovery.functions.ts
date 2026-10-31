@@ -6,7 +6,7 @@ import { z } from "zod";
  * 常に同じ案内だけを返す。メールの確認はパスワード再設定メールで行う。
  */
 export const getMaskedEmailByUsername = createServerFn({ method: "POST" })
-  .inputValidator((i) => z.object({ username: z.string().min(1).max(64) }).parse(i))
+  .validator((i) => z.object({ username: z.string().min(1).max(64) }).parse(i))
   .handler(async () => {
     return {
       masked:
