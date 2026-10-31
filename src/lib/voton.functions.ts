@@ -1,43 +1,55 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { createClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const DEFAULT_VOTON_URL = "https://bzcapzqxrbjfdlamctrb.supabase.co";
-const DEFAULT_VOTON_KEY = "sb_publishable_uduJUXODyTfPFse9YYtgYA__ddVoCfa";
+const VOTON = "https://voton.app";
+const REDIRECT_URI = "https://sharp.voton.app/login/redirect-voton";
 
-function getVotonClient(accessToken?: string) {
-  const url = process.env.VOTON_URL || DEFAULT_VOTON_URL;
-  const key = process.env.VOTON_PUBLISHABLE_KEY || DEFAULT_VOTON_KEY;
-  return createClient(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: {
-      fetch: (input, init) => {
-        const h = new Headers(init?.headers);
-        if (h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
-        if (accessToken) h.set("Authorization", `Bearer ${accessToken}`);
-        h.set("apikey", key);
-        return fetch(input, { ...init, headers: h });
-      },
-    },
+async function fetchVotonUser(code: string, codeVerifier: string) {
+  const secret = process.env.VOTON_CLIENT_SECRET;
+  if (!secret) {
+    console.error("[Voton] VOTON_CLIENT_SECRET missing");
+    return null;
+  }
+  const tokRes = await fetch(`${VOTON}/api/public/oauth/token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      grant_type: "authorization_code",
+      code,
+      code_verifier: codeVerifier,
+      client_id: "study-sharp",
+      client_secret: secret,
+      redirect_uri: REDIRECT_URI,
+    }),
   });
+  const tok = (await tokRes.json().catch(() => null)) as { access_token?: string } | null;
+  if (!tokRes.ok || !tok?.access_token) {
+    console.error("[Voton] token exchange failed", tokRes.status, tok);
+    return null;
+  }
+  const meRes = await fetch(`${VOTON}/api/public/oauth/userinfo`, {
+    headers: { Authorization: `Bearer ${tok.access_token}` },
+  });
+  const me = (await meRes.json().catch(() => null)) as { sub?: string; email?: string } | null;
+  if (!meRes.ok || !me?.sub) {
+    console.error("[Voton] userinfo failed", meRes.status);
+    return null;
+  }
+  return { id: me.sub, email: me.email };
 }
 
 const accessTokenInput = z.object({
-  accessToken: z.string().min(10).max(4096),
+  code: z.string().min(4).max(2048),
+  codeVerifier: z.string().min(20).max(256),
 });
 
 export const exchangeVotonToken = createServerFn({ method: "POST" })
   .validator((data) => accessTokenInput.parse(data))
   .handler(async ({ data }) => {
-    const voton = getVotonClient(data.accessToken);
-    const { data: userData, error: userError } = await voton.auth.getUser(data.accessToken);
-    if (userError || !userData.user?.id) {
-      return { error: "Votonアカウントを確認できませんでした" as const };
-    }
-
-    const votonUserId = userData.user.id;
-    const votonEmail = userData.user.email?.trim().toLowerCase();
+    const me = await fetchVotonUser(data.code, data.codeVerifier);
+    if (!me) return { error: "Votonアカウントを確認できませんでした" as const };
+    const votonUserId = me.id;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: linkedProfile, error: profileError } = await supabaseAdmin
       .from("profiles")
@@ -78,15 +90,14 @@ export const linkVotonAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((data) => accessTokenInput.parse(data))
   .handler(async ({ data, context }) => {
-    const voton = getVotonClient(data.accessToken);
-    const { data: userData, error: userError } = await voton.auth.getUser(data.accessToken);
-    if (userError || !userData.user?.id) return { error: "Votonアカウントの確認に失敗しました" as const };
+    const me = await fetchVotonUser(data.code, data.codeVerifier);
+    if (!me) return { error: "Votonアカウントの確認に失敗しました" as const };
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: existing, error: lookupError } = await supabaseAdmin
       .from("profiles")
       .select("id")
-      .eq("voton_user_id", userData.user.id)
+      .eq("voton_user_id", me.id)
       .neq("id", context.userId)
       .maybeSingle();
     if (lookupError) {
@@ -97,7 +108,7 @@ export const linkVotonAccount = createServerFn({ method: "POST" })
 
     const { error } = await supabaseAdmin
       .from("profiles")
-      .update({ voton_user_id: userData.user.id })
+      .update({ voton_user_id: me.id })
       .eq("id", context.userId);
     if (error) {
       console.error("[Voton] profile link update failed", error);
