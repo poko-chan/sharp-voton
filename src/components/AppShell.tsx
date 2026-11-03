@@ -768,11 +768,11 @@ export function AppShell({ children }: { children: ReactNode }) {
               {supportDock?.includes("feedback") !== false && <FeedbackWidget compact />}
               <Link
                 to="/help"
-                title="サポート・ヘルプ"
+                title="ヘルプ"
                 className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-sm transition hover:bg-accent"
               >
                 <HelpCircle className="h-4 w-4" />
-                <span className="hidden lg:inline">サポート</span>
+                <span className="hidden lg:inline">ヘルプ</span>
               </Link>
               <ParentBarButton />
               <AppBadgeSync />
@@ -852,8 +852,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               {supportDock?.includes("feedback") !== false && <FeedbackWidget compact />}
               <Link
                 to="/help"
-                title="サポート・ヘルプ"
-                aria-label="サポート・ヘルプ"
+                title="ヘルプ"
+                aria-label="ヘルプ"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-xl transition hover:bg-accent"
               >
                 <HelpCircle className="h-4 w-4" />
