@@ -343,9 +343,33 @@
 
 @layer utilities {
   .app-sidebar {
-    background: color-mix(in oklab, var(--sidebar) 93%, transparent);
-    box-shadow: 18px 0 44px -38px color-mix(in oklab, var(--ink) 72%, transparent);
+    background:
+      radial-gradient(circle at 0% 0%, color-mix(in oklab, var(--signal) 11%, transparent), transparent 34%),
+      color-mix(in oklab, var(--sidebar) 94%, transparent);
+    box-shadow:
+      0 1px 0 color-mix(in oklab, white 55%, transparent) inset,
+      18px 0 44px -38px color-mix(in oklab, var(--ink) 72%, transparent);
     backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+  }
+  .sidebar-brand {
+    min-height: 76px;
+  }
+  .sidebar-profile {
+    background: color-mix(in oklab, var(--sidebar-accent) 72%, transparent);
+    border: 1px solid color-mix(in oklab, var(--sidebar-border) 72%, transparent);
+    box-shadow: 0 8px 22px -20px color-mix(in oklab, var(--ink) 70%, transparent);
+  }
+  .sidebar-nav {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--sidebar-foreground) 22%, transparent) transparent;
+  }
+  .sidebar-nav::-webkit-scrollbar {
+    width: 5px;
+  }
+  .sidebar-nav::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--sidebar-foreground) 22%, transparent);
+    border-radius: 999px;
   }
   .app-topbar {
     background: color-mix(in oklab, var(--background) 82%, transparent);
@@ -1344,15 +1368,34 @@
     border-radius: 0.7rem;
     transition:
       background-color 160ms ease,
-      color 160ms ease;
+      color 160ms ease,
+      transform 160ms ease;
+  }
+  .nav-pill:hover {
+    transform: translateX(2px);
+  }
+  .nav-pill .nav-icon {
+    display: inline-flex;
+    width: 1.9rem;
+    height: 1.9rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.65rem;
+    color: color-mix(in oklab, var(--sidebar-foreground) 68%, transparent);
+    background: color-mix(in oklab, var(--sidebar-foreground) 6%, transparent);
+    transition: background-color 160ms ease, color 160ms ease;
+  }
+  .nav-pill-active .nav-icon {
+    color: var(--primary);
+    background: color-mix(in oklab, var(--primary) 16%, transparent);
   }
   .nav-pill-active::before {
     content: "";
     position: absolute;
-    left: -0.55rem;
-    top: 22%;
-    bottom: 22%;
-    width: 3px;
+    left: 0;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 0.2rem;
     border-radius: 9999px;
     background: var(--signal);
   }

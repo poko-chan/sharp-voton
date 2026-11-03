@@ -559,18 +559,18 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const sidebarContent = (
     <>
-      <div className="p-5 flex items-center gap-3">
+      <div className="sidebar-brand p-5 flex items-center gap-3">
         <img
           src={logoUrl}
           alt="Study# ロゴ"
-          className="h-12 w-12 rounded-2xl object-cover shadow-sm"
+          className="h-11 w-11 rounded-2xl object-cover shadow-sm"
         />
         <div className="min-w-0">
           <ClockHeader version={version} showMark />
         </div>
       </div>
-      <div className="mx-5 border-t border-border/60" />
-      <div className="px-5 py-4 flex items-center gap-3">
+      <div className="mx-5 border-t border-sidebar-border/70" />
+      <div className="sidebar-profile mx-3 my-3 px-3 py-3 flex items-center gap-3 rounded-2xl">
         <button
           type="button"
           onClick={() => user && setProfileTarget(user.id)}
@@ -578,7 +578,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           title="自分のプロフィールを見る"
           className="relative shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <Avatar className="h-11 w-11">
+          <Avatar className="h-10 w-10 ring-2 ring-background shadow-sm">
             {profile?.avatar_url ? (
               <AvatarImage src={profile.avatar_url} alt={displayName} />
             ) : null}
@@ -609,25 +609,26 @@ export function AppShell({ children }: { children: ReactNode }) {
         </Button>
       </div>
       {!isParent && (
-        <div className="px-3 pb-2 space-y-0.5">
-          <div className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">クイックアクセス</div>
+        <div className="px-3 pb-3 space-y-1">
+          <div className="sidebar-section-label px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+            クイックアクセス
+          </div>
           {navVisible.filter((n) => QUICK_PATHS.includes(n.to)).map((n) => {
             const active = path === n.to || path.startsWith(n.to + "/");
             return (
               <Link
                 key={"q-" + n.to}
                 to={n.to}
-                className={`nav-pill relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition ${active ? "nav-pill-active bg-primary/12 text-primary font-semibold" : "hover:bg-sidebar-accent/70 text-sidebar-foreground"}`}
+                className={`nav-pill relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${active ? "nav-pill-active bg-primary/12 text-primary font-semibold" : "hover:bg-sidebar-accent/70 text-sidebar-foreground"}`}
               >
-                {renderIcon(n)}
-                {renderLabel(n)}
-                {active && <span className="absolute right-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-l-full bg-primary" />}
+                <span className="nav-icon shrink-0">{renderIcon(n)}</span>
+                <span className="truncate">{renderLabel(n)}</span>
               </Link>
             );
           })}
         </div>
       )}
-      <nav className="flex-1 px-3 space-y-0.5 overflow-auto pb-4">
+      <nav className="sidebar-nav flex-1 px-3 space-y-1 overflow-auto pb-4">
         {isParent
           ? parentNav.map((n) => {
               const active = path === n.to || path.startsWith(n.to + "/");
@@ -638,12 +639,17 @@ export function AppShell({ children }: { children: ReactNode }) {
                   to={n.to as any}
                   className={`nav-pill flex items-center gap-3 px-3 py-2.5 text-sm ${active ? "nav-pill-active bg-primary/12 text-primary font-semibold" : "hover:bg-sidebar-accent/70 text-sidebar-foreground"}`}
                 >
-                  <Icon className="h-4 w-4" /> {n.label}
+                  <span className="nav-icon shrink-0">
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <span className="truncate">{n.label}</span>
                 </Link>
               );
             })
           : (<>
-            <div className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">学習アプリ</div>
+            <div className="sidebar-section-label px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+              学習アプリ
+            </div>
             {navVisible.filter((n) => !QUICK_PATHS.includes(n.to) && n.to !== "/help").map((n) => {
               const active = path === n.to || path.startsWith(n.to + "/");
               return (
@@ -656,9 +662,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                       : "hover:bg-sidebar-accent/70 text-sidebar-foreground"
                   }`}
                 >
-                  {renderIcon(n)}
-                  {renderLabel(n)}
-                  {active && <span className="absolute right-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-l-full bg-primary" />}
+                  <span className="nav-icon shrink-0">{renderIcon(n)}</span>
+                  <span className="truncate">{renderLabel(n)}</span>
                 </Link>
               );
             })}
@@ -667,7 +672,10 @@ export function AppShell({ children }: { children: ReactNode }) {
         {!isParent && navHiddenByUser.length > 0 && (
           <Popover>
             <PopoverTrigger className="mt-2 w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm border border-border/60 hover:bg-accent">
-              <MoreHorizontal className="h-4 w-4" /> {t("common.more")} ({navHiddenByUser.length})
+              <span className="nav-icon shrink-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </span>
+              <span className="truncate">{t("common.more")} ({navHiddenByUser.length})</span>
             </PopoverTrigger>
             <PopoverContent side="right" align="start" className="w-56 p-2">
               {navHiddenByUser.map((n) => (
@@ -686,7 +694,10 @@ export function AppShell({ children }: { children: ReactNode }) {
         {!isParent && navRestricted.length > 0 && (
           <Popover>
             <PopoverTrigger className="mt-2 w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm border border-red-500/30 text-red-600 hover:bg-red-500/10">
-              <Ban className="h-4 w-4" /> {t("common.restricted")} ({navRestricted.length})
+              <span className="nav-icon shrink-0">
+                <Ban className="h-4 w-4" />
+              </span>
+              <span className="truncate">{t("common.restricted")} ({navRestricted.length})</span>
             </PopoverTrigger>
             <PopoverContent side="right" align="start" className="w-56 p-2">
               {navRestricted.map((n) => (
@@ -711,8 +722,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 : "hover:bg-warning/10 text-foreground"
             }`}
           >
-            <Shield className="h-4 w-4" />
-            {t("nav.admin")}
+            <span className="nav-icon shrink-0">
+              <Shield className="h-4 w-4" />
+            </span>
+            <span className="truncate">{t("nav.admin")}</span>
           </Link>
         )}
       </nav>
@@ -725,7 +738,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Desktop sidebar */}
       {!isMobile && navOpen && !isParentOnly && (
-        <aside className="app-sidebar w-64 shrink-0 m-2 mr-0 h-[calc(100vh-1rem)] rounded-3xl border shadow-sm overflow-hidden liquid-bar text-sidebar-foreground flex flex-col sticky top-2 self-start">
+        <aside className="app-sidebar w-[17.5rem] shrink-0 m-2 mr-0 h-[calc(100vh-1rem)] rounded-[1.75rem] border shadow-sm overflow-hidden liquid-bar text-sidebar-foreground flex flex-col sticky top-2 self-start">
           {sidebarContent}
         </aside>
       )}
