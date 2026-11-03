@@ -56,6 +56,9 @@ import {
   ChevronRight,
   Brain,
   Layers,
+  SlidersHorizontal,
+  GripVertical,
+  ArrowUp,
 } from "lucide-react";
 import {
   BarChart,
@@ -102,6 +105,24 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 const DAILY_GOAL_KEY = "dashboard.dailyGoalMinutes";
 const WEEKLY_GOAL_KEY = "dashboard.weeklyGoalMinutes";
+const DASHBOARD_WIDGET_ORDER_KEY = "study.dashboard.widget_order.v1";
+const DEFAULT_WIDGET_ORDER = [
+  "hero",
+  "focus",
+  "bento",
+  "charts",
+  "activity",
+  "getting_started",
+] as const;
+type DashboardWidgetId = (typeof DEFAULT_WIDGET_ORDER)[number];
+const WIDGET_LABELS: Record<DashboardWidgetId, string> = {
+  hero: "今日のサマリー・ストリーク・ウェルカムカード",
+  focus: "本日の目標・フォーカスパネル",
+  bento: "クイック統計ベントーグリッド",
+  charts: "学習時間チャート・週間比較",
+  activity: "最近の学習履歴",
+  getting_started: "はじめてガイド",
+};
 
 const RANKS = [
   { min: 0, title: "白帯" },
@@ -217,6 +238,60 @@ function FullDashboard() {
   const { subjects } = useOrderedSubjects();
   const [dailyGoal, setDailyGoal] = useState(120);
   const [weeklyGoal, setWeeklyGoal] = useState(840);
+  const [widgetOrder, setWidgetOrder] = useState<DashboardWidgetId[]>([
+    ...DEFAULT_WIDGET_ORDER,
+  ]);
+  const [layoutOpen, setLayoutOpen] = useState(false);
+  const [draggedWidget, setDraggedWidget] = useState<DashboardWidgetId | null>(null);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(DASHBOARD_WIDGET_ORDER_KEY) ?? "null");
+      if (
+        Array.isArray(saved) &&
+        saved.length === DEFAULT_WIDGET_ORDER.length &&
+        saved.every((id): id is DashboardWidgetId =>
+          (DEFAULT_WIDGET_ORDER as readonly string[]).includes(id),
+        )
+      ) {
+        setWidgetOrder(saved);
+      }
+    } catch {
+      // Ignore malformed local preferences and keep the default order.
+    }
+  }, []);
+
+  const widgetStyle = (id: DashboardWidgetId) => ({
+    order: widgetOrder.indexOf(id),
+  });
+  const moveWidget = (id: DashboardWidgetId, direction: -1 | 1) => {
+    setWidgetOrder((current) => {
+      const index = current.indexOf(id);
+      const nextIndex = index + direction;
+      if (index < 0 || nextIndex < 0 || nextIndex >= current.length) return current;
+      const next = [...current];
+      [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+      return next;
+    });
+  };
+  const dropWidget = (target: DashboardWidgetId) => {
+    if (!draggedWidget || draggedWidget === target) return;
+    setWidgetOrder((current) => {
+      const from = current.indexOf(draggedWidget);
+      const to = current.indexOf(target);
+      if (from < 0 || to < 0) return current;
+      const next = [...current];
+      next.splice(from, 1);
+      next.splice(to, 0, draggedWidget);
+      return next;
+    });
+    setDraggedWidget(null);
+  };
+  const saveWidgetOrder = () => {
+    localStorage.setItem(DASHBOARD_WIDGET_ORDER_KEY, JSON.stringify(widgetOrder));
+    setLayoutOpen(false);
+    toast.success("ダッシュボードの並び順を保存しました");
+  };
 
   useEffect(() => {
     const v = Number(localStorage.getItem(DAILY_GOAL_KEY));
@@ -614,10 +689,10 @@ function FullDashboard() {
   }, [stats, dailyGoal, dailyPct, diff, diffPct, byDow, topSubjects]);
 
   return (
-    <div className="dashboard-page p-4 md:p-8 lg:p-10 space-y-8 max-w-[1480px] mx-auto">
+    <div className="dashboard-page flex flex-col gap-8 p-4 md:p-8 lg:p-10 max-w-[1480px] mx-auto [&>:not([data-widget-id]):not([id])]:order-last">
       <DashboardBanners />
       {/* ===== 一番上: 左=1日の目標 / 右=あなたの街 ===== */}
-      <div className="grid gap-6 items-start">
+      <div id="hero" style={widgetStyle("hero")} className="grid gap-6 items-start">
         {/* ===== ヒーロー ===== */}
         <Card className="dashboard-hero relative overflow-hidden liquid-card p-0 border-primary/15 shadow-[0_24px_60px_-36px_color-mix(in_oklab,var(--primary)_55%,transparent)]">
           <div
@@ -728,6 +803,15 @@ function FullDashboard() {
                 }}
               />
               <NotificationBell />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setLayoutOpen(true)}
+                title="レイアウト並べ替え"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                <span className="hidden sm:inline">レイアウト並べ替え</span>
+              </Button>
             </div>
           </div>
 
@@ -746,8 +830,10 @@ function FullDashboard() {
       </div>
 
       {/* ===== はじめかた & 最近の利用状況 ===== */}
-      <div className="grid gap-5 lg:grid-cols-2 items-start">
+      <div id="getting_started" style={widgetStyle("getting_started")}>
         <GettingStartedCard />
+      </div>
+      <div id="activity" style={widgetStyle("activity")}>
         <RecentActivityCard />
       </div>
 
@@ -755,7 +841,9 @@ function FullDashboard() {
       <RecentNotifications />
 
       {/* ===== タイマー & 学習時間の集約 ===== */}
-      <FocusPanel dailyGoal={dailyGoal} />
+      <div id="focus" style={widgetStyle("focus")}>
+        <FocusPanel dailyGoal={dailyGoal} />
+      </div>
 
       <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
         <QuickLogCard subjects={subjects} />
@@ -806,7 +894,11 @@ function FullDashboard() {
       )}
 
       {/* ===== KPI: 詳細指標 ===== */}
-      <div className="dashboard-bento grid grid-cols-2 gap-3 md:grid-cols-5">
+      <div
+        id="bento"
+        style={widgetStyle("bento")}
+        className="dashboard-bento grid grid-cols-2 gap-3 md:grid-cols-5"
+      >
         <StatCard
           icon={CalendarDays}
           label="今月 (30日)"
@@ -840,7 +932,7 @@ function FullDashboard() {
       </div>
 
       {/* ===== グラフ（タブ） ===== */}
-      <Card className="study-surface p-4 md:p-6">
+      <Card id="charts" style={widgetStyle("charts")} className="study-surface p-4 md:p-6">
         <Tabs defaultValue="week">
           <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
             <h3 className="font-bold flex items-center gap-2">
@@ -1338,7 +1430,9 @@ function FullDashboard() {
         </Card>
       )}
 
-      <WeeklySubjectDiff />
+      <div data-widget-id="charts" style={widgetStyle("charts")}>
+        <WeeklySubjectDiff />
+      </div>
       <DashboardRanking />
 
       <div className="flex items-center gap-2 flex-wrap justify-end no-print">
@@ -1354,6 +1448,55 @@ function FullDashboard() {
           月レポート
         </Button>
       </div>
+      <Dialog open={layoutOpen} onOpenChange={setLayoutOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>レイアウト並べ替え</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2" aria-label="ウィジェットの並び順">
+            {widgetOrder.map((id, index) => (
+              <div
+                key={id}
+                draggable
+                onDragStart={() => setDraggedWidget(id)}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={() => dropWidget(id)}
+                className="flex items-center gap-2 rounded-lg border bg-background p-2"
+              >
+                <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span className="min-w-0 flex-1 text-sm">{WIDGET_LABELS[id]}</span>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  aria-label={`${WIDGET_LABELS[id]}を上へ移動`}
+                  disabled={index === 0}
+                  onClick={() => moveWidget(id, -1)}
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  aria-label={`${WIDGET_LABELS[id]}を下へ移動`}
+                  disabled={index === widgetOrder.length - 1}
+                  onClick={() => moveWidget(id, 1)}
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setWidgetOrder([...DEFAULT_WIDGET_ORDER])}
+            >
+              デフォルトに戻す
+            </Button>
+            <Button onClick={saveWidgetOrder}>保存</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -41,7 +41,7 @@ import { useAuth } from "@/lib/auth-context";
 import { MARKET_ROUTES, useInstalledApps, MARKET_APPS, isPathInstalled } from "@/lib/marketplace";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ElementType, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { syncCalendarNotifications } from "@/lib/calendar-reminders";
 const logoUrl = "/logo-boxed.svg";
@@ -70,6 +70,60 @@ import { useMaintenance } from "@/lib/maintenance-context";
 import { FocusMode } from "@/components/focus/FocusMode";
 import { UserProfileDialog } from "@/components/profile/UserProfileDialog";
 import { DomainChangeBar } from "@/components/DomainChangeNotice";
+
+const SERVICE_SVG_ICONS: Record<string, string[]> = {
+  "/study": ["/img/app-icons/study.svg", "/img/app-icons/勉強記録.svg"],
+  "/notes": ["/img/app-icons/notes.svg", "/img/app-icons/付箋メモ.svg"],
+  "/organizations": ["/img/app-icons/organizations.svg", "/img/app-icons/組織.svg"],
+  "/settings": ["/img/app-icons/settings.svg", "/img/app-icons/設定.svg"],
+  "/exams": ["/img/app-icons/exams.svg", "/img/app-icons/試験.svg"],
+  "/materials": [
+    "/img/app-icons/materials.svg",
+    "/img/app-icons/教材データベース.svg",
+    "/img/app-icons/教材.svg",
+  ],
+  "/goals": ["/img/app-icons/goals.svg", "/img/app-icons/学習目標.svg"],
+  "/meetings": ["/img/app-icons/meetings.svg", "/img/app-icons/会議.svg"],
+  "/flashcards": ["/img/app-icons/flashcards.svg", "/img/app-icons/暗記カード.svg"],
+  "/help": ["/img/app-icons/help.svg", "/img/app-icons/ヘルプ.svg"],
+  "/friends": ["/img/app-icons/friends.svg", "/img/app-icons/フレンド.svg"],
+  "/chat": ["/img/app-icons/chat.svg", "/img/app-icons/チャット.svg"],
+  "/dashboard": ["/img/app-icons/dashboard.svg", "/img/app-icons/ダッシュボード.svg"],
+  "/timer": ["/img/app-icons/timer.svg", "/img/app-icons/タイマー.svg"],
+  "/classroom": ["/img/app-icons/classroom.svg", "/img/app-icons/クラスルーム.svg"],
+  "/calendar": ["/img/app-icons/calendar.svg", "/img/app-icons/カレンダー.svg"],
+  "/announcements": ["/img/app-icons/announcements.svg", "/img/app-icons/お知らせ.svg"],
+  "/payments": ["/img/app-icons/payments.svg", "/img/app-icons/お支払い.svg"],
+  "/market": ["/img/app-icons/market.svg", "/img/app-icons/アプリマーケット.svg"],
+  "/todo": ["/img/app-icons/todo.svg", "/img/app-icons/ToDoリスト.svg"],
+  "/makron": ["/img/app-icons/makron.svg", "/img/app-icons/Markon.svg"],
+  "/notebooks": ["/img/app-icons/notebook.svg", "/img/app-icons/cnote.svg", "/img/app-icons/Cnote.svg"],
+  "/ai-chat": ["/img/app-icons/ai-chat.svg", "/img/app-icons/AIチャット.svg"],
+};
+
+function ServiceSvgIcon({
+  to,
+  fallback: FallbackIcon,
+  className,
+}: {
+  to: string;
+  fallback: ElementType;
+  className: string;
+}) {
+  const candidates = SERVICE_SVG_ICONS[to];
+  const [candidateIndex, setCandidateIndex] = useState(0);
+  if (!candidates || candidateIndex >= candidates.length) {
+    return <FallbackIcon className={className} />;
+  }
+  return (
+    <img
+      src={candidates[candidateIndex]}
+      alt=""
+      className={`${className} object-contain`}
+      onError={() => setCandidateIndex((index) => index + 1)}
+    />
+  );
+}
 
 export const NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
@@ -506,7 +560,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     n.adminIconUrl ? (
       <img src={n.adminIconUrl} alt="" className={cls + " object-contain"} />
     ) : (
-      <n.icon className={cls} />
+      <ServiceSvgIcon to={n.to} fallback={n.icon} className={cls} />
     );
 
   const sidebarContent = (
@@ -856,7 +910,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                       active ? "bg-primary/12 text-primary" : "text-muted-foreground"
                     }`}
                   >
-                    <n.icon className="h-5 w-5" />
+                    {renderIcon(n, "h-5 w-5")}
                     <span className="truncate max-w-full px-1">{n.label ?? t(n.labelKey)}</span>
                   </Link>
                 );
