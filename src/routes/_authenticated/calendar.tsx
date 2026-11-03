@@ -376,7 +376,7 @@ function CalendarPage() {
         key={dStr}
         onClick={() => openDay(d)}
         className={cn(
-          "flex flex-col items-stretch text-left border rounded-md p-1 sm:p-1.5 min-h-[72px] sm:min-h-[96px] transition-colors hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-ring",
+          "flex flex-col items-stretch text-left border rounded-md [&>div>div]:cursor-pointer p-1 sm:p-1.5 min-h-[72px] sm:min-h-[96px] transition-colors hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-ring",
           isToday ? "border-primary bg-primary/5" : "border-border",
           view === "month" && !inMonth ? "opacity-40" : "",
         )}
@@ -398,6 +398,18 @@ function CalendarPage() {
                 TYPE_STYLES[it.type].chip,
               )}
               title={`${it.time ? it.time + " " : ""}${it.label}`}
+              onClick={(e) => {
+                if (it.type === "log") return;
+                e.stopPropagation();
+                openDay(d);
+                if (it.type === "plan") {
+                  const p = plans.find((x: any) => x.id === it.id);
+                  if (p) startEditingPlan(p);
+                } else {
+                  const ev = events.find((x: any) => x.id === it.id);
+                  if (ev) startEditingEvent(ev);
+                }
+              }}
             >
               {it.time && <span className="mr-1 opacity-80">{it.time}</span>}
               {it.label}
