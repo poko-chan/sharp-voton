@@ -72,7 +72,11 @@ const SECTIONS: Partial<Record<SettingsCategoryId, React.ComponentType>> = {
 
 function UserSettingsPage() {
   const [term, setTerm] = useState("");
-  const [active, setActive] = useState<SettingsCategoryId>("account");
+  const [active, setActive] = useState<SettingsCategoryId>(() => {
+    if (typeof window === "undefined") return "account";
+    const tab = new URLSearchParams(window.location.search).get("tab");
+    return (CATEGORIES.find((c) => c.id === tab)?.id ?? "account") as SettingsCategoryId;
+  });
 
   const visible = useMemo(
     () => CATEGORIES.filter((c) => matchesKeyword(term, c.label, ...c.keywords)),
