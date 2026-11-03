@@ -34,7 +34,6 @@ import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedExamsRouteImport } from './routes/_authenticated/exams'
-import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/feed'
 import { Route as AuthenticatedFlashcardsRouteImport } from './routes/_authenticated/flashcards'
 import { Route as AuthenticatedFriendsRouteImport } from './routes/_authenticated/friends'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
@@ -52,10 +51,8 @@ import { Route as AuthenticatedShareRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedStudyRouteImport } from './routes/_authenticated/study'
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
 import { Route as AuthenticatedTodoRouteImport } from './routes/_authenticated/todo'
-import { Route as AuthenticatedTogetherRouteImport } from './routes/_authenticated/together'
 import { Route as AuthenticatedTutorRouteImport } from './routes/_authenticated/tutor'
 import { Route as AuthenticatedUpdatesRouteImport } from './routes/_authenticated/updates'
-import { Route as AuthenticatedXlangRouteImport } from './routes/_authenticated/xlang'
 import { Route as ApiAiStreamRouteImport } from './routes/api/ai-stream'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as CatalogIndexRouteImport } from './routes/catalog.index'
@@ -232,11 +229,6 @@ const AuthenticatedExamsRoute = AuthenticatedExamsRouteImport.update({
   path: '/exams',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedFeedRoute = AuthenticatedFeedRouteImport.update({
-  id: '/feed',
-  path: '/feed',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedFlashcardsRoute = AuthenticatedFlashcardsRouteImport.update({
   id: '/flashcards',
   path: '/flashcards',
@@ -325,11 +317,6 @@ const AuthenticatedTodoRoute = AuthenticatedTodoRouteImport.update({
   path: '/todo',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedTogetherRoute = AuthenticatedTogetherRouteImport.update({
-  id: '/together',
-  path: '/together',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedTutorRoute = AuthenticatedTutorRouteImport.update({
   id: '/tutor',
   path: '/tutor',
@@ -338,11 +325,6 @@ const AuthenticatedTutorRoute = AuthenticatedTutorRouteImport.update({
 const AuthenticatedUpdatesRoute = AuthenticatedUpdatesRouteImport.update({
   id: '/updates',
   path: '/updates',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedXlangRoute = AuthenticatedXlangRouteImport.update({
-  id: '/xlang',
-  path: '/xlang',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const ApiAiStreamRoute = ApiAiStreamRouteImport.update({
@@ -650,7 +632,6 @@ export interface FileRoutesByFullPath {
   '/chat': typeof AuthenticatedChatRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exams': typeof AuthenticatedExamsRouteWithChildren
-  '/feed': typeof AuthenticatedFeedRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/friends': typeof AuthenticatedFriendsRoute
   '/goals': typeof AuthenticatedGoalsRoute
@@ -668,10 +649,8 @@ export interface FileRoutesByFullPath {
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
   '/todo': typeof AuthenticatedTodoRoute
-  '/together': typeof AuthenticatedTogetherRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/updates': typeof AuthenticatedUpdatesRoute
-  '/xlang': typeof AuthenticatedXlangRoute
   '/api/ai-stream': typeof ApiAiStreamRoute
   '/api/chat': typeof ApiChatRoute
   '/catalog/$key': typeof CatalogKeyRoute
@@ -747,7 +726,6 @@ export interface FileRoutesByTo {
   '/calendar': typeof AuthenticatedCalendarRoute
   '/chat': typeof AuthenticatedChatRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/feed': typeof AuthenticatedFeedRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/friends': typeof AuthenticatedFriendsRoute
   '/goals': typeof AuthenticatedGoalsRoute
@@ -762,10 +740,8 @@ export interface FileRoutesByTo {
   '/study': typeof AuthenticatedStudyRoute
   '/timer': typeof AuthenticatedTimerRoute
   '/todo': typeof AuthenticatedTodoRoute
-  '/together': typeof AuthenticatedTogetherRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/updates': typeof AuthenticatedUpdatesRoute
-  '/xlang': typeof AuthenticatedXlangRoute
   '/api/ai-stream': typeof ApiAiStreamRoute
   '/api/chat': typeof ApiChatRoute
   '/catalog/$key': typeof CatalogKeyRoute
@@ -842,7 +818,6 @@ export interface FileRoutesById {
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/exams': typeof AuthenticatedExamsRouteWithChildren
-  '/_authenticated/feed': typeof AuthenticatedFeedRoute
   '/_authenticated/flashcards': typeof AuthenticatedFlashcardsRoute
   '/_authenticated/friends': typeof AuthenticatedFriendsRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
@@ -860,10 +835,8 @@ export interface FileRoutesById {
   '/_authenticated/study': typeof AuthenticatedStudyRoute
   '/_authenticated/timer': typeof AuthenticatedTimerRoute
   '/_authenticated/todo': typeof AuthenticatedTodoRoute
-  '/_authenticated/together': typeof AuthenticatedTogetherRoute
   '/_authenticated/tutor': typeof AuthenticatedTutorRoute
   '/_authenticated/updates': typeof AuthenticatedUpdatesRoute
-  '/_authenticated/xlang': typeof AuthenticatedXlangRoute
   '/api/ai-stream': typeof ApiAiStreamRoute
   '/api/chat': typeof ApiChatRoute
   '/catalog/$key': typeof CatalogKeyRoute
@@ -942,7 +915,6 @@ export interface FileRouteTypes {
     | '/chat'
     | '/dashboard'
     | '/exams'
-    | '/feed'
     | '/flashcards'
     | '/friends'
     | '/goals'
@@ -960,10 +932,8 @@ export interface FileRouteTypes {
     | '/study'
     | '/timer'
     | '/todo'
-    | '/together'
     | '/tutor'
     | '/updates'
-    | '/xlang'
     | '/api/ai-stream'
     | '/api/chat'
     | '/catalog/$key'
@@ -1039,7 +1009,6 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/chat'
     | '/dashboard'
-    | '/feed'
     | '/flashcards'
     | '/friends'
     | '/goals'
@@ -1054,10 +1023,8 @@ export interface FileRouteTypes {
     | '/study'
     | '/timer'
     | '/todo'
-    | '/together'
     | '/tutor'
     | '/updates'
-    | '/xlang'
     | '/api/ai-stream'
     | '/api/chat'
     | '/catalog/$key'
@@ -1133,7 +1100,6 @@ export interface FileRouteTypes {
     | '/_authenticated/chat'
     | '/_authenticated/dashboard'
     | '/_authenticated/exams'
-    | '/_authenticated/feed'
     | '/_authenticated/flashcards'
     | '/_authenticated/friends'
     | '/_authenticated/goals'
@@ -1151,10 +1117,8 @@ export interface FileRouteTypes {
     | '/_authenticated/study'
     | '/_authenticated/timer'
     | '/_authenticated/todo'
-    | '/_authenticated/together'
     | '/_authenticated/tutor'
     | '/_authenticated/updates'
-    | '/_authenticated/xlang'
     | '/api/ai-stream'
     | '/api/chat'
     | '/catalog/$key'
@@ -1424,13 +1388,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedExamsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/feed': {
-      id: '/_authenticated/feed'
-      path: '/feed'
-      fullPath: '/feed'
-      preLoaderRoute: typeof AuthenticatedFeedRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/flashcards': {
       id: '/_authenticated/flashcards'
       path: '/flashcards'
@@ -1550,13 +1507,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTodoRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/together': {
-      id: '/_authenticated/together'
-      path: '/together'
-      fullPath: '/together'
-      preLoaderRoute: typeof AuthenticatedTogetherRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/tutor': {
       id: '/_authenticated/tutor'
       path: '/tutor'
@@ -1569,13 +1519,6 @@ declare module '@tanstack/react-router' {
       path: '/updates'
       fullPath: '/updates'
       preLoaderRoute: typeof AuthenticatedUpdatesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/xlang': {
-      id: '/_authenticated/xlang'
-      path: '/xlang'
-      fullPath: '/xlang'
-      preLoaderRoute: typeof AuthenticatedXlangRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/api/ai-stream': {
@@ -2064,7 +2007,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExamsRoute: typeof AuthenticatedExamsRouteWithChildren
-  AuthenticatedFeedRoute: typeof AuthenticatedFeedRoute
   AuthenticatedFlashcardsRoute: typeof AuthenticatedFlashcardsRoute
   AuthenticatedFriendsRoute: typeof AuthenticatedFriendsRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
@@ -2082,10 +2024,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedStudyRoute: typeof AuthenticatedStudyRoute
   AuthenticatedTimerRoute: typeof AuthenticatedTimerRoute
   AuthenticatedTodoRoute: typeof AuthenticatedTodoRoute
-  AuthenticatedTogetherRoute: typeof AuthenticatedTogetherRoute
   AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
   AuthenticatedUpdatesRoute: typeof AuthenticatedUpdatesRoute
-  AuthenticatedXlangRoute: typeof AuthenticatedXlangRoute
   AuthenticatedAdminLineRoute: typeof AuthenticatedAdminLineRoute
   AuthenticatedClassroomClassIdRoute: typeof AuthenticatedClassroomClassIdRoute
   AuthenticatedMeetingsCodeRoute: typeof AuthenticatedMeetingsCodeRoute
@@ -2103,7 +2043,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedChatRoute: AuthenticatedChatRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExamsRoute: AuthenticatedExamsRouteWithChildren,
-  AuthenticatedFeedRoute: AuthenticatedFeedRoute,
   AuthenticatedFlashcardsRoute: AuthenticatedFlashcardsRoute,
   AuthenticatedFriendsRoute: AuthenticatedFriendsRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
@@ -2121,10 +2060,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedStudyRoute: AuthenticatedStudyRoute,
   AuthenticatedTimerRoute: AuthenticatedTimerRoute,
   AuthenticatedTodoRoute: AuthenticatedTodoRoute,
-  AuthenticatedTogetherRoute: AuthenticatedTogetherRoute,
   AuthenticatedTutorRoute: AuthenticatedTutorRoute,
   AuthenticatedUpdatesRoute: AuthenticatedUpdatesRoute,
-  AuthenticatedXlangRoute: AuthenticatedXlangRoute,
   AuthenticatedAdminLineRoute: AuthenticatedAdminLineRoute,
   AuthenticatedClassroomClassIdRoute: AuthenticatedClassroomClassIdRoute,
   AuthenticatedMeetingsCodeRoute: AuthenticatedMeetingsCodeRoute,

@@ -35,6 +35,7 @@ export function FeedbackTab() {
   const [reply, setReply] = useState<Record<string, string>>({});
   const [catFilter, setCatFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("active");
+  const [q, setQ] = useState("");
   const reload = async () => {
     try {
       setItems(await list());
@@ -80,6 +81,7 @@ export function FeedbackTab() {
   };
 
   const filtered = items.filter((f) => {
+    if (q.trim() && !String(f.body ?? "").toLowerCase().includes(q.trim().toLowerCase())) return false;
     if (catFilter !== "all" && f.category !== catFilter) return false;
     if (statusFilter === "active" && (f.status === "resolved" || f.status === "wontfix"))
       return false;
@@ -107,6 +109,12 @@ export function FeedbackTab() {
             </SelectContent>
           </Select>
         </div>
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="本文を検索"
+          className="h-8 rounded-md border bg-background px-2 text-sm"
+        />
         <div className="flex items-center gap-1">
           <span className="text-muted-foreground">フォルダ:</span>
           <Select value={statusFilter} onValueChange={setStatusFilter}>

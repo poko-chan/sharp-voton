@@ -9,11 +9,9 @@ export const LOCKABLE_FEATURES: { key: string; label: string; category: FeatureC
   { key: "flashcards", label: "単語帳", category: "study" },
   { key: "materials", label: "教材", category: "study" },
   { key: "goals", label: "目標", category: "study" },
-  { key: "xlang", label: "Xlang（語学）", category: "study" },
   { key: "chat", label: "チャット", category: "social" },
   { key: "feed", label: "みんなの投稿", category: "social" },
   { key: "friends", label: "フレンド", category: "social" },
-  { key: "together", label: "みんなで勉強", category: "social" },
   { key: "leaderboard", label: "ランキング", category: "social" },
   { key: "ai-chat", label: "AIチャット", category: "social" },
 ];
