@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!-- 接続ネットワーク線 -->
+  <path d="M6 18v-2a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v2" stroke="#00BBA7" stroke-width="2" stroke-linecap="round" fill="none" />
+  <line x1="12" y1="11" x2="12" y2="13" stroke="#00BBA7" stroke-width="2" />
+  <!-- メイン（学校・先生・ハブ / アクセントピンク） -->
+  <circle cx="12" cy="6" r="3.5" fill="#FF5C5C" />
+  <!-- 所属する生徒・メンバー（左・右） -->
+  <circle cx="6" cy="18" r="2.5" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" />
+  <circle cx="18" cy="18" r="2.5" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" />
+</svg>

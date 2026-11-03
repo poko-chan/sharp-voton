@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!-- 用紙本体 -->
+  <rect x="4" y="4" width="16" height="17" rx="2" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" />
+  <!-- バインダークリップ -->
+  <rect x="9" y="2" width="6" height="4" rx="1" fill="#00BBA7" />
+  <!-- 解答チェックマーク（アクセントピンク） -->
+  <path d="M8 12.5l2.5 2.5 5.5-5.5" stroke="#FF5C5C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <!-- 下部の記述ライン -->
+  <line x1="8" y1="17" x2="16" y2="17" stroke="#00BBA7" stroke-width="2" stroke-linecap="round" />
+</svg>

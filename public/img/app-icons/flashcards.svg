@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!-- 奥のカード（めくられたカード） -->
+  <rect x="7" y="2" width="13" height="15" rx="2" transform="rotate(12 13.5 9.5)" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" />
+  
+  <!-- 手前のカード（メイン） -->
+  <rect x="3" y="6" width="13" height="15" rx="2" fill="#FFFFFF" stroke="#00BBA7" stroke-width="2" />
+
+  <!-- カードのリング穴 -->
+  <circle cx="5.5" cy="8.5" r="1" fill="#00BBA7" />
+
+  <!-- カードに書かれた文字「A」（勉強内容） -->
+  <path d="M8 17l2-5 2 5M8.8 15h2.4" stroke="#00BBA7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+
+  <!-- めくり先の「？」マーク（アクセントピンク・暗記テスト要素） -->
+  <circle cx="17.5" cy="7" r="1.2" fill="#FF5C5C" />
+</svg>

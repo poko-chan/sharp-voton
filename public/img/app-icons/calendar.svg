@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!-- カレンダー枠 -->
+  <rect x="3" y="5" width="18" height="16" rx="3" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" />
+  <!-- 上部ヘッダーバー -->
+  <path d="M3 10h18" stroke="#00BBA7" stroke-width="2" />
+  <!-- カレンダーのピン/フック -->
+  <line x1="7" y1="2" x2="7" y2="5" stroke="#00BBA7" stroke-width="2" stroke-linecap="round" />
+  <line x1="17" y1="2" x2="17" y2="5" stroke="#00BBA7" stroke-width="2" stroke-linecap="round" />
+  <!-- 今日の予定ドット（アクセントピンク） -->
+  <circle cx="12" cy="15" r="2.5" fill="#FF5C5C" />
+</svg>

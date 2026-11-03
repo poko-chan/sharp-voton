@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!-- 左の人 -->
+  <circle cx="7" cy="8" r="3" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" />
+  <path d="M2 19v-1a4 4 0 0 1 4-4h2a4 4 0 0 1 4 4v1" stroke="#00BBA7" stroke-width="2" stroke-linecap="round" fill="none" />
+  <!-- 右の人 -->
+  <circle cx="15" cy="9" r="2.5" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" />
+  <path d="M12 19v-1a3 3 0 0 1 3-3h2a3 3 0 0 1 3 3v1" stroke="#00BBA7" stroke-width="2" stroke-linecap="round" fill="none" />
+  <!-- フレンドマーク（ピンク） -->
+  <circle cx="19" cy="5" r="2" fill="#FF5C5C" />
+</svg>

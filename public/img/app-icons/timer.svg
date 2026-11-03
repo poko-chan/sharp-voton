@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!-- タイマーの背景（淡いミント）と輪郭（グリーン） -->
+  <circle cx="12" cy="13" r="8.5" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" />
+
+  <!-- 上部ボタン（アクセントのコーラルピンク） -->
+  <path d="M12 2 L12 4.5 M10 2 L14 2" stroke="#FF5C5C" stroke-width="2" stroke-linecap="round" fill="none" />
+
+  <!-- 時計の針（グリーン・塗りを完全に無効化して線のみ） -->
+  <path d="M12 9 L12 13 L15 15" stroke="#00BBA7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+</svg>

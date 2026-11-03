@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!-- 店舗の壁・入り口 -->
+  <path d="M4 11v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9" stroke="#00BBA7" stroke-width="2" stroke-linecap="round" fill="none" />
+  <rect x="9.5" y="14" width="5" height="7" rx="1" fill="#E6F7F5" stroke="#00BBA7" stroke-width="1.8" />
+  <!-- オーニング屋根（ミントベース） -->
+  <path d="M2 9l2-5h16l2 5c0 1.5-1 2.5-2.5 2.5S17 10.5 17 9c0 1.5-1 2.5-2.5 2.5S12 10.5 12 9c0 1.5-1 2.5-2.5 2.5S7 10.5 7 9c0 1.5-1 2.5-2.5 2.5S2 10.5 2 9z" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" stroke-linejoin="round" />
+  <!-- 屋根のセンターアクセント（ピンク） -->
+  <circle cx="12" cy="11.5" r="1.5" fill="#FF5C5C" />
+</svg>

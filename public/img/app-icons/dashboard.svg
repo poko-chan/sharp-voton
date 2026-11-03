@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!-- 左上（アクセント） -->
+  <rect x="3" y="3" width="7" height="7" rx="2" fill="#FF5C5C" stroke="#FF5C5C" stroke-width="2" />
+  <!-- 右上 -->
+  <rect x="14" y="3" width="7" height="7" rx="2" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" />
+  <!-- 左下 -->
+  <rect x="3" y="14" width="7" height="7" rx="2" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" />
+  <!-- 右下 -->
+  <rect x="14" y="14" width="7" height="7" rx="2" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" />
+</svg>

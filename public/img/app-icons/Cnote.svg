@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!-- ノート表紙 -->
+  <rect x="5" y="3" width="15" height="18" rx="2.5" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" />
+  <!-- リングバインド（左側の穴） -->
+  <line x1="3" y1="7" x2="6" y2="7" stroke="#00BBA7" stroke-width="2" stroke-linecap="round" />
+  <line x1="3" y1="12" x2="6" y2="12" stroke="#00BBA7" stroke-width="2" stroke-linecap="round" />
+  <line x1="3" y1="17" x2="6" y2="17" stroke="#00BBA7" stroke-width="2" stroke-linecap="round" />
+  <!-- ペン先のアクセント -->
+  <path d="M14 16l4-4 2 2-4 4-2.5.5.5-2.5z" fill="#FF5C5C" stroke="#FF5C5C" stroke-width="1.5" stroke-linejoin="round" />
+</svg>

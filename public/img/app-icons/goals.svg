@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!-- カップ本体 -->
+  <path d="M6 4h12v6a6 6 0 0 1-12 0V4z" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" />
+  <!-- 持ち手（左右） -->
+  <path d="M6 6H4a2 2 0 0 0-2 2v1a3 3 0 0 0 3 3h1" stroke="#00BBA7" stroke-width="2" fill="none" stroke-linecap="round" />
+  <path d="M18 6h2a2 2 0 0 1 2 2v1a3 3 0 0 1-3 3h-1" stroke="#00BBA7" stroke-width="2" fill="none" stroke-linecap="round" />
+  <!-- 台座の支柱と土台 -->
+  <line x1="12" y1="16" x2="12" y2="19" stroke="#00BBA7" stroke-width="2" />
+  <line x1="7" y1="19" x2="17" y2="19" stroke="#00BBA7" stroke-width="2" stroke-linecap="round" />
+  <!-- カップの中央の星（目標達成アクセント） -->
+  <path d="M12 7l.8 1.6 1.8.3-1.3 1.2.3 1.7L12 11l-1.6.8.3-1.7-1.3-1.2 1.8-.3L12 7z" fill="#FF5C5C" />
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!-- カード本体 -->
+  <rect x="2" y="5" width="20" height="14" rx="3" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" />
+  <!-- 磁気ストライプ帯 -->
+  <line x1="2" y1="9.5" x2="22" y2="9.5" stroke="#00BBA7" stroke-width="2" />
+  <!-- ICチップ（アクセントピンク） -->
+  <rect x="5" y="13" width="4" height="3" rx="0.8" fill="#FF5C5C" />
+</svg>

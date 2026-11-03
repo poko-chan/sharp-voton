@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!-- 付箋本体（右下が折れた形状） -->
+  <path d="M4 4h16v10l-6 6H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" stroke-linejoin="round" />
+  <!-- めくれた三角の折り返し（アクセントピンク） -->
+  <polygon points="14 14 20 14 14 20" fill="#FF5C5C" stroke="#FF5C5C" stroke-width="1.5" stroke-linejoin="round" />
+  <!-- メモ線 -->
+  <line x1="6" y1="9" x2="13" y2="9" stroke="#00BBA7" stroke-width="2" stroke-linecap="round" />
+</svg>

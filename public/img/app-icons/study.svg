@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!-- ノート本体（淡いミント塗り＋エメラルド枠） -->
+  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H18v16H6.5a2.5 2.5 0 0 0-2.5 2.5z" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- ノートの背表紙・折り返し -->
+  <path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H18" stroke="#00BBA7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <!-- 記録の罫線 -->
+  <line x1="8" y1="7" x2="13" y2="7" stroke="#00BBA7" stroke-width="2" stroke-linecap="round" />
+  <line x1="8" y1="11" x2="12" y2="11" stroke="#00BBA7" stroke-width="2" stroke-linecap="round" />
+  <!-- 記入ペン（アクセントピンク） -->
+  <path d="M14 16l5-5 2 2-5 5-2.5.5.5-2.5z" fill="#FF5C5C" stroke="#FF5C5C" stroke-width="1.5" stroke-linejoin="round" />
+</svg>

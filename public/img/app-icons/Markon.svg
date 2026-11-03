@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!-- 外側の角丸アプリフレーム -->
+  <rect x="3" y="3" width="18" height="18" rx="5" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" />
+  
+  <!-- 「M」の左〜谷部分（エメラルド） -->
+  <path d="M7 16V9l3.5 4.5" stroke="#00BBA7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+
+  <!-- 「M」の山〜右肩上がりの正解チェック（アクセントピンク） -->
+  <path d="M10.5 13.5L14 9l4 7" stroke="#FF5C5C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  
+  <!-- 右上の達成スパーク（ひらめきドット） -->
+  <circle cx="17.5" cy="6.5" r="1.5" fill="#FF5C5C" />
+</svg>

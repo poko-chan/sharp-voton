@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!-- 外側の円（ミント塗り＋エメラルド枠） -->
+  <circle cx="12" cy="12" r="9" fill="#E6F7F5" stroke="#00BBA7" stroke-width="2" />
+  <!-- はてなのカーブ（滑らかなライン） -->
+  <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.6-2.5 2.2-2.5 3.8" stroke="#00BBA7" stroke-width="2" stroke-linecap="round" fill="none" />
+  <!-- 下のドット（アクセントピンク） -->
+  <circle cx="12" cy="16.5" r="1.5" fill="#FF5C5C" />
+</svg>
