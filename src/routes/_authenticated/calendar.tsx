@@ -384,6 +384,8 @@ function CalendarPage() {
         <span
           className={cn(
             "text-xs sm:text-sm font-medium mb-1 inline-flex h-5 w-5 items-center justify-center rounded-full",
+            !isToday && d.getDay() === 0 && "text-destructive",
+            !isToday && d.getDay() === 6 && "text-primary",
             isToday && "bg-primary text-primary-foreground",
           )}
         >
@@ -396,6 +398,7 @@ function CalendarPage() {
               className={cn(
                 "truncate rounded border px-1 py-0.5 text-[10px] sm:text-xs leading-tight",
                 TYPE_STYLES[it.type].chip,
+                it.type === "plan" && plans.find((x: any) => x.id === it.id)?.done && "line-through opacity-60",
               )}
               title={`${it.time ? it.time + " " : ""}${it.label}`}
               onClick={(e) => {
@@ -719,6 +722,12 @@ function CalendarPage() {
                         <div className="text-xs text-muted-foreground">{ev.description}</div>
                       )}
                     </div>
+                    <button
+                      onClick={() => startEditingEvent(ev)}
+                      className="text-primary hover:opacity-70 text-xs"
+                    >
+                      編集
+                    </button>
                     <button
                       onClick={() => delEvent(ev.id)}
                       className="text-destructive hover:opacity-70"
