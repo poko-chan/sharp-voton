@@ -29,7 +29,6 @@ const ACTIVITY: [string, string][] = [
   ["/calendar", "カレンダーを確認中"],
   ["/goals", "目標を確認中"],
   ["/chat", "チャット中"],
-  ["/feed", "フィードを見ています"],
   ["/friends", "フレンドを見ています"],
   ["/dashboard", "ホームにいます"],
 ];

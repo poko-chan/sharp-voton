@@ -79,6 +79,7 @@ const SERVICE_SVG_ICONS: Record<string, string[]> = {
   "/exams": ["/img/app-icons/exams.svg", "/img/app-icons/試験.svg"],
   "/materials": [
     "/img/app-icons/materials.svg",
+    "/img/app-icons/meterials.svg",
     "/img/app-icons/教材データベース.svg",
     "/img/app-icons/教材.svg",
   ],
@@ -139,14 +140,7 @@ export const NAV = [
   { to: "/calendar", labelKey: "nav.calendar" as const, icon: CalendarDays },
   { to: "/goals", labelKey: "nav.goals" as const, icon: Trophy },
   { to: "/flashcards", labelKey: "nav.flashcards" as const, icon: Brain },
-  { to: "/feed", labelKey: "nav.dashboard" as const, icon: Users, override: "タイムライン" },
   { to: "/friends", labelKey: "nav.friends" as const, icon: Users },
-  {
-    to: "/together",
-    labelKey: "nav.friends" as const,
-    icon: Users,
-    override: "みんなで勉強",
-  },
   { to: "/ai-chat", labelKey: "nav.tutor" as const, icon: Sparkles },
   { to: "/classroom", labelKey: "nav.classroom" as const, icon: GraduationCap },
   { to: "/chat", labelKey: "nav.chat" as const, icon: MessagesSquare },
@@ -161,7 +155,6 @@ export const NAV = [
   { to: "/notes", labelKey: "nav.notes" as const, icon: StickyNote },
   { to: "/announcements", labelKey: "nav.announcements" as const, icon: Megaphone },
   { to: "/makron", labelKey: "nav.dashboard" as const, icon: Target, override: "Makron" },
-  { to: "/xlang", labelKey: "nav.dashboard" as const, icon: Languages, override: "Xlang" },
   { to: "/organizations", labelKey: "nav.dashboard" as const, icon: Users, override: "組織" },
   { to: "/todo", labelKey: "nav.dashboard" as const, icon: ListTodo, override: "ToDoリスト" },
   { to: "/market", labelKey: "nav.dashboard" as const, icon: Store, override: "アプリマーケット" },
@@ -183,6 +176,8 @@ const ROUTE_SERVICE: Record<string, string> = {
 };
 
 // Bottom-bar mobile shortcuts (5 primary, last is "more")
+const QUICK_PATHS: string[] = ["/dashboard", "/announcements", "/settings"];
+
 const BOTTOM_NAV = [
   { to: "/dashboard", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
   { to: "/timer", labelKey: "nav.timer" as const, icon: Timer },
@@ -614,18 +609,20 @@ export function AppShell({ children }: { children: ReactNode }) {
           <LogOut className="h-4 w-4" />
         </Button>
       </div>
-      {quickbarItems.length > 0 && (
-        <div className="px-3 pb-2 flex items-center gap-1 flex-wrap">
-          {quickbarItems.map((n) => {
+      {!isParent && (
+        <div className="px-3 pb-2 space-y-0.5">
+          <div className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">クイックアクセス</div>
+          {navVisible.filter((n) => QUICK_PATHS.includes(n.to)).map((n) => {
             const active = path === n.to || path.startsWith(n.to + "/");
             return (
               <Link
                 key={"q-" + n.to}
                 to={n.to}
-                title={renderLabel(n)}
-                className={`h-9 w-9 inline-flex items-center justify-center rounded-xl transition ${active ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-sidebar-accent/70 text-sidebar-foreground"}`}
+                className={`nav-pill relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition ${active ? "nav-pill-active bg-primary/12 text-primary font-semibold" : "hover:bg-sidebar-accent/70 text-sidebar-foreground"}`}
               >
-                {renderIcon(n, "h-4 w-4")}
+                {renderIcon(n)}
+                {renderLabel(n)}
+                {active && <span className="absolute right-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-l-full bg-primary" />}
               </Link>
             );
           })}
@@ -646,13 +643,15 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </Link>
               );
             })
-          : navVisible.map((n) => {
+          : (<>
+            <div className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">学習アプリ</div>
+            {navVisible.filter((n) => !QUICK_PATHS.includes(n.to) && n.to !== "/help").map((n) => {
               const active = path === n.to || path.startsWith(n.to + "/");
               return (
                 <Link
                   key={n.to}
                   to={n.to}
-                  className={`nav-pill flex items-center gap-3 px-3 py-2.5 text-sm ${
+                  className={`nav-pill relative flex items-center gap-3 px-3 py-2.5 text-sm ${
                     active
                       ? "nav-pill-active bg-primary/12 text-primary font-semibold"
                       : "hover:bg-sidebar-accent/70 text-sidebar-foreground"
@@ -660,9 +659,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                 >
                   {renderIcon(n)}
                   {renderLabel(n)}
+                  {active && <span className="absolute right-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-l-full bg-primary" />}
                 </Link>
               );
             })}
+          </>)}
 
         {!isParent && navHiddenByUser.length > 0 && (
           <Popover>
@@ -725,7 +726,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Desktop sidebar */}
       {!isMobile && navOpen && !isParentOnly && (
-        <aside className="app-sidebar w-64 shrink-0 border-r liquid-bar text-sidebar-foreground flex flex-col sticky top-0 h-screen self-start">
+        <aside className="app-sidebar w-64 shrink-0 m-2 mr-0 h-[calc(100vh-1rem)] rounded-3xl border shadow-sm overflow-hidden liquid-bar text-sidebar-foreground flex flex-col sticky top-2 self-start">
           {sidebarContent}
         </aside>
       )}

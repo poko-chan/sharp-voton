@@ -121,13 +121,6 @@ export const APPS: AppEntry[] = [
     group: "コミュニティ",
   },
   {
-    to: "/feed",
-    label: "タイムライン",
-    keywords: "feed sns 投稿",
-    icon: Users,
-    group: "コミュニティ",
-  },
-  {
     to: "/friends",
     label: "フレンド",
     keywords: "friend フォロー 友達",

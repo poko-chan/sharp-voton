@@ -194,23 +194,7 @@ export const MARKET_APPS: MarketApp[] = [
       data: ["ノート・ページ・手書きデータ"],
     },
   },
-  {
-    ...base,
-    id: "feed",
-    route: "/feed",
-    name: "タイムライン",
-    subtitle: "みんなの勉強をのぞいて、やる気アップ",
-    category: "交流",
-    icon: Users,
-    description: "フレンドやみんなの勉強の記録が流れるタイムラインです。リアクションで応援し合えます。",
-    highlights: ["みんなの勉強記録", "リアクション・コメント"],
-    integrations: ["勉強記録", "フレンド"],
-    access: {
-      display: ["サイドバー"],
-      notifications: ["リアクション・コメントのお知らせ"],
-      data: ["公開した勉強記録", "フレンドの公開記録"],
-    },
-  },
+
   {
     ...base,
     id: "ai-chat",
